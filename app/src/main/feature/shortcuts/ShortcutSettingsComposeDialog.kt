@@ -1428,7 +1428,7 @@ class ShortcutSettingsComposeDialog private constructor(
 
             // FPS Limit
             val fpsLimit = state.fpsLimit.intValue
-            shortcut.putExtra("fpsLimit", if (fpsLimit > 0) fpsLimit.toString() else null)
+            shortcut.putExtra("fpsLimit", fpsLimit.coerceAtLeast(0).toString())
 
             // SGSR 1 is a shortcut-only setting, not a container override.
             if (state.sgsrEnabled.value) {
@@ -2250,7 +2250,7 @@ class ShortcutSettingsComposeDialog private constructor(
             val versions = if (container.isGamescopeRuntime) {
                 DriverPackages.linuxSelectionEntries(context)
             } else {
-                com.winlator.cmod.runtime.system.GraphicsDriverCatalog.supportedVersions(context)
+                com.winlator.cmod.runtime.system.GraphicsDriverCatalog.selectionEntries(context, savedVersion)
             }
             activity.runOnUiThread {
                 state.gfxDriverVersionEntries.value = versions
@@ -2772,6 +2772,7 @@ class ShortcutSettingsComposeDialog private constructor(
             }
             sb.append("container_id=${container.id}\n")
             sb.append("use_container_defaults=1\n")
+            sb.append("fpsLimit=${com.winlator.cmod.runtime.container.Shortcut.DEFAULT_FPS_LIMIT}\n")
             FileUtils.writeString(shortcutFile, sb.toString())
             return Shortcut(container, shortcutFile)
         }

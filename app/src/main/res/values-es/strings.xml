@@ -2,7 +2,7 @@
 
 <resources>
     <!-- Common > UI Labels -->
-    <string name="common_ui_app_name">WinNative</string>
+    <string name="common_ui_app_name">Vapor</string>
     <string name="common_ui_run">Ejecutar</string>
     <string name="common_ui_edit">Editar</string>
     <string name="common_ui_remove">Eliminar</string>
@@ -87,7 +87,7 @@
     <string name="about_branding_heading">PROTECCIÓN DE TIENDA</string>
     <string name="about_branding_desc">Por qué esta compilación informa de una versión distinta</string>
     <string name="about_reported_version_code">Código de versión informado</string>
-    <string name="about_branding_explain">Esta compilación se instala como %1$s para que el dispositivo aplique el perfil de rendimiento de esa app. Su código de versión informado es más alto que cualquiera que Google Play pueda publicar, así que Play Store nunca ofrece una actualización que reemplace a WinNative. La versión de arriba es la real.</string>
+    <string name="about_branding_explain">Esta compilación se instala como %1$s para que el dispositivo aplique el perfil de rendimiento de esa app. Su código de versión informado es más alto que cualquiera que Google Play pueda publicar, así que Play Store nunca ofrece una actualización que reemplace a Vapor. La versión de arriba es la real.</string>
     <string name="about_copy">Copiar info de compilación</string>
     <string name="about_copied">Info de compilación copiada</string>
     <string name="common_ui_back">Atrás</string>
@@ -218,7 +218,7 @@
     <string name="library_games_no_games_installed">No hay juegos instalados. Usa una pestaña de Tienda o el botón + para añadir juegos.</string>
     <string name="library_games_times_played_label">Número de veces jugado: </string>
     <string name="library_games_playtime_label">Tiempo de juego: </string>
-    <string name="library_games_no_games_hub">No hay juegos instalados\nHaz clic para abrir Winlator Backend</string>
+    <string name="library_games_no_games_hub">No hay juegos instalados\nHaz clic para abrir Advanced settings</string>
     <string name="library_games_installed_badge">INSTALADO</string>
     <string name="library_games_unknown_game">Juego desconocido</string>
     <string name="library_games_layouts_header">DISEÑOS DE BIBLIOTECA</string>
@@ -661,8 +661,8 @@ Ej. <b>META</b> para la <i>tecla META</i>, \n
     <string name="session_xserver_pref_kbd">Teclado</string>
     <string name="session_xserver_pref_other">Otro</string>
     <string name="session_xserver_pref_version">Versión</string>
-    <string name="session_xserver_notification_description">Mensajes de XServer de WinNative</string>
-    <string name="session_xserver_notification_content">WinNative se está ejecutando, no elimines ni deslices esta notificación</string>
+    <string name="session_xserver_notification_description">Mensajes de XServer de Vapor</string>
+    <string name="session_xserver_notification_content">Vapor se está ejecutando, no elimines ni deslices esta notificación</string>
 
     <!-- Session > Drawer Menu -->
     <string name="session_drawer_keyboard">Teclado</string>
@@ -920,7 +920,7 @@ Ej. <b>META</b> para la <i>tecla META</i>, \n
     <string name="settings_general_open_with_android_browser">Abrir navegador Android en Wine</string>
     <string name="settings_general_share_android_clipboard">Compartir portapapeles de Android con Wine</string>
     <string name="settings_general_paths_title">Ajustes de rutas</string>
-    <string name="settings_general_paths_summary">Gestionar dónde Winlator almacena sus datos de trabajo y dónde se escriben los accesos directos exportados.</string>
+    <string name="settings_general_paths_summary">Gestionar dónde Vapor almacena sus datos de trabajo y dónde se escriben los accesos directos exportados.</string>
     <string name="settings_general_winlator_path_title">Ruta de almacenamiento</string>
     <string name="settings_general_shortcut_export_path_title">Ruta de exportación de accesos directos</string>
     <string name="settings_general_choose_path">Elegir ruta</string>
@@ -930,8 +930,8 @@ Ej. <b>META</b> para la <i>tecla META</i>, \n
     <string name="settings_general_xinput_toggle_title">Desactivar XInput</string>
     <string name="settings_general_xinput_toggle_summary">Desactiva el manejo de XInput cuando quieras control exclusivo de ratón y teclado.</string>
     <string name="settings_external_display_output_summary">Mueve el juego a una pantalla externa conectada en lugar de duplicar esta pantalla. Las gafas siempre usan su propia pantalla.</string>
-    <string name="settings_general_file_provider_summary">Exponer los archivos de WinNative a los selectores de documentos y administradores de archivos de Android.</string>
-    <string name="settings_general_auto_scraping_summary">Permite que WinNative obtenga automáticamente el arte de los juegos personalizados.</string>
+    <string name="settings_general_file_provider_summary">Exponer los archivos de Vapor a los selectores de documentos y administradores de archivos de Android.</string>
+    <string name="settings_general_auto_scraping_summary">Permite que Vapor obtenga automáticamente el arte de los juegos personalizados.</string>
     <string name="settings_general_open_browser_summary">Abrir enlaces web compatibles en el navegador de Android en lugar de dentro de Wine.</string>
     <string name="settings_general_clipboard_summary">Permitir copiar y pegar entre Android y las sesiones de Wine.</string>
     <string name="settings_general_imagefs_summary">Restaurar los archivos del sistema incluidos sin eliminar tus contenedores existentes.</string>
@@ -971,7 +971,7 @@ Ej. <b>META</b> para la <i>tecla META</i>, \n
     <string name="settings_debug_input_logs">Registros de entrada</string>
     <string name="settings_debug_input_logs_description">Registrar eventos de entrada de mando, táctil y teclado</string>
     <string name="settings_debug_download_logs">Registros de descarga</string>
-    <string name="settings_debug_download_logs_description">Registrar eventos del resolvedor de descargas y respaldo de WinNative</string>
+    <string name="settings_debug_download_logs_description">Registrar eventos del resolvedor de descargas y respaldo de Vapor</string>
     <string name="settings_debug_vulkan_validation_layers_title">Capas de validación de Vulkan</string>
     <string name="settings_debug_vulkan_validation_layers_subtitle">Reinicia la pantalla para aplicar.</string>
     <string name="settings_debug_share_logs">Compartir registros</string>
@@ -987,10 +987,10 @@ Ej. <b>META</b> para la <i>tecla META</i>, \n
     <string name="settings_debug_delete_logs_confirm_message">Esto eliminará permanentemente todos los archivos de registro guardados (%1$s). No se puede deshacer.</string>
     <string name="settings_debug_logs_browser_title">Registros</string>
     <string name="settings_debug_log_truncated">Mostrando los últimos %1$s de este registro</string>
-    <string name="settings_debug_logs_subject">Registros de WinNative (%1$s)</string>
+    <string name="settings_debug_logs_subject">Registros de Vapor (%1$s)</string>
     <string name="settings_debug_no_logs_available">No hay registros de depuración disponibles. Activa primero las opciones de depuración e inicia un juego.</string>
     <string name="settings_debug_capture_failed">Error al capturar registros: %1$s</string>
-    <string name="settings_debug_log_to_file_desc">Registrar errores, advertencias y fallos del proceso de WinNative en archivo</string>
+    <string name="settings_debug_log_to_file_desc">Registrar errores, advertencias y fallos del proceso de Vapor en archivo</string>
     <string name="settings_filtered_logs_to_file_title">Registro de depuración filtrado</string>
     <string name="settings_filtered_logs_to_file_desc">Guarda los registros de la aplicación en un archivo, filtrados según lo configurado en el filtro de etiquetas.</string>
     <string name="settings_debug_section_emulation">Emulación</string>
@@ -1219,7 +1219,7 @@ Ruta instalada:
     <string name="saves_import_export_exported_failed">Error al exportar guardados: %1$s</string>
     <string name="saves_import_export_imported">Guardados importados correctamente</string>
     <string name="saves_import_export_imported_failed">Error al importar guardados: %1$s</string>
-    <string name="saves_export_path_summary">Las partidas guardadas se exportarán a /WinNative/saves</string>
+    <string name="saves_export_path_summary">Las partidas guardadas se exportarán a /Vapor/saves</string>
     <string name="saves_export_success_path">Exportado a %1$s</string>
     <string name="saves_export_warning_title">Usa esto solo con juegos personalizados</string>
     <string name="saves_export_warning_body">La exportación puede incluir partidas guardadas de juegos instalados desde tiendas o con sincronización en la nube.</string>
@@ -1389,7 +1389,7 @@ Ruta instalada:
     <string name="cloud_saves_syncing_from_provider">Descargando partida de %1$s\u2026</string>
     <string name="cloud_saves_sync_summary">Descarga la versión que %1$s tiene ahora mismo.</string>
     <string name="cloud_saves_sync_summary_generic">Descarga la versión actual en la nube.</string>
-    <string name="common_ui_exit_app_confirm">¿Salir de WinNative?</string>
+    <string name="common_ui_exit_app_confirm">¿Salir de Vapor?</string>
     <string name="container_surface_effect">Efecto de superficie</string>
     <string name="downloads_queue_cancel_download_confirm">¿Cancelar la descarga de %1$s y eliminar todos los archivos descargados?</string>
     <string name="downloads_queue_paused_resume_hint">En pausa: toca Reanudar para continuar</string>
@@ -1481,7 +1481,7 @@ Ruta instalada:
     <string name="downloads_queue_cancel_all_warning">Cancelar descargas de DLC, juegos o actualizaciones puede dañar tus instalaciones de juegos.\n\n¿Seguro que quieres cancelar todas las descargas y eliminar los archivos descargados hasta ahora?</string>
     <string name="shortcuts_properties_use_legacy_launcher">Usar lanzador heredado</string>
     <string name="shortcuts_properties_use_legacy_launcher_description">Emulación de Steam heredada: ejecuta el juego mediante el lanzador ColdClient y elimina SteamStub DRM del exe. Úsalo solo para juegos antiguos que no funcionan con Steam Launcher.</string>
-    <string name="steam_section_real_client">Cliente real de Steam de WinNative</string>
+    <string name="steam_section_real_client">Cliente real de Steam de Vapor</string>
     <string name="steam_section_emulator">Emulador de Steam heredado</string>
     <string name="shortcuts_properties_steam_offline_mode_description">Juega sin usar Steam Cloud, así las partidas guardadas permanecen en este dispositivo y el juego arranca aunque no haya conexión. Desactívalo para reanudar Steam Cloud; si la partida local y la de la nube difieren, se te preguntará cuál conservar.</string>
     <string name="input_controls_select_style">Seleccionar estilo</string>
@@ -1508,7 +1508,7 @@ Ruta instalada:
     <string name="cloud_saves_history_steam_unreachable">Steam Cloud no está disponible ahora. Reconectando en segundo plano toca actualizar cuando vuelvas a estar en línea.</string>
     <string name="steam_session_refused_event">Steam rechazó la sesión en caché (EResult=%1$d). Inicia sesión de nuevo.</string>
     <string name="settings_hud_record_to_file_title">Grabar rendimiento en archivo</string>
-    <string name="settings_hud_record_to_file_summary">Exporta métricas por segundo de FPS, CPU, GPU, temperatura y batería a /WinNative/logs/ durante el juego.</string>
+    <string name="settings_hud_record_to_file_summary">Exporta métricas por segundo de FPS, CPU, GPU, temperatura y batería a logs/ durante el juego.</string>
     <string name="settings_leaderboard_category">Rendimiento</string>
     <!-- Preloader > Launch Screen -->
     <string name="preloader_preparing_steam_environment">Preparando entorno de Steam</string>
@@ -1799,11 +1799,11 @@ Ruta instalada:
     <string name="session_record_now">Grabar ahora</string>
     <string name="session_record_quality">Calidad</string>
     <string name="session_record_resolution">Resolución</string>
-    <string name="session_record_saved">Grabación guardada en WinNative/Recordings</string>
+    <string name="session_record_saved">Grabación guardada en Vapor/Recordings</string>
     <string name="session_record_settings_title">Ajustes de grabación</string>
     <string name="session_record_started">Grabación iniciada</string>
     <string name="steam_chat_setting_stay_running">Ejecutar en segundo plano</string>
-    <string name="steam_chat_setting_stay_running_desc">Mantener el chat activo después de salir de WinNative</string>
+    <string name="steam_chat_setting_stay_running_desc">Mantener el chat activo después de salir de Vapor</string>
     <string name="settings_content_refresh">Actualizar</string>
 
     <!-- Settings > Other: Background Protection -->
@@ -2392,24 +2392,12 @@ Ruta instalada:
     <string name="retro_scr_sgsr_upscaling">Escalado SGSR</string>
     <string name="retro_scr_performance_hud">HUD de rendimiento</string>
     <string name="retro_scr_credits_licenses">CRÉDITOS &amp; LICENCIAS</string>
-    <string name="retro_scr_credits_desc">Algunas de las funciones de WinNative se basan en estos proyectos de código abierto. Toca para ver cada fuente.</string>
+    <string name="retro_scr_credits_desc">Algunas de las funciones de Vapor se basan en estos proyectos de código abierto. Toca para ver cada fuente.</string>
     <string name="retro_scr_tab_defaults">Predeterminados</string>
     <string name="retro_scr_tab_credits">Créditos</string>
     <string name="settings_support_title">Soporte</string>
-    <string name="support_donate_heading">DONAR</string>
-    <string name="support_donate_desc">Contribuye al desarrollo de WinNative. Se abre en tu navegador.</string>
-    <string name="support_paypal">paypal.me/MaxJividen</string>
-    <string name="support_paypal_desc">PayPal • puntual o recurrente</string>
     <string name="support_heading">OBTENER AYUDA</string>
     <string name="support_desc">Haz preguntas, informa de problemas o mira en qué se está trabajando. Cada enlace se abre en tu navegador.</string>
-    <string name="support_winnative_discord_desc">Discord • soporte y desarrollo</string>
-    <string name="support_maxstechreview_discord_desc">Discord • comunidad</string>
-    <string name="support_youtube_desc">YouTube • guías y novedades</string>
-    <string name="support_reddit_desc">Reddit • comunidad</string>
-    <string name="support_winnative_discord">#WinNative</string>
-    <string name="support_maxstechreview_discord">#MaxsTechReview</string>
-    <string name="support_youtube">@MaxsTechReview</string>
-    <string name="support_reddit">r/EmulatorsForAndroid</string>
     <string name="retro_scr_enable_hardcore_title">¿Activar el modo Hardcore?</string>
     <string name="retro_scr_enable_hardcore_body">El modo Hardcore reinicia el juego ahora y desactiva la carga de estados guardados, el avance rápido y los trucos. Se perderá cualquier progreso sin guardar. ¿Continuar?</string>
     <string name="retro_scr_cancel">Cancelar</string>
@@ -2919,7 +2907,7 @@ Ruta instalada:
     <string name="update_ignore_until_next">Ignorar hasta la próxima actualización</string>
     <string name="update_no_notes">No se publicaron notas de la versión para esta compilación.</string>
     <string name="update_apk_notice">Esta actualización cambia la propia app, así que Android te pedirá confirmar la instalación. Tus juegos, contenedores y ajustes se conservan.</string>
-    <string name="update_up_to_date">WinNative está actualizado.</string>
+    <string name="update_up_to_date">Vapor está actualizado.</string>
     <string name="update_unsupported_build">Las actualizaciones dentro de la app solo se ofrecen en versiones oficiales firmadas.</string>
     <string name="settings_general_update_source">Origen de actualizaciones</string>
     <string name="settings_general_update_source_summary">Una compilación de un pull request sigue a ese pull request; una instalación oficial sigue las versiones oficiales.</string>
@@ -2950,15 +2938,15 @@ Ruta instalada:
     <string name="container_graphics_driver_gamescope">Turnip %1$s (Linux ARM64)</string>
     <string name="container_graphics_driver_gamescope_help">Integrado en el entorno Linux. Los controladores de Android descargados solo se aplican a contenedores Wine y Proton.</string>
     <string name="linux_runtime_windows_program">Este es un programa de Windows. Muévelo a un contenedor de Wine en los ajustes del acceso directo para iniciarlo.</string>
-    <string name="linux_steam_library_named">WinNative (%1$s)</string>
+    <string name="linux_steam_library_named">Vapor (%1$s)</string>
     <string name="linux_steam_library_internal">Almacenamiento interno</string>
     <string name="linux_steam_library_device_storage">Almacenamiento del dispositivo</string>
     <string name="settings_content_badge_online">En línea</string>
     <string name="gamescope_fex_title">FEX (64-bit and 32-bit)</string>
     <string name="gamescope_fex_preset">FEX Preset</string>
-    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in WinNative are not used; the preset is.</string>
+    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in Vapor are not used; the preset is.</string>
     <string name="gamescope_proton_title">Proton</string>
-    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with WinNative, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
+    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with Vapor, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
     <string name="settings_drivers_android">Android</string>
     <string name="settings_drivers_linux">Linux</string>
     <string name="settings_drivers_platform_hint">Elige dónde instalar el controlador. Los paquetes reconocidos usan automáticamente la plataforma correcta.</string>

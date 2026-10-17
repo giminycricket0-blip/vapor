@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.winlator.cmod.feature.settings
+import com.winlator.cmod.shared.theme.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -104,16 +105,16 @@ import androidx.compose.ui.focus.focusProperties
 import com.winlator.cmod.shared.ui.outlinedSwitchColors
 import com.winlator.cmod.shared.ui.layout.isCompactWidth
 
-// Palette (mirrors DebugScreen / StoresScreen)
-private val BgDark = Color(0xFF11111C)
-private val CardDark = Color(0xFF1C1C2A)
-private val CardBorder = Color(0xFF2A2A3A)
-private val IconBoxBg = Color(0xFF242434)
-private val SurfaceDark = Color(0xFF21212A)
-private val Accent = Color(0xFF1A9FFF)
-private val NavHighlight = Color(0xFF4FC3F7)
-private val TextPrimary = Color(0xFFF0F4FF)
-private val TextSecondary = Color(0xFF7A8FA8)
+// Shared Vapor palette
+private val BgDark = WinNativeBackground
+private val CardDark = WinNativeBackground
+private val CardBorder = WinNativeOutline
+private val IconBoxBg = Color.Transparent
+private val SurfaceDark = WinNativeSurface
+private val Accent = WinNativeAccent
+private val NavHighlight = WinNativeFocus
+private val TextPrimary = WinNativeTextPrimary
+private val TextSecondary = WinNativeTextSecondary
 private val SettingsSliderHeight = 24.dp
 private const val SettingsSliderTrackScaleY = 0.72f
 private val Error = Color(0xFFFF4444)
@@ -431,11 +432,11 @@ private fun SettingsToggleCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+
                 .paneNavItem(
-                    cornerRadius = 12.dp,
+                    cornerRadius = 3.dp,
                     onActivate = { onCheckedChange(!checked) },
                     highlightColor = NavHighlight,
                     tapToSelect = true,
@@ -451,8 +452,8 @@ private fun SettingsToggleCard(
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -460,13 +461,13 @@ private fun SettingsToggleCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = accentColor,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                Text(subtitle, color = TextSecondary, fontSize = 11.sp)
+                Text(subtitle, color = TextSecondary, fontSize = 12.sp)
             }
             Spacer(Modifier.width(4.dp))
             Switch(
@@ -493,11 +494,11 @@ private fun UpdatesCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+
                 .paneNavItem(
-                    cornerRadius = 12.dp,
+                    cornerRadius = 3.dp,
                     onActivate = { onCheckedChange(!checked) },
                     highlightColor = NavHighlight,
                     tapToSelect = true,
@@ -513,8 +514,8 @@ private fun UpdatesCard(
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -522,7 +523,7 @@ private fun UpdatesCard(
                     imageVector = Icons.Outlined.SystemUpdate,
                     contentDescription = null,
                     tint = Accent,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(13.dp))
@@ -536,7 +537,7 @@ private fun UpdatesCard(
                 Text(
                     text = stringResource(R.string.settings_general_check_for_updates_summary),
                     color = TextSecondary,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                 )
             }
             Spacer(Modifier.width(8.dp))
@@ -566,9 +567,9 @@ private fun UpdateSourceCard(source: String) {
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+                ,
     ) {
         Row(
             modifier =
@@ -580,8 +581,8 @@ private fun UpdateSourceCard(source: String) {
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -589,7 +590,7 @@ private fun UpdateSourceCard(source: String) {
                     imageVector = Icons.Outlined.Sync,
                     contentDescription = null,
                     tint = Accent,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(13.dp))
@@ -603,7 +604,7 @@ private fun UpdateSourceCard(source: String) {
                 Text(
                     stringResource(R.string.settings_general_update_source_summary),
                     color = TextSecondary,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                 )
             }
             Spacer(Modifier.width(8.dp))
@@ -630,9 +631,9 @@ private fun SettingsDropdownCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+                ,
     ) {
         Row(
             modifier =
@@ -644,8 +645,8 @@ private fun SettingsDropdownCard(
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -653,24 +654,24 @@ private fun SettingsDropdownCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = accentColor,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                Text(subtitle, color = TextSecondary, fontSize = 11.sp)
+                Text(subtitle, color = TextSecondary, fontSize = 12.sp)
             }
             Spacer(Modifier.width(8.dp))
             Box {
                 Row(
                     modifier =
                         Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF222232))
-                            .border(1.dp, accentColor.copy(alpha = 0.30f), RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(SurfaceDark)
+                            .border(1.dp, accentColor.copy(alpha = 0.30f), RoundedCornerShape(3.dp))
                             .paneNavItem(
-                                cornerRadius = 8.dp,
+                                cornerRadius = 3.dp,
                                 onActivate = { if (options.isNotEmpty()) expanded = true },
                                 highlightColor = NavHighlight,
                                 tapToSelect = true,
@@ -699,8 +700,8 @@ private fun SettingsDropdownCard(
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    shape = RoundedCornerShape(8.dp),
-                    containerColor = Color(0xFF24243B),
+                    shape = RoundedCornerShape(3.dp),
+                    containerColor = SurfaceDark,
                     border = BorderStroke(1.dp, CardBorder),
                     modifier = Modifier.widthIn(max = 260.dp),
                 ) {
@@ -756,9 +757,9 @@ private fun SoundFontCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+                ,
     ) {
         Column(
             modifier =
@@ -770,8 +771,8 @@ private fun SoundFontCard(
                 Box(
                     modifier =
                         Modifier
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(9.dp))
+                            .size(26.dp)
+                            .clip(RoundedCornerShape(3.dp))
                             .background(IconBoxBg),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -779,7 +780,7 @@ private fun SoundFontCard(
                         imageVector = Icons.Outlined.LibraryMusic,
                         contentDescription = null,
                         tint = Accent,
-                        modifier = Modifier.size(17.dp),
+                        modifier = Modifier.size(20.dp),
                     )
                 }
                 Spacer(Modifier.width(13.dp))
@@ -793,7 +794,7 @@ private fun SoundFontCard(
                     Text(
                         text = stringResource(R.string.settings_audio_summary),
                         color = TextSecondary,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                     )
                 }
             }
@@ -806,11 +807,11 @@ private fun SoundFontCard(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFF222232))
-                                .border(1.dp, Accent.copy(alpha = 0.30f), RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(SurfaceDark)
+                                .border(1.dp, Accent.copy(alpha = 0.30f), RoundedCornerShape(3.dp))
                                 .paneNavItem(
-                                    cornerRadius = 8.dp,
+                                    cornerRadius = 3.dp,
                                     onActivate = { if (files.isNotEmpty()) expanded = true },
                                     highlightColor = NavHighlight,
                                     tapToSelect = true,
@@ -837,8 +838,8 @@ private fun SoundFontCard(
                     DropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
-                        shape = RoundedCornerShape(8.dp),
-                        containerColor = Color(0xFF24243B),
+                        shape = RoundedCornerShape(3.dp),
+                        containerColor = SurfaceDark,
                         border = BorderStroke(1.dp, CardBorder),
                         modifier = Modifier.widthIn(max = 320.dp),
                     ) {
@@ -895,9 +896,9 @@ private fun FolderPathCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+                ,
     ) {
         val stackActions = isPortraitLayout() && secondaryLabel != null && onSecondary != null
 
@@ -905,8 +906,8 @@ private fun FolderPathCard(
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -914,7 +915,7 @@ private fun FolderPathCard(
                     imageVector = Icons.Outlined.Folder,
                     contentDescription = null,
                     tint = Accent,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
@@ -925,7 +926,7 @@ private fun FolderPathCard(
                 Text(
                     text = path.ifEmpty { stringResource(R.string.common_ui_not_configured) },
                     color = TextSecondary,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -997,9 +998,9 @@ private fun CursorSpeedCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+                ,
     ) {
         Column(
             modifier =
@@ -1011,8 +1012,8 @@ private fun CursorSpeedCard(
                 Box(
                     modifier =
                         Modifier
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(9.dp))
+                            .size(26.dp)
+                            .clip(RoundedCornerShape(3.dp))
                             .background(IconBoxBg),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -1020,7 +1021,7 @@ private fun CursorSpeedCard(
                         imageVector = Icons.Outlined.Speed,
                         contentDescription = null,
                         tint = Accent,
-                        modifier = Modifier.size(17.dp),
+                        modifier = Modifier.size(20.dp),
                     )
                 }
                 Spacer(Modifier.width(13.dp))
@@ -1034,7 +1035,7 @@ private fun CursorSpeedCard(
                     Text(
                         text = stringResource(R.string.settings_general_xserver_cursor_summary),
                         color = TextSecondary,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                     )
                 }
                 Spacer(Modifier.width(8.dp))
@@ -1058,7 +1059,7 @@ private fun CursorSpeedCard(
                         .fillMaxWidth()
                         .height(SettingsSliderHeight)
                         .paneNavItem(
-                            cornerRadius = 12.dp,
+                            cornerRadius = 3.dp,
                             onAdjust = { dir ->
                                 onPercentChanged((percent + dir * 5).coerceIn(10, 300))
                             },
@@ -1148,9 +1149,9 @@ private fun SettingsActionCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+                ,
     ) {
         Row(
             modifier =
@@ -1162,8 +1163,8 @@ private fun SettingsActionCard(
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -1171,7 +1172,7 @@ private fun SettingsActionCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = Accent,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(13.dp))
@@ -1185,7 +1186,7 @@ private fun SettingsActionCard(
                 Text(
                     text = subtitle,
                     color = TextSecondary,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                 )
             }
             Spacer(Modifier.width(10.dp))
@@ -1211,11 +1212,11 @@ private fun SmallActionButton(
                 // Two of these at a fixed 104 dp sit opposite weighted label columns; a
                 // minimum lets them shrink to their text on a narrow screen instead.
                 .widthIn(min = 88.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF222232))
-                .border(1.dp, textColor.copy(alpha = 0.30f), RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(3.dp))
+                .background(SurfaceDark)
+                .border(1.dp, textColor.copy(alpha = 0.30f), RoundedCornerShape(3.dp))
                 .paneNavItem(
-                    cornerRadius = 8.dp,
+                    cornerRadius = 3.dp,
                     onActivate = onClick,
                     highlightColor = NavHighlight,
                     tapToSelect = true,
@@ -1225,7 +1226,7 @@ private fun SmallActionButton(
         Text(
             text = label,
             color = textColor,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
         )
     }
@@ -1248,9 +1249,9 @@ private fun BackgroundPauseModeCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(3.dp))
             .background(CardDark)
-            .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+            ,
     ) {
         Column(
             modifier = Modifier
@@ -1261,9 +1262,9 @@ private fun BackgroundPauseModeCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(3.dp))
                     .paneNavItem(
-                        cornerRadius = 8.dp,
+                        cornerRadius = 3.dp,
                         onActivate = { expanded = !expanded },
                         highlightColor = NavHighlight,
                         tapToSelect = true,
@@ -1273,8 +1274,8 @@ private fun BackgroundPauseModeCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -1282,7 +1283,7 @@ private fun BackgroundPauseModeCard(
                         imageVector = Icons.Outlined.Tune,
                         contentDescription = null,
                         tint = Accent,
-                        modifier = Modifier.size(17.dp),
+                        modifier = Modifier.size(20.dp),
                     )
                 }
                 Spacer(Modifier.width(13.dp))
@@ -1312,10 +1313,9 @@ private fun BackgroundPauseModeCard(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(3.dp))
                             .paneNavItem(
-                                cornerRadius = 8.dp,
+                                cornerRadius = 3.dp,
                                 onActivate = { onModeChanged(mode) },
                                 highlightColor = NavHighlight,
                                 tapToSelect = true,
@@ -1344,7 +1344,7 @@ private fun BackgroundPauseModeCard(
                             Text(
                                 text = stringResource(subtitleRes),
                                 color = TextSecondary,
-                                fontSize = 11.sp,
+                                fontSize = 12.sp,
                             )
                         }
                     }
@@ -1386,9 +1386,9 @@ private fun HeartbeatFrequencyCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(3.dp))
             .background(CardDark)
-            .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+            ,
     ) {
         Column(
             modifier = Modifier
@@ -1398,9 +1398,9 @@ private fun HeartbeatFrequencyCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(3.dp))
                     .paneNavItem(
-                        cornerRadius = 8.dp,
+                        cornerRadius = 3.dp,
                         onActivate = { expanded = !expanded },
                         highlightColor = NavHighlight,
                         tapToSelect = true,
@@ -1410,8 +1410,8 @@ private fun HeartbeatFrequencyCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -1419,7 +1419,7 @@ private fun HeartbeatFrequencyCard(
                         imageVector = Icons.Outlined.Timer,
                         contentDescription = null,
                         tint = Accent,
-                        modifier = Modifier.size(17.dp),
+                        modifier = Modifier.size(20.dp),
                     )
                 }
                 Spacer(Modifier.width(13.dp))
@@ -1438,7 +1438,7 @@ private fun HeartbeatFrequencyCard(
                         Text(
                             text = stringResource(R.string.settings_other_bg_heartbeat_subtitle),
                             color = TextSecondary,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                         )
                     }
                 }
@@ -1475,7 +1475,7 @@ private fun HeartbeatFrequencyCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .paneNavItem(
-                                cornerRadius = 8.dp,
+                                cornerRadius = 3.dp,
                                 // onAdjust allows changing the value with D-pad
                                 onAdjust = { dir ->
                                     // Calculate the next value using a step of 5
@@ -1502,7 +1502,7 @@ private fun HeartbeatFrequencyCard(
                                 Text(
                                     text = label,
                                     color = if (isError) Error else TextSecondary,
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                 )
                             }
                         },

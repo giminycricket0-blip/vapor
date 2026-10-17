@@ -168,7 +168,7 @@ object ContainerCreation {
             put("envVars", Container.DEFAULT_ENV_VARS)
             put("cpuList", Container.getFallbackCPUList())
             put("cpuListWoW64", Container.getFallbackCPUListWoW64())
-            put("graphicsDriver", preferredDriver.ifBlank { Container.DEFAULT_GRAPHICS_DRIVER })
+            put("graphicsDriver", Container.DEFAULT_GRAPHICS_DRIVER)
             put("graphicsDriverConfig", replaceDelimitedConfigValue(
                 Container.DEFAULT_GRAPHICSDRIVERCONFIG,
                 ';',
@@ -367,7 +367,7 @@ object ContainerCreation {
         val defaults = resolveLaunchReadyDefaults(context, contentsManager, container.wineVersion)
         val preferredDriver = SetupWizardActivity.getLastInstalledDriverId(context)
 
-        container.setGraphicsDriver(preferredDriver.ifBlank { Container.DEFAULT_GRAPHICS_DRIVER })
+        container.setGraphicsDriver(Container.DEFAULT_GRAPHICS_DRIVER)
         container.setCPUList(Container.getFallbackCPUList())
         container.setCPUListWoW64(Container.getFallbackCPUListWoW64())
         container.setDrives(WineUtils.normalizePersistentDrives(

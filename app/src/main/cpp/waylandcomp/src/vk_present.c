@@ -14,6 +14,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <poll.h>
 #include <time.h>
 #include <pthread.h>
@@ -1449,20 +1450,21 @@ void vkp_perf_take(struct vkp_perf *out) {
 
 int vkp_can_wait_sync_fd(void) { return g_import_sem_fd != NULL && g_wait_sem != VK_NULL_HANDLE; }
 
-/* Hand a sync_file to the next submit as a GPU wait (temporary import into g_wait_sem; the driver
- * owns the fd from then on). Returns 1 when the submit must wait on g_wait_sem, 0 when there is nothing
- * to wait on - the fd was -1, or it could not be imported and was waited for on the CPU (bounded) and
- * closed instead. -1 = the display is still reading the buffer after 100 ms: do not write it. */
+/* Borrow a sync_file for the next submit. Import a duplicate so the caller retains the original
+ * if the copy later fails. 1 = wait on g_wait_sem; 0 = no fence or already complete on the CPU;
+ * -1 = completion was not established (including timeout/error): do not write the buffer. */
 static int take_wait_fd(int fd) {
     if (fd < 0) return 0;
     if (vkp_can_wait_sync_fd()) {
+        int imported_fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
         VkImportSemaphoreFdInfoKHR ii = {.sType = VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR,
                                          .semaphore = g_wait_sem, .flags = VK_SEMAPHORE_IMPORT_TEMPORARY_BIT,
-                                         .handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT, .fd = fd};
-        if (g_import_sem_fd(g_dev, &ii) == VK_SUCCESS) {
+                                         .handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT, .fd = imported_fd};
+        if (imported_fd >= 0 && g_import_sem_fd(g_dev, &ii) == VK_SUCCESS) {
             g_perf.gpu_release_waits++;
             return 1;
         }
+        if (imported_fd >= 0) close(imported_fd); /* Failed import did not take ownership. */
         static int said;
         if (!said) {
             said = 1;
@@ -1472,8 +1474,7 @@ static int take_wait_fd(int fd) {
     struct pollfd p = {.fd = fd, .events = POLLIN};
     int r;
     do { r = poll(&p, 1, 100); } while (r < 0 && errno == EINTR);
-    close(fd);
-    return r == 0 ? -1 : 0;
+    return r > 0 && (p.revents & POLLIN) && !(p.revents & (POLLERR | POLLHUP | POLLNVAL)) ? 0 : -1;
 }
 
 /* The HDR10 swapchain's metadata: the game's SMPTE 2086 / CTA-861.3 values (its image description) via
@@ -1889,7 +1890,6 @@ int vkp_map_draw(const struct vkp_draw *d, int out[8]) {
  * use acquires them and the destination is released back for the display to read. */
 int vkp_blit_image(struct vkp_image *src, struct vkp_image *dst, int wait_fd) {
     if (!src || !dst || !dst->blit_dst || g_dev_state == -2 || dev_init() != 0) {
-        if (wait_fd >= 0) close(wait_fd);
         return -1;
     }
     const int gpu_wait = take_wait_fd(wait_fd); /* the display's release of dst, before the copy writes it */
@@ -2095,11 +2095,10 @@ static int pass_begin_impl(int scene_w, int scene_h, const struct vkp_draw *draw
 }
 
 int vkp_pass_copy_to(struct vkp_image *dst, int wait_fd) {
-    if (!g_pass.active) { if (wait_fd >= 0) close(wait_fd); return -1; }
+    if (!g_pass.active) return -1;
     g_pass.active = 0;
     VkCommandBuffer cmd = g_cmds[0];
     if (!dst || !dst->blit_dst || g_dev_state == -2) {
-        if (wait_fd >= 0) close(wait_fd);
         g_vk.EndCommandBuffer(cmd);
         return -1;
     }

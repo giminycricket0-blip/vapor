@@ -1,6 +1,7 @@
 *.txz filter=lfs diff=lfs merge=lfs -text
 app/src/main/assets/imagefs.tzst filter=lfs diff=lfs merge=lfs -text
 app/src/main/assets/imagefs.part*.tzst filter=lfs diff=lfs merge=lfs -text
-reference/tooling/jadx.zip filter=lfs diff=lfs merge=lfs -text
-reference/tooling/jadx/lib/jadx-1.5.3-all.jar filter=lfs diff=lfs merge=lfs -text
-tools/sdl/*.patch whitespace=-blank-at-eol
+# Patch context lines intentionally contain a single space.
+tools/**/*.patch whitespace=-blank-at-eol
+# Preserve the unmodified upstream notice, including its final blank line.
+app/src/main/assets/licenses/OpenSSL-1.1.1q.txt whitespace=-blank-at-eof

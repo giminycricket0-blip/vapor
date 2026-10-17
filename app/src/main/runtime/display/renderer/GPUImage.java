@@ -12,7 +12,8 @@ import java.nio.ByteBuffer;
  * Local images create a CPU-mappable BGRA buffer for X server pixel writes,
  * then import it as a sampleable Vulkan image on demand.
  *
- * Imported images use an existing DRI3 buffer from a Unix socket without CPU mapping.
+ * Imported images normally share a DRI3 buffer directly. CPU-readable BGRA buffers
+ * can use the ordinary texture upload path if the driver cannot sample their format.
  */
 public class GPUImage extends Texture {
     private static final String TAG = "GPUImage";
@@ -23,6 +24,7 @@ public class GPUImage extends Texture {
     private boolean locked;
     private boolean cpuAccessible;
     private boolean samplingFailed;
+    private boolean copyFallback;
     private static boolean supported = false;
 
     public GPUImage(short width, short height) {
@@ -80,12 +82,19 @@ public class GPUImage extends Texture {
                     + " ahb=0x" + Long.toHexString(ahbPtr));
             return;
         }
+        copyFallback = false;
         nativeHandle = nativeImportAhbToVulkan(renderer, ahbPtr, true);
+        if (nativeHandle == 0 && !cpuAccessible) {
+            nativeHandle = nativeCopyAhbToVulkan(renderer, 0, ahbPtr);
+            copyFallback = nativeHandle != 0;
+            if (copyFallback) Log.i(TAG, "Using CPU upload for an unsampleable DRI3 buffer");
+        }
         if (nativeHandle == 0) {
             samplingFailed = true;
             Log.w(TAG, "AHB Vulkan import failed: " + width + "x" + height
                     + " ahb=0x" + Long.toHexString(ahbPtr));
         } else {
+            samplingFailed = false;
             handleGeneration = getRendererGeneration();
             if (ApplicationLogGate.isEnabled()) {
                 Log.i(TAG, "AHB imported into Vulkan texture: " + width + "x" + height
@@ -96,8 +105,15 @@ public class GPUImage extends Texture {
 
     @Override
     public void updateFromDrawable(Drawable drawable) {
-        if (!isAllocated()) allocateTexture(drawable.width, drawable.height, null);
-        // The producer already shares this AHB with the GPU, so there is no CPU upload.
+        if (!isAllocated()) {
+            allocateTexture(drawable.width, drawable.height, null);
+            return;
+        }
+        if (copyFallback) {
+            // A present can reuse the same pixmap without marking X11 pixels dirty.
+            // Map only for this copy; never leave a producer's buffer CPU-locked.
+            if (nativeCopyAhbToVulkan(getRendererHandle(), nativeHandle, ahbPtr) == 0) return;
+        }
         needsUpdate = false;
     }
 
@@ -138,6 +154,7 @@ public class GPUImage extends Texture {
         locked = false;
         virtualData = null;
         samplingFailed = false;
+        copyFallback = false;
     }
 
     public static boolean isSupported() {
@@ -169,4 +186,5 @@ public class GPUImage extends Texture {
     private native void nativeAhbDestroy(long ahbPtr, boolean locked);
 
     private static native long nativeImportAhbToVulkan(long rendererHandle, long ahbPtr, boolean transferOwnership);
+    private static native long nativeCopyAhbToVulkan(long rendererHandle, long textureHandle, long ahbPtr);
 }

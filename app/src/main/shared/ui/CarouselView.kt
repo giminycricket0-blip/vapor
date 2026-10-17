@@ -63,8 +63,8 @@ fun <T> CarouselView(
     ) {
         val spacing = 14.dp
         val navBottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        val baseCardWidth = maxWidth * 0.22f
-        val baseCardHeight = baseCardWidth * 1.2f
+        val baseCardHeight = (maxHeight - 80.dp - navBottomInset).coerceIn(120.dp, 320.dp)
+        val baseCardWidth = (baseCardHeight / 1.5f).coerceAtMost(maxWidth * 0.64f)
         val sidePadding = ((maxWidth - baseCardWidth) / 2).coerceAtLeast(0.dp)
         val flingBehavior = rememberSnapFlingBehavior(listState)
         val cardWidthPx = with(density) { baseCardWidth.toPx() }

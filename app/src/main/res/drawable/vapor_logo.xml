@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Three-pivot mechanical V with two leftward vapor trails.
+     Shared by the standard launcher and native app. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <group android:translateY="-4" android:scaleX="0.9" android:scaleY="0.9"
+        android:pivotX="54" android:pivotY="54">
+        <path
+            android:pathData="M25.75,34.15 A7,7 0,1,1 38.25,27.85 L53,57 C55,61.8 51.8,65.1 52,68.3 C52.1,70.5 54.2,70.5 56,70.5 A9.5,9.5 0,1,1 47.51,84.28 Z M35.4,31 A3.4,3.4 0,1,0 28.6,31 A3.4,3.4 0,1,0 35.4,31 Z M60.2,80 A4.2,4.2 0,1,0 51.8,80 A4.2,4.2 0,1,0 60.2,80 Z"
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd" />
+        <path
+            android:pathData="M80.52,28.35 A7,7 0,1,1 93.48,33.65 L70.25,85.84 A15.4,15.4 0,0,1 68.62,88.83 A1.7,1.7 0,0,1 65.83,86.88 A12,12 0,0,0 61.07,69.12 C59.8,68.5 60,67.4 60.7,66.3 C65,61 69,56.5 72,49.6 Z M90.4,31 A3.4,3.4 0,1,0 83.6,31 A3.4,3.4 0,1,0 90.4,31 Z"
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd" />
+        <path
+            android:pathData="M12,31 C15.6,33.3 18.4,28.7 22,31 M14,37 C17,39 19,35 22,37"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="2.8"
+            android:strokeLineCap="round" />
+    </group>
+</vector>

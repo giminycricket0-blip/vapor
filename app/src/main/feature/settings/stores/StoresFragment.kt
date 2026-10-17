@@ -22,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.winlator.cmod.R
 import com.winlator.cmod.app.shell.UnifiedActivity
+import com.winlator.cmod.app.shell.openOptionalStore
 import com.winlator.cmod.feature.storage.ExternalStorage
 import com.winlator.cmod.feature.storage.ExternalStorageSnapshot
 import com.winlator.cmod.feature.stores.epic.service.EpicAuthManager
@@ -142,6 +143,7 @@ class StoresFragment : Fragment() {
                 ) {
                     StoresScreen(
                         state = storeState,
+                        moreStores = arguments?.getBoolean("moreStores") == true,
                         serverOptions = serverOptions,
                         onSteamSignIn = { steamLoginLauncher.launch(Intent(requireContext(), SteamLoginActivity::class.java)) },
                         onSteamSignOut = {
@@ -160,6 +162,7 @@ class StoresFragment : Fragment() {
                                 refresh()
                             }
                         },
+                        onBrowseStore = { (activity as? UnifiedActivity)?.openOptionalStore(it) },
                         onGogSignIn = { gogLoginLauncher.launch(Intent(requireContext(), GOGOAuthActivity::class.java)) },
                         onGogSignOut = {
                             CoroutineScope(Dispatchers.Main).launch {

@@ -133,6 +133,7 @@ import com.winlator.cmod.feature.stores.steam.data.SteamID
 import com.winlator.cmod.feature.stores.steam.utils.KeyValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -160,6 +161,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.FormBody
 import okhttp3.Request
 import org.json.JSONArray
@@ -230,6 +232,8 @@ internal fun SteamService.ensureHealthySessionImpl() {
         bionicHandoffReleaseImpl()
         return
     }
+    // Returning to Home must not bypass the preceding host's offline/reap window.
+    if (handoffReleaseJob?.isActive == true) return
     if (wnSession?.state() == 3) return
     Timber.i("ensureHealthySession: session not logged on — re-driving connectAndLogon")
     retryAttempt = 0
@@ -283,21 +287,24 @@ internal fun SteamService.connectionCriticalWork(): String? =
         DownloadCoordinator.hasActiveDownload() -> "a download is active"
         PluviaApp.isGameSessionActive() -> "a game session is running"
         syncInProgressApps.values.any { it.get() } -> "a cloud save sync is in progress"
+        SteamCloseSync.activeAppIds.value.isNotEmpty() -> "a game is finishing its cloud save sync"
         PrefManager.chatStayRunningOnExit -> "background chat is enabled"
         else -> null
     }
 
 
 /** Suspend the backgrounded Steam session to draw no power — unless [connectionCriticalWork] still needs it. Disconnects the session and cancels every reconnect/PICS loop; wakes from [handleAppForegrounded]. Returns true if suspended. */
-internal fun SteamService.maybeSuspendForBackground(): Boolean {
-    if (appInForeground || isStopping || isLoggingOut || suspendedForBackground) return false
+internal fun SteamService.maybeSuspendForBackground(): Boolean = synchronized(this) {
+    if (appInForeground || isStopping || isLoggingOut || suspendedForBackground) return@synchronized false
     val keepAliveReason = connectionCriticalWork()
     if (keepAliveReason != null) {
         Timber.i("App backgrounded but %s — keeping the Steam session connected", keepAliveReason)
-        return false
+        return@synchronized false
     }
     Timber.i("App backgrounded and idle — suspending WN-Steam-Client session to save battery")
     suspendedForBackground = true
+    handoffReleaseJob?.cancel()
+    handoffReleaseJob = null
     connectJob?.cancel()
     reconnectJob?.cancel()
     stableConnectionJob?.cancel()
@@ -313,7 +320,7 @@ internal fun SteamService.maybeSuspendForBackground(): Boolean {
     // Commented out because Steam auto-start again in background after a few seconds.
     /*runCatching { SessionKeepAliveService.stopComponent(this, SessionKeepAliveService.COMPONENT_STEAM) }
         .onFailure { Timber.w(it, "Failed to remove SteamService foreground state during background") }*/
-    return true
+    true
 }
 
 internal fun SteamService.startRefreshTokenWatchdog() {
@@ -371,8 +378,10 @@ internal suspend fun SteamService.renewRefreshTokenForHandoff(): Boolean =
     }
 
 
-internal fun SteamService.bionicHandoffAcquireImpl() {
-    if (suspendedForBionic) return
+internal fun SteamService.bionicHandoffAcquireImpl() = synchronized(this) {
+    handoffReleaseJob?.cancel()
+    handoffReleaseJob = null
+    if (suspendedForBionic) return@synchronized
     suspendedForBionic = true
     Timber.i("Bionic hand-off ACQUIRE — suspending WN-Steam-Client session for the bootstrap")
     connectJob?.cancel()
@@ -383,100 +392,75 @@ internal fun SteamService.bionicHandoffAcquireImpl() {
     picsGetProductInfoJob?.cancel()
     messagePollerJob?.cancel()
     wnSession?.let { s -> runCatching { s.logOffAndDisconnect(500) } }
+    Unit
 }
 
-internal fun SteamService.bionicHandoffReleaseImpl() {
+internal fun SteamService.bionicHandoffReleaseImpl(onlyGameToKick: Boolean? = null): Deferred<Boolean>? = synchronized(this) {
     runCatching {
         com.winlator.cmod.feature.stores.steam.wnsteam.WnSteamBootstrap.stop()
     }
-    if (!suspendedForBionic) return
+    if (!suspendedForBionic) return@synchronized handoffReleaseJob
     suspendedForBionic = false
     retryAttempt = 0
-    if (!(isRunning && !isStopping && !isLoggingOut && PrefManager.refreshToken.isNotBlank())) {
+    if (!(isRunning && !isStopping && !isLoggingOut && !suspendedForBackground && PrefManager.refreshToken.isNotBlank())) {
         Timber.i("Bionic hand-off RELEASE — not resuming (service not in a resumable state)")
-        return
+        return@synchronized null
     }
     // PlanW: defer the wn-session resume so the account stays offline long enough for Steam to reap the launcher's games-played registration; resuming immediately keeps it online and the next launch hits AlreadyRunning (0x10).
-    if (PrefManager.wnPlanW) {
-        Timber.i(
-            "Bionic hand-off RELEASE — PlanW: deferring wn-session resume " +
-                "${WN_PLANW_REAP_OFFLINE_MS}ms so Steam reaps the launcher's " +
-                "games-played registration (account stays offline)",
-        )
-        scope.launch(Dispatchers.IO) {
+    val planW = PrefManager.wnPlanW
+    scope.async(Dispatchers.IO, start = CoroutineStart.LAZY) {
+        if (planW) {
+            Timber.i("Bionic hand-off RELEASE — waiting ${WN_PLANW_REAP_OFFLINE_MS}ms for Steam to reap the previous game")
             delay(WN_PLANW_REAP_OFFLINE_MS)
-            // Skip if a new launch re-acquired the hand-off, or the session already came up some other way.
-            if (!suspendedForBionic && isRunning && !isStopping && !isLoggingOut &&
-                PrefManager.refreshToken.isNotBlank() && (wnSession?.state() ?: 0) != 3
-            ) {
-                Timber.i("Bionic hand-off RELEASE — PlanW reap window elapsed, resuming WN-Steam-Client")
-                connectAndLogon()
-            } else {
-                Timber.i(
-                    "Bionic hand-off RELEASE — PlanW reap window elapsed, resume skipped " +
-                        "(suspendedForBionic=$suspendedForBionic wnState=${wnSession?.state()})",
-                )
-            }
         }
-    } else {
-        Timber.i("Bionic hand-off RELEASE — bootstrap logged off, resuming WN-Steam-Client")
-        connectAndLogon()
+        synchronized(this@bionicHandoffReleaseImpl) {
+            coroutineContext.ensureActive()
+            if (instance !== this@bionicHandoffReleaseImpl || suspendedForBionic || suspendedForBackground ||
+                !isRunning || isStopping || isLoggingOut || PrefManager.refreshToken.isBlank()
+            ) return@async false
+            if ((wnSession?.state() ?: 0) != 3) connectAndLogon()
+        }
+        if (onlyGameToKick == null) return@async false
+        // Start this budget after the reap delay. Previously both timers ran together,
+        // so retries expired just as the deferred reconnect was allowed to begin.
+        repeat(20) { attempt ->
+            if (kickPlayingSessionIfReady(onlyGameToKick)) {
+                Timber.i("Bionic hand-off release: playing status cleared after reconnect (attempt ${attempt + 1}/20)")
+                return@async true
+            }
+            delay(500L)
+        }
+        Timber.i("Bionic hand-off release: session did not become ready to clear playing status")
+        false
+    }.also {
+        handoffReleaseJob = it
+        it.start()
     }
 }
 
 internal fun SteamService.bionicHandoffReleaseAndKickPlayingSessionAsyncImpl(onlyGame: Boolean) {
-    bionicHandoffReleaseImpl()
-    if (!isRunning || isStopping || isLoggingOut) return
-    scope.launch(Dispatchers.IO) {
-        repeat(20) { attempt ->
-            if (kickPlayingSessionIfReady(onlyGame)) {
-                Timber.i(
-                    "Bionic hand-off release: kickPlayingSessionIfReady fired " +
-                        "after reconnect (attempt ${attempt + 1}/20 onlyGame=$onlyGame)",
-                )
-                return@launch
-            }
-            delay(500L)
-        }
-        Timber.i(
-            "Bionic hand-off release: wn-session never became ready " +
-                "for kickPlayingSessionIfReady (onlyGame=$onlyGame)",
-        )
-    }
+    bionicHandoffReleaseImpl(onlyGame)
 }
 
 internal suspend fun SteamService.bionicHandoffReleaseAndKickPlayingSessionBlockingImpl(
     onlyGame: Boolean,
     maxWaitMs: Long,
 ): Boolean {
-    bionicHandoffReleaseImpl()
-    if (!isRunning || isStopping || isLoggingOut) return false
-
-    val deadlineMs = System.currentTimeMillis() + maxWaitMs
-    var attempt = 0
-    do {
-        attempt++
-        if (kickPlayingSessionIfReady(onlyGame)) {
-            Timber.i(
-                "Bionic hand-off release: kickPlayingSessionIfReady fired " +
-                    "before close (attempt $attempt onlyGame=$onlyGame)",
-            )
-            return true
-        }
-
-        val remainingMs = deadlineMs - System.currentTimeMillis()
-        if (remainingMs <= 0L) break
-        delay(minOf(250L, remainingMs))
-    } while (true)
-
-    Timber.i(
-        "Bionic hand-off release: wn-session never became ready " +
-            "before close (onlyGame=$onlyGame timeoutMs=$maxWaitMs)",
-    )
-    return false
+    val release = bionicHandoffReleaseImpl(onlyGame) ?: return false
+    return try {
+        // The caller's wait budget does not cancel the shared cleanup job.
+        withTimeoutOrNull(maxWaitMs) { release.await() } ?: false
+    } catch (e: CancellationException) {
+        coroutineContext.ensureActive()
+        false // A newer launch cancelled this release; it must not clear that game's status.
+    }
 }
 
 internal fun SteamService.clearValues() {
+    synchronized(this) {
+        handoffReleaseJob?.cancel()
+        handoffReleaseJob = null
+    }
     if (instance === this) {
         instance = null
     }

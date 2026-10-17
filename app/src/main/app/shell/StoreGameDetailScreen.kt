@@ -45,6 +45,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.FactCheck
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -62,6 +63,8 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SportsEsports
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -106,6 +109,7 @@ import androidx.core.view.WindowCompat
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import com.winlator.cmod.shared.ui.focus.controllerFocusGlow
 import com.winlator.cmod.R
 import com.winlator.cmod.shared.io.StorageUtils
 import com.winlator.cmod.shared.ui.nav.DialogPaneNav
@@ -138,11 +142,11 @@ internal data class StoreDetailChip(
 
 private val CompactDetailWidth = 560.dp
 private val StoreBlack = Color.Black
-private val StoreCard = Color(0xFF12121B)
-private val StoreAccent = Color(0xFF1A9FFF)
+private val StoreCard = CardDark
+private val StoreAccent = Accent
 private val StoreAccentGlow = Color(0xFF58A6FF)
-private val StoreTextPrimary = Color(0xFFF0F4FF)
-private val StoreTextSecondary = Color(0xFF93A6BC)
+private val StoreTextPrimary = TextPrimary
+private val StoreTextSecondary = TextSecondary
 private val StoreDanger = Color(0xFFFF6B6B)
 
 @Composable
@@ -183,6 +187,8 @@ internal fun StoreGameDetailScreen(
     isBranchSelectionEnabled: Boolean = true,
     onSelectBranch: (String) -> Unit = {},
     onBack: () -> Unit,
+    onPlay: (() -> Unit)? = null,
+    isPlayEnabled: Boolean = true,
     onInstall: () -> Unit = {},
     onCheckForUpdate: () -> Unit = {},
     onWorkshop: () -> Unit = {},
@@ -240,6 +246,7 @@ internal fun StoreGameDetailScreen(
         val horizontalNavInsets = WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
         val hasSelectedInstallableDlc = dlcs.any { !it.isInstalled && it.id in selectedDlcIds }
         val showDownloadCta = !isInstalled || hasSelectedInstallableDlc
+        val showPlayCta = isInstalled && onPlay != null
         val showUninstallCta = uninstallAsPrimaryAction && showUninstall && isInstalled
         val updateCheckAvailable = showUpdateCheck && isInstalled
         val showUpdateCta = updateCheckAvailable && isUpdateAvailable
@@ -249,7 +256,7 @@ internal fun StoreGameDetailScreen(
         val showDlcCard = dlcs.isNotEmpty()
         val showBranchPicker = branches.size > 1
         val showActionColumn =
-            showDownloadCta || showUpdateCta ||
+            showPlayCta || showDownloadCta || showUpdateCta ||
                 (showCloudSync || showUninstall)
 
         if (heroImageUrl != null) {
@@ -535,6 +542,23 @@ internal fun StoreGameDetailScreen(
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
+                                if (showPlayCta) {
+                                    StoreCtaButton(
+                                        height = ctaHeight,
+                                        icon = Icons.Outlined.PlayArrow,
+                                        label = stringResource(R.string.library_games_play),
+                                        enabled = !isLoading && isPlayEnabled,
+                                        loading = false,
+                                        onClick = { onPlay?.invoke() },
+                                        isEntry = true,
+                                        navRow = 1,
+                                        navCol = 2,
+                                    )
+                                    if (!isPlayEnabled && !isLoading) {
+                                        Text(stringResource(R.string.vapor_play_download_pending),
+                                            color = StoreTextSecondary, style = MaterialTheme.typography.bodySmall)
+                                    }
+                                }
                                 if (showUpdateCta) {
                                     StoreCtaButton(
                                         height = ctaHeight,
@@ -546,7 +570,7 @@ internal fun StoreGameDetailScreen(
                                                 !isCheckingForUpdate,
                                         loading = false,
                                         onClick = onDownloadUpdate,
-                                        isEntry = true,
+                                        isEntry = !showPlayCta,
                                         navRow = 1,
                                         navCol = 3,
                                     )
@@ -633,7 +657,7 @@ internal fun StoreGameDetailScreen(
                                         enabled = !isLoading && isDownloadActionEnabled,
                                         loading = isLoading,
                                         onClick = onInstall,
-                                        isEntry = true,
+                                        isEntry = !showPlayCta,
                                         navRow = 1,
                                         navCol = 4,
                                     )
@@ -1551,124 +1575,30 @@ private fun StoreCtaButton(
     navRow: Int? = null,
     navCol: Int? = null,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) 0.96f else 1f,
-        animationSpec = spring(dampingRatio = 0.5f, stiffness = 600f),
-        label = "storeCtaScale",
-    )
-    val flare by animateFloatAsState(
-        targetValue = if (isPressed && enabled) 1f else 0f,
-        animationSpec = spring(dampingRatio = 0.6f, stiffness = 500f),
-        label = "storeCtaFlare",
-    )
-    val shape = remember { RoundedCornerShape(14.dp) }
-    val activeBrush =
-        Brush.horizontalGradient(
-            colors =
-                if (danger) {
-                    listOf(
-                        StoreDanger.copy(alpha = 0.30f),
-                        StoreDanger.copy(alpha = 0.44f),
-                        StoreDanger.copy(alpha = 0.30f),
-                    )
-                } else {
-                    listOf(
-                        Color(0xFF00B4D8).copy(alpha = 0.38f),
-                        StoreAccent.copy(alpha = 0.38f),
-                        Color(0xFF7B2FF7).copy(alpha = 0.38f),
-                    )
-                },
-        )
-    val disabledBrush =
-        Brush.horizontalGradient(
-            colors =
-                listOf(
-                    Color(0xFF3A3A4A).copy(alpha = 0.35f),
-                    Color(0xFF2A2A36).copy(alpha = 0.35f),
-                ),
-        )
-    val glassSheenBrush =
-        if (enabled) {
-            Brush.verticalGradient(
-                0.00f to Color.White.copy(alpha = 0.28f),
-                0.35f to Color.White.copy(alpha = 0.06f),
-                0.55f to Color.Transparent,
-                1.00f to Color.Black.copy(alpha = 0.12f),
-            )
-        } else {
-            Brush.verticalGradient(
-                0.0f to Color.White.copy(alpha = 0.10f),
-                0.6f to Color.Transparent,
-                1.0f to Color.Black.copy(alpha = 0.08f),
-            )
-        }
-    val glassRimBrush =
-        if (enabled) {
-            Brush.verticalGradient(
-                0.0f to Color.White.copy(alpha = 0.55f + 0.35f * flare),
-                0.5f to Color.White.copy(alpha = 0.08f + 0.18f * flare),
-                1.0f to Color.White.copy(alpha = 0.22f + 0.22f * flare),
-            )
-        } else {
-            Brush.verticalGradient(
-                0.0f to Color.White.copy(alpha = 0.16f),
-                1.0f to Color.White.copy(alpha = 0.04f),
-            )
-        }
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(height)
-                .graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
-                }.clip(shape)
-                .paneNavItem(
-                    cornerRadius = 14.dp,
-                    onActivate = { if (enabled && !loading) onClick() },
-                    isEntry = isEntry,
-                    navRow = navRow,
-                    navCol = navCol,
-                )
-                .background(if (enabled) activeBrush else disabledBrush)
-                .background(glassSheenBrush)
-                .border(1.dp, glassRimBrush, shape)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = { if (enabled && !loading) onClick() },
-                ),
-        contentAlignment = Alignment.Center,
+    val isPlay = icon == Icons.Outlined.PlayArrow
+    val background = when {
+        danger -> StoreDanger
+        isPlay -> com.winlator.cmod.shared.theme.WinNativePlay
+        else -> StoreAccent
+    }
+    val foreground = if (isPlay) Color.White else BgDark
+    Button(
+        onClick = onClick,
+        enabled = enabled && !loading,
+        shape = RoundedCornerShape(3.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = background, contentColor = foreground),
+        modifier = Modifier.fillMaxWidth().heightIn(min = height)
+            .paneNavItem(cornerRadius = 3.dp,
+                onActivate = { if (enabled && !loading) onClick() },
+                isEntry = isEntry, navRow = navRow, navCol = navCol)
+            .controllerFocusGlow(cornerRadius = 3.dp),
     ) {
         if (loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(26.dp),
-                color = Color.White,
-                strokeWidth = 2.dp,
-            )
+            CircularProgressIndicator(modifier = Modifier.size(26.dp), color = StoreTextSecondary, strokeWidth = 2.dp)
         } else {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp),
-                    tint = Color.White,
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    label,
-                    color = Color.White,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                )
-            }
+            Icon(icon, contentDescription = null, modifier = Modifier.size(26.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }
     }
 }

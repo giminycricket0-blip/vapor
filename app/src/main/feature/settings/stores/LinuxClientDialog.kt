@@ -56,6 +56,7 @@ internal fun LinuxClientDialog(
     onStart: () -> Unit,
     onCancelInstall: () -> Unit,
     onUninstall: () -> Boolean,
+    onOpen: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val nav = remember { PaneNavRegistry() }
@@ -74,7 +75,7 @@ internal fun LinuxClientDialog(
         DialogPaneNav(nav, onDismiss = onDismiss)
         CompositionLocalProvider(LocalPaneNav provides nav) {
             PopupDialog(
-                title = stringResource(R.string.linux_client_title),
+                title = stringResource(R.string.vapor_full_steam_client),
                 message =
                     when {
                         confirm && sessionRunning -> stringResource(R.string.linux_client_uninstall_session_running)
@@ -111,6 +112,7 @@ internal fun LinuxClientDialog(
                             onStart = onStart,
                             onCancelInstall = onCancelInstall,
                             onUninstall = { confirming = true },
+                            onOpen = onOpen,
                             onDismiss = onDismiss,
                         )
                     }
@@ -124,8 +126,8 @@ internal fun LinuxClientDialog(
 internal fun linuxClientMessage(state: State): String? {
     val context = LocalContext.current
     return when (state) {
-        State.Checking, State.Missing -> stringResource(R.string.linux_client_install_message)
-        State.Installed -> stringResource(R.string.linux_client_installed_message)
+        State.Checking, State.Missing -> stringResource(R.string.vapor_steam_client_install_message)
+        State.Installed -> stringResource(R.string.vapor_steam_client_installed_message)
         is State.UpdateAvailable -> stringResource(R.string.linux_client_update_message)
         State.Failed -> stringResource(R.string.linux_client_failed_message)
         is State.NoSpace ->
@@ -149,7 +151,7 @@ internal fun linuxClientStageLabel(stage: Stage): Int =
         Stage.INSTALL_PROTON -> R.string.linux_client_stage_install_proton
         Stage.DOWNLOAD_STEAM -> R.string.linux_client_stage_download_steam
         Stage.INSTALL_STEAM -> R.string.linux_client_stage_install_steam
-        Stage.LIBRARY -> R.string.linux_client_stage_library
+        Stage.LIBRARY -> R.string.vapor_steam_client_stage_ready
         Stage.UNINSTALL -> R.string.linux_client_stage_uninstall
     }
 
@@ -195,8 +197,23 @@ private fun LinuxClientFooter(
     onStart: () -> Unit,
     onCancelInstall: () -> Unit,
     onUninstall: () -> Unit,
+    onOpen: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    if (state is State.Installed || state is State.UpdateAvailable) {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            PopupTextAction(stringResource(R.string.vapor_steam_client_open), accent, onOpen, isEntry = true)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                if (state is State.Installed) {
+                    PopupTextAction(stringResource(R.string.common_ui_uninstall), UninstallRed, onUninstall)
+                } else {
+                    PopupTextAction(stringResource(R.string.update_action_update), accent, onStart)
+                }
+                PopupTextAction(stringResource(R.string.common_ui_close), DialogTextSecondary, onDismiss)
+            }
+        }
+        return
+    }
     // The last step writes the container in one go, and an uninstall deletes; neither stops part way.
     val single = state is State.Working && (state.stage == Stage.LIBRARY || state.stage == Stage.UNINSTALL)
     Row(
@@ -205,10 +222,7 @@ private fun LinuxClientFooter(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         when (state) {
-            State.Installed -> {
-                PopupTextAction(stringResource(R.string.common_ui_uninstall), UninstallRed, onUninstall)
-                PopupTextAction(stringResource(R.string.common_ui_ok), accent, onDismiss, isEntry = true)
-            }
+            State.Installed, is State.UpdateAvailable -> Unit // Handled above.
             is State.Working -> {
                 if (!single) {
                     PopupTextAction(stringResource(R.string.common_ui_cancel), DialogTextSecondary, onCancelInstall)
@@ -222,10 +236,6 @@ private fun LinuxClientFooter(
             State.Checking, State.Missing -> {
                 PopupTextAction(stringResource(R.string.common_ui_cancel), DialogTextSecondary, onDismiss)
                 PopupTextAction(stringResource(R.string.common_ui_download), accent, onStart, isEntry = true)
-            }
-            is State.UpdateAvailable -> {
-                PopupTextAction(stringResource(R.string.common_ui_cancel), DialogTextSecondary, onDismiss)
-                PopupTextAction(stringResource(R.string.update_action_update), accent, onStart, isEntry = true)
             }
         }
     }

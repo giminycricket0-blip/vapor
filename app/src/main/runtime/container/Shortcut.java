@@ -18,6 +18,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Shortcut {
+  // Seed newly created game shortcuts only: absent limits in older shortcuts mean Off.
+  public static final int DEFAULT_FPS_LIMIT = 60;
   public final Container container;
   public final String name;
   public final String path;

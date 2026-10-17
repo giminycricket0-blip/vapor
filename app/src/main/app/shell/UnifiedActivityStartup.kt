@@ -283,6 +283,19 @@ internal fun UnifiedActivity.buildSettingsRoute(
 ): String =
     "settings?item=${item.name}&profileId=$profileId&editContainerId=$editContainerId&returnToGameOnBack=$returnToGameOnBack"
 
+/** Return from Settings to the existing store page, using Navigation's saved-state result. */
+internal fun UnifiedActivity.openOptionalStore(store: String) {
+    if (store !in StoreTabKeys) return
+    val nav = rootNavController ?: return
+    if (!nav.popBackStack("hub", inclusive = false)) {
+        nav.navigate("hub") {
+            popUpTo(nav.graph.startDestinationId) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
+    nav.getBackStackEntry("hub").savedStateHandle["open_store"] = store
+}
+
 
 internal fun UnifiedActivity.extractSettingsNavigation(intent: Intent?): PendingNavigation? {
     if (intent == null) return null
@@ -405,7 +418,6 @@ internal fun UnifiedActivity.looksLikeDesktopFile(file: java.io.File): Boolean {
 internal fun UnifiedActivity.bootstrapStartupState() {
     startupBootstrapReady = false
     startupLibraryLayoutMode = null
-    startupStoreVisible = null
     startupContentFilters = null
 
     lifecycleScope.launch(Dispatchers.IO) {
@@ -424,19 +436,8 @@ internal fun UnifiedActivity.bootstrapStartupState() {
                 LibraryLayoutMode.valueOf(PrefManager.libraryLayoutMode)
             }.getOrElse { error ->
                 Log.w("UnifiedActivity", "Failed to resolve initial library layout", error)
-                LibraryLayoutMode.GRID_4
+                LibraryLayoutMode.CAROUSEL
             }
-
-        val resolvedStoreVisible =
-            runCatching {
-                val saved = PrefManager.libraryStoreVisible.split(",").toSet()
-                mapOf(
-                    "steam" to ("steam" in saved),
-                    "epic" to ("epic" in saved),
-                    "gog" to ("gog" in saved),
-                    "itch" to ("itch" in saved),
-                )
-            }.getOrElse { mapOf("steam" to true, "epic" to true, "gog" to true, "itch" to true) }
 
         val resolvedContentFilters =
             runCatching {
@@ -463,7 +464,6 @@ internal fun UnifiedActivity.bootstrapStartupState() {
         withContext(Dispatchers.Main.immediate) {
             startupLibraryLayoutMode = resolvedLayoutMode
             currentLibraryLayoutMode = resolvedLayoutMode
-            startupStoreVisible = resolvedStoreVisible
             startupContentFilters = resolvedContentFilters
             startupBootstrapReady = true
         }
@@ -516,18 +516,17 @@ internal fun UnifiedActivity.scheduleDeferredStoreBootstrap() {
     }
 }
 
-internal fun UnifiedActivity.buildTabs(storeVisible: Map<String, Boolean>): List<TabDef> {
-    val base =
-        mutableListOf(
+internal fun UnifiedActivity.buildTabs(): List<TabDef> =
+        listOf(
+            TabDef(getString(R.string.vapor_home), "home"),
             TabDef(getString(R.string.common_ui_library), "library"),
+            TabDef(getString(R.string.vapor_store_nav), "steam"),
             TabDef(getString(R.string.common_ui_downloads), "downloads"),
+            // Optional destinations are opened from Settings, never from the main navigation.
+            TabDef("Epic Games", "epic"),
+            TabDef("GOG", "gog"),
+            TabDef("itch.io", "itch"),
         )
-    if (storeVisible["steam"] != false) base.add(TabDef("Steam", "steam"))
-    if (storeVisible["epic"] != false) base.add(TabDef("Epic", "epic"))
-    if (storeVisible["gog"] != false) base.add(TabDef("GOG", "gog"))
-    if (storeVisible["itch"] != false) base.add(TabDef("itch.io", "itch"))
-    return base
-}
 
 @Composable
 internal fun UnifiedActivity.rememberSteamInstallStateMap(apps: List<SteamApp>): Map<Int, Boolean> {

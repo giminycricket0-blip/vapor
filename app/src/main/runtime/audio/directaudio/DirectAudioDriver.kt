@@ -29,6 +29,7 @@ object DirectAudioDriver {
     private const val DRV_NAME = "winedirectaudio.drv"
     private const val SO_NAME = "winedirectaudio.so"
     private const val UNIX_CALL_TABLE = "__wine_unix_call_funcs"
+    private const val SYSTEM_THREAD_IMPORT = "PsCreateSystemThread"
     private const val SHT_DYNSYM = 11
 
     // Newest first: the first bundled build whose unixlib table matches wins.
@@ -65,68 +66,89 @@ object DirectAudioDriver {
 
     // The driver plugs into mmdevapi's unixlib table, so the build that fits is
     // decided by the Proton layer's own ABI, not by a version parsed from its name:
-    // custom, GE and beta builds carry names no version table can predict, and a
-    // Proton whose table changed would otherwise be handed a mismatched driver.
-    internal fun unixCallEntries(elf: ByteArray): Int {
-        if (elf.size < 64) return 0
+    // custom, GE and beta builds carry names no version table can predict. The
+    // classic and system-thread Wine 11 tables are both 37 entries, so their
+    // PsCreateSystemThread import must also match; count alone can select silence.
+    internal data class UnixAudioAbi(val entries: Int, val systemThreads: Boolean)
+
+    internal fun unixAudioAbi(elf: ByteArray): UnixAudioAbi? {
+        if (elf.size < 64) return null
         if (elf[0] != 0x7F.toByte() || elf[1] != 'E'.code.toByte() ||
-            elf[2] != 'L'.code.toByte() || elf[3] != 'F'.code.toByte()) return 0
-        if (elf[4].toInt() != 2 || elf[5].toInt() != 1) return 0
+            elf[2] != 'L'.code.toByte() || elf[3] != 'F'.code.toByte()) return null
+        if (elf[4].toInt() != 2 || elf[5].toInt() != 1) return null
         fun u16(o: Int) = (elf[o].toInt() and 0xFF) or ((elf[o + 1].toInt() and 0xFF) shl 8)
         fun u32(o: Int) = u16(o).toLong() or (u16(o + 2).toLong() shl 16)
         fun u64(o: Int) = u32(o) or (u32(o + 4) shl 32)
-        val sectionOffset = u64(0x28).toInt()
+        fun inFile(offset: Long, size: Long) =
+            offset >= 0 && size >= 0 && offset <= elf.size.toLong() - size
+        val sectionOffset = u64(0x28)
         val sectionSize = u16(0x3A)
         val sectionCount = u16(0x3C)
-        if (sectionOffset <= 0 || sectionCount == 0) return 0
+        if (sectionOffset <= 0 || sectionSize < 64 || sectionCount == 0 ||
+            !inFile(sectionOffset, sectionSize.toLong() * sectionCount)) return null
+        var entries = 0
+        var systemThreads = false
         for (i in 0 until sectionCount) {
-            val section = sectionOffset + i * sectionSize
-            if (section + sectionSize > elf.size) return 0
+            val section = (sectionOffset + i.toLong() * sectionSize).toInt()
             if (u32(section + 4).toInt() != SHT_DYNSYM) continue
-            val symbols = u64(section + 24).toInt()
-            val symbolsSize = u64(section + 32).toInt()
-            val entrySize = u64(section + 56).toInt().let { if (it > 0) it else 24 }
-            val strings = u64(sectionOffset + u32(section + 40).toInt() * sectionSize + 24).toInt()
-            var sym = symbols
-            while (sym + entrySize <= symbols + symbolsSize && sym + entrySize <= elf.size) {
-                val at = strings + u32(sym).toInt()
-                if (at in 0 until elf.size) {
-                    var end = at
-                    while (end < elf.size && elf[end] != 0.toByte()) end++
-                    if (String(elf, at, end - at, Charsets.US_ASCII) == UNIX_CALL_TABLE) {
-                        return (u64(sym + 16) / 8L).toInt()
-                    }
+            val symbols = u64(section + 24)
+            val symbolsSize = u64(section + 32)
+            val entrySize = u64(section + 56)
+            val stringIndex = u32(section + 40)
+            if (entrySize < 24 || symbolsSize % entrySize != 0L || !inFile(symbols, symbolsSize) ||
+                stringIndex >= sectionCount) return null
+            val stringSection = (sectionOffset + stringIndex * sectionSize).toInt()
+            val strings = u64(stringSection + 24)
+            val stringsSize = u64(stringSection + 32)
+            if (!inFile(strings, stringsSize)) return null
+            val stringsEnd = (strings + stringsSize).toInt()
+            var offset = symbols
+            while (offset < symbols + symbolsSize) {
+                val sym = offset.toInt()
+                val nameOffset = u32(sym)
+                if (nameOffset >= stringsSize) return null
+                val at = (strings + nameOffset).toInt()
+                var end = at
+                while (end < stringsEnd && elf[end] != 0.toByte()) end++
+                if (end == stringsEnd) return null
+                val name = String(elf, at, end - at, Charsets.US_ASCII)
+                val defined = u16(sym + 6) != 0
+                if (name == SYSTEM_THREAD_IMPORT && !defined) systemThreads = true
+                if (name == UNIX_CALL_TABLE && defined) {
+                    val bytes = u64(sym + 16)
+                    if (bytes <= 0 || bytes % 8L != 0L || bytes / 8L > Int.MAX_VALUE) return null
+                    entries = (bytes / 8L).toInt()
                 }
-                sym += entrySize
+                offset += entrySize
             }
         }
-        return 0
+        return if (entries > 0) UnixAudioAbi(entries, systemThreads) else null
     }
 
-    private fun hostUnixAbi(wineLibDir: File): Int {
+    private fun hostUnixAbi(wineLibDir: File): UnixAudioAbi? {
         for (probe in HOST_UNIX_PROBES) {
             val file = File(wineLibDir, probe)
             if (!file.isFile) continue
             val entries = try {
-                unixCallEntries(file.readBytes())
+                unixAudioAbi(file.readBytes())
             } catch (e: Exception) {
                 Timber.tag(TAG).w(e, "could not read %s", file)
-                0
+                null
             }
-            if (entries > 0) return entries
+            if (entries != null) return entries
         }
-        return 0
+        return null
     }
 
-    internal fun driverUnixAbi(context: Context, asset: String): Int =
+    internal fun driverUnixAbi(context: Context, asset: String): UnixAudioAbi? =
         try {
             context.assets.open(asset).use { raw ->
                 ZipInputStream(raw.buffered()).use { zip ->
-                    var entries = 0
-                    while (entries == 0) {
+                    var entries: UnixAudioAbi? = null
+                    while (entries == null) {
                         val entry = zip.nextEntry ?: break
                         if (entry.name == "aarch64-unix/$SO_NAME") {
-                            entries = unixCallEntries(zip.readBytes())
+                            entries = unixAudioAbi(zip.readBytes())
                         }
                         zip.closeEntry()
                     }
@@ -135,11 +157,11 @@ object DirectAudioDriver {
             }
         } catch (e: Exception) {
             Timber.tag(TAG).w(e, "could not read the unixlib in %s", asset)
-            0
+            null
         }
 
-    internal fun assetForAbi(context: Context, abi: Int): String? {
-        if (abi <= 0) return null
+    internal fun assetForAbi(context: Context, abi: UnixAudioAbi?): String? {
+        if (abi == null) return null
         for (tag in ABI_TAGS) {
             val asset = "$ASSET_DIR/directaudio-$tag-$ARM64EC-${pageSizeTag()}.zip"
             if (driverUnixAbi(context, asset) == abi) return asset
@@ -158,14 +180,14 @@ object DirectAudioDriver {
         val wineLibDir = File(imageFs.winePath, "lib/wine")
         val abi = hostUnixAbi(wineLibDir)
         val asset = assetForAbi(context, abi)
-        if (asset == null) {
+        if (asset == null || abi == null) {
             Timber.tag(TAG).w(
-                "no bundled driver matches the mmdevapi unixlib ABI of %s (%d entries)",
+                "no bundled driver matches the mmdevapi unixlib ABI of %s (%s)",
                 imageFs.winePath, abi)
             removeFromPrefix(imageFs)
             return false
         }
-        val stampId = "$BUNDLED_VERSION-abi$abi-${pageSizeTag()}"
+        val stampId = "$BUNDLED_VERSION-abi${abi.entries}-${pageSizeTag()}"
         val stamp = File(wineLibDir, ".directaudio.stamp")
         val installed = LAYOUT.all { (entry, dir) ->
             File(wineLibDir, "$dir/${File(entry).name}").isFile
@@ -209,8 +231,9 @@ object DirectAudioDriver {
             Timber.tag(TAG).e("no driver PE at %s; mmdevapi will not find it", src)
             return false
         }
-        if (dst.isFile && dst.length() == src.length()) return true
         return try {
+            if (dst.isFile && dst.length() == src.length() &&
+                src.readBytes().contentEquals(dst.readBytes())) return true
             dst.parentFile?.mkdirs()
             src.inputStream().use { input -> dst.outputStream().use { output -> input.copyTo(output) } }
             dst.setExecutable(true, false)

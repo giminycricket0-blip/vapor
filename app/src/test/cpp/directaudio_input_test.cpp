@@ -56,5 +56,5 @@ int main(int argc, char **argv) {
     assert(AAudioStream_requestStop(stream) == AAUDIO_OK);
     assert(AAudioStream_close(stream) == AAUDIO_OK);
   }
-  puts("PASS DirectAudio bridge: five streams delivered callbacks under fakeinput preload");
+  puts("PASS DirectAudio bridge: five streams delivered callbacks");
 }

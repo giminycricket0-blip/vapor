@@ -13,6 +13,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -117,12 +118,8 @@ import androidx.lifecycle.lifecycleScope
 import com.winlator.cmod.R
 import com.winlator.cmod.app.shell.UnifiedActivity
 import com.winlator.cmod.feature.settings.DriversFragment
-import com.winlator.cmod.feature.settings.linuxClientMessage
-import com.winlator.cmod.feature.settings.linuxClientStageLabel
 import com.winlator.cmod.feature.settings.ContainerSettingsComposeDialog
 import com.winlator.cmod.shared.ui.dialog.ContentDialog
-import com.winlator.cmod.runtime.linux.ChildProcessRestrictions
-import com.winlator.cmod.runtime.linux.LinuxClientInstaller
 import com.winlator.cmod.runtime.container.Container
 import com.winlator.cmod.runtime.container.ContainerCreation
 import com.winlator.cmod.runtime.container.ContainerManager
@@ -137,11 +134,15 @@ import com.winlator.cmod.shared.ui.toast.WinToast
 import com.winlator.cmod.shared.android.FixedFontScaleFragmentActivity
 import com.winlator.cmod.shared.ui.widget.chasingBorder
 import com.winlator.cmod.shared.theme.WinNativeTheme
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import java.io.File
+import java.io.IOException
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -218,7 +219,6 @@ private suspend fun LazyListState.scrollToSelected(index: Int) {
 }
 
 class SetupWizardActivity : FixedFontScaleFragmentActivity() {
-    private var childProcessPromptShown = false
 
     companion object {
         private const val PREFS_NAME = "winnative_setup"
@@ -226,7 +226,7 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
         private const val EXTRA_RETURN_TO_CALLER = "return_to_caller"
         private const val KEY_SETUP_COMPLETE = "setup_complete"
         private const val KEY_RECOMMENDED_COMPONENTS_DONE = "recommended_components_done"
-        private const val LAST_PAGE = 3
+        private const val LAST_PAGE = 2
         private const val KEY_DRIVERS_VISITED = "drivers_visited"
         private const val KEY_DEFAULT_X86_CONTAINER_ID = "default_x86_container_id"
         private const val KEY_DEFAULT_ARM64_CONTAINER_ID = "default_arm64_container_id"
@@ -264,6 +264,9 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                 containerManager.getContainerById(preferredId)?.let {
                     if (isContainerUsable(contentsManager, it)) return it
                 }
+            }
+            containerManager.getContainerById(getDefaultArm64ContainerId(context))?.let {
+                if (isContainerUsable(contentsManager, it)) return it
             }
             return containerManager.containers.firstOrNull { isContainerUsable(contentsManager, it) }
         }
@@ -303,18 +306,11 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
             val lastId = prefs(context).getString(KEY_LAST_DRIVER_ID, "") ?: ""
             if (lastId.isBlank() || lastId == "System") return ""
 
-            val manager = AdrenotoolsManager(context)
-            val installed = manager.enumarateInstalledDrivers()
-            if (installed.contains(lastId)) return lastId
-
-            return if (installed.isNotEmpty()) {
-                val first = installed[0]
-                recordInstalledDriver(context, first)
-                first
-            } else {
-                recordInstalledDriver(context, "")
-                ""
-            }
+            // A missing/incompatible preference must not select another imported driver.
+            // Keep the preference intact; only new-container defaults fall back to System.
+            return lastId.takeIf {
+                com.winlator.cmod.runtime.system.GraphicsDriverCatalog.unavailableReason(context, it) == null
+            }.orEmpty()
         }
 
         @JvmStatic
@@ -360,26 +356,16 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                 if (runtimeLabel.isNotBlank()) {
                     context.getString(R.string.container_wine_error_not_installed, runtimeLabel)
                 } else {
-                    "Download a Wine/Proton package and create a container before launching games."
+                    context.getString(R.string.vapor_prepare_needed)
                 }
             WinToast.show(context, message, Toast.LENGTH_LONG)
 
-            val intent =
-                when {
-                    !isSetupComplete(context) -> {
-                        Intent(context, SetupWizardActivity::class.java)
-                    }
-
-                    hasInstalledRuntimes(context) -> {
-                        Intent(context, UnifiedActivity::class.java)
-                            .putExtra("selected_menu_item_id", R.id.main_menu_containers)
-                    }
-
-                    else -> {
-                        Intent(context, UnifiedActivity::class.java)
-                            .putExtra("selected_menu_item_id", R.id.main_menu_contents)
-                    }
-                }
+            val intent = if (!isSetupComplete(context) || missingWineVersion.isNullOrBlank() || !hasInstalledRuntimes(context)) {
+                Intent(context, SetupWizardActivity::class.java).putExtra(EXTRA_FORCE_SHOW, true)
+            } else {
+                Intent(context, UnifiedActivity::class.java)
+                    .putExtra("selected_menu_item_id", R.id.main_menu_containers)
+            }
             if (context !is Activity) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
@@ -546,6 +532,11 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
 
     private val TAG = "SetupWizardActivity";
 
+    private val advancedSetup = mutableStateOf(false)
+    private val preparing = mutableStateOf(false)
+    private val prepared = mutableStateOf(false)
+    private val preparationStatus = mutableStateOf<String?>(null)
+    private val preparationDetails = mutableStateOf<String?>(null)
     private val storageGranted = mutableStateOf(false)
     private val notifGranted = mutableStateOf(false)
     private val notifDenied = mutableStateOf(false)
@@ -796,6 +787,16 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
     }
 
     override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (!advancedSetup.value) {
+            if (event.keyCode == android.view.KeyEvent.KEYCODE_BUTTON_A) {
+                return super.dispatchKeyEvent(android.view.KeyEvent(event.action, android.view.KeyEvent.KEYCODE_DPAD_CENTER))
+            }
+            if (event.keyCode == android.view.KeyEvent.KEYCODE_BUTTON_B) {
+                if (event.action == android.view.KeyEvent.ACTION_UP) onBackPressedDispatcher.onBackPressed()
+                return true
+            }
+            return super.dispatchKeyEvent(event)
+        }
         if (com.winlator.cmod.runtime.input.controls.ExternalController.isGameController(event.device)) {
             controllerConnected.value = true
         }
@@ -818,8 +819,11 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
             }
 
             android.view.KeyEvent.KEYCODE_BUTTON_B -> {
-                if (down && pageIndex.intValue > 0) {
-                    pageIndex.intValue -= 1
+                // Change modes on release so the same B press cannot also exit guided setup.
+                if (event.action == android.view.KeyEvent.ACTION_UP &&
+                    !imageFsInstalling.value && transferState.value == null && !creatingContainer.value) {
+                    if (pageIndex.intValue > 0) pageIndex.intValue -= 1
+                    else advancedSetup.value = false
                 }
                 return true
             }
@@ -858,7 +862,11 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
             if (code != 0) {
                 if (stickEngaged == 0) {
                     stickEngaged = code
-                    applyNavDir(code)
+                    if (advancedSetup.value) applyNavDir(code)
+                    else {
+                        dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, code))
+                        dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, code))
+                    }
                 }
                 return true
             }
@@ -922,22 +930,41 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
             }
         }
         refreshWizardState()
-        loadAdvancedProfiles()
 
         setContent {
-            WinNativeTheme(
-                colorScheme =
-                    darkColorScheme(
-                        primary = Color(0xFF57CBDE),
-                        secondary = Color(0xFF3B82F6),
-                        background = Color(0xFF141B24),
-                        surface = Color(0xFF1E252E),
-                    ),
-            ) {
+            WinNativeTheme {
                 androidx.compose.runtime.CompositionLocalProvider(
                     androidx.compose.material3.LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified,
                 ) {
-                    SetupWizardScreen()
+                    val legacyBusy = imageFsInstalling.value || transferState.value != null || creatingContainer.value
+                    BackHandler(enabled = preparing.value || advancedSetup.value) {
+                        if (preparing.value || legacyBusy) {
+                            WinToast.show(this, R.string.vapor_prepare_keep_open, Toast.LENGTH_SHORT)
+                        } else advancedSetup.value = false
+                    }
+                    if (advancedSetup.value) {
+                        Column(Modifier.fillMaxSize()) {
+                            androidx.compose.material3.TextButton(
+                                onClick = { advancedSetup.value = false }, enabled = !legacyBusy,
+                                modifier = Modifier.padding(horizontal = 16.dp).height(48.dp),
+                            ) { Text(stringResource(R.string.vapor_prepare_back)) }
+                            Box(Modifier.weight(1f)) { SetupWizardScreen() }
+                        }
+                    } else {
+                        PrepareVaporScreen(
+                            storageGranted = storageGranted.value, notificationsGranted = notifGranted.value,
+                            busy = preparing.value, ready = prepared.value,
+                            status = preparationStatus.value,
+                            progress = if (imageFsInstalling.value) imageFsProgress.intValue / 100f else transferState.value?.progress,
+                            error = wizardError.value, details = preparationDetails.value,
+                            onGrantStorage = ::requestFileAccess, onNotifications = ::requestNotifications,
+                            onPrepare = ::prepareVapor, onContinue = ::finishWizard,
+                            onAdvanced = {
+                                advancedSetup.value = true
+                                loadAdvancedProfiles()
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -964,7 +991,7 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
         }
         backgroundSessionEnabled.value = prefs(this).getBoolean("enable_background_session", false)
         refreshWizardState()
-        refreshRecommendedPackageCache()
+        if (advancedSetup.value) refreshRecommendedPackageCache()
     }
 
     private fun refreshWizardState() {
@@ -1072,8 +1099,95 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
         }
     }
 
-    private fun installImageFs() {
-        if (imageFsInstalling.value || imageFsDone.value) return
+    private fun prepareVapor() {
+        if (preparing.value) return
+        if (!hasStoragePermission()) { requestFileAccess(); return }
+        preparing.value = true
+        prepared.value = false
+        wizardError.value = null
+        preparationDetails.value = VaporPreparation.packages.joinToString("\n") { it.entryName }
+        val keepAliveTag = "vapor_preparation"
+        com.winlator.cmod.runtime.system.SessionKeepAliveService.startDownload(this, keepAliveTag)
+        lifecycleScope.launch {
+            try {
+                preparationStatus.value = getString(R.string.vapor_prepare_checking)
+                withContext(Dispatchers.IO) {
+                    val contents = ContentsManager(this@SetupWizardActivity).also { it.syncContents() }
+                    val needsSystemFiles = !ImageFs.find(this@SetupWizardActivity).isUpToDate
+                    val needsFiles = needsSystemFiles ||
+                        VaporPreparation.packages.any { VaporPreparation.installed(this@SetupWizardActivity, contents, it) == null }
+                    val requiredGiB = if (needsSystemFiles) 3 else 2
+                    if (needsFiles && filesDir.usableSpace < requiredGiB * 1024L * 1024 * 1024) {
+                        throw IOException(getString(R.string.vapor_prepare_low_storage, requiredGiB))
+                    }
+                }
+                if (!ImageFs.find(this@SetupWizardActivity).isUpToDate) {
+                    preparationStatus.value = getString(R.string.vapor_prepare_system_files)
+                    val installed = CompletableDeferred<Boolean>()
+                    installImageFs { installed.complete(it) }
+                    if (!installed.await()) throw IOException(getString(R.string.vapor_prepare_system_failed))
+                }
+                for ((index, spec) in VaporPreparation.packages.withIndex()) {
+                    coroutineContext.ensureActive()
+                    val alreadyInstalled = withContext(Dispatchers.IO) {
+                        val contents = ContentsManager(this@SetupWizardActivity).also { it.syncContents() }
+                        VaporPreparation.installed(this@SetupWizardActivity, contents, spec) != null
+                    }
+                    if (alreadyInstalled) continue
+                    preparationStatus.value = getString(R.string.vapor_prepare_downloading, index + 1, VaporPreparation.packages.size)
+                    transferState.value = TransferState(spec.entryName, "", index + 1, VaporPreparation.packages.size)
+                    val file = downloadFileToCache(spec.entryName, spec.url, index + 1, VaporPreparation.packages.size, pinned = spec)
+                        ?: throw IOException(getString(R.string.vapor_prepare_download_failed))
+                    preparationStatus.value = getString(R.string.vapor_prepare_installing, index + 1, VaporPreparation.packages.size)
+                    transferState.value = TransferState(spec.entryName, "", index + 1, VaporPreparation.packages.size)
+                    withContext(Dispatchers.IO) {
+                        val installed = installDownloadedPackage(file, spec.url)
+                            ?: throw IOException(lastInstallFailureMessage ?: getString(R.string.vapor_prepare_package_failed))
+                        val contents = ContentsManager(this@SetupWizardActivity).also { it.syncContents() }
+                        if (ContentsManager.getEntryName(installed) != spec.entryName ||
+                            VaporPreparation.installed(this@SetupWizardActivity, contents, spec) == null) {
+                            throw IOException(getString(R.string.vapor_prepare_incomplete_package))
+                        }
+                        file.delete()
+                    }
+                }
+                transferState.value = null
+                preparationStatus.value = getString(R.string.vapor_prepare_environment)
+                creatingContainer.value = true
+                withContext(Dispatchers.IO) {
+                    val contents = ContentsManager(this@SetupWizardActivity).also { it.syncContents() }
+                    val runtime = VaporPreparation.installed(this@SetupWizardActivity, contents, VaporPreparation.packages.first())
+                        ?: throw IOException(getString(R.string.vapor_prepare_incomplete_package))
+                    val manager = ContainerManager(this@SetupWizardActivity)
+                    val container = VaporPreparation.ensureContainer(this@SetupWizardActivity, manager, contents, runtime)
+                        ?: throw IOException(getString(R.string.vapor_prepare_environment_failed))
+                    if (!File(container.rootDir, ".wine/drive_c/windows").isDirectory) {
+                        throw IOException(getString(R.string.vapor_prepare_environment_failed))
+                    }
+                    val previous = manager.getContainerById(getDefaultArm64ContainerId(this@SetupWizardActivity))
+                    if (previous == null || !isContainerUsable(contents, previous)) {
+                        saveDefaultArm64ContainerId(this@SetupWizardActivity, container.id)
+                    }
+                }
+                refreshWizardState()
+                prepared.value = true
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                wizardError.value = error.message ?: getString(R.string.vapor_prepare_package_failed)
+                Log.e(TAG, "Vapor preparation failed", error)
+            } finally {
+                creatingContainer.value = false
+                transferState.value = null
+                preparing.value = false
+                com.winlator.cmod.runtime.system.SessionKeepAliveService.stopDownload(applicationContext, keepAliveTag)
+            }
+        }
+    }
+
+    private fun installImageFs(onComplete: ((Boolean) -> Unit)? = null) {
+        if (imageFsDone.value) { onComplete?.invoke(true); return }
+        if (imageFsInstalling.value) { onComplete?.invoke(false); return }
 
         wizardError.value = null
         imageFsInstalling.value = true
@@ -1100,12 +1214,14 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                                     imageFsInstalling.value = false
                                     imageFsDone.value = true
                                     refreshWizardState()
+                                    onComplete?.invoke(true)
                                 },
                                 500L,
                             )
                         } else {
                             imageFsInstalling.value = false
-                            wizardError.value = "ImageFS install failed. Check available storage and try again."
+                            wizardError.value = getString(R.string.vapor_prepare_system_failed)
+                            onComplete?.invoke(false)
                         }
                         com.winlator.cmod.runtime.system.SessionKeepAliveService.stopDownload(
                             applicationContext,
@@ -1123,10 +1239,12 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
         currentIndex: Int,
         total: Int,
         title: String = label,
+        pinned: VaporPreparation.Package? = null,
     ): File? =
         withContext(Dispatchers.IO) {
             val sanitized = label.lowercase().replace(Regex("[^a-z0-9]+"), "_")
-            val output = File(cacheDir, "wizard_${System.currentTimeMillis()}_$sanitized.wcp")
+            val output = File(cacheDir, pinned?.let { "vapor_${it.filename}" } ?: "wizard_${System.currentTimeMillis()}_$sanitized.wcp")
+            if (pinned != null && VaporPreparation.archiveMatches(output, pinned)) return@withContext output
             val listener =
                 Downloader.DownloadListener { downloadedBytes, totalBytes ->
                     updateTransferState(
@@ -1144,7 +1262,12 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                         ),
                     )
                 }
-            val success = Downloader.downloadFileWinNativeFirst(url, output, listener)
+            val success = if (pinned == null) Downloader.downloadFileWinNativeFirst(url, output, listener)
+                else Downloader.downloadFile(url, output, listener)
+            if (success && pinned != null && !VaporPreparation.archiveMatches(output, pinned)) {
+                output.delete()
+                throw IOException(getString(R.string.vapor_prepare_integrity_failed))
+            }
             if (success) output else null
         }
 
@@ -1575,9 +1698,8 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
         val pageTitle =
             when (page) {
                 0 -> stringResource(R.string.setup_wizard_required_access)
-                1 -> stringResource(R.string.setup_wizard_steam_client)
-                2 -> stringResource(R.string.setup_wizard_select_components)
-                3 -> stringResource(R.string.setup_wizard_containers)
+                1 -> stringResource(R.string.setup_wizard_select_components)
+                2 -> stringResource(R.string.setup_wizard_containers)
                 else -> ""
             }
         val canGoNext =
@@ -1808,7 +1930,7 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "WinNative",
+                            text = stringResource(R.string.common_ui_app_name),
                             color = Color(0xFFE6EDF3),
                             fontFamily = SyncopateFont,
                             fontWeight = FontWeight.Bold,
@@ -1893,9 +2015,8 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                         ) {
                             when (targetPage) {
                                 0 -> PagePermissions(isCompact)
-                                1 -> PageSteamClient(isCompact)
-                                2 -> PageAdvancedComponents(isCompact)
-                                3 -> PageDefaultSettings()
+                                1 -> PageAdvancedComponents(isCompact)
+                                2 -> PageDefaultSettings()
                             }
                         }
                     }
@@ -2317,134 +2438,6 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                 notifCard(Modifier.weight(1f))
                 systemCard(Modifier.weight(1f))
             }
-        }
-    }
-
-    /**
-     * Said once the Linux client is on its way, because the install is the point at which the
-     * device's own limit starts to matter and there are minutes of download to act in.
-     */
-    private fun promptChildProcessRestrictions() {
-        if (childProcessPromptShown || !ChildProcessRestrictions.active(this)) return
-        childProcessPromptShown = true
-        if (!ChildProcessRestrictions.hasSwitch()) {
-            ContentDialog.alert(this, getString(R.string.linux_child_processes_adb), null)
-            return
-        }
-        ContentDialog.confirm(this, getString(R.string.linux_child_processes_message)) {
-            if (!ChildProcessRestrictions.openDeveloperOptions(this)) {
-                ContentDialog.alert(this, getString(R.string.linux_child_processes_adb), null)
-            }
-        }
-    }
-
-    /**
-     * Which Steam client the user is after. The Linux one is the install Settings > Stores offers,
-     * run from here and shared with it, so it goes on while the rest of the wizard is filled in;
-     * the Windows one is made of the components and the container of the pages that follow.
-     */
-    @Composable
-    private fun PageSteamClient(isCompact: Boolean) {
-        val region by navRegion
-        val navIdx by navIndex
-        val activate by activateSignal
-        val controller by controllerConnected
-        val client by LinuxClientInstaller.state.collectAsState()
-        val working = client as? LinuxClientInstaller.State.Working
-        val installed =
-            client is LinuxClientInstaller.State.Installed || client is LinuxClientInstaller.State.UpdateAvailable
-        val startLinuxClient = {
-            if (working == null && !installed && client !is LinuxClientInstaller.State.Blocked) {
-                LinuxClientInstaller.start(this)
-                promptChildProcessRestrictions()
-            }
-        }
-
-        LaunchedEffect(Unit) { LinuxClientInstaller.refresh(this@SetupWizardActivity) }
-        LaunchedEffect(isCompact) {
-            setTabCount(0)
-            setContentLayout(2, if (isCompact) 1 else 2)
-        }
-        val lastActivate = remember { mutableStateOf(activate) }
-        LaunchedEffect(activate) {
-            if (activate == lastActivate.value) return@LaunchedEffect
-            lastActivate.value = activate
-            if (region != REGION_CONTENT) return@LaunchedEffect
-            when (navIdx) {
-                0 -> startLinuxClient()
-                1 -> advanceWizardPage()
-            }
-        }
-
-        val linuxCard: @Composable (Modifier) -> Unit = { mod ->
-            WizardActionCard(
-                modifier = mod,
-                title = stringResource(R.string.linux_client_title),
-                subtitle =
-                    stringResource(
-                        if (working != null) linuxClientStageLabel(working.stage) else R.string.common_ui_optional,
-                    ),
-                completed = installed,
-                buttonLabel =
-                    when {
-                        installed -> stringResource(R.string.common_ui_installed)
-                        working != null && working.total > 0 -> "${working.done * 100 / working.total}%"
-                        working != null -> stringResource(linuxClientStageLabel(working.stage))
-                        client is LinuxClientInstaller.State.Failed || client is LinuxClientInstaller.State.NoSpace ->
-                            stringResource(R.string.linux_client_retry)
-                        else -> stringResource(R.string.common_ui_download)
-                    },
-                highlighted = controller && region == REGION_CONTENT && navIdx == 0,
-                onClick = { setNav(REGION_CONTENT, 0); startLinuxClient() },
-                enabled = working == null && client !is LinuxClientInstaller.State.Blocked,
-                progress = working?.let { if (it.total > 0) it.done.toFloat() / it.total else 0f },
-            )
-        }
-        val windowsCard: @Composable (Modifier) -> Unit = { mod ->
-            WizardActionCard(
-                modifier = mod,
-                title = stringResource(R.string.setup_wizard_windows_steam_client),
-                subtitle = stringResource(R.string.common_ui_optional),
-                completed = false,
-                buttonLabel = stringResource(R.string.common_ui_continue),
-                highlighted = controller && region == REGION_CONTENT && navIdx == 1,
-                onClick = { setNav(REGION_CONTENT, 1); advanceWizardPage() },
-            )
-        }
-        val message =
-            if (working != null) {
-                stringResource(R.string.setup_wizard_linux_client_continues)
-            } else {
-                linuxClientMessage(client).orEmpty()
-            }
-
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
-        ) {
-            if (isCompact) {
-                linuxCard(Modifier.fillMaxWidth())
-                windowsCard(Modifier.fillMaxWidth())
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    linuxCard(Modifier.weight(1f))
-                    windowsCard(Modifier.weight(1f))
-                }
-            }
-            Text(
-                text = message + "\n" + stringResource(R.string.setup_wizard_windows_steam_summary),
-                color = Color(0xFF8B949E),
-                fontFamily = InterFont,
-                fontSize = 11.sp,
-                lineHeight = 15.sp,
-            )
         }
     }
 

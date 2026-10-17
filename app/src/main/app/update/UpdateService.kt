@@ -244,7 +244,7 @@ object UpdateService {
         if (stage !is Stage.Idle && stage !is Stage.Checking) return
 
         if (!UpdateApkInstaller.canInstall(appContext)) {
-            lastError = "Allow WinNative to install apps, then press Update again."
+            lastError = "Allow Vapor to install apps, then press Update again."
             runCatching {
                 appContext.startActivity(
                     UpdateApkInstaller

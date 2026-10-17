@@ -1,4 +1,11 @@
 package com.winlator.cmod.feature.settings
+import androidx.compose.foundation.layout.BoxWithConstraints
+import com.winlator.cmod.shared.ui.dialog.WinNativeDialogShell
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import com.winlator.cmod.shared.theme.*
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -42,11 +49,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.FolderShared
 import androidx.compose.material.icons.outlined.Gamepad
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Speed
@@ -67,6 +77,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -86,6 +97,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.winlator.cmod.R
+import android.widget.Toast
+import com.winlator.cmod.feature.library.LinuxApps
+import com.winlator.cmod.runtime.container.ContainerManager
+import com.winlator.cmod.shared.ui.toast.WinToast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.winlator.cmod.runtime.linux.LinuxClientInstaller
 import com.winlator.cmod.shared.ui.focus.rememberSettingsContentNav
 import com.winlator.cmod.shared.ui.nav.LocalPaneNav
@@ -93,16 +111,16 @@ import com.winlator.cmod.shared.ui.nav.paneNavItem
 import com.winlator.cmod.shared.ui.outlinedSwitchColors
 
 // Palette
-private val BgDark = Color(0xFF11111C)
-private val CardDark = Color(0xFF1C1C2A)
-private val CardBorder = Color(0xFF2A2A3A)
-private val IconBoxBg = Color(0xFF242434)
-private val SurfaceDark = Color(0xFF21212A)
-private val Accent = Color(0xFF1A9FFF)
-private val NavHighlight = Color(0xFF4FC3F7)
-private val TextPrimary = Color(0xFFF0F4FF)
-private val TextSecondary = Color(0xFF7A8FA8)
-private val Divider = Color(0xFF343434)
+private val BgDark = WinNativeBackground
+private val CardDark = WinNativeBackground
+private val CardBorder = WinNativeOutline
+private val IconBoxBg = Color.Transparent
+private val SurfaceDark = WinNativeSurface
+private val Accent = WinNativeAccent
+private val NavHighlight = WinNativeFocus
+private val TextPrimary = WinNativeTextPrimary
+private val TextSecondary = WinNativeTextSecondary
+private val Divider = WinNativeOutline
 private val DangerRed = Color(0xFFFF7A88)
 private val StatusGreen = Color(0xFF3FB950)
 
@@ -147,6 +165,7 @@ fun StoresScreen(
     onGogSignOut: () -> Unit,
     onItchSignIn: () -> Unit,
     onItchSignOut: () -> Unit,
+    onBrowseStore: (String) -> Unit,
     onSharedFolderChanged: (Boolean) -> Unit,
     onDownloadSpeedChanged: (Int) -> Unit,
     onDownloadServerChanged: (Int) -> Unit,
@@ -159,6 +178,7 @@ fun StoresScreen(
     onRemoveExternalStorage: (String) -> Unit,
     onContainerLanguageSelected: (Int) -> Unit,
     bridge: SettingsNavBridge? = null,
+    moreStores: Boolean = false,
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues()
@@ -167,9 +187,10 @@ fun StoresScreen(
     val navBarBottomPadding = navBarPadding.calculateBottomPadding()
     val contentNav = rememberSettingsContentNav(bridge)
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val linuxClient by LinuxClientInstaller.state.collectAsState()
     var linuxClientDialog by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(Unit) { LinuxClientInstaller.refresh(context) }
+    LaunchedEffect(moreStores) { if (!moreStores) LinuxClientInstaller.refresh(context) }
     if (linuxClientDialog) {
         LinuxClientDialog(
             state = linuxClient,
@@ -179,6 +200,22 @@ fun StoresScreen(
                 linuxClientDialog = false
             },
             onUninstall = { LinuxClientInstaller.uninstall(context) },
+            onOpen = {
+                scope.launch {
+                    val shortcut = withContext(Dispatchers.IO) {
+                        runCatching {
+                            ContainerManager(context).loadShortcuts().find(LinuxApps::isSteamClientShortcut)
+                        }.getOrNull()
+                    }
+                    if (shortcut != null) {
+                        linuxClientDialog = false
+                        LinuxApps.launch(context, shortcut)
+                    } else {
+                        LinuxClientInstaller.refresh(context)
+                        WinToast.show(context, R.string.vapor_steam_client_missing, Toast.LENGTH_LONG)
+                    }
+                }
+            },
             onDismiss = { linuxClientDialog = false },
         )
     }
@@ -204,7 +241,17 @@ fun StoresScreen(
                     ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            SectionLabel(stringResource(R.string.stores_accounts_connected_stores))
+            if (moreStores) {
+                MoreStoresSettings(
+                    state, onEpicSignIn, onEpicSignOut, onGogSignIn, onGogSignOut,
+                    onItchSignIn, onItchSignOut, onBrowseStore,
+                    onPickEpicFolder, onPickGogFolder, onPickItchFolder,
+                )
+                Spacer(Modifier.height(24.dp + navBarBottomPadding))
+                return@Column
+            }
+            Text(stringResource(R.string.vapor_settings_accounts_storage), color = TextPrimary, style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.vapor_settings_accounts_intro), color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
 
             StoreCard(
                 name = stringResource(R.string.stores_accounts_steam_integration_title),
@@ -213,47 +260,8 @@ fun StoresScreen(
                 isLoggedIn = state.isSteamLoggedIn,
                 onSignIn = onSteamSignIn,
                 onSignOut = onSteamSignOut,
-                extraAction = {
-                    val installed = linuxClient is LinuxClientInstaller.State.Installed
-                    // An update is offered in the window, not begun by opening it.
-                    val offered = linuxClient is LinuxClientInstaller.State.UpdateAvailable
-                    ActionButton(
-                        label = stringResource(R.string.linux_client_button),
-                        textColor = if (installed) StatusGreen else Accent,
-                        icon = if (installed) Icons.Outlined.Check else Icons.Outlined.ArrowDownward,
-                        onClick = {
-                            if (!installed && !offered) LinuxClientInstaller.start(context)
-                            linuxClientDialog = true
-                        },
-                    )
-                },
             )
-            StoreCard(
-                name = stringResource(R.string.preloader_platform_epic),
-                icon = Icons.Outlined.Gamepad,
-                accentColor = Color(0xFF8BAFD4),
-                isLoggedIn = state.isEpicLoggedIn,
-                onSignIn = onEpicSignIn,
-                onSignOut = onEpicSignOut,
-            )
-            StoreCard(
-                name = stringResource(R.string.preloader_platform_gog),
-                icon = Icons.Outlined.Gamepad,
-                accentColor = Color(0xFFA855F7),
-                isLoggedIn = state.isGogLoggedIn,
-                onSignIn = onGogSignIn,
-                onSignOut = onGogSignOut,
-            )
-            StoreCard(
-                name = stringResource(R.string.itch_store_title),
-                icon = Icons.Outlined.Gamepad,
-                accentColor = Color(0xFFFA5C5C),
-                isLoggedIn = state.isItchLoggedIn,
-                onSignIn = onItchSignIn,
-                onSignOut = onItchSignOut,
-            )
-
-            SectionLabel(stringResource(R.string.stores_accounts_download_settings), modifier = Modifier.padding(top = 8.dp))
+            SectionLabel(stringResource(R.string.vapor_settings_storage), modifier = Modifier.padding(top = 8.dp))
 
             SettingsToggleCard(
                 title = stringResource(R.string.stores_accounts_shared_downloads_folder),
@@ -283,21 +291,6 @@ fun StoresScreen(
                             stringResource(R.string.stores_accounts_steam_downloads),
                             state.steamFolder,
                             onPickSteamFolder,
-                        )
-                        FolderPathCard(
-                            stringResource(R.string.stores_accounts_epic_downloads),
-                            state.epicFolder,
-                            onPickEpicFolder,
-                        )
-                        FolderPathCard(
-                            stringResource(R.string.stores_accounts_gog_downloads),
-                            state.gogFolder,
-                            onPickGogFolder,
-                        )
-                        FolderPathCard(
-                            stringResource(R.string.itch_store_downloads),
-                            state.itchFolder,
-                            onPickItchFolder,
                         )
                     }
                 }
@@ -357,8 +350,51 @@ fun StoresScreen(
                 onOptionSelected = onContainerLanguageSelected,
             )
 
+            SectionLabel(stringResource(R.string.vapor_settings_advanced), modifier = Modifier.padding(top = 16.dp))
+            Text(stringResource(R.string.vapor_settings_runtime_hint), color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
+            ActionButton(
+                label = stringResource(R.string.vapor_full_steam_client),
+                textColor = Accent,
+                icon = Icons.Outlined.Download,
+                onClick = { linuxClientDialog = true },
+            )
             Spacer(Modifier.height(24.dp + navBarBottomPadding))
         }
+    }
+}
+
+/** Optional accounts, libraries and storage live in Settings → More stores. */
+@Composable
+internal fun MoreStoresSettings(
+    state: StoreState,
+    onEpicSignIn: () -> Unit,
+    onEpicSignOut: () -> Unit,
+    onGogSignIn: () -> Unit,
+    onGogSignOut: () -> Unit,
+    onItchSignIn: () -> Unit,
+    onItchSignOut: () -> Unit,
+    onBrowseStore: (String) -> Unit,
+    onPickEpicFolder: () -> Unit,
+    onPickGogFolder: () -> Unit,
+    onPickItchFolder: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.vapor_other_stores), color = TextPrimary,
+                style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.vapor_other_stores_hint), color = TextSecondary,
+                style = MaterialTheme.typography.bodyMedium)
+            StoreCard("Epic Games", Icons.Outlined.Storefront, Color(0xFF8BAFD4), state.isEpicLoggedIn,
+                onEpicSignIn, onEpicSignOut, onBrowse = { onBrowseStore("epic") })
+            if (!state.sharedFolder) FolderPathCard(stringResource(R.string.stores_accounts_epic_downloads),
+                state.epicFolder, onPickEpicFolder)
+            StoreCard("GOG", Icons.Outlined.Storefront, Color(0xFFA855F7), state.isGogLoggedIn,
+                onGogSignIn, onGogSignOut, onBrowse = { onBrowseStore("gog") })
+            if (!state.sharedFolder) FolderPathCard(stringResource(R.string.stores_accounts_gog_downloads),
+                state.gogFolder, onPickGogFolder)
+            StoreCard("itch.io", Icons.Outlined.Storefront, Color(0xFFFA5C5C), state.isItchLoggedIn,
+                onItchSignIn, onItchSignOut, onBrowse = { onBrowseStore("itch") })
+            if (!state.sharedFolder) FolderPathCard(stringResource(R.string.itch_store_downloads),
+                state.itchFolder, onPickItchFolder)
     }
 }
 
@@ -371,7 +407,7 @@ private fun SectionLabel(
     Text(
         text = text.uppercase(),
         color = TextSecondary,
-        fontSize = 10.sp,
+        fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.4.sp,
         modifier = modifier.padding(bottom = 4.dp),
@@ -385,188 +421,65 @@ private fun SignOutConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(CardDark)
-                    .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
-                    .padding(24.dp),
-        ) {
-            Column {
-                Text(
-                    text = stringResource(R.string.stores_accounts_sign_out_confirm, storeName),
-                    color = TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.stores_accounts_sign_out_message),
-                    color = TextSecondary,
-                    fontSize = 13.sp,
-                )
-                Spacer(Modifier.height(24.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
-                ) {
-                    ActionButton(
-                        label = stringResource(R.string.common_ui_cancel),
-                        textColor = TextSecondary,
-                        onClick = onDismiss,
-                    )
-                    ActionButton(
-                        label = stringResource(R.string.common_ui_sign_out),
-                        textColor = DangerRed,
-                        onClick = {
-                            onConfirm()
-                            onDismiss()
-                        },
-                    )
-                }
-            }
+    WinNativeDialogShell(onDismiss = onDismiss,
+        title = stringResource(R.string.stores_accounts_sign_out_confirm, storeName)) {
+        Text(stringResource(R.string.stores_accounts_sign_out_message), color = TextSecondary,
+            style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.height(20.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)) {
+            ActionButton(stringResource(R.string.common_ui_cancel), TextSecondary, onDismiss)
+            ActionButton(stringResource(R.string.common_ui_sign_out), DangerRed, {
+                onConfirm()
+                onDismiss()
+            })
         }
     }
 }
 
-// Store card
+// Account state and actions stay together without crowding narrow screens.
 @Composable
-private fun StoreCard(
+internal fun StoreCard(
     name: String,
     icon: ImageVector,
     accentColor: Color,
     isLoggedIn: Boolean,
     onSignIn: () -> Unit,
     onSignOut: () -> Unit,
-    extraAction: (@Composable () -> Unit)? = null,
+    onBrowse: (() -> Unit)? = null,
 ) {
     var showSignOutDialog by remember { mutableStateOf(false) }
     if (showSignOutDialog) {
-        SignOutConfirmDialog(
-            storeName = name,
-            onConfirm = onSignOut,
-            onDismiss = { showSignOutDialog = false },
-        )
+        SignOutConfirmDialog(name, onSignOut, onDismiss = { showSignOutDialog = false })
     }
-
-    val pulse = rememberInfiniteTransition(label = "pulse_$name")
-    val pulseScale by pulse.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.7f,
-        animationSpec =
-            infiniteRepeatable(
-                animation = tween(1000, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
-        label = "scale_$name",
-    )
-    val pulseAlpha by pulse.animateFloat(
-        initialValue = 0.5f,
-        targetValue = 0f,
-        animationSpec =
-            infiniteRepeatable(
-                animation = tween(1000, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
-        label = "alpha_$name",
-    )
-
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(14.dp)),
-    ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 11.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // Icon box
-            Box(
-                modifier =
-                    Modifier
-                        .size(38.dp)
-                        .clip(RoundedCornerShape(11.dp))
-                        .background(IconBoxBg),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = name,
-                    tint = accentColor,
-                    modifier = Modifier.size(21.dp),
-                )
-            }
-
-            Spacer(Modifier.width(14.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = name,
-                    color = TextPrimary,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Spacer(Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(contentAlignment = Alignment.Center) {
-                        if (isLoggedIn) {
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(10.dp)
-                                        .scale(pulseScale)
-                                        .clip(CircleShape)
-                                        .background(StatusGreen.copy(alpha = pulseAlpha)),
-                            )
-                        }
-                        Box(
-                            modifier =
-                                Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (isLoggedIn) {
-                                            StatusGreen
-                                        } else {
-                                            TextSecondary.copy(alpha = 0.4f)
-                                        },
-                                    ),
-                        )
-                    }
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        text =
-                            if (isLoggedIn) {
-                                stringResource(
-                                    R.string.common_ui_signed_in,
-                                )
-                            } else {
-                                stringResource(R.string.google_cloud_status_not_signed_in)
-                            },
-                        color = if (isLoggedIn) StatusGreen else TextSecondary,
-                        fontSize = 12.sp,
-                    )
-                }
-            }
-
-            if (extraAction != null) {
-                extraAction()
-                Spacer(Modifier.width(8.dp))
-            }
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val compact = maxWidth < 320.dp
+        val action: @Composable () -> Unit = {
             ActionButton(
-                label = if (isLoggedIn) stringResource(R.string.common_ui_sign_out) else stringResource(R.string.common_ui_sign_in),
-                textColor = if (isLoggedIn) DangerRed else accentColor,
+                label = stringResource(if (isLoggedIn) R.string.common_ui_sign_out else R.string.common_ui_sign_in),
+                textColor = if (isLoggedIn) DangerRed else TextPrimary,
                 onClick = if (isLoggedIn) ({ showSignOutDialog = true }) else onSignIn,
             )
+        }
+        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+            Row(Modifier.fillMaxWidth().heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Icon(icon, contentDescription = null, tint = accentColor, modifier = Modifier.size(22.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(name, color = TextPrimary, style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(if (isLoggedIn) R.string.common_ui_signed_in else R.string.google_cloud_status_not_signed_in),
+                        color = if (isLoggedIn) StatusGreen else TextSecondary,
+                        style = MaterialTheme.typography.bodySmall)
+                }
+                if (!compact) action()
+            }
+            if (compact) action()
+            if (onBrowse != null) ActionButton(
+                label = stringResource(R.string.vapor_browse_optional_store, name),
+                textColor = TextPrimary,
+                onClick = onBrowse,
+                icon = Icons.Outlined.Storefront,
+            )
+            androidx.compose.material3.HorizontalDivider(Modifier.padding(top = 8.dp), color = Divider)
         }
     }
 }
@@ -578,53 +491,18 @@ private fun ActionButton(
     onClick: () -> Unit,
     icon: ImageVector? = null,
 ) {
-    var isPressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.93f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessHigh),
-        label = "btnScale",
-    )
-    Box(
-        modifier =
-            Modifier
-                .scale(scale)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF222232))
-                .border(1.dp, textColor.copy(alpha = 0.30f), RoundedCornerShape(8.dp))
-                .paneNavItem(
-                    cornerRadius = 8.dp,
-                    onActivate = onClick,
-                    highlightColor = NavHighlight,
-                )
-                .pointerInput(onClick) {
-                    detectTapGestures(
-                        onPress = {
-                            isPressed = true
-                            tryAwaitRelease()
-                            isPressed = false
-                        },
-                        onTap = { onClick() },
-                    )
-                }.padding(horizontal = 12.dp, vertical = 7.dp),
-        contentAlignment = Alignment.Center,
+    Button(
+        onClick = onClick,
+        modifier = Modifier.heightIn(min = 48.dp).paneNavItem(cornerRadius = 3.dp, onActivate = onClick, highlightColor = NavHighlight),
+        colors = ButtonDefaults.buttonColors(containerColor = SurfaceDark, contentColor = textColor),
+        border = BorderStroke(1.dp, textColor.copy(alpha = 0.5f)),
+        shape = RoundedCornerShape(3.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (icon != null) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = textColor,
-                    modifier = Modifier.size(14.dp),
-                )
-                Spacer(Modifier.width(4.dp))
-            }
-            Text(
-                text = label,
-                color = textColor,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-            )
+        if (icon != null) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(8.dp))
         }
+        Text(label, style = MaterialTheme.typography.labelLarge)
     }
 }
 
@@ -643,16 +521,16 @@ private fun SettingsToggleCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(cardColor)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+                ,
     ) {
         Row(
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .paneNavItem(
-                        cornerRadius = 12.dp,
+                        cornerRadius = 3.dp,
                         onActivate = { onCheckedChange(!checked) },
                         highlightColor = NavHighlight,
                         tapToSelect = true,
@@ -663,8 +541,8 @@ private fun SettingsToggleCard(
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -672,13 +550,13 @@ private fun SettingsToggleCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = accentColor,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                Text(subtitle, color = TextSecondary, fontSize = 11.sp)
+                Text(subtitle, color = TextSecondary, fontSize = 12.sp)
             }
             Spacer(Modifier.width(4.dp))
             Switch(
@@ -716,9 +594,9 @@ private fun SettingsDropdownCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+                ,
     ) {
         Row(
             modifier =
@@ -730,8 +608,8 @@ private fun SettingsDropdownCard(
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -739,13 +617,13 @@ private fun SettingsDropdownCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = accentColor,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                Text(subtitle, color = TextSecondary, fontSize = 11.sp)
+                Text(subtitle, color = TextSecondary, fontSize = 12.sp)
             }
             Spacer(Modifier.width(8.dp))
             Box {
@@ -759,11 +637,11 @@ private fun SettingsDropdownCard(
                     modifier =
                         Modifier
                             .scale(scale)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF222232))
-                            .border(1.dp, selectedColor.copy(alpha = 0.30f), RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(SurfaceDark)
+                            .border(1.dp, selectedColor.copy(alpha = 0.30f), RoundedCornerShape(3.dp))
                             .paneNavItem(
-                                cornerRadius = 8.dp,
+                                cornerRadius = 3.dp,
                                 onActivate = { expanded = true },
                                 onAdjust = { dir ->
                                     val curr = options.indexOfFirst { it.first == selectedValue }.coerceAtLeast(0)
@@ -787,6 +665,9 @@ private fun SettingsDropdownCard(
                 ) {
                     Text(
                         text = selectedLabel,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.widthIn(max = 160.dp),
                         color = selectedColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -801,8 +682,8 @@ private fun SettingsDropdownCard(
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    shape = RoundedCornerShape(8.dp),
-                    containerColor = Color(0xFF24243B),
+                    shape = RoundedCornerShape(3.dp),
+                    containerColor = SurfaceDark,
                     border = BorderStroke(1.dp, CardBorder),
                     modifier = Modifier.widthIn(max = 220.dp),
                 ) {
@@ -850,8 +731,8 @@ private fun FolderPathCard(
     onBrowse: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
-        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(3.dp),
         colors = CardDefaults.cardColors(containerColor = CardDark),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
@@ -865,8 +746,8 @@ private fun FolderPathCard(
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -874,7 +755,7 @@ private fun FolderPathCard(
                     imageVector = Icons.Outlined.Folder,
                     contentDescription = null,
                     tint = Accent,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(13.dp))
@@ -883,7 +764,7 @@ private fun FolderPathCard(
                 Text(
                     text = path.ifEmpty { stringResource(R.string.common_ui_not_configured) },
                     color = TextSecondary,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -901,8 +782,8 @@ private fun ExternalDriveCard(
 ) {
     val statusColor = if (drive.connected) StatusGreen else TextSecondary
     Card(
-        modifier = Modifier.fillMaxWidth().border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
-        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(3.dp),
         colors = CardDefaults.cardColors(containerColor = CardDark),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
@@ -916,8 +797,8 @@ private fun ExternalDriveCard(
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -925,7 +806,7 @@ private fun ExternalDriveCard(
                     imageVector = Icons.Outlined.Storage,
                     contentDescription = null,
                     tint = statusColor,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(13.dp))
@@ -941,7 +822,7 @@ private fun ExternalDriveCard(
                 Text(
                     text = drive.path,
                     color = TextSecondary,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -965,7 +846,7 @@ private fun ExternalDriveCard(
                                 stringResource(R.string.external_storage_status_disconnected)
                             },
                         color = statusColor,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -984,8 +865,8 @@ private fun ExternalDriveCard(
 @Composable
 private fun AddExternalStorageCard(onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
-        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(3.dp),
         colors = CardDefaults.cardColors(containerColor = CardDark),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
@@ -994,7 +875,7 @@ private fun AddExternalStorageCard(onClick: () -> Unit) {
                 Modifier
                     .fillMaxWidth()
                     .paneNavItem(
-                        cornerRadius = 12.dp,
+                        cornerRadius = 3.dp,
                         onActivate = onClick,
                         highlightColor = NavHighlight,
                         tapToSelect = true,
@@ -1005,8 +886,8 @@ private fun AddExternalStorageCard(onClick: () -> Unit) {
             Box(
                 modifier =
                     Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(IconBoxBg),
                 contentAlignment = Alignment.Center,
             ) {
@@ -1014,7 +895,7 @@ private fun AddExternalStorageCard(onClick: () -> Unit) {
                     imageVector = Icons.Outlined.Add,
                     contentDescription = null,
                     tint = Accent,
-                    modifier = Modifier.size(17.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(13.dp))
@@ -1028,7 +909,7 @@ private fun AddExternalStorageCard(onClick: () -> Unit) {
                 Text(
                     text = stringResource(R.string.external_storage_add_subtitle),
                     color = TextSecondary,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                 )
             }
         }
@@ -1037,40 +918,5 @@ private fun AddExternalStorageCard(onClick: () -> Unit) {
 
 @Composable
 private fun BrowseButton(onClick: () -> Unit) {
-    var isPressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessHigh),
-        label = "browseScale",
-    )
-    Box(
-        modifier =
-            Modifier
-                .scale(scale)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Accent.copy(alpha = 0.12f))
-                .paneNavItem(
-                    cornerRadius = 8.dp,
-                    onActivate = onClick,
-                    highlightColor = NavHighlight,
-                )
-                .pointerInput(onClick) {
-                    detectTapGestures(
-                        onPress = {
-                            isPressed = true
-                            tryAwaitRelease()
-                            isPressed = false
-                        },
-                        onTap = { onClick() },
-                    )
-                }.padding(horizontal = 12.dp, vertical = 7.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = stringResource(R.string.common_ui_browse),
-            color = Accent,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-        )
-    }
+    ActionButton(stringResource(R.string.common_ui_browse), Accent, onClick)
 }

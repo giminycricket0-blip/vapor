@@ -104,20 +104,25 @@ private fun statusLabel(state: EPersonaState): String = when (state) {
 }
 
 @Composable
-fun FriendsDrawerContent(
+internal fun FriendsDrawerContent(
     isOpen: Boolean,
     self: SteamFriend,
     friends: List<SteamFriendEntry>,
     installedGameIds: Set<Int>,
-    chatEnabled: Boolean,
+    availability: SteamChatAvailability,
+    onSignIn: () -> Unit,
     onSetState: (EPersonaState) -> Unit,
     onOpenChat: (SteamFriendEntry) -> Unit,
     onJoinGame: (SteamFriendEntry) -> Unit,
     onPlayGame: (SteamFriendEntry) -> Unit,
 ) {
-    val inGame = friends.filter { it.isPlayingGame }.sortedBy { it.name.lowercase() }
-    val online = friends.filter { it.isOnline && !it.isPlayingGame }.sortedBy { it.name.lowercase() }
-    val offline = friends.filter { !it.isOnline }.sortedBy { it.name.lowercase() }
+    val live = availability == SteamChatAvailability.READY
+    // Cached presence remains readable, but must not offer a stale Join/Play action.
+    val displayed = if (live) friends else friends.map { it.copy(connectString = "") }
+    val playableIds = if (live) installedGameIds else emptySet()
+    val inGame = displayed.filter { it.isPlayingGame }.sortedBy { it.name.lowercase() }
+    val online = displayed.filter { it.isOnline && !it.isPlayingGame }.sortedBy { it.name.lowercase() }
+    val offline = displayed.filter { !it.isOnline }.sortedBy { it.name.lowercase() }
 
     val context = LocalContext.current
     val bridge = (context as? com.winlator.cmod.app.shell.UnifiedActivity)?.friendsDrawerNavBridge
@@ -142,9 +147,19 @@ fun FriendsDrawerContent(
                     .statusBarsPadding()
                     .padding(horizontal = 14.dp, vertical = 16.dp),
             ) {
-                SelfCard(self = self, chatEnabled = chatEnabled, onSetState = onSetState)
+                Text(stringResource(R.string.vapor_friends_chat),
+                    style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(12.dp))
+                SelfCard(self = self, availability = availability, onSetState = onSetState)
                 Spacer(Modifier.height(14.dp))
-                if (chatEnabled) {
+                SteamChatConnectionNotice(availability)
+                if (availability == SteamChatAvailability.SIGNED_OUT) {
+                    androidx.compose.material3.Button(onClick = onSignIn,
+                        modifier = Modifier.fillMaxWidth().paneNavItem(onActivate = onSignIn, tapToSelect = true)) {
+                        Text(stringResource(R.string.common_ui_sign_in))
+                    }
+                }
+                if (live) {
                     Text(
                         text = stringResource(R.string.steam_friends_count, friends.count { it.isOnline }),
                         style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
@@ -156,30 +171,24 @@ fun FriendsDrawerContent(
                     Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    if (!chatEnabled) {
-                        Text(
-                            stringResource(R.string.steam_friends_chat_off),
-                            color = TextSecondary,
-                            style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(12.dp),
-                        )
-                    } else {
+                    if (availability != SteamChatAvailability.DISABLED && availability != SteamChatAvailability.SIGNED_OUT) {
+                        if (!live) SectionHeader(stringResource(R.string.vapor_chat_last_known))
                         if (inGame.isNotEmpty()) {
                             SectionHeader(stringResource(R.string.steam_friends_section_in_game, inGame.size))
                             inGame.forEach {
-                                InGameFriendCard(it, it.gameAppId in installedGameIds, onOpenChat, onJoinGame, onPlayGame)
+                                InGameFriendCard(it, it.gameAppId in playableIds, onOpenChat, onJoinGame, onPlayGame)
                             }
                         }
                         if (online.isNotEmpty()) {
                             SectionHeader(stringResource(R.string.steam_friends_section_online, online.size))
                             online.forEach {
-                                FriendRow(it, it.gameAppId in installedGameIds, onOpenChat, onJoinGame, onPlayGame)
+                                FriendRow(it, it.gameAppId in playableIds, onOpenChat, onJoinGame, onPlayGame)
                             }
                         }
                         if (offline.isNotEmpty()) {
                             SectionHeader(stringResource(R.string.steam_friends_section_offline, offline.size))
                             offline.forEach {
-                                FriendRow(it, it.gameAppId in installedGameIds, onOpenChat, onJoinGame, onPlayGame)
+                                FriendRow(it, it.gameAppId in playableIds, onOpenChat, onJoinGame, onPlayGame)
                             }
                         }
                         if (friends.isEmpty()) {
@@ -209,10 +218,10 @@ private fun SectionHeader(text: String) {
 }
 
 @Composable
-private fun SelfCard(self: SteamFriend, chatEnabled: Boolean, onSetState: (EPersonaState) -> Unit) {
+private fun SelfCard(self: SteamFriend, availability: SteamChatAvailability, onSetState: (EPersonaState) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var showChatSettings by remember { mutableStateOf(false) }
-    // Chat off => you're offline; show that on the card and hide the status picker.
+    val chatEnabled = availability == SteamChatAvailability.READY
     val displayState = if (chatEnabled) self.state else EPersonaState.Offline
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -226,7 +235,8 @@ private fun SelfCard(self: SteamFriend, chatEnabled: Boolean, onSetState: (EPers
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        self.name.ifBlank { stringResource(R.string.steam_friends_self_you) },
+                        if (availability == SteamChatAvailability.SIGNED_OUT) "Steam"
+                        else self.name.ifBlank { stringResource(R.string.steam_friends_self_you) },
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold,
                         style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
@@ -237,7 +247,8 @@ private fun SelfCard(self: SteamFriend, chatEnabled: Boolean, onSetState: (EPers
                         Box(Modifier.size(8.dp).clip(CircleShape).background(statusColor(displayState)))
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            statusLabel(displayState),
+                            if (chatEnabled) statusLabel(displayState)
+                            else stringResource(R.string.vapor_chat_unavailable),
                             color = TextSecondary,
                             style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
                         )

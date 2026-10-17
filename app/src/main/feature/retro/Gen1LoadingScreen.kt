@@ -29,7 +29,6 @@ fun Gen1LoadingScreen(
         preloader.title.value = gameName.ifBlank { stringResource(R.string.preloader_default_name) }
         preloader.subtitle.value = stringResource(R.string.retro_engine_loading_subtitle)
         preloader.artwork.value = artwork
-        preloader.bottomProgressBar.value = true
         preloader.text.value =
             state?.stage?.takeIf { it.isNotBlank() }
                 ?: context.getString(R.string.retro_engine_loading)

@@ -4,6 +4,7 @@ import android.content.pm.ShortcutManager
 import android.os.Build
 import android.util.Log
 import com.winlator.cmod.R
+import com.winlator.cmod.feature.library.LinuxApps
 import com.winlator.cmod.runtime.container.ContainerManager
 import com.winlator.cmod.runtime.container.Shortcut
 import com.winlator.cmod.runtime.linux.LinuxSteamShortcuts
@@ -32,7 +33,15 @@ object LibraryShortcutUtils {
     }
 
     @JvmStatic
-    fun isCustomLibraryShortcut(shortcut: Shortcut): Boolean = inferGameSource(shortcut) == "CUSTOM"
+    fun isCustomLibraryShortcut(shortcut: Shortcut): Boolean =
+        inferGameSource(shortcut) == "CUSTOM" && !LinuxApps.isSteamClientShortcut(shortcut)
+
+    /** Stable identity shared by the live Library scan and its saved card snapshot. */
+    fun customLibraryId(shortcut: Shortcut): Int {
+        val name = shortcut.getExtra("custom_name", shortcut.name).ifBlank { shortcut.name }
+        val identity = shortcut.getExtra("uuid").ifEmpty { shortcut.file?.absolutePath ?: name }
+        return -(identity.hashCode().and(0x7FFFFFFF) + 1)
+    }
 
     @JvmStatic
     fun detectCustomGameFolder(exeFile: File): File {

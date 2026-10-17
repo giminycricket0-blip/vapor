@@ -14,7 +14,8 @@ import com.winlator.cmod.runtime.container.Shortcut
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.TimeUnit
 
 object SteamLaunchCloudSync {
@@ -29,10 +30,10 @@ object SteamLaunchCloudSync {
         shortcut: Shortcut?,
         cloudSyncEnabled: Boolean,
         statusSink: StatusSink,
-    ) {
-        if (shortcut == null) return
-        if (shortcut.getExtra("game_source") != "STEAM") return
-        if (!cloudSyncEnabled || SteamCloudSyncHelper.isOfflineMode(shortcut)) return
+    ): Boolean {
+        if (shortcut == null) return true
+        if (shortcut.getExtra("game_source") != "STEAM") return true
+        if (!cloudSyncEnabled || SteamCloudSyncHelper.isOfflineMode(shortcut)) return true
 
         SteamCloudSyncHelper.forceDownloadOnContainerSwap(activity, shortcut)
 
@@ -50,11 +51,10 @@ object SteamLaunchCloudSync {
             null,
             -> {
                 statusSink.show(activity.getString(R.string.preloader_initializing))
-                return
+                return true
             }
             SyncResult.Conflict -> {
-                showConflictAndResolve(activity, shortcut, statusSink, initialSync)
-                return
+                return showConflictAndResolve(activity, shortcut, statusSink, initialSync)
             }
             SyncResult.PendingOperations -> {
                 Timber.tag("SteamLaunchCloudSync").w(
@@ -63,7 +63,7 @@ object SteamLaunchCloudSync {
                     initialSync.pendingRemoteOperations,
                 )
                 statusSink.show(activity.getString(R.string.preloader_initializing))
-                return
+                return true
             }
             else -> {
                 Timber.tag("SteamLaunchCloudSync").w(
@@ -72,7 +72,7 @@ object SteamLaunchCloudSync {
                     shortcut.name,
                 )
                 statusSink.show(activity.getString(R.string.preloader_initializing))
-                return
+                return true
             }
         }
     }
@@ -82,91 +82,57 @@ object SteamLaunchCloudSync {
         shortcut: Shortcut,
         statusSink: StatusSink,
         initialSync: PostSyncInfo,
-    ) {
-        val dialogLatch = CountDownLatch(1)
-        var answered = false
-        var useCloud = false
-        var keepBackup = false
+    ): Boolean {
+        // A single completed future makes timeout/dismissal and a late UI choice mutually exclusive.
+        val decision = CompletableFuture<Pair<SaveLocation, Boolean>>()
+        val cancelled = SaveLocation.None to false
         val timestamps = SteamCloudSyncHelper.timestampsFromSyncInfo(activity, shortcut, initialSync)
-
-        // If the activity is destroyed while the dialog is up, release the latch on ON_DESTROY or this thread blocks forever; default useCloud=false falls back to "keep local".
         val lifecycle = (activity as? LifecycleOwner)?.lifecycle
-        val cancelObserver =
-            LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_DESTROY) {
-                    Timber.tag("SteamLaunchCloudSync").w(
-                        "Activity destroyed while cloud-conflict dialog was up; releasing latch",
-                    )
-                    dialogLatch.countDown()
-                }
-            }
-
+        val cancelObserver = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_DESTROY) decision.complete(cancelled)
+        }
         if (activity.isFinishing || activity.isDestroyed ||
             lifecycle?.currentState == Lifecycle.State.DESTROYED
-        ) {
-            Timber.tag("SteamLaunchCloudSync").w(
-                "Activity is already gone; not prompting for the cloud conflict and keeping the " +
-                    "local save so the launch is never held behind a dialog nobody can answer",
-            )
-            statusSink.show(activity.getString(R.string.preloader_initializing))
-            return
-        }
+        ) return false
 
+        // Only read/written on the UI thread, including the cleanup posted below.
+        var dialog: android.app.Dialog? = null
         activity.runOnUiThread {
             if (activity.isFinishing || activity.isDestroyed) {
-                dialogLatch.countDown()
+                decision.complete(cancelled)
                 return@runOnUiThread
             }
             lifecycle?.addObserver(cancelObserver)
             try {
-                SteamCloudConflictDialog.show(
-                    activity,
-                    timestamps,
-                    onUseCloud = { keep ->
-                        answered = true
-                        useCloud = true
-                        keepBackup = keep
-                        dialogLatch.countDown()
-                    },
-                    onUseLocal = { keep ->
-                        answered = true
-                        useCloud = false
-                        keepBackup = keep
-                        dialogLatch.countDown()
-                    },
+                dialog = SteamCloudConflictDialog.show(
+                    activity, timestamps,
+                    onUseCloud = { keep -> decision.complete(SaveLocation.Remote to keep) },
+                    onUseLocal = { keep -> decision.complete(SaveLocation.Local to keep) },
+                    onCancel = { decision.complete(cancelled) },
                 )
             } catch (t: Throwable) {
-                Timber.tag("SteamLaunchCloudSync").w(
-                    t,
-                    "Could not show the cloud-conflict dialog; keeping the local save",
-                )
-                dialogLatch.countDown()
+                Timber.tag("SteamLaunchCloudSync").w(t, "Could not show the cloud-conflict choice; cancelling launch")
+                decision.complete(cancelled)
             }
         }
-
-        try {
-            // Timeout in case the dialog and lifecycle observer both fail to fire — bounds the worst case.
-            if (!dialogLatch.await(10, TimeUnit.MINUTES)) {
-                Timber.tag("SteamLaunchCloudSync").w(
-                    "Cloud-conflict dialog timed out after 10 minutes; treating as 'keep local'",
-                )
-            }
+        val choice = try {
+            decision.get(10, TimeUnit.MINUTES)
+        } catch (_: TimeoutException) {
+            decision.complete(cancelled)
+            decision.getNow(cancelled)
         } catch (_: InterruptedException) {
+            decision.complete(cancelled)
             Thread.currentThread().interrupt()
-            activity.runOnUiThread { lifecycle?.removeObserver(cancelObserver) }
-            return
+            return false
+        } finally {
+            activity.runOnUiThread {
+                lifecycle?.removeObserver(cancelObserver)
+                dialog?.dismiss()
+            }
         }
-
-        activity.runOnUiThread { lifecycle?.removeObserver(cancelObserver) }
-
-        if (!answered) {
-            Timber.tag("SteamLaunchCloudSync").w(
-                "Cloud conflict was never answered; leaving both saves untouched rather than " +
-                    "pushing the local one over the cloud",
-            )
-            statusSink.show(activity.getString(R.string.preloader_initializing))
-            return
-        }
+        val (preferredSave, keepBackup) = choice
+        if (preferredSave == SaveLocation.None) return false
+        val useCloud = preferredSave == SaveLocation.Remote
 
         if (keepBackup && useCloud) {
             // "Use Cloud" overwrites the LOCAL save — snapshot it first.
@@ -176,7 +142,6 @@ object SteamLaunchCloudSync {
             // "Use Local" overwrites the CLOUD save (maybe newer progress from another device); Steam keeps no server-side history, so capture the cloud copy first.
             backupDiscardedCloudSave(activity, shortcut)
         }
-        val preferredSave = if (useCloud) SaveLocation.Remote else SaveLocation.Local
         statusSink.show(
             activity.getString(
                 if (useCloud) R.string.preloader_downloading_cloud else R.string.preloader_uploading_cloud,
@@ -188,6 +153,7 @@ object SteamLaunchCloudSync {
             Timber.tag("SteamLaunchCloudSync").w(e, "Steam conflict resolution sync failed")
         }
         statusSink.show(activity.getString(R.string.preloader_initializing))
+        return true
     }
 
     private fun backupDiscardedSave(

@@ -4189,3 +4189,44 @@ JNIEXPORT jlong JNICALL GPU_FN(nativeImportAhbToVulkan)(JNIEnv* env, jclass claz
     }
     return (jlong)(intptr_t)t;
 }
+
+// Some emulator drivers expose even BGRA buffers as external-format-only images.
+// The normal descriptor layout cannot sample those. Reuse the X11 BGRA upload
+// path when the producer explicitly allowed CPU reads; never reinterpret YUV or
+// GPU-only memory. The usual zero-copy path remains the first choice.
+JNIEXPORT jlong JNICALL GPU_FN(nativeCopyAhbToVulkan)(JNIEnv* env, jclass clazz,
+                                                      jlong rendererHandle, jlong textureHandle,
+                                                      jlong ahbPtr)
+{
+    (void)env; (void)clazz;
+    VkRenderer* r = (VkRenderer*)(intptr_t)rendererHandle;
+    VkTexture* t = (VkTexture*)(intptr_t)textureHandle;
+    AHardwareBuffer* ahb = (AHardwareBuffer*)(intptr_t)ahbPtr;
+    if (!r || !ahb) return 0;
+
+    AHardwareBuffer_Desc desc = {0};
+    AHardwareBuffer_describe(ahb, &desc);
+    const uint32_t bgra8888 = 5; // Android HAL_PIXEL_FORMAT_BGRA_8888
+    uint64_t read_usage = desc.usage & AHARDWAREBUFFER_USAGE_CPU_READ_MASK;
+    if (desc.format != bgra8888 || !read_usage || desc.layers != 1 ||
+        !desc.width || !desc.height || desc.stride < desc.width ||
+        desc.stride > SIZE_MAX / 4 / desc.height) return 0;
+
+    void* pixels = NULL;
+    if (AHardwareBuffer_lock(ahb, read_usage, -1, NULL, &pixels) != 0) return 0;
+    if (!pixels) {
+        AHardwareBuffer_unlock(ahb, NULL);
+        return 0;
+    }
+
+    bool created = t == NULL;
+    if (created) t = vkr_texture_create_uploaded(r, desc.width, desc.height, NULL, 0, desc.stride);
+    bool copied = t && vkr_texture_update(r, t, desc.width, desc.height, pixels,
+        (size_t)desc.stride * desc.height * 4, desc.stride, 0, 0, desc.width, desc.height);
+    AHardwareBuffer_unlock(ahb, NULL);
+    if (!copied) {
+        if (created && t) vkr_texture_schedule_destroy(r, t);
+        return 0;
+    }
+    return (jlong)(intptr_t)t;
+}

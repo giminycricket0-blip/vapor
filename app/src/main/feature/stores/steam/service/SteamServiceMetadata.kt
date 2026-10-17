@@ -217,9 +217,56 @@ internal fun SteamService.Companion.getInstalledSelectableDlcAppIds(appId: Int):
             if (dlcInfo?.isDownloaded == true) dlcApp.id else null
         }.toSet()
 
+/** Add a free title using Steam's license request, then use the ordinary owned-app install path. */
+internal suspend fun SteamService.Companion.acquireCatalogApp(appId: Int): SteamApp = withContext(Dispatchers.IO) {
+    require(appId > 0)
+    val service = instance ?: throw java.io.IOException("Steam is still connecting. Try again in a moment.")
+    val catalog = SteamCatalog.details(appId)
+    if ((!catalog.isDemo && !catalog.isFree) || catalog.comingSoon || catalog.windows == false) {
+        throw java.io.IOException("This title is not available as a free Windows download.")
+    }
+    val response = withWnSession { session -> session.requestFreeLicense(appId) }
+        ?: throw java.io.IOException("Could not reach Steam. Check your connection and try again.")
+    val result = JSONObject(response)
+    val eresult = result.optInt("eresult", 2)
+    // An empty grant can mean the account already owns it. Ownership still comes
+    // from the normal license/PICS pipeline, never from public catalog metadata.
+    val ownedBefore = service.appDao.findApp(appId)?.takeIf { it.packageId != INVALID_PKG_ID }
+    if (eresult != 1 && ownedBefore == null) {
+        throw java.io.IOException("Steam did not grant this download (code $eresult). Try again, or check the title’s availability and agreements on Steam.")
+    }
+    val grantedPackages = result.optJSONArray("grantedPackageIds")
+    if (grantedPackages != null && grantedPackages.length() > 0) {
+        val expected = (0 until grantedPackages.length()).map { grantedPackages.getInt(it) }.toSet()
+        val arrived = kotlinx.coroutines.withTimeoutOrNull(10_000) {
+            while (true) {
+                val raw = withWnSession { it.getLicenseList() }
+                val licenses = JSONArray(raw ?: "[]")
+                val ids = (0 until licenses.length()).map { licenses.getJSONObject(it).optInt("packageId", -1) }.toSet()
+                if (ids.containsAll(expected)) break
+                kotlinx.coroutines.delay(200)
+            }
+            true
+        } ?: false
+        if (!arrived) throw java.io.IOException("Steam added the game, but its license is still arriving. Try Install again shortly.")
+    }
+    service.processLicenseList()
+    val owned = kotlinx.coroutines.withTimeoutOrNull(30_000) {
+        service.appDao.getAllOwnedApps().first { apps -> apps.any { it.id == appId && it.receivedPICS } }
+            .first { it.id == appId }
+    } ?: throw java.io.IOException("Steam has not finished loading this game’s license and files. Try Install again shortly.")
+    // Refresh depot data before the install dialog calculates sizes and offers Download.
+    val fresh = fetchLatestSteamAppInfo(appId)
+        ?: throw java.io.IOException("Could not load this game’s files from Steam. Try again.")
+    persistLatestSteamAppInfo(appId, fresh)
+    service.appDao.findApp(appId) ?: owned
+}
+
 
 internal fun SteamService.Companion.getTrustedInstalledAppInfo(appId: Int): AppInfo? {
-    val appInfo = getInstalledApp(appId) ?: tryRecoverInstalledAppInfo(appId)
+    // Completed files can outlive a failed/stale DB update. A false row must
+    // pass through the same marker/ownership checks as a missing row.
+    val appInfo = getInstalledApp(appId)?.takeIf { it.isDownloaded } ?: tryRecoverInstalledAppInfo(appId)
     if (appInfo?.isDownloaded != true) return null
 
     val dirPath = getAppDirPath(appId)

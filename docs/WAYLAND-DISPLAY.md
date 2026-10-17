@@ -97,3 +97,24 @@ to a new activity keeps the compositor running and only receives the new surface
 
 The compositor's own Turnip driver is the one selected in the graphics driver settings at the
 time of the first Wayland launch in a process; the game's driver is chosen per launch.
+
+## Vapor fence correction and qualification
+
+Vapor's local fence fix (16 October 2026) preserves the existing display architecture.
+An acquire timeout or failed poll no longer submits an unfinished buffer without
+a fence. Release polling requires actual readiness; a pending event-loop release
+continues to protect the buffer until completion. If that watcher cannot be
+registered or its fence fails, the affected Wayland client receives an error
+instead of permission to reuse an unprotected buffer.
+
+The compositor's copy helpers **borrow** their display-release fence. Vulkan
+imports a close-on-exec duplicate; the pool owner closes the original after a
+successful copy or restores it to the same slot after failure. This applies to
+ordinary game-layer copies, effects/HDR copies and overlay copies. The zero-copy
+acquire path retains SurfaceControl's normal ownership transfer.
+
+The [qualification record](QUALIFICATION.md#wayland-fence-correction--16-october-2026)
+separates source-boundary checks, native Android execution, X11 regression tests
+and the uncompleted Wayland device gate. This patch does not enable Wayland for
+guided setup, change input/overlay placement, remove the CPU fallback waits or
+establish hardware-overlay composition on any phone.

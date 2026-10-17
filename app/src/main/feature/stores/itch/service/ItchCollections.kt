@@ -20,7 +20,7 @@ data class ItchCollectionForm(
 )
 
 object ItchCollections {
-    const val DEFAULT_TITLE = "WinNative"
+    const val DEFAULT_TITLE = "Vapor"
 
     private const val COLLECTIONS_URL = "https://itch.io/my-collections"
 

@@ -47,6 +47,7 @@ set(WNSTEAM_RUST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/rust")
 file(GLOB_RECURSE WNSTEAM_RUST_SOURCES CONFIGURE_DEPENDS
     "${WNSTEAM_RUST_DIR}/src/*.rs")
 set(WNSTEAM_RUST_BUILD_INPUTS
+    "${CMAKE_SOURCE_DIR}/../../../../rust-toolchain.toml"
     "${WNSTEAM_RUST_DIR}/Cargo.toml"
     "${WNSTEAM_RUST_DIR}/Cargo.lock"
     ${WNSTEAM_RUST_SOURCES})
@@ -62,8 +63,9 @@ add_custom_command(
         "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=${WNSTEAM_RUST_LINKER}"
         "CC_aarch64_linux_android=${WNSTEAM_RUST_LINKER}"
         "AR_aarch64_linux_android=${ANDROID_NDK}/toolchains/llvm/prebuilt/${WNSTEAM_NDK_HOST_TAG}/bin/llvm-ar${WNSTEAM_AR_SUFFIX}"
-        "${CARGO_EXECUTABLE}" rustc --release --target "${WNSTEAM_RUST_TARGET}" --lib --
+        "${CARGO_EXECUTABLE}" rustc --locked --release --target "${WNSTEAM_RUST_TARGET}" --lib --
         -Clink-arg=-Wl,-soname,libwnsteam.so
+        -Clink-arg=-Wl,-z,max-page-size=16384
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
         "${WNSTEAM_RUST_LIB}"
         "${WNSTEAM_RUST_OUT}"

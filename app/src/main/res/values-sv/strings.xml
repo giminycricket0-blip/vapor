@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common > UI Labels -->
-    <string name="common_ui_app_name">WinNative</string>
+    <string name="common_ui_app_name">Vapor</string>
     <string name="common_ui_run">Kör</string>
     <string name="common_ui_edit">Redigera</string>
     <string name="common_ui_remove">Ta bort</string>
@@ -91,7 +91,7 @@
     <string name="about_branding_heading">BUTIKSSKYDD</string>
     <string name="about_branding_desc">Varför det här bygget rapporterar en annan version</string>
     <string name="about_reported_version_code">Rapporterad versionskod</string>
-    <string name="about_branding_explain">Det här bygget installeras som %1$s så att enheten tillämpar den appens prestandaprofil. Dess rapporterade versionskod är högre än något Google Play kan publicera, så Play Store erbjuder aldrig en uppdatering som skulle ersätta WinNative. Versionen ovan är den riktiga.</string>
+    <string name="about_branding_explain">Det här bygget installeras som %1$s så att enheten tillämpar den appens prestandaprofil. Dess rapporterade versionskod är högre än något Google Play kan publicera, så Play Store erbjuder aldrig en uppdatering som skulle ersätta Vapor. Versionen ovan är den riktiga.</string>
     <string name="about_copy">Kopiera bygginformation</string>
     <string name="about_copied">Bygginformation kopierad</string>
     <string name="common_ui_back">Tillbaka</string>
@@ -166,7 +166,7 @@
     <string name="common_ui_grant_all_files_access_browse">Bevilja åtkomst till alla filer för att bläddra bland mappar direkt.</string>
     <string name="common_ui_not_configured">Inte konfigurerad</string>
     <string name="common_ui_reinstall">Installera om</string>
-    <string name="common_ui_exit_app_confirm">Avsluta WinNative?</string>
+    <string name="common_ui_exit_app_confirm">Avsluta Vapor?</string>
     <string name="common_ui_elements_count">%1$d element</string>
     <string name="common_ui_disabled_placeholder">-- Inaktiverad --</string>
     <string name="common_ui_enabled">Aktiverad</string>
@@ -219,7 +219,7 @@
     <string name="library_games_no_games_installed">Inga spel installerade. Använd en butiksflik eller +-knappen för att lägga till spel.</string>
     <string name="library_games_times_played_label">Antal gånger spelad: </string>
     <string name="library_games_playtime_label">Speltid: </string>
-    <string name="library_games_no_games_hub">Inga spel installerade\nKlicka för att öppna Winlator-backend</string>
+    <string name="library_games_no_games_hub">Inga spel installerade\nKlicka för att öppna Vapor-backend</string>
     <string name="library_games_installed_badge">INSTALLERAD</string>
     <string name="library_games_unknown_game">Okänt spel</string>
     <string name="library_games_layouts_header">BIBLIOTEKSLAYOUTER</string>
@@ -416,7 +416,7 @@
     <string name="shortcuts_properties_runtime_patcher">DRM-patchning vid körning</string>
     <string name="shortcuts_properties_runtime_patcher_description">Injicerar en DRM-patchnings-DLL vid start. Minskar FPS — använd endast om det äldre startprogrammet ensamt misslyckas.</string>
     <string name="steam_section_title">Steam</string>
-    <string name="steam_section_real_client">WinNative Real Steam Client</string>
+    <string name="steam_section_real_client">Vapor Real Steam Client</string>
     <string name="steam_section_emulator">Äldre Steam-emulator</string>
     <string name="shortcuts_properties_use_steam_input">Använd Steam Input</string>
     <string name="steam_launcher_real_client">Steam Launcher</string>
@@ -743,8 +743,8 @@ T.ex. <b>META</b> för <i>META-tangent</i>, \n
     <string name="session_xserver_pref_kbd">Tangentbord</string>
     <string name="session_xserver_pref_other">Övrigt</string>
     <string name="session_xserver_pref_version">Version</string>
-    <string name="session_xserver_notification_description">WinNative XServer-meddelanden</string>
-    <string name="session_xserver_notification_content">WinNative körs, avsluta eller svep inte bort den här aviseringen</string>
+    <string name="session_xserver_notification_description">Vapor XServer-meddelanden</string>
+    <string name="session_xserver_notification_content">Vapor körs, avsluta eller svep inte bort den här aviseringen</string>
 
     <!-- Session > Drawer Menu -->
     <string name="session_drawer_keyboard">Tangentbord</string>
@@ -980,7 +980,7 @@ T.ex. <b>META</b> för <i>META-tangent</i>, \n
     <string name="session_drawer_rail_label_record">Spela in</string>
     <string name="session_drawer_rail_label_logs">Loggar</string>
     <string name="session_record_started">Inspelning startad</string>
-    <string name="session_record_saved">Inspelning sparad i WinNative/Recordings</string>
+    <string name="session_record_saved">Inspelning sparad i Vapor/Recordings</string>
     <string name="session_record_failed">Kunde inte starta inspelningen</string>
     <string name="session_record_settings_title">Inspelningsinställningar</string>
     <string name="session_record_fps">Bildfrekvens</string>
@@ -1206,7 +1206,7 @@ T.ex. <b>META</b> för <i>META-tangent</i>, \n
     <string name="settings_general_open_with_android_browser">Öppna Android-webbläsare i Wine</string>
     <string name="settings_general_share_android_clipboard">Dela Android-urklipp med Wine</string>
     <string name="settings_general_paths_title">Sökvägsinställningar</string>
-    <string name="settings_general_paths_summary">Hantera var Winlator lagrar sina arbetsdata och var exporterade genvägar skrivs.</string>
+    <string name="settings_general_paths_summary">Hantera var Vapor lagrar sina arbetsdata och var exporterade genvägar skrivs.</string>
     <string name="settings_general_winlator_path_title">Lagringssökväg</string>
     <string name="settings_general_shortcut_export_path_title">Exportsökväg för genvägar</string>
     <string name="settings_general_choose_path">Välj sökväg</string>
@@ -1216,8 +1216,8 @@ T.ex. <b>META</b> för <i>META-tangent</i>, \n
     <string name="settings_general_xinput_toggle_title">Inaktivera XInput</string>
     <string name="settings_general_xinput_toggle_summary">Stänger av XInput-hantering när du vill ha exklusiv mus- och tangentbordskontroll.</string>
     <string name="settings_external_display_output_summary">Flytta spelet till en ansluten extern skärm i stället för att spegla den här skärmen. Glasögon använder alltid sin egen skärm.</string>
-    <string name="settings_general_file_provider_summary">Exponera WinNative-filer för Androids dokumentväljare och filhanterare.</string>
-    <string name="settings_general_auto_scraping_summary">Den här inställningen låter WinNative automatiskt hämta grafik för anpassade spel.</string>
+    <string name="settings_general_file_provider_summary">Exponera Vapor-filer för Androids dokumentväljare och filhanterare.</string>
+    <string name="settings_general_auto_scraping_summary">Den här inställningen låter Vapor automatiskt hämta grafik för anpassade spel.</string>
     <string name="settings_general_open_browser_summary">Öppna webblänkar som stöds i Android-webbläsaren i stället för i Wine.</string>
     <string name="settings_general_clipboard_summary">Tillåt kopiera och klistra in mellan Android- och Wine-sessioner.</string>
     <string name="settings_general_imagefs_summary">Återställ medföljande systemfiler utan att ta bort dina befintliga containrar.</string>
@@ -1259,7 +1259,7 @@ T.ex. <b>META</b> för <i>META-tangent</i>, \n
     <string name="settings_debug_input_logs">Inmatningsloggar</string>
     <string name="settings_debug_input_logs_description">Logga inmatningshändelser från gamepad, pekskärm och tangentbord</string>
     <string name="settings_debug_download_logs">Nedladdningsloggar</string>
-    <string name="settings_debug_download_logs_description">Logga händelser för nedladdningsupplösare och WinNative-reserv</string>
+    <string name="settings_debug_download_logs_description">Logga händelser för nedladdningsupplösare och Vapor-reserv</string>
     <string name="settings_debug_vulkan_validation_layers_title">Vulkan-valideringslager</string>
     <string name="settings_debug_vulkan_validation_layers_subtitle">Starta om skärmen för att tillämpa.</string>
     <string name="settings_debug_share_logs">Dela loggar</string>
@@ -1275,10 +1275,10 @@ T.ex. <b>META</b> för <i>META-tangent</i>, \n
     <string name="settings_debug_delete_logs_confirm_message">Detta tar permanent bort alla sparade loggfiler (%1$s). Detta kan inte ångras.</string>
     <string name="settings_debug_logs_browser_title">Loggar</string>
     <string name="settings_debug_log_truncated">Visar de senaste %1$s av denna logg</string>
-    <string name="settings_debug_logs_subject">WinNative-loggar (%1$s)</string>
+    <string name="settings_debug_logs_subject">Vapor-loggar (%1$s)</string>
     <string name="settings_debug_no_logs_available">Inga felsökningsloggar tillgängliga. Aktivera felsökningsalternativ först och starta ett spel.</string>
     <string name="settings_debug_capture_failed">Det gick inte att fånga loggar: %1$s</string>
-    <string name="settings_debug_log_to_file_desc">Logga WinNative-processfel, varningar och krascher till fil</string>
+    <string name="settings_debug_log_to_file_desc">Logga Vapor-processfel, varningar och krascher till fil</string>
     <string name="settings_filtered_logs_to_file_title">Filtrerad felsökningslogg</string>
     <string name="settings_filtered_logs_to_file_desc">Spara appens loggar till en fil, filtrerade enligt vad som är konfigurerat i taggfiltren.</string>
     <string name="settings_debug_section_emulation">Emulering</string>
@@ -1608,7 +1608,7 @@ Installerad sökväg:
     <string name="saves_import_export_exported_failed">Det gick inte att exportera sparningar: %1$s</string>
     <string name="saves_import_export_imported">Sparningar importerades</string>
     <string name="saves_import_export_imported_failed">Det gick inte att importera sparningar: %1$s</string>
-    <string name="saves_export_path_summary">Sparningar exporteras till /WinNative/saves</string>
+    <string name="saves_export_path_summary">Sparningar exporteras till /Vapor/saves</string>
     <string name="saves_export_success_path">Exporterat till %1$s</string>
     <string name="saves_export_warning_title">Använd endast detta med anpassade spel</string>
     <string name="saves_export_warning_body">Exporten kan innehålla sparningar från butiksinstallerade eller molnsynkroniserade spel.</string>
@@ -1677,7 +1677,7 @@ Installerad sökväg:
 
     <!-- Performance recording settings -->
     <string name="settings_hud_record_to_file_title">Spela in prestanda till fil</string>
-    <string name="settings_hud_record_to_file_summary">Exporterar mätvärden per sekund för FPS, CPU, GPU, temperatur och batteri till /WinNative/logs/ under spelandet.</string>
+    <string name="settings_hud_record_to_file_summary">Exporterar mätvärden per sekund för FPS, CPU, GPU, temperatur och batteri till logs/ under spelandet.</string>
     <string name="settings_leaderboard_category">Prestanda</string>
     <!-- Workshop -->
     <string name="workshop_loading_items">Laddar Workshop-objekt</string>
@@ -1737,7 +1737,7 @@ Installerad sökväg:
     <string name="steam_chat_setting_ingame">Aktivera chatt i spel</string>
     <string name="steam_chat_setting_ingame_desc">Ta emot och skicka meddelanden medan du spelar</string>
     <string name="steam_chat_setting_stay_running">Kör i bakgrunden</string>
-    <string name="steam_chat_setting_stay_running_desc">Håll chatten igång efter att du avslutat WinNative</string>
+    <string name="steam_chat_setting_stay_running_desc">Håll chatten igång efter att du avslutat Vapor</string>
     <string name="steam_chat_settings_overlay_needed">Tillåt visning över andra appar för att använda chatthuvuden</string>
     <string name="steam_chat_heads_title">Meddelanden</string>
     <string name="steam_chat_heads_recent_title">Senaste</string>
@@ -2388,24 +2388,12 @@ Installerad sökväg:
     <string name="retro_scr_sgsr_upscaling">SGSR-uppskalning</string>
     <string name="retro_scr_performance_hud">Prestanda-HUD</string>
     <string name="retro_scr_credits_licenses">MEDVERKANDE &amp; LICENSER</string>
-    <string name="retro_scr_credits_desc">Vissa av WinNatives funktioner bygger på dessa projekt med öppen källkod. Tryck för att visa varje källa.</string>
+    <string name="retro_scr_credits_desc">Vissa av Vapors funktioner bygger på dessa projekt med öppen källkod. Tryck för att visa varje källa.</string>
     <string name="retro_scr_tab_defaults">Standarder</string>
     <string name="retro_scr_tab_credits">Medverkande</string>
     <string name="settings_support_title">Support</string>
-    <string name="support_donate_heading">DONERA</string>
-    <string name="support_donate_desc">Bidra till utvecklingen av WinNative. Öppnas i webbläsaren.</string>
-    <string name="support_paypal">paypal.me/MaxJividen</string>
-    <string name="support_paypal_desc">PayPal • engång eller återkommande</string>
     <string name="support_heading">FÅ HJÄLP</string>
     <string name="support_desc">Ställ frågor, rapportera problem eller se vad som arbetas på. Varje länk öppnas i webbläsaren.</string>
-    <string name="support_winnative_discord_desc">Discord • support och utveckling</string>
-    <string name="support_maxstechreview_discord_desc">Discord • gemenskap</string>
-    <string name="support_youtube_desc">YouTube • guider och uppdateringar</string>
-    <string name="support_reddit_desc">Reddit • gemenskap</string>
-    <string name="support_winnative_discord">#WinNative</string>
-    <string name="support_maxstechreview_discord">#MaxsTechReview</string>
-    <string name="support_youtube">@MaxsTechReview</string>
-    <string name="support_reddit">r/EmulatorsForAndroid</string>
     <string name="retro_scr_enable_hardcore_title">Aktivera Hardcore-läge?</string>
     <string name="retro_scr_enable_hardcore_body">Hardcore-läge återställer spelet nu och inaktiverar inläsning av sparade tillstånd, snabbspolning och fusk. Osparade framsteg går förlorade. Fortsätta?</string>
     <string name="retro_scr_cancel">Avbryt</string>
@@ -2916,7 +2904,7 @@ Installerad sökväg:
     <string name="update_ignore_until_next">Ignorera till nästa uppdatering</string>
     <string name="update_no_notes">Inga versionsanteckningar publicerades för det här bygget.</string>
     <string name="update_apk_notice">Den här uppdateringen ändrar själva appen, så Android ber dig bekräfta installationen. Dina spel, containrar och inställningar behålls.</string>
-    <string name="update_up_to_date">WinNative är uppdaterad.</string>
+    <string name="update_up_to_date">Vapor är uppdaterad.</string>
     <string name="update_unsupported_build">Uppdateringar i appen erbjuds endast för officiella signerade versioner.</string>
     <string name="settings_general_update_source">Uppdateringskälla</string>
     <string name="settings_general_update_source_summary">Ett bygge från en pull request följer den pull requesten; en officiell installation följer de officiella utgåvorna.</string>
@@ -2947,15 +2935,15 @@ Installerad sökväg:
     <string name="container_graphics_driver_gamescope">Turnip %1$s (Linux ARM64)</string>
     <string name="container_graphics_driver_gamescope_help">Inbyggd i Linux-miljön. Nedladdade Android-drivrutiner gäller bara Wine- och Proton-containrar.</string>
     <string name="linux_runtime_windows_program">Detta är ett Windows-program. Flytta det till en Wine-container i genvägsinställningarna för att starta det.</string>
-    <string name="linux_steam_library_named">WinNative (%1$s)</string>
+    <string name="linux_steam_library_named">Vapor (%1$s)</string>
     <string name="linux_steam_library_internal">Intern lagring</string>
     <string name="linux_steam_library_device_storage">Enhetens lagring</string>
     <string name="settings_content_badge_online">Online</string>
     <string name="gamescope_fex_title">FEX (64-bit and 32-bit)</string>
     <string name="gamescope_fex_preset">FEX Preset</string>
-    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in WinNative are not used; the preset is.</string>
+    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in Vapor are not used; the preset is.</string>
     <string name="gamescope_proton_title">Proton</string>
-    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with WinNative, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
+    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with Vapor, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
     <string name="settings_drivers_android">Android</string>
     <string name="settings_drivers_linux">Linux</string>
     <string name="settings_drivers_platform_hint">Välj var drivrutinen ska installeras. Identifierade paket använder automatiskt rätt plattform.</string>

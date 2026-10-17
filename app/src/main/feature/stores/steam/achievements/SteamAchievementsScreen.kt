@@ -18,13 +18,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -33,8 +34,10 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +51,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.winlator.cmod.R
+import android.content.Intent
+import com.winlator.cmod.feature.stores.steam.SteamLoginActivity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -61,6 +66,7 @@ import com.winlator.cmod.shared.ui.nav.PaneNavRegistry
 import com.winlator.cmod.shared.ui.nav.paneNavItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
 import java.text.DateFormat
 import java.util.Date
@@ -88,6 +94,22 @@ private fun Achievement.title(): String =
 private fun Achievement.desc(): String =
     description?.get("english") ?: description?.values?.firstOrNull() ?: ""
 
+internal enum class SteamAchievementsAvailability(val notice: Int?) {
+    READY(null),
+    SIGNED_OUT(R.string.vapor_achievements_sign_in),
+    IN_GAME(R.string.vapor_achievements_in_game),
+    OFFLINE(R.string.vapor_achievements_offline);
+
+    companion object {
+        fun from(signedIn: Boolean, handoff: Boolean, connected: Boolean) = when {
+            handoff -> IN_GAME
+            !signedIn -> SIGNED_OUT
+            !connected -> OFFLINE
+            else -> READY
+        }
+    }
+}
+
 @Composable
 fun SteamAchievementsScreen(
     appId: Int,
@@ -95,86 +117,127 @@ fun SteamAchievementsScreen(
     onClose: () -> Unit,
 ) {
     val context = LocalContext.current
-    var loading by remember { mutableStateOf(true) }
-    var achievements by remember { mutableStateOf<List<Achievement>>(emptyList()) }
-    val registry = remember { PaneNavRegistry() }
+    val signedIn by SteamService.isLoggedInFlow.collectAsState()
+    val connected by SteamService.isConnectedFlow.collectAsState()
+    val loggedOn by SteamService.wnLoggedOnFlow.collectAsState()
+    val service = SteamService.instance
+    val noService = remember { MutableStateFlow(false) }
+    val handoff by (service?.bionicHandoffFlow ?: noService).collectAsState()
+    val availability = SteamAchievementsAvailability.from(signedIn, handoff, connected && loggedOn)
+    // Screen-local results cannot leak a previous game/account or survive a session handoff.
+    var result by remember(appId, service, availability) { mutableStateOf<Result<List<Achievement>>?>(null) }
+    var refresh by remember(appId) { mutableStateOf(0) }
 
-    LaunchedEffect(appId) {
-        loading = true
-        achievements = withContext(Dispatchers.IO) {
-            val dir = File(context.cacheDir, "achievements_$appId").apply { mkdirs() }
-            SteamService.loadAchievements(appId, dir.absolutePath)
+    LaunchedEffect(appId, service, availability, refresh) {
+        result = null
+        if (availability == SteamAchievementsAvailability.READY) {
+            result = withContext(Dispatchers.IO) {
+                val dir = File(context.cacheDir, "achievements_$appId")
+                SteamService.loadAchievements(appId, dir.absolutePath)
+            }
         }
-        loading = false
     }
 
+    SteamAchievementsContent(
+        appId, appName, availability, result,
+        onRefresh = { refresh++ },
+        onSignIn = { context.startActivity(Intent(context, SteamLoginActivity::class.java)) },
+        onClose = onClose,
+    )
+}
+
+@Composable
+internal fun SteamAchievementsContent(
+    appId: Int,
+    appName: String,
+    availability: SteamAchievementsAvailability,
+    result: Result<List<Achievement>>?,
+    onRefresh: () -> Unit,
+    onSignIn: () -> Unit,
+    onClose: () -> Unit,
+) {
+    val ready = availability == SteamAchievementsAvailability.READY
+    val loading = ready && result == null
+    val achievements = if (ready) result?.getOrNull().orEmpty() else emptyList()
+    val progressKnown = achievements.isNotEmpty() && achievements.all { it.unlocked != null }
     val unlockedCount = achievements.count { it.unlocked == true }
     val total = achievements.size
     val ordered = achievements.sortedWith(
         compareByDescending<Achievement> { it.unlocked == true }
-            .thenByDescending { it.unlockTimestamp ?: 0 },
+            .thenByDescending { it.unlockTimestamp?.toUInt()?.toLong() ?: 0L },
     )
+    val registry = remember { PaneNavRegistry() }
 
     CompositionLocalProvider(LocalPaneNav provides registry) {
-    DialogPaneNav(registry, onDismiss = onClose)
-    BoxWithConstraints(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(Scrim.copy(alpha = 0.6f))
+        DialogPaneNav(registry, onDismiss = onClose)
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize().background(Scrim.copy(alpha = 0.6f))
                 .windowInsetsPadding(WindowInsets.navigationBars),
-        contentAlignment = Alignment.Center,
-    ) {
-        val dialogWidth = (maxWidth - 32.dp).coerceAtMost(560.dp)
-        val dialogHeight = (maxHeight - 48.dp).coerceIn(360.dp, 640.dp)
-        Surface(
-            modifier =
-                Modifier
-                    .widthIn(min = 320.dp, max = dialogWidth)
-                    .fillMaxWidth()
-                    .height(dialogHeight),
-            shape = RoundedCornerShape(14.dp),
-            color = BgDark,
-            border = BorderStroke(1.dp, CardBorder),
-            tonalElevation = 8.dp,
+            contentAlignment = Alignment.Center,
         ) {
-            Column(Modifier.fillMaxSize()) {
-                AchievementsHeader(appName = appName, unlocked = unlockedCount, total = total, onClose = onClose)
-                HorizontalDivider(color = CardBorder, thickness = 0.5.dp)
-                if (total > 0) {
-                    LinearProgressIndicator(
-                        progress = { unlockedCount.toFloat() / total },
-                        color = StatusOnline,
-                        trackColor = SurfaceDark,
-                        modifier = Modifier.fillMaxWidth().height(4.dp),
+            val dialogWidth = (maxWidth - 24.dp).coerceIn(0.dp, 560.dp)
+            val dialogHeight = (maxHeight - 24.dp).coerceIn(0.dp, 640.dp)
+            Surface(
+                modifier = Modifier.width(dialogWidth).height(dialogHeight),
+                shape = RoundedCornerShape(14.dp),
+                color = BgDark,
+                border = BorderStroke(1.dp, CardBorder),
+                tonalElevation = 8.dp,
+            ) {
+                Column(Modifier.fillMaxSize()) {
+                    AchievementsHeader(
+                        appName, unlockedCount, total, progressKnown,
+                        canRefresh = ready && !loading,
+                        onRefresh = onRefresh, onClose = onClose,
                     )
-                }
-                Box(Modifier.fillMaxWidth().weight(1f)) {
-                    when {
-                        loading -> CircularProgressIndicator(
-                            color = Accent,
-                            modifier = Modifier.size(30.dp).align(Alignment.Center),
+                    HorizontalDivider(color = CardBorder, thickness = 0.5.dp)
+                    if (progressKnown) {
+                        LinearProgressIndicator(
+                            progress = { unlockedCount.toFloat() / total },
+                            color = StatusOnline, trackColor = SurfaceDark,
+                            modifier = Modifier.fillMaxWidth().height(4.dp),
                         )
-                        achievements.isEmpty() -> Text(
-                            stringResource(R.string.steam_achievements_empty),
-                            color = TextSecondary,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.align(Alignment.Center).padding(24.dp),
-                        )
-                        else -> Column(
-                            Modifier
-                                .fillMaxSize()
-                                .verticalScroll(rememberScrollState())
-                                .padding(horizontal = 12.dp, vertical = 12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            ordered.forEach { ach -> AchievementRow(appId, ach) }
+                    }
+                    Box(Modifier.fillMaxWidth().weight(1f)) {
+                        when {
+                            loading -> CircularProgressIndicator(
+                                color = Accent,
+                                modifier = Modifier.size(30.dp).align(Alignment.Center),
+                            )
+                            !ready || result?.isFailure == true || achievements.isEmpty() -> Column(
+                                Modifier.fillMaxWidth().align(Alignment.Center)
+                                    .verticalScroll(rememberScrollState()).padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                val message = availability.notice ?: if (result?.isFailure == true) {
+                                    R.string.vapor_achievements_failed
+                                } else R.string.vapor_achievements_empty
+                                Text(stringResource(message), color = TextSecondary,
+                                    style = MaterialTheme.typography.bodyMedium)
+                                if (availability == SteamAchievementsAvailability.SIGNED_OUT) {
+                                    TextButton(onClick = onSignIn, modifier = Modifier.paneNavItem(onActivate = onSignIn)) {
+                                        Text(stringResource(R.string.common_ui_sign_in))
+                                    }
+                                }
+                            }
+                            else -> Column(
+                                Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                if (!progressKnown) {
+                                    Text(stringResource(R.string.vapor_achievements_progress_unavailable),
+                                        color = TextSecondary, style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(8.dp))
+                                }
+                                ordered.forEach { ach -> AchievementRow(appId, ach) }
+                            }
                         }
                     }
                 }
             }
         }
-    }
     }
 }
 
@@ -183,6 +246,9 @@ private fun AchievementsHeader(
     appName: String,
     unlocked: Int,
     total: Int,
+    progressKnown: Boolean,
+    canRefresh: Boolean,
+    onRefresh: () -> Unit,
     onClose: () -> Unit,
 ) {
     Row(
@@ -190,27 +256,16 @@ private fun AchievementsHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Box(
-            Modifier
-                .size(34.dp)
-                .clip(RoundedCornerShape(9.dp))
-                .background(Accent.copy(alpha = 0.16f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                Icons.Outlined.EmojiEvents,
-                contentDescription = null,
-                tint = AccentGlow,
-                modifier = Modifier.size(19.dp),
-            )
-        }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
             Text(
                 stringResource(R.string.steam_achievements_title).uppercase(),
                 color = TextSecondary,
                 fontSize = 9.sp,
+                lineHeight = 12.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 0.9.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 appName,
@@ -220,19 +275,23 @@ private fun AchievementsHeader(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-        }
-        if (total > 0) {
-            Surface(color = Accent.copy(alpha = 0.14f), shape = RoundedCornerShape(7.dp)) {
+            if (progressKnown) {
                 Text(
                     "$unlocked / $total",
                     color = AccentGlow,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp),
                 )
             }
         }
-        IconButton(onClick = onClose, modifier = Modifier.size(36.dp).paneNavItem(onActivate = onClose)) {
+        IconButton(
+            onClick = onRefresh, enabled = canRefresh,
+            modifier = Modifier.size(48.dp).paneNavItem(onActivate = { if (canRefresh) onRefresh() }),
+        ) {
+            Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.vapor_achievements_refresh),
+                tint = if (canRefresh) AccentGlow else TextSecondary.copy(alpha = 0.4f))
+        }
+        IconButton(onClick = onClose, modifier = Modifier.size(48.dp).paneNavItem(onActivate = onClose)) {
             Icon(
                 Icons.Outlined.Close,
                 contentDescription = stringResource(R.string.steam_common_back),
@@ -272,7 +331,11 @@ private fun AchievementRow(appId: Int, ach: Achievement) {
                     )
                 } else {
                     Icon(
-                        Icons.Outlined.Lock,
+                        when (ach.unlocked) {
+                            true -> Icons.Outlined.EmojiEvents
+                            false -> Icons.Outlined.Lock
+                            null -> Icons.Outlined.HelpOutline
+                        },
                         contentDescription = null,
                         tint = TextSecondary,
                         modifier = Modifier.size(24.dp),
@@ -299,10 +362,15 @@ private fun AchievementRow(appId: Int, ach: Achievement) {
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
+                if (ach.unlocked == null) {
+                    Text(stringResource(R.string.vapor_achievements_unknown),
+                        color = TextSecondary, style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(top = 2.dp))
+                }
                 if (unlocked) {
-                    val ts = ach.unlockTimestamp ?: 0
+                    val ts = ach.unlockTimestamp?.toUInt()?.toLong() ?: 0L
                     val when_ = if (ts > 0) {
-                        stringResource(R.string.steam_achievements_unlocked_on, DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(ts.toLong() * 1000L)))
+                        stringResource(R.string.steam_achievements_unlocked_on, DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(ts * 1000L)))
                     } else stringResource(R.string.steam_achievements_unlocked)
                     Text(
                         when_,

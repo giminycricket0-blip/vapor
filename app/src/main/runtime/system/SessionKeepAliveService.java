@@ -380,6 +380,11 @@ public class SessionKeepAliveService extends Service {
             wakeLock.setReferenceCounted(false);
         }
 
+        // Register before publishing the instance or observing lifecycle events. A short
+        // operation may already have finished; the observer can then stop this service
+        // synchronously, before onStartCommand satisfies startForegroundService().
+        ensureForeground(true);
+
         // Now that fields are ready, publish the instance
         instance = this;
 
@@ -502,7 +507,7 @@ public class SessionKeepAliveService extends Service {
 
         Notification n = notificationHelper.createForegroundNotification(
                 getNotificationContent(),
-                "WinNative",
+                "Vapor",
                 SessionKeepAliveService.class,
                 showExit ? ACTION_SESSION_STOP : null, // Exit only for backgrounded app
                 targetActivity // Activity class for the 'Open' (notification tap) action

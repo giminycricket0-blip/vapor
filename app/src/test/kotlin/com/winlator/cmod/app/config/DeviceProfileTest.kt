@@ -100,10 +100,11 @@ class DeviceProfileTest {
     }
 
     @Test
-    fun defaultLibraryColumnsKeepTheStockLadder() {
+    fun defaultLibraryColumnsMakeRoomForPortraitArtwork() {
         assertEquals(2, DeviceProfileSettings.libraryColumns(DeviceProfile.DEFAULT, 400, portrait = true))
         assertEquals(3, DeviceProfileSettings.libraryColumns(DeviceProfile.DEFAULT, 600, portrait = false))
-        assertEquals(4, DeviceProfileSettings.libraryColumns(DeviceProfile.DEFAULT, 914, portrait = false))
+        assertEquals(4, DeviceProfileSettings.libraryColumns(DeviceProfile.DEFAULT, 800, portrait = false))
+        assertEquals(5, DeviceProfileSettings.libraryColumns(DeviceProfile.DEFAULT, 914, portrait = false))
     }
 
     @Test

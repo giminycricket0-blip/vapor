@@ -36,6 +36,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.Info
 import com.winlator.cmod.R
 import com.winlator.cmod.feature.settings.SettingsNavBridge
 import com.winlator.cmod.shared.ui.focus.rememberSettingsContentNav
@@ -49,47 +52,20 @@ private val SupportCard = Color(0xFF181822)
 private val SupportAccent = Color(0xFF4FC3F7)
 
 private data class SupportLink(
-    val iconRes: Int,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
     val titleRes: Int,
     val subtitleRes: Int,
     val url: String,
 )
 
-private val DONATE_LINK =
-    SupportLink(
-        iconRes = R.drawable.ic_brand_paypal,
-        titleRes = R.string.support_paypal,
-        subtitleRes = R.string.support_paypal_desc,
-        url = "https://paypal.me/MaxJividen",
-    )
-
-private val SUPPORT_LINKS =
-    listOf(
-        SupportLink(
-            iconRes = R.drawable.ic_brand_discord,
-            titleRes = R.string.support_winnative_discord,
-            subtitleRes = R.string.support_winnative_discord_desc,
-            url = "https://discord.gg/8Gzh5mmBJg",
-        ),
-        SupportLink(
-            iconRes = R.drawable.ic_brand_discord,
-            titleRes = R.string.support_maxstechreview_discord,
-            subtitleRes = R.string.support_maxstechreview_discord_desc,
-            url = "https://discord.gg/445xxnkCa2",
-        ),
-        SupportLink(
-            iconRes = R.drawable.ic_brand_reddit,
-            titleRes = R.string.support_reddit,
-            subtitleRes = R.string.support_reddit_desc,
-            url = "https://www.reddit.com/r/EmulatorsForAndroid/",
-        ),
-        SupportLink(
-            iconRes = R.drawable.ic_brand_youtube,
-            titleRes = R.string.support_youtube,
-            subtitleRes = R.string.support_youtube_desc,
-            url = "https://youtube.com/@maxstechreview",
-        ),
-    )
+private val SUPPORT_LINKS = listOf(
+    SupportLink(Icons.Outlined.Code, R.string.vapor_support_project, R.string.vapor_support_project_desc,
+        "https://github.com/giminycricket0-blip/vapor"),
+    SupportLink(Icons.Outlined.BugReport, R.string.vapor_support_issues, R.string.vapor_support_issues_desc,
+        "https://github.com/giminycricket0-blip/vapor/issues"),
+    SupportLink(Icons.Outlined.Info, R.string.vapor_support_upstream, R.string.vapor_support_upstream_desc,
+        "https://github.com/WinNative-Emu/WinNative"),
+)
 
 @Composable
 private fun SectionHeading(
@@ -153,7 +129,7 @@ private fun SupportLinkRow(
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                painter = painterResource(link.iconRes),
+                imageVector = link.icon,
                 contentDescription = null,
                 tint = SupportAccent,
                 modifier = Modifier.size(22.dp),
@@ -212,14 +188,6 @@ fun SupportScreen(bridge: SettingsNavBridge? = null) {
                     .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            SectionHeading(
-                textRes = R.string.support_donate_heading,
-                descRes = R.string.support_donate_desc,
-                topPadding = 4,
-            )
-
-            SupportLinkRow(link = DONATE_LINK, onOpen = ::open, highlighted = true)
-
             SectionHeading(
                 textRes = R.string.support_heading,
                 descRes = R.string.support_desc,

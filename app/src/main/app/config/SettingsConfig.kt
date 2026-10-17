@@ -15,7 +15,9 @@ object SettingsConfig {
 
     @JvmField
     val DEFAULT_WINLATOR_PATH: String =
-        Environment.getExternalStorageDirectory().path + "/WinNative"
+        // Existing installations keep their working data. New installs use Vapor.
+        java.io.File(Environment.getExternalStorageDirectory(), "WinNative").takeIf { it.isDirectory }?.path
+            ?: java.io.File(Environment.getExternalStorageDirectory(), "Vapor").path
 
     @JvmField
     val DEFAULT_SHORTCUT_EXPORT_PATH: String =

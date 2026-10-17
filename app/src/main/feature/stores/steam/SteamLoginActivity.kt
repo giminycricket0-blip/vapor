@@ -149,6 +149,7 @@ class SteamLoginActivity : FixedFontScaleComponentActivity() {
         LaunchedEffect(state.loginResult) {
             if (state.loginResult == LoginResult.Success) {
                 Timber.i("User logged in, finishing activity")
+                setResult(RESULT_OK)
                 finish()
             }
         }

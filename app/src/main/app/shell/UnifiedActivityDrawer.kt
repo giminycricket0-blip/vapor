@@ -165,7 +165,6 @@ import com.winlator.cmod.feature.settings.SettingsNavItem
 import com.winlator.cmod.feature.setup.SetupWizardActivity
 import com.winlator.cmod.feature.library.LibraryItemType
 import com.winlator.cmod.feature.library.LinuxApps
-import com.winlator.cmod.runtime.linux.LinuxClientInstaller
 import com.winlator.cmod.runtime.linux.LinuxRuntime
 import com.winlator.cmod.feature.shortcuts.LibraryShortcutUtils
 import com.winlator.cmod.feature.shortcuts.LibraryShortcutArtwork
@@ -348,14 +347,12 @@ internal fun UnifiedActivity.DrawerContent(
     isOpen: Boolean,
     context: android.content.Context,
     scope: kotlinx.coroutines.CoroutineScope,
-    storeVisible: SnapshotStateMap<String, Boolean>,
     contentFilters: SnapshotStateMap<String, Boolean>,
     libraryLayoutMode: LibraryLayoutMode,
     immersiveMode: Boolean,
     immersiveBlur: Boolean,
     forceLandscape: Boolean,
     onLibraryLayoutSelected: (LibraryLayoutMode) -> Unit,
-    onStoreVisibleChanged: (String, Boolean) -> Unit,
     onContentFiltersChanged: (String, Boolean) -> Unit,
     onImmersiveModeChanged: (Boolean) -> Unit,
     onImmersiveBlurChanged: (Boolean) -> Unit,
@@ -409,7 +406,7 @@ internal fun UnifiedActivity.DrawerContent(
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DrawerFilterButton(
-                    label = "4-Grid",
+                    label = stringResource(R.string.vapor_library_grid),
                     checked = libraryLayoutMode == LibraryLayoutMode.GRID_4,
                     modifier = Modifier.weight(1f),
                 ) { if (it) onLibraryLayoutSelected(LibraryLayoutMode.GRID_4) }
@@ -464,29 +461,6 @@ internal fun UnifiedActivity.DrawerContent(
                 label = stringResource(R.string.shortcuts_export_to_frontend),
                 onClick = onExportAll,
             )
-
-            Spacer(Modifier.height(16.dp))
-
-            // ── Stores ──
-            Text(
-                stringResource(R.string.stores_accounts_stores_header),
-                color = TextSecondary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.4.sp,
-                modifier = Modifier.padding(bottom = 4.dp),
-            )
-            Spacer(Modifier.height(8.dp))
-
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DrawerFilterButton("Steam", storeVisible["steam"] == true, Modifier.weight(1f)) { onStoreVisibleChanged("steam", it) }
-                DrawerFilterButton("Epic", storeVisible["epic"] == true, Modifier.weight(1f)) { onStoreVisibleChanged("epic", it) }
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DrawerFilterButton("GOG", storeVisible["gog"] == true, Modifier.weight(1f)) { onStoreVisibleChanged("gog", it) }
-                DrawerFilterButton("itch.io", storeVisible["itch"] == true, Modifier.weight(1f)) { onStoreVisibleChanged("itch", it) }
-            }
 
             Spacer(Modifier.height(16.dp))
 
@@ -788,7 +762,6 @@ internal fun UnifiedActivity.DrawerSwitchCard(
 @Composable
 internal fun UnifiedActivity.AddCustomGameDialog(
     onDismiss: () -> Unit,
-    onInstallLinuxClient: () -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -809,37 +782,6 @@ internal fun UnifiedActivity.AddCustomGameDialog(
         }
     }
     val registry = remember { PaneNavRegistry() }
-    var steamRestorable by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        steamRestorable = withContext(Dispatchers.IO) { LinuxApps.isSteamShortcutMissing(context) }
-    }
-    val restoreSteam: () -> Unit = {
-        isAdding = true
-        scope.launch(Dispatchers.IO) {
-            val container = LinuxApps.gamescopeContainer(ContainerManager(context))
-            if (container == null || !LinuxRuntime.isInstalled(context)) {
-                // The entry lives in the GameScope container, which the Linux Client install creates.
-                withContext(Dispatchers.Main) {
-                    isAdding = false
-                    onDismiss()
-                    LinuxClientInstaller.start(context)
-                    onInstallLinuxClient()
-                }
-                return@launch
-            }
-            val added = runCatching { LinuxApps.ensureSteamShortcut(context, container) }.isSuccess
-            withContext(Dispatchers.Main) {
-                isAdding = false
-                val name = LinuxApps.STEAM_SHORTCUT_NAME
-                com.winlator.cmod.shared.ui.toast.WinToast.show(
-                    context,
-                    context.getString(if (added) R.string.library_games_added else R.string.library_games_add_failed, name),
-                    android.widget.Toast.LENGTH_SHORT,
-                )
-                if (added) onDismiss()
-            }
-        }
-    }
     val addEnabled =
         selectedExePath != null && gameName.isNotBlank() && !isAdding &&
             (retroSystem != null || linuxApp || gameFolder != null)
@@ -997,32 +939,6 @@ internal fun UnifiedActivity.AddCustomGameDialog(
                                 fontSize = if (selectedExePath == null) 12.sp else 10.sp,
                                 modifier = Modifier.weight(1f),
                             )
-                        }
-
-                        if (selectedExePath == null && steamRestorable) {
-                            Spacer(Modifier.height(8.dp))
-                            Row(
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(Color.White.copy(alpha = 0.05f))
-                                        .paneNavItem(
-                                            cornerRadius = 12.dp,
-                                            tapToSelect = true,
-                                            onActivate = { if (!isAdding) restoreSteam() },
-                                        ).padding(horizontal = 12.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Icon(Icons.Outlined.SportsEsports, contentDescription = null, tint = Accent, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(8.dp))
-                                Text(
-                                    stringResource(R.string.library_games_add_linux_steam),
-                                    color = TextPrimary,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.weight(1f),
-                                )
-                            }
                         }
 
                         if (selectedExePath != null) {

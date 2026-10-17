@@ -143,21 +143,13 @@ ksp {
 
 def appVersionName = providers.gradleProperty("VERSION_NAME")
         .orElse(providers.environmentVariable("VERSION_NAME"))
-        .getOrElse("Nightly")
+        .getOrElse("0.1.0-dev")
 
-// Same yyMMddHH (UTC) scheme as release.yml, so any build installs over an earlier release.
-abstract class UtcHourVersionCode implements ValueSource<String, org.gradle.api.provider.ValueSourceParameters.None> {
-    @Override
-    String obtain() {
-        new Date().format("yyMMddHH", TimeZone.getTimeZone("UTC"))
-    }
-}
-
+// Increment for each Vapor release; local rebuilds keep the same install identity.
 def appVersionCode = providers.gradleProperty("VERSION_CODE")
         .orElse(providers.environmentVariable("VERSION_CODE"))
-        .orElse(providers.of(UtcHourVersionCode) {})
-        .map { Integer.parseInt(it.trim()) }
-        .get()
+        .getOrElse("1")
+        .toInteger()
 
 def gitBuildId = "unknown"
 try {
@@ -180,12 +172,6 @@ def appPullRequest = providers.gradleProperty("PR_NUMBER")
         .map { it.trim().replaceAll("[^0-9]", "") }
         .getOrElse("")
 
-def playUnreachableVersionCodeBase = 2100000000
-def brandedVersionCode = playUnreachableVersionCodeBase + appVersionCode
-if (brandedVersionCode < playUnreachableVersionCodeBase || brandedVersionCode > 2147483647) {
-    throw new GradleException("VERSION_CODE ${appVersionCode} pushes the branded versionCode past the 32-bit limit")
-}
-
 def coldClientVersionFile = rootProject.file("tools/gbe_fork.version")
 def coldClientVersion = coldClientVersionFile.exists() ? coldClientVersionFile.text.trim() : "unknown"
 
@@ -194,8 +180,9 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.winnative.cmod"
-        minSdk 26
+        applicationId "app.vapor.android"
+        minSdk 29
+        // Baseline only: SDK 36 requires the runtime execution work in docs/ROADMAP.md.
         targetSdk 28
         versionCode appVersionCode
         versionName appVersionName
@@ -278,22 +265,7 @@ android {
     productFlavors {
         standard {
             dimension "branding"
-            applicationId "com.winnative.cmod"
-        }
-        ludashi {
-            dimension "branding"
-            applicationId "com.ludashi.benchmark"
-            versionCode brandedVersionCode
-        }
-        pubg {
-            dimension "branding"
-            applicationId "com.tencent.ig"
-            versionCode brandedVersionCode
-        }
-        antutu {
-            dimension "branding"
-            applicationId "com.antutu.ABenchMark"
-            versionCode brandedVersionCode
+            applicationId "app.vapor.android"
         }
     }
 
@@ -327,7 +299,7 @@ android {
         compose true
         viewBinding true
         buildConfig true
-        prefab true   // native Steam/runtime components link OpenSSL + curl via NDK Prefab AARs
+        prefab true   // SDL and other Android native dependencies expose Prefab modules
     }
 
     sourceSets {
@@ -432,8 +404,6 @@ dependencies {
     implementation(libs.lifecycleProcess)    // New = compilation errors / gradle plugin update requirement.
 
 
-    implementation 'com.android.ndk.thirdparty:openssl:1.1.1q-beta-1'
-    implementation 'com.android.ndk.thirdparty:curl:7.85.0-beta-1'
     implementation 'org.libsdl.android:SDL3:3.4.16-winnative.2@aar'
 
     implementation libs.playServicesGamesV2

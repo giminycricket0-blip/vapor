@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.winlator.cmod.BuildConfig
 import com.winlator.cmod.feature.stores.steam.utils.PrefManager
 import com.winlator.cmod.feature.stores.steam.wnsteam.WnSteamBootstrap
 
@@ -1750,7 +1751,7 @@ class HybridModeReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        const val ACTION = "com.winnative.cmod.action.HYBRID_MODE"
+        const val ACTION = BuildConfig.APPLICATION_ID + ".action.HYBRID_MODE"
         private const val TAG = "HybridModeReceiver"
     }
 }

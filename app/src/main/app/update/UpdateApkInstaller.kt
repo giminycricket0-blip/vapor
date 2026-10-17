@@ -17,8 +17,8 @@ import java.security.MessageDigest
 object UpdateApkInstaller {
     private const val ACTION_STATUS = "com.winlator.cmod.UPDATE_INSTALL_STATUS"
     private const val BUFFER = 1 shl 16
-    private const val RELEASE_CERT_SHA256 =
-        "94de8fe193e378604f4415d87c63dece030605460b8e9ee6d447e1fc90840980"
+    // No Vapor release key has been designated yet; developer builds do not auto-update.
+    private const val RELEASE_CERT_SHA256 = ""
 
     fun isOfficialInstall(context: Context): Boolean =
         runCatching {
@@ -93,7 +93,7 @@ object UpdateApkInstaller {
 
             val sessionId = installer.createSession(params)
             installer.openSession(sessionId).use { session ->
-                session.openWrite("winnative", 0, apk.length()).use { output ->
+                session.openWrite("vapor", 0, apk.length()).use { output ->
                     apk.inputStream().use { input ->
                         val buffer = ByteArray(BUFFER)
                         while (true) {

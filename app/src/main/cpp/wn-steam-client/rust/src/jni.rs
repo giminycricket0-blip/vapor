@@ -2059,6 +2059,28 @@ pub extern "system" fn Java_com_winlator_cmod_feature_stores_steam_wnsteam_WnSte
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_winlator_cmod_feature_stores_steam_wnsteam_WnSteamSession_nativeRequestFreeLicense(
+    mut env: JNIEnv,
+    _class: JClass,
+    handle: jlong,
+    app_id: jint,
+) -> jstring {
+    if app_id <= 0 { return ptr::null_mut(); }
+    let Some(handle) = (unsafe { from_session_handle_mut(handle) }) else { return ptr::null_mut(); };
+    let Some(runtime) = handle.connected_runtime() else { return ptr::null_mut(); };
+    let Some(body) = request_proto_body(&runtime, Duration::from_secs(20), |core, job_id| {
+        core.build_request_free_license(app_id as u32, job_id)
+    }) else { return ptr::null_mut(); };
+    let Some(response) = crate::pb::cmsg_client_request_free_license::FreeLicenseResponse::deserialize(&body)
+        else { return ptr::null_mut(); };
+    new_string_or_null(&mut env, &json!({
+        "eresult": response.eresult,
+        "grantedPackageIds": response.package_ids,
+        "grantedAppIds": response.app_ids,
+    }).to_string())
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_winlator_cmod_feature_stores_steam_wnsteam_WnSteamSession_nativeGetLicenseList(
     mut env: JNIEnv,
     _class: JClass,
@@ -2280,6 +2302,44 @@ pub extern "system" fn Java_com_winlator_cmod_feature_stores_steam_wnsteam_WnSte
     new_string_or_null(&mut env, &value)
 }
 
+// Shared by chat-image uploads and the official Steam web panels. Never expose refresh tokens to WebView.
+fn request_web_access_token(runtime: &Arc<CMClientRuntime>, refresh_token: String) -> Option<String> {
+    let request = crate::pb::cauthentication::AccessTokenGenerateForAppRequest {
+        refresh_token,
+        steamid: runtime.core().steam_id(),
+        renewal_type: crate::pb::cauthentication::EAuthTokenRenewalType::None,
+    }
+    .serialize();
+    let Some(token_body) =
+        request_authed_service_body(runtime, Duration::from_secs(15), move |core, job_id| {
+            core.build_authed_service_call(
+                "Authentication.GenerateAccessTokenForApp#1",
+                job_id,
+                request,
+            )
+        })
+    else {
+        return None;
+    };
+    let access_token = crate::pb::cauthentication::AccessTokenGenerateForAppResponse::deserialize(
+        &token_body,
+    )
+    .map(|r| r.access_token)
+    .unwrap_or_default();
+    (!access_token.is_empty()).then_some(access_token)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_winlator_cmod_feature_stores_steam_wnsteam_WnSteamSession_nativeGetWebAccessToken(
+    mut env: JNIEnv, _class: JClass, handle: jlong, refresh_token: JString,
+) -> jstring {
+    let Some(handle) = (unsafe { from_session_handle_mut(handle) }) else { return ptr::null_mut(); };
+    let Some(runtime) = handle.connected_runtime() else { return ptr::null_mut(); };
+    let Some(token) = jstring_to_string(&mut env, &refresh_token).filter(|s| !s.is_empty()) else { return ptr::null_mut(); };
+    let Some(access) = request_web_access_token(&runtime, token) else { return ptr::null_mut(); };
+    new_string_or_null(&mut env, &access)
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_winlator_cmod_feature_stores_steam_wnsteam_WnSteamSession_nativeSendChatImage(
     mut env: JNIEnv,
@@ -2309,33 +2369,10 @@ pub extern "system" fn Java_com_winlator_cmod_feature_stores_steam_wnsteam_WnSte
         return ptr::null_mut();
     }
 
-    // Mint a short-lived web access token for the steamLoginSecure cookie.
-    let request = crate::pb::cauthentication::AccessTokenGenerateForAppRequest {
-        refresh_token,
-        steamid: self_steamid,
-        renewal_type: crate::pb::cauthentication::EAuthTokenRenewalType::None,
-    }
-    .serialize();
-    let Some(token_body) =
-        request_authed_service_body(&runtime, Duration::from_secs(15), move |core, job_id| {
-            core.build_authed_service_call(
-                "Authentication.GenerateAccessTokenForApp#1",
-                job_id,
-                request,
-            )
-        })
-    else {
-        return ptr::null_mut();
-    };
-    let access_token = crate::pb::cauthentication::AccessTokenGenerateForAppResponse::deserialize(
-        &token_body,
-    )
-    .map(|r| r.access_token)
-    .unwrap_or_default();
-    if access_token.is_empty() {
+    let Some(access_token) = request_web_access_token(&runtime, refresh_token) else {
         android_log("WNIMG", "no web access token");
         return ptr::null_mut();
-    }
+    };
 
     let url = match crate::chat_image::upload(
         &ca_bundle_path,

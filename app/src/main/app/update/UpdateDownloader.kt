@@ -6,7 +6,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object UpdateDownloader {
-    private const val WORK_DIR = "winnative-update"
+    private const val WORK_DIR = "vapor-update"
     private const val CONNECT_TIMEOUT_MS = 15000
     private const val READ_TIMEOUT_MS = 60000
     private const val BUFFER = 1 shl 16
@@ -70,7 +70,7 @@ object UpdateDownloader {
             readTimeout = READ_TIMEOUT_MS
             instanceFollowRedirects = true
             setRequestProperty("Accept", "application/vnd.github+json")
-            setRequestProperty("User-Agent", "WinNative-Updater")
+            setRequestProperty("User-Agent", "Vapor-Updater")
         }
 
     private fun download(

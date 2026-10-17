@@ -22,8 +22,9 @@ class LinuxRuntimeTest {
     @Test
     fun passesOnlyOptionsThisProotAccepts() {
         val guest = listOf("/usr/bin/env", "-i", "HOME=/root", "/usr/bin/id")
-        val command = LinuxRuntime.command(context, ImageFs.find(context), context.cacheDir,
-            null, null, emptyList(), guest)
+        val binds = LinuxRuntime.binds(context, ImageFs.find(context), context.cacheDir,
+            null, null, emptyList())
+        val command = LinuxRuntime.command(context, binds, guest)
         assertEquals(guest, command.takeLast(guest.size))
         val asked = command.dropLast(guest.size) + "/bin/true"
         val proot = ProcessBuilder(asked)

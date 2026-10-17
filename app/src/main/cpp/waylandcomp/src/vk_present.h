@@ -145,7 +145,8 @@ int vkp_pass_begin_hdr(int scene_w, int scene_h, const struct vkp_draw *draws, i
 /* ---- layer mode helpers (sc_layer.c; compositor thread) ---- */
 /* Whole-image copy of src into dst (a blit-destination dmabuf image), waited for on the CPU.
  * wait_fd: a sync_file the copy must wait for before writing dst (the display's release fence of that
- * buffer), -1 = none. Always consumed (handed to the GPU, or waited for and closed). */
+ * buffer), -1 = none. Borrowed: the caller closes it after a successful copy or restores it to
+ * the slot after failure. A GPU import consumes only a duplicate, not this original. */
 int vkp_blit_image(struct vkp_image *src, struct vkp_image *dst, int wait_fd);
 /* Refresh the scene -> output mapping for this scene size without presenting (creates the
  * swapchain if needed, since the mapping is in output pixels). 0 = mapping valid. */
@@ -179,7 +180,7 @@ void vkp_reset_first_frame(void);
  * must follow a successful begin. The chain deliberately runs with NO swapchain image acquired -
  * see the comment in vk_present.c. Frame generation is not run here (see WAYLAND_RUNTIME.md). */
 int vkp_pass_begin(int scene_w, int scene_h, const struct vkp_draw *draws, int n, int *rw, int *rh);
-/* wait_fd: as for vkp_blit_image (consumed in every case). */
+/* wait_fd: borrowed as for vkp_blit_image. */
 int vkp_pass_copy_to(struct vkp_image *dst, int wait_fd);
 void vkp_pass_abort(void);
 

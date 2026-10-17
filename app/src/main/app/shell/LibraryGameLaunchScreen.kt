@@ -2,37 +2,24 @@ package com.winlator.cmod.app.shell
 
 import android.os.Build
 import android.view.WindowManager
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,6 +37,7 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Layers
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.CloudSync
 import androidx.compose.material.icons.outlined.SaveAlt
 import androidx.compose.material.icons.outlined.Construction
@@ -68,6 +56,8 @@ import androidx.compose.material.icons.outlined.SportsEsports
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -83,43 +73,40 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import androidx.core.view.WindowCompat
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.winlator.cmod.R
 import com.winlator.cmod.feature.library.LibraryStorageMove
-import com.winlator.cmod.shared.ui.layout.isPortraitLayout
 import com.winlator.cmod.shared.ui.layout.screenWidthDp
 import androidx.compose.runtime.CompositionLocalProvider
-import com.winlator.cmod.shared.ui.focus.controllerConfirmOnA
 import com.winlator.cmod.shared.ui.focus.controllerFocusGlow
+import com.winlator.cmod.shared.ui.focus.controllerMenuInput
 import com.winlator.cmod.shared.ui.outlinedSwitchColors
 import com.winlator.cmod.shared.ui.nav.DialogPaneNav
 import com.winlator.cmod.shared.ui.nav.LocalPaneNav
@@ -130,11 +117,11 @@ import java.util.Date
 import java.util.Locale
 
 private val LaunchBlack = Color.Black
-private val LaunchCard = Color(0xFF12121B)
-internal val LaunchAccent = Color(0xFF1A9FFF)
+private val LaunchCard = CardDark
+internal val LaunchAccent = Accent
 private val LaunchAccentGlow = Color(0xFF58A6FF)
-private val LaunchTextPrimary = Color(0xFFF0F4FF)
-private val LaunchTextSecondary = Color(0xFF93A6BC)
+private val LaunchTextPrimary = TextPrimary
+private val LaunchTextSecondary = TextSecondary
 private val LaunchDanger = Color(0xFFFF6B6B)
 
 internal data class LaunchStoreOption(
@@ -166,6 +153,7 @@ internal fun LibraryGameLaunchScreen(
     showWorkshop: Boolean = true,
     playEnabled: Boolean = true,
     playDisabledLabel: String? = null,
+    uninstallEnabled: Boolean = true,
     /**
      * An alternative engine this particular game can be played with, offered
      * right above Play because it changes what Play does. Absent (and the row
@@ -205,37 +193,30 @@ internal fun LibraryGameLaunchScreen(
 ) {
     val context = LocalContext.current
     var uninstallMenuOpen by remember { mutableStateOf(false) }
+    LaunchedEffect(uninstallEnabled) {
+        if (!uninstallEnabled) uninstallMenuOpen = false
+    }
     val saveTransferVisible = showSaveTransfer && onSaveTransfer != null
     val bootVisible = showBootToDesktop
-    val actionIconCount =
-        1 +
-            (if (saveTransferVisible) 1 else 0) +
-            1 +
-            (if (bootVisible) 1 else 0) +
-            1 +
-            1
-
+    val playFocus = remember { FocusRequester() }
+    val settingsFocus = remember { FocusRequester() }
+    val inputMode = LocalInputModeManager.current.inputMode
+    LaunchedEffect(inputMode) {
+        if (inputMode == InputMode.Keyboard) {
+            if (playEnabled) playFocus.requestFocus() else settingsFocus.requestFocus()
+        }
+    }
     LaunchScreenCutoutMode()
 
-    Box(Modifier.fillMaxSize()) {
-        val edgePadding = 22.dp
+    BoxWithConstraints(
+        Modifier.fillMaxSize().background(BgDark).controllerMenuInput(onDismiss = onBack),
+    ) {
+        val edgePadding = 20.dp
         val bottomPadding = 20.dp
-        val actionIconSpacing = 8.dp
-        // Six icons at 46 dp plus their gaps come to 316 dp, which is exactly the room left
-        // on a 360 dp phone after the edge padding and none at all once the navigation-bar
-        // insets apply. Shrink the icons to whatever fits instead of overflowing the row.
-        val actionIconGaps = actionIconSpacing * (actionIconCount - 1).coerceAtLeast(0)
-        val actionRowMaxWidth = (screenWidthDp() - edgePadding * 2).coerceAtLeast(120.dp)
-        val actionIconSize =
-            if (actionIconCount > 0) {
-                minOf(46.dp, (actionRowMaxWidth - actionIconGaps) / actionIconCount)
-            } else {
-                46.dp
-            }
-        val actionWidth = actionIconSize * actionIconCount + actionIconGaps
+        val portraitHero = maxWidth < 700.dp
+        val actionWidth = 360.dp
         val playHeight = 56.dp
         val contentGap = 18.dp
-        val horizontalNavInsets = WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
 
         if (heroImageUrl != null) {
             val heroRequest =
@@ -295,7 +276,7 @@ internal fun LibraryGameLaunchScreen(
             Modifier
                 .fillMaxSize()
                 .background(
-                    if (isPortraitLayout()) {
+                    if (portraitHero) {
                         Brush.verticalGradient(
                             colorStops =
                                 arrayOf(
@@ -325,269 +306,293 @@ internal fun LibraryGameLaunchScreen(
                 ),
         )
 
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .windowInsetsPadding(horizontalNavInsets)
-                    .padding(start = edgePadding, top = 12.dp, end = edgePadding),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(
-                onClick = onBack,
+        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars)) {
+            Row(
                 modifier =
                     Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(LaunchBlack.copy(alpha = 0.5f))
-                        .border(1.dp, Color.White.copy(alpha = 0.18f), CircleShape),
+                        .fillMaxWidth()
+                        .padding(start = edgePadding, top = 12.dp, end = edgePadding),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = stringResource(R.string.common_ui_back),
-                    tint = LaunchTextPrimary,
-                    modifier = Modifier.size(24.dp),
-                )
-            }
-            Spacer(Modifier.weight(1f))
-            if (branches.size > 1) {
-                LaunchBranchTag(
-                    branches = branches,
-                    selectedBranchId = selectedBranchId,
-                    enabled = isBranchSelectionEnabled,
-                    onSelectBranch = onSelectBranch,
-                )
-                Spacer(Modifier.width(8.dp))
-            }
-            SourceTag(
-                sourceLabel = sourceLabel,
-                storeOptions = storeOptions,
-                selectedStoreId = selectedStoreId,
-                onSelectStore = onSelectStore,
-                menuEnabled = steamMenuEnabled,
-                showVerifyFiles = showVerifyFiles,
-                showCheckForUpdate = showCheckForUpdate,
-                showWorkshop = showWorkshop,
-                showAchievements = onAchievements != null,
-                showCheats = onCheats != null,
-                cheatsEnabled = cheatsEnabled,
-                areSteamActionsEnabled = areSteamActionsEnabled,
-                moveTarget = moveTarget,
-                onMoveGame = onMoveGame,
-                onVerifyFiles = onVerifyFiles,
-                onCheckForUpdate = onCheckForUpdate,
-                onWorkshop = onWorkshop,
-                onAchievements = { onAchievements?.invoke() },
-                onCheats = { onCheats?.invoke() },
-            )
-        }
-
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(start = edgePadding, top = 68.dp, end = edgePadding, bottom = bottomPadding),
-            verticalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Column(
-                modifier = Modifier.widthIn(max = 640.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                Text(
-                    appName,
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = LaunchTextPrimary,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (subtitle.isNotBlank()) {
-                    Text(
-                        subtitle,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = LaunchTextPrimary.copy(alpha = 0.72f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                IconButton(
+                    onClick = onBack,
+                    modifier =
+                        Modifier
+                            .size(48.dp)
+                            .controllerFocusGlow(cornerRadius = 24.dp)
+                            .clip(CircleShape)
+                            .background(LaunchBlack.copy(alpha = 0.5f))
+                            .border(1.dp, Color.White.copy(alpha = 0.18f), CircleShape),
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = stringResource(R.string.common_ui_back),
+                        tint = LaunchTextPrimary,
+                        modifier = Modifier.size(24.dp),
                     )
                 }
-                if (releaseDateEpochSeconds > 0L) {
-                    val releaseDateText = remember(releaseDateEpochSeconds) { formatReleaseDate(releaseDateEpochSeconds) }
-                    Text(
-                        releaseDateText,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = LaunchTextPrimary.copy(alpha = 0.6f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
-
-            val portraitHero = isPortraitLayout()
-            val statChips: @Composable (Modifier) -> Unit = { statsModifier ->
+                Spacer(Modifier.width(12.dp))
                 FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = statsModifier,
                 ) {
-                    if (totalPlaytimeMillis > 0L) {
-                        val playtimeText = remember(totalPlaytimeMillis) { formatLibraryPlaytime(totalPlaytimeMillis) }
-                        GameStatChip(
-                            icon = Icons.Outlined.Schedule,
-                            label = stringResource(R.string.library_games_playtime),
-                            value = playtimeText,
+                    if (branches.size > 1) {
+                        LaunchBranchTag(
+                            branches = branches,
+                            selectedBranchId = selectedBranchId,
+                            enabled = isBranchSelectionEnabled,
+                            onSelectBranch = onSelectBranch,
                         )
                     }
-                    if (playCount > 0) {
-                        GameStatChip(
-                            icon = Icons.Outlined.SportsEsports,
-                            label = stringResource(R.string.library_games_plays),
-                            value = playCount.toString(),
-                        )
-                    }
-                    if (lastPlayedMillis > 0L) {
-                        val lastPlayedText = remember(lastPlayedMillis) { formatLibraryLastPlayed(lastPlayedMillis) }
-                        GameStatChip(
-                            icon = Icons.Outlined.History,
-                            label = stringResource(R.string.library_games_last_played),
-                            value = lastPlayedText,
-                        )
-                    }
-                    if (installSizeText != null) {
-                        GameStatChip(
-                            icon = Icons.Outlined.Storage,
-                            label = stringResource(R.string.common_ui_size),
-                            value = installSizeText,
-                        )
-                    }
-                }
-            }
-
-            val actionBlock: @Composable (Modifier) -> Unit = { actionsModifier ->
-                Column(
-                    modifier = actionsModifier,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    if (altEngineLabel != null && onAltEngineChange != null) {
-                        LaunchAltEngineToggle(
-                            label = altEngineLabel,
-                            checked = altEngineEnabled,
-                            // In portrait the action block already fills the width; pinning the
-                            // toggle to actionWidth clipped it on narrow phones.
-                            modifier =
-                                if (portraitHero) Modifier.fillMaxWidth() else Modifier.width(actionWidth),
-                            onCheckedChange = onAltEngineChange,
-                        )
-                    }
-
-                    LaunchPlayButton(
-                        height = playHeight,
-                        enabled = playEnabled,
-                        disabledLabel = playDisabledLabel,
-                        onClick = onPlay,
-                    )
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(actionIconSpacing),
-                        verticalAlignment = Alignment.CenterVertically,
+                    Surface(
+                        color = Color.White.copy(alpha = 0.08f),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)),
                     ) {
-                        LaunchIconActionButton(
-                            icon = Icons.Outlined.Settings,
-                            contentDescription = stringResource(R.string.common_ui_settings),
-                            size = actionIconSize,
-                            onClick = onSettings,
+                        Text(
+                            sourceLabel.uppercase(),
+                            modifier = Modifier.widthIn(max = 132.dp).padding(horizontal = 12.dp, vertical = 8.dp),
+                            color = LaunchTextSecondary,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
-                        if (saveTransferVisible) {
-                            LaunchIconActionButton(
-                                icon = Icons.Outlined.SaveAlt,
-                                contentDescription = stringResource(R.string.retro_save_transfer_title),
-                                size = actionIconSize,
-                                onClick = { onSaveTransfer?.invoke() },
+                    }
+                }
+            }
+            BoxWithConstraints(
+                Modifier.weight(1f).fillMaxWidth()
+                    .padding(start = edgePadding, top = 24.dp, end = edgePadding, bottom = bottomPadding),
+            ) {
+                val availableBodyHeight = maxHeight
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .heightIn(min = availableBodyHeight),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    val gameHeading: @Composable () -> Unit = {
+                        Column(
+                            modifier = Modifier.widthIn(max = 640.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Text(
+                                appName,
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = LaunchTextPrimary,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
                             )
+                            if (subtitle.isNotBlank()) {
+                                Text(
+                                    subtitle,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = LaunchTextPrimary.copy(alpha = 0.72f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            if (releaseDateEpochSeconds > 0L) {
+                                val releaseDateText = remember(releaseDateEpochSeconds) { formatReleaseDate(releaseDateEpochSeconds) }
+                                Text(
+                                    releaseDateText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = LaunchTextPrimary.copy(alpha = 0.6f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
                         }
-                        LaunchIconActionButton(
-                            icon = Icons.Outlined.CloudSync,
-                            contentDescription = stringResource(R.string.cloud_saves_title),
-                            size = actionIconSize,
-                            onClick = onCloudSaves,
-                        )
-                        if (bootVisible) {
-                            LaunchIconActionButton(
-                                icon = Icons.Outlined.DesktopWindows,
-                                contentDescription = stringResource(R.string.hero_boot_to_desktop_title),
-                                size = actionIconSize,
-                                onClick = onBootToDesktop,
-                            )
+                    }
+
+                    val statChips: @Composable (Modifier) -> Unit = { statsModifier ->
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = statsModifier,
+                        ) {
+                            if (totalPlaytimeMillis > 0L) {
+                                val playtimeText = remember(totalPlaytimeMillis) { formatLibraryPlaytime(totalPlaytimeMillis) }
+                                GameStatChip(
+                                    icon = Icons.Outlined.Schedule,
+                                    label = stringResource(R.string.library_games_playtime),
+                                    value = playtimeText,
+                                )
+                            }
+                            if (playCount > 0) {
+                                GameStatChip(
+                                    icon = Icons.Outlined.SportsEsports,
+                                    label = stringResource(R.string.library_games_plays),
+                                    value = playCount.toString(),
+                                )
+                            }
+                            if (lastPlayedMillis > 0L) {
+                                val lastPlayedText = remember(lastPlayedMillis) { formatLibraryLastPlayed(lastPlayedMillis) }
+                                GameStatChip(
+                                    icon = Icons.Outlined.History,
+                                    label = stringResource(R.string.library_games_last_played),
+                                    value = lastPlayedText,
+                                )
+                            }
+                            if (installSizeText != null) {
+                                GameStatChip(
+                                    icon = Icons.Outlined.Storage,
+                                    label = stringResource(R.string.common_ui_size),
+                                    value = installSizeText,
+                                )
+                            }
                         }
-                        LaunchIconActionButton(
-                            icon = Icons.Outlined.Home,
-                            contentDescription =
-                                stringResource(
-                                    if (hasPinnedShortcut) R.string.common_ui_remove else R.string.common_ui_shortcut,
-                                ),
-                            size = actionIconSize,
-                            onClick = onShortcut,
-                        )
-                        Box {
-                            LaunchIconActionButton(
-                                icon = Icons.Outlined.Delete,
-                                contentDescription =
-                                    stringResource(
-                                        if (removalKeepsFiles) R.string.common_ui_remove else R.string.common_ui_uninstall,
-                                    ),
-                                size = actionIconSize,
-                                onClick = { uninstallMenuOpen = true },
-                                tint = LaunchDanger,
-                            )
-                            LaunchUninstallMenu(
-                                expanded = uninstallMenuOpen,
-                                appName = appName,
-                                removalKeepsFiles = removalKeepsFiles,
-                                onDismissRequest = { uninstallMenuOpen = false },
-                                onConfirm = {
-                                    uninstallMenuOpen = false
-                                    onUninstall()
-                                },
-                            )
+                    }
+
+                    val actionBlock: @Composable (Modifier) -> Unit = { actionsModifier ->
+                        Column(
+                            modifier = actionsModifier,
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            if (altEngineLabel != null && onAltEngineChange != null) {
+                                LaunchAltEngineToggle(
+                                    label = altEngineLabel,
+                                    checked = altEngineEnabled,
+                                    // In portrait the action block already fills the width; pinning the
+                                    // toggle to actionWidth clipped it on narrow phones.
+                                    modifier =
+                                        if (portraitHero) Modifier.fillMaxWidth() else Modifier.width(actionWidth),
+                                    onCheckedChange = onAltEngineChange,
+                                )
+                            }
+
+                            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                                val stacked = maxWidth < 280.dp * LocalDensity.current.fontScale
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    maxItemsInEachRow = if (stacked) 1 else 2,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    LaunchPlayButton(
+                                        height = playHeight,
+                                        enabled = playEnabled,
+                                        disabledLabel = playDisabledLabel,
+                                        onClick = onPlay,
+                                        modifier = Modifier.weight(1f).focusRequester(playFocus),
+                                    )
+                                    LaunchManageMenu(
+                                        steamMenuEnabled = steamMenuEnabled,
+                                        areSteamActionsEnabled = areSteamActionsEnabled,
+                                        showVerifyFiles = showVerifyFiles,
+                                        showCheckForUpdate = showCheckForUpdate,
+                                        showWorkshop = showWorkshop,
+                                        showBootToDesktop = bootVisible,
+                                        hasPinnedShortcut = hasPinnedShortcut,
+                                        uninstallEnabled = uninstallEnabled,
+                                        removalKeepsFiles = removalKeepsFiles,
+                                        moveTarget = moveTarget,
+                                        storeOptions = storeOptions,
+                                        selectedStoreId = selectedStoreId,
+                                        cheatsEnabled = cheatsEnabled,
+                                        onSelectStore = onSelectStore,
+                                        onVerifyFiles = onVerifyFiles,
+                                        onCheckForUpdate = onCheckForUpdate,
+                                        onWorkshop = onWorkshop,
+                                        onBootToDesktop = onBootToDesktop,
+                                        onShortcut = onShortcut,
+                                        onMoveGame = onMoveGame,
+                                        onCheats = onCheats,
+                                        onSaveTransfer = if (saveTransferVisible) onSaveTransfer else null,
+                                        onUninstall = { if (uninstallEnabled) uninstallMenuOpen = true },
+                                        modifier = if (stacked) Modifier.fillMaxWidth() else Modifier,
+                                    )
+                                }
+                            }
+
+                            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                                val columns = (maxWidth / (144.dp * LocalDensity.current.fontScale)).toInt().coerceIn(1, 2)
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    maxItemsInEachRow = columns,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    LaunchIconActionButton(
+                                        icon = Icons.Outlined.Settings,
+                                        contentDescription = stringResource(R.string.common_ui_settings),
+                                        modifier = Modifier.weight(1f).focusRequester(settingsFocus),
+                                        onClick = onSettings,
+                                    )
+                                    LaunchIconActionButton(
+                                        icon = Icons.Outlined.CloudSync,
+                                        contentDescription = stringResource(R.string.cloud_saves_title),
+                                        modifier = Modifier.weight(1f),
+                                        onClick = onCloudSaves,
+                                    )
+                                    if (onAchievements != null) {
+                                        LaunchIconActionButton(
+                                            icon = Icons.Outlined.EmojiEvents,
+                                            contentDescription = stringResource(R.string.steam_achievements_title),
+                                            modifier = Modifier.weight(1f),
+                                            onClick = onAchievements,
+                                        )
+                                    }
+                                }
+                            }
+                            if (!uninstallEnabled) {
+                                Text(
+                                    stringResource(R.string.vapor_game_save_sync_pending),
+                                    color = LaunchTextSecondary,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
+                        }
+                    }
+
+                    if (portraitHero) {
+                        gameHeading()
+                        Spacer(Modifier.height(24.dp))
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(contentGap),
+                        ) {
+                            statChips(Modifier.fillMaxWidth())
+                            actionBlock(Modifier.fillMaxWidth())
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().heightIn(min = availableBodyHeight),
+                            horizontalArrangement = Arrangement.spacedBy(contentGap),
+                            verticalAlignment = Alignment.Bottom,
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f).heightIn(min = availableBodyHeight),
+                                verticalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                gameHeading()
+                                Spacer(Modifier.height(24.dp))
+                                statChips(Modifier.fillMaxWidth())
+                            }
+                            actionBlock(Modifier.width(actionWidth))
                         }
                     }
                 }
             }
-
-            if (portraitHero) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(contentGap),
-                ) {
-                    statChips(Modifier.fillMaxWidth())
-                    actionBlock(Modifier.fillMaxWidth())
-                }
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(contentGap),
-                    verticalAlignment = Alignment.Bottom,
-                ) {
-                    statChips(Modifier.weight(1f))
-                    actionBlock(Modifier.width(actionWidth))
-                }
-            }
         }
 
-        if (uninstallMenuOpen) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(LaunchBlack.copy(alpha = 0.46f))
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = { uninstallMenuOpen = false },
-                        ),
-            )
-        }
+        LaunchUninstallMenu(
+            expanded = uninstallMenuOpen && uninstallEnabled,
+            appName = appName,
+            removalKeepsFiles = removalKeepsFiles,
+            onDismissRequest = { uninstallMenuOpen = false },
+            onConfirm = {
+                uninstallMenuOpen = false
+                if (uninstallEnabled) onUninstall()
+            },
+        )
     }
 }
 
@@ -939,6 +944,7 @@ private fun LaunchMenuTextAction(
     Box(
         modifier =
             modifier
+                .heightIn(min = 48.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .controllerFocusGlow(cornerRadius = 8.dp)
                 .clickable(onClick = onClick)
@@ -956,140 +962,119 @@ private fun LaunchMenuTextAction(
 }
 
 @Composable
-private fun SourceTag(
-    sourceLabel: String,
-    menuEnabled: Boolean = false,
-    showVerifyFiles: Boolean = true,
-    showCheckForUpdate: Boolean = true,
-    showWorkshop: Boolean = true,
-    showAchievements: Boolean = false,
-    showCheats: Boolean = false,
-    cheatsEnabled: Boolean = true,
-    areSteamActionsEnabled: Boolean = true,
-    moveTarget: LibraryStorageMove.Target? = null,
-    onMoveGame: () -> Unit = {},
-    storeOptions: List<LaunchStoreOption> = emptyList(),
-    selectedStoreId: String = "",
-    onSelectStore: (String) -> Unit = {},
-    onVerifyFiles: () -> Unit = {},
-    onCheckForUpdate: () -> Unit = {},
-    onWorkshop: () -> Unit = {},
-    onAchievements: () -> Unit = {},
-    onCheats: () -> Unit = {},
+private fun LaunchManageMenu(
+    steamMenuEnabled: Boolean,
+    areSteamActionsEnabled: Boolean,
+    showVerifyFiles: Boolean,
+    showCheckForUpdate: Boolean,
+    showWorkshop: Boolean,
+    showBootToDesktop: Boolean,
+    hasPinnedShortcut: Boolean,
+    uninstallEnabled: Boolean,
+    removalKeepsFiles: Boolean,
+    moveTarget: LibraryStorageMove.Target?,
+    storeOptions: List<LaunchStoreOption>,
+    selectedStoreId: String,
+    cheatsEnabled: Boolean,
+    onSelectStore: (String) -> Unit,
+    onVerifyFiles: () -> Unit,
+    onCheckForUpdate: () -> Unit,
+    onWorkshop: () -> Unit,
+    onBootToDesktop: () -> Unit,
+    onShortcut: () -> Unit,
+    onMoveGame: () -> Unit,
+    onCheats: (() -> Unit)?,
+    onSaveTransfer: (() -> Unit)?,
+    onUninstall: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     var storeMenuOpen by remember { mutableStateOf(false) }
-    var anchorHeightPx by remember { mutableStateOf(0) }
-    Box {
-        Surface(
-            color = Color.White.copy(alpha = 0.1f),
-            shape = RoundedCornerShape(8.dp),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)),
-            modifier =
-                Modifier
-                    .onSizeChanged { anchorHeightPx = it.height }
-                    .clickable { menuOpen = true },
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Box(
-                    Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(LaunchAccent),
-                )
-                Text(
-                    sourceLabel.uppercase(),
-                    color = LaunchTextPrimary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Icon(
-                    Icons.Outlined.ArrowDropDown,
-                    contentDescription = stringResource(R.string.store_game_steam_options),
-                    tint = LaunchTextPrimary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-        }
-        val gapPx = with(LocalDensity.current) { 6.dp.roundToPx() }
-        LaunchSourceActionPopup(
-            expanded = menuOpen,
-            onDismissRequest = { menuOpen = false },
-            offset = IntOffset(0, anchorHeightPx + gapPx),
-        ) {
-            LaunchSourceMenuItem(
-                icon = Icons.Outlined.Storefront,
-                label = stringResource(R.string.library_games_store_change),
-            ) { menuOpen = false; storeMenuOpen = true }
-            if (moveTarget != null) {
-                LaunchSourceMenuItem(
-                    icon = Icons.Outlined.DriveFileMove,
-                    label =
-                        stringResource(
-                            if (moveTarget == LibraryStorageMove.Target.APP_STORAGE) {
-                                R.string.library_games_move_to_app_storage_title
-                            } else {
-                                R.string.library_games_move_to_download_folder_title
-                            },
-                        ),
-                    enabled = areSteamActionsEnabled,
-                ) { menuOpen = false; onMoveGame() }
-            }
-            if (menuEnabled || showAchievements || showCheats) {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(Color.White.copy(alpha = 0.14f)),
-                )
-            }
-            if (menuEnabled && showVerifyFiles) {
-                LaunchSourceMenuItem(
-                    icon = Icons.AutoMirrored.Outlined.FactCheck,
-                    label = stringResource(R.string.store_game_verify_files),
-                    enabled = areSteamActionsEnabled,
-                ) { menuOpen = false; onVerifyFiles() }
-            }
-            if (menuEnabled && showCheckForUpdate) {
+    val anchorFocus = remember { FocusRequester() }
+    val closeMenu: () -> Unit = {
+        menuOpen = false
+        storeMenuOpen = false
+        anchorFocus.requestFocus()
+    }
+    Box(modifier, propagateMinConstraints = true) {
+        LaunchIconActionButton(
+            icon = Icons.Outlined.MoreHoriz,
+            contentDescription = stringResource(R.string.vapor_game_manage),
+            modifier = Modifier.heightIn(min = 56.dp).focusRequester(anchorFocus),
+            onClick = { anchorFocus.requestFocus(); menuOpen = true },
+        )
+        LaunchSourceActionPopup(expanded = menuOpen, onDismissRequest = closeMenu) {
+            if (steamMenuEnabled && showCheckForUpdate) {
                 LaunchSourceMenuItem(
                     icon = Icons.Outlined.Refresh,
                     label = stringResource(R.string.store_game_check_for_update),
                     enabled = areSteamActionsEnabled,
                 ) { menuOpen = false; onCheckForUpdate() }
             }
-            if (menuEnabled && showWorkshop) {
+            if (steamMenuEnabled && showVerifyFiles) {
+                LaunchSourceMenuItem(
+                    icon = Icons.AutoMirrored.Outlined.FactCheck,
+                    label = stringResource(R.string.store_game_verify_files),
+                    enabled = areSteamActionsEnabled,
+                ) { menuOpen = false; onVerifyFiles() }
+            }
+            if (steamMenuEnabled && showWorkshop) {
                 LaunchSourceMenuItem(
                     icon = Icons.Outlined.Construction,
                     label = stringResource(R.string.store_game_workshop),
                     enabled = areSteamActionsEnabled,
                 ) { menuOpen = false; onWorkshop() }
             }
-            if (showAchievements) {
-                LaunchSourceMenuItem(
-                    icon = Icons.Outlined.EmojiEvents,
-                    label = stringResource(R.string.steam_achievements_title),
-                ) { menuOpen = false; onAchievements() }
-            }
-            if (showCheats) {
+            if (onCheats != null) {
                 LaunchSourceMenuItem(
                     icon = Icons.Outlined.Bolt,
                     label = stringResource(R.string.retro_cheats_title),
                     enabled = cheatsEnabled,
                 ) { menuOpen = false; onCheats() }
             }
+            LaunchSourceMenuItem(
+                icon = Icons.Outlined.Home,
+                label = stringResource(if (hasPinnedShortcut) R.string.vapor_game_remove_home_shortcut else R.string.shortcuts_list_add_to_home_screen),
+            ) { menuOpen = false; onShortcut() }
+            if (onSaveTransfer != null) {
+                LaunchSourceMenuItem(
+                    icon = Icons.Outlined.SaveAlt,
+                    label = stringResource(R.string.retro_save_transfer_title),
+                ) { menuOpen = false; onSaveTransfer() }
+            }
+            if (showBootToDesktop) {
+                LaunchSourceMenuItem(
+                    icon = Icons.Outlined.DesktopWindows,
+                    label = stringResource(R.string.hero_boot_to_desktop_title),
+                ) { menuOpen = false; onBootToDesktop() }
+            }
+            if (moveTarget != null) {
+                LaunchSourceMenuItem(
+                    icon = Icons.Outlined.DriveFileMove,
+                    label = stringResource(
+                        if (moveTarget == LibraryStorageMove.Target.APP_STORAGE) R.string.library_games_move_to_app_storage_title
+                        else R.string.library_games_move_to_download_folder_title,
+                    ),
+                    enabled = areSteamActionsEnabled && uninstallEnabled,
+                ) { menuOpen = false; onMoveGame() }
+            }
+            LaunchSourceMenuItem(
+                icon = Icons.Outlined.Storefront,
+                label = stringResource(R.string.library_games_store_change),
+            ) { menuOpen = false; storeMenuOpen = true }
+            androidx.compose.material3.HorizontalDivider(color = Color.White.copy(alpha = 0.14f))
+            LaunchSourceMenuItem(
+                icon = Icons.Outlined.Delete,
+                label = stringResource(
+                    if (!uninstallEnabled) R.string.library_finishing_exit_cloud_sync
+                    else if (removalKeepsFiles) R.string.common_ui_remove
+                    else R.string.common_ui_uninstall,
+                ),
+                enabled = uninstallEnabled,
+                tint = LaunchDanger,
+            ) { closeMenu(); if (uninstallEnabled) onUninstall() }
         }
-
-        LaunchSourceActionPopup(
-            expanded = storeMenuOpen,
-            onDismissRequest = { storeMenuOpen = false },
-            offset = IntOffset(0, anchorHeightPx + gapPx),
-        ) {
+        LaunchSourceActionPopup(expanded = storeMenuOpen, onDismissRequest = closeMenu) {
             LaunchSourceMenuHeader(stringResource(R.string.library_games_store_switch_label))
             if (storeOptions.isEmpty()) {
                 LaunchSourceMenuItem(
@@ -1099,11 +1084,8 @@ private fun SourceTag(
                 ) {}
             }
             storeOptions.forEach { option ->
-                LaunchStoreMenuItem(
-                    label = option.label,
-                    selected = option.id == selectedStoreId,
-                ) {
-                    storeMenuOpen = false
+                LaunchStoreMenuItem(label = option.label, selected = option.id == selectedStoreId) {
+                    closeMenu()
                     if (option.id != selectedStoreId) onSelectStore(option.id)
                 }
             }
@@ -1123,7 +1105,6 @@ private fun LaunchBranchTag(
             ?: branches.firstOrNull()
             ?: return
     var menuOpen by remember { mutableStateOf(false) }
-    var anchorHeightPx by remember { mutableStateOf(0) }
     val contentColor = if (enabled) LaunchTextPrimary else LaunchTextPrimary.copy(alpha = 0.45f)
 
     Box {
@@ -1133,8 +1114,9 @@ private fun LaunchBranchTag(
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)),
             modifier =
                 Modifier
-                    .onSizeChanged { anchorHeightPx = it.height }
-                    .then(if (enabled) Modifier.clickable { menuOpen = true } else Modifier),
+                    .heightIn(min = 48.dp)
+                    .controllerFocusGlow()
+                    .clickable(enabled = enabled, role = Role.Button) { menuOpen = true },
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -1154,7 +1136,7 @@ private fun LaunchBranchTag(
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.widthIn(max = 132.dp),
+                    modifier = Modifier.weight(1f, fill = false).widthIn(max = 132.dp),
                 )
                 if (enabled) {
                     Icon(
@@ -1167,11 +1149,9 @@ private fun LaunchBranchTag(
             }
         }
         if (enabled) {
-            val gapPx = with(LocalDensity.current) { 6.dp.roundToPx() }
             LaunchSourceActionPopup(
                 expanded = menuOpen,
                 onDismissRequest = { menuOpen = false },
-                offset = IntOffset(0, anchorHeightPx + gapPx),
             ) {
                 Column(
                     modifier =
@@ -1186,7 +1166,9 @@ private fun LaunchBranchTag(
                             modifier =
                                 Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .heightIn(min = 48.dp)
+                                    .controllerFocusGlow()
+                                    .clickable(role = Role.Button) {
                                         menuOpen = false
                                         if (!isSelected) onSelectBranch(branch.id)
                                     }.padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
@@ -1241,51 +1223,20 @@ private fun LaunchBranchTag(
 private fun LaunchSourceActionPopup(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
-    offset: IntOffset,
     content: @Composable () -> Unit,
 ) {
-    val transitionState = remember { MutableTransitionState(false) }
-    transitionState.targetState = expanded
-    if (!transitionState.currentState && !transitionState.targetState) return
-
-    Popup(
-        alignment = Alignment.TopEnd,
-        offset = offset,
+    DropdownMenu(
+        expanded = expanded,
         onDismissRequest = onDismissRequest,
-        properties = PopupProperties(focusable = true),
+        modifier = Modifier.widthIn(min = 220.dp, max = 300.dp)
+            .controllerMenuInput(onDismiss = onDismissRequest),
+        shape = RoundedCornerShape(12.dp),
+        containerColor = LaunchCard,
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f)),
+        tonalElevation = 0.dp,
+        shadowElevation = 16.dp,
     ) {
-        AnimatedVisibility(
-            visibleState = transitionState,
-            enter =
-                fadeIn(animationSpec = tween(durationMillis = 90)) +
-                    scaleIn(
-                        animationSpec =
-                            spring(
-                                dampingRatio = 0.78f,
-                                stiffness = Spring.StiffnessMediumLow,
-                            ),
-                        initialScale = 0.88f,
-                        transformOrigin = TransformOrigin(1f, 0f),
-                    ),
-            exit =
-                fadeOut(animationSpec = tween(durationMillis = 80)) +
-                    scaleOut(
-                        animationSpec = tween(durationMillis = 110),
-                        targetScale = 0.92f,
-                        transformOrigin = TransformOrigin(1f, 0f),
-                    ),
-        ) {
-            Surface(
-                modifier = Modifier.controllerConfirmOnA(),
-                color = LaunchBlack.copy(alpha = 0.78f),
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.22f)),
-                tonalElevation = 0.dp,
-                shadowElevation = 16.dp,
-            ) {
-                Column(Modifier.width(IntrinsicSize.Max)) { content() }
-            }
-        }
+        content()
     }
 }
 
@@ -1310,8 +1261,11 @@ private fun LaunchStoreMenuItem(
     Row(
         modifier =
             Modifier
-                .clickable(onClick = onClick)
-                .padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .controllerFocusGlow()
+                .clickable(role = Role.Button, onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -1335,14 +1289,18 @@ private fun LaunchSourceMenuItem(
     icon: ImageVector,
     label: String,
     enabled: Boolean = true,
+    tint: Color = Color.White,
     onClick: () -> Unit,
 ) {
-    val contentColor = if (enabled) Color.White else Color.White.copy(alpha = 0.45f)
+    val contentColor = if (enabled) tint else LaunchTextSecondary
     Row(
         modifier =
             Modifier
-                .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier)
-                .padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .controllerFocusGlow()
+                .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -1453,123 +1411,21 @@ private fun LaunchPlayButton(
     enabled: Boolean = true,
     disabledLabel: String? = null,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (enabled && isPressed) 0.96f else 1f,
-        animationSpec = spring(dampingRatio = 0.5f, stiffness = 600f),
-        label = "launchPlayScale",
-    )
-    val flare by animateFloatAsState(
-        targetValue = if (enabled && isPressed) 1f else 0f,
-        animationSpec = spring(dampingRatio = 0.6f, stiffness = 500f),
-        label = "launchPlayFlare",
-    )
-
-    val playShape = remember { RoundedCornerShape(14.dp) }
-    // Disabled: drop the clickable entirely so focus skips it and a stray controller A-press can't fire onClick.
-    val backgroundBrush =
-        if (enabled) {
-            Brush.horizontalGradient(
-                colors =
-                    listOf(
-                        Color(0xFF00B4D8).copy(alpha = 0.38f),
-                        LaunchAccent.copy(alpha = 0.38f),
-                        Color(0xFF7B2FF7).copy(alpha = 0.38f),
-                    ),
-            )
-        } else {
-            Brush.horizontalGradient(
-                colors =
-                    listOf(
-                        Color(0xFF3A3F4A).copy(alpha = 0.35f),
-                        Color(0xFF2D313A).copy(alpha = 0.35f),
-                        Color(0xFF3A3F4A).copy(alpha = 0.35f),
-                    ),
-            )
-        }
-    val glassSheenBrush =
-        if (enabled) {
-            Brush.verticalGradient(
-                0.00f to Color.White.copy(alpha = 0.28f),
-                0.35f to Color.White.copy(alpha = 0.06f),
-                0.55f to Color.Transparent,
-                1.00f to Color.Black.copy(alpha = 0.12f),
-            )
-        } else {
-            Brush.verticalGradient(
-                0.0f to Color.White.copy(alpha = 0.10f),
-                0.6f to Color.Transparent,
-                1.0f to Color.Black.copy(alpha = 0.08f),
-            )
-        }
-    val glassRimBrush =
-        if (enabled) {
-            Brush.verticalGradient(
-                0.0f to Color.White.copy(alpha = 0.55f + 0.35f * flare),
-                0.5f to Color.White.copy(alpha = 0.08f + 0.18f * flare),
-                1.0f to Color.White.copy(alpha = 0.22f + 0.22f * flare),
-            )
-        } else {
-            Brush.verticalGradient(
-                0.0f to Color.White.copy(alpha = 0.16f),
-                1.0f to Color.White.copy(alpha = 0.04f),
-            )
-        }
-    val foregroundAlpha = if (enabled) 1f else 0.75f
-
-    val baseModifier =
-        Modifier
-            .fillMaxWidth()
-            .height(height)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }.clip(playShape)
-            .background(backgroundBrush)
-            .background(glassSheenBrush)
-            .border(1.dp, glassRimBrush, playShape)
-    val finalModifier =
-        if (enabled) {
-            baseModifier
-                .controllerFocusGlow(cornerRadius = 14.dp)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = onClick,
-                )
-        } else {
-            baseModifier
-        }
-
     val showStatus = !enabled && !disabledLabel.isNullOrBlank()
-    val icon = if (showStatus) Icons.Outlined.Refresh else Icons.Outlined.PlayArrow
-    val label = if (showStatus) disabledLabel!! else stringResource(R.string.library_games_play)
-
-    Box(
-        modifier = finalModifier,
-        contentAlignment = Alignment.Center,
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        shape = RoundedCornerShape(3.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = com.winlator.cmod.shared.theme.WinNativePlay, contentColor = Color.White),
+        modifier = modifier.heightIn(min = height).controllerFocusGlow(cornerRadius = 3.dp),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                modifier = Modifier.size(28.dp),
-                tint = Color.White.copy(alpha = foregroundAlpha),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                label,
-                color = Color.White.copy(alpha = foregroundAlpha),
-                fontSize = 19.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-            )
-        }
+        Icon(if (showStatus) Icons.Outlined.Refresh else Icons.Outlined.PlayArrow,
+            contentDescription = null, modifier = Modifier.size(26.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(if (showStatus) disabledLabel!! else stringResource(R.string.library_games_play),
+            style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -1577,27 +1433,28 @@ private fun LaunchPlayButton(
 private fun LaunchIconActionButton(
     icon: ImageVector,
     contentDescription: String,
-    size: Dp,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     tint: Color = Color.White,
+    enabled: Boolean = true,
 ) {
     Surface(
         modifier =
-            Modifier
-                .size(size)
+            modifier
+                .heightIn(min = 48.dp)
+                .controllerFocusGlow(cornerRadius = 8.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .clickable(onClick = onClick),
+                .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
         color = LaunchBlack.copy(alpha = 0.46f),
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(1.dp, tint.copy(alpha = 0.18f)),
     ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Icon(
-                icon,
-                contentDescription = contentDescription,
-                modifier = Modifier.size(28.dp),
-                tint = tint,
-            )
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val contentTint = if (enabled) tint else LaunchTextSecondary
+            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = contentTint)
+            Text(contentDescription, color = contentTint, style = MaterialTheme.typography.labelMedium,
+                maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
     }
 }

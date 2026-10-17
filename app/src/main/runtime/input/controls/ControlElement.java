@@ -477,7 +477,7 @@ return boundingBox;
       case GAMEPAD_BUTTON_R2:
         return "RT";
       case GAMEPAD_BUTTON_GUIDE:
-        return "WN";
+        return "V";
       default:
         return null;
     }

@@ -162,15 +162,18 @@ static const uint16_t kSnapshotButtons[] = {
 static const int kSnapshotButtonCount =
     sizeof(kSnapshotButtons) / sizeof(kSnapshotButtons[0]);
 
-static std::unordered_map<int, std::shared_ptr<FakeController>> controller_map;
-static std::unordered_map<int, std::string> ring_paths;
-static std::recursive_mutex controller_mutex;
+// NDK/Clang: preloaded hooks still run while libc flushes/closes streams after C++ finalizers.
+// Preserve static initialization and keep their state until process death; close() still releases
+// each controller entry. Heap-initialized references are unsafe during early preload callbacks.
+[[clang::no_destroy]] static std::unordered_map<int, std::shared_ptr<FakeController>> controller_map;
+[[clang::no_destroy]] static std::unordered_map<int, std::string> ring_paths;
+[[clang::no_destroy]] static std::recursive_mutex controller_mutex;
 static bool ring_paths_loaded = false;
 static const char *hook_dir = nullptr;
 static const char *udev_data_dir = nullptr;
 static bool vibration_enabled = true;
 
-static std::unordered_map<int, struct ff_effect> ff_effects;
+[[clang::no_destroy]] static std::unordered_map<int, struct ff_effect> ff_effects;
 static int next_ff_id = 0;
 
 // fork() carries over only the calling thread, so a lock another thread was holding at that

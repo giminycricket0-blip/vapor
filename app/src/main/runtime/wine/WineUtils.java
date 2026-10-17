@@ -485,7 +485,7 @@ public abstract class WineUtils {
     if (!dosdevicesDir.exists()) dosdevicesDir.mkdirs();
     String dosdevicesPath = dosdevicesDir.getPath();
 
-    String packageStorageSuffix = "/com.winnative.cmod/storage";
+    String packageStorageSuffix = "/" + com.winlator.cmod.BuildConfig.APPLICATION_ID + "/storage";
     String legacyPackageStorageSuffix = "/com.winlator.cmod/storage";
     if (container.getManager() != null && container.getManager().getContext() != null) {
       packageStorageSuffix =

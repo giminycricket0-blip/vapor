@@ -1,5 +1,4 @@
 package com.winlator.cmod.app.shell
-import com.winlator.cmod.app.shell.UnifiedActivity.DownloadCancelRequest
 
 import android.app.Activity
 import android.app.PendingIntent
@@ -254,345 +253,167 @@ import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-// Downloads tab + queue/progress UI + game/workshop managers, split out of UnifiedActivity.kt (behavior-identical).
+// Downloads presentation and existing game/workshop managers.
 
-private const val LIVE_PROGRESS_TICK_MS = 250L
-
-// Downloads Tab
+// Downloads Tab. DownloadService and DownloadCoordinator remain the owners of the queue.
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun UnifiedActivity.DownloadsTab(
-    selectedId: String?,
     animationsActive: Boolean = true,
-    onSelectDownload: (String?) -> Unit,
+    onBrowseStore: () -> Unit,
 ) {
     val downloads = remember { mutableStateListOf<Pair<String, DownloadInfo>>() }
     var tick by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
-    var cancelWarningRequest by remember { mutableStateOf<DownloadCancelRequest?>(null) }
-
-    val downloadsActivity = LocalContext.current as? UnifiedActivity
-    val bridge = downloadsActivity?.downloadsNavBridge
-    val navRegistry = remember(bridge) { PaneNavRegistry(initialSignal = bridge?.navSignal ?: -1) }
-    navRegistry.controllerActive = bridge?.controllerActive ?: false
-    LaunchedEffect(navRegistry, bridge?.navSignal) {
-        navRegistry.processNav(bridge?.navSignal ?: 0, bridge?.navDir ?: 0)
+    var confirmCancelAll by remember { mutableStateOf(false) }
+    val bridge = downloadsNavBridge
+    val navRegistry = remember(bridge) { PaneNavRegistry(initialSignal = bridge.navSignal) }
+    navRegistry.controllerActive = bridge.controllerActive
+    LaunchedEffect(navRegistry, bridge.navSignal) {
+        navRegistry.processNav(bridge.navSignal, bridge.navDir)
     }
-
-    val syncDownloads =
-        remember(selectedId, onSelectDownload) {
-            {
-                val currentDownloads = DownloadService.getAllDownloads()
-                downloads.clear()
-                downloads.addAll(currentDownloads)
-                if (selectedId != null && currentDownloads.none { it.first == selectedId }) {
-                    onSelectDownload(null)
-                }
+    val syncDownloads = remember {
+        {
+            downloads.clear()
+            downloads.addAll(DownloadService.getAllDownloads())
+        }
+    }
+    val statusListener = remember {
+        object : EventDispatcher.JavaEventListener {
+            override fun onEvent(event: Any) {
+                if (event is AndroidEvent.DownloadStatusChanged) scope.launch { syncDownloads() }
             }
         }
-    val latestSyncDownloads by rememberUpdatedState(syncDownloads)
-
-    val downloadStatusListener =
-        remember {
-            object : EventDispatcher.JavaEventListener {
-                override fun onEvent(event: Any) {
-                    if (event is AndroidEvent.DownloadStatusChanged) {
-                        scope.launch {
-                            latestSyncDownloads()
-                        }
-                    }
-                }
-            }
-        }
-
-    DisposableEffect(downloadStatusListener, syncDownloads) {
+    }
+    DisposableEffect(statusListener) {
         syncDownloads()
-        PluviaApp.events.onJava(AndroidEvent.DownloadStatusChanged::class, downloadStatusListener)
-        onDispose {
-            PluviaApp.events.offJava(AndroidEvent.DownloadStatusChanged::class, downloadStatusListener)
+        PluviaApp.events.onJava(AndroidEvent.DownloadStatusChanged::class, statusListener)
+        onDispose { PluviaApp.events.offJava(AndroidEvent.DownloadStatusChanged::class, statusListener) }
+    }
+    LaunchedEffect(Unit) { DownloadCoordinator.changes.collect { syncDownloads() } }
+    downloads.forEach { (id, info) ->
+        key(id, info) {
+            LaunchedEffect(info) { info.getStatusFlow().collect { tick++ } }
         }
     }
-
-    // Re-sync the list whenever the cross-store DownloadCoordinator records change. This
-    // is what makes PAUSED records (loaded from DB after app restart) appear in the tab,
-    // and what removes COMPLETE/CANCELLED/FAILED rows after Clear.
-    LaunchedEffect(syncDownloads) {
-        DownloadCoordinator.changes.collect {
-            latestSyncDownloads()
+    // Status changes reorder the existing queue; progress is observed inside each card.
+    @Suppress("UNUSED_EXPRESSION")
+    tick
+    val unfinished = downloads.filter { (_, info) ->
+        info.getStatusFlow().value !in listOf(DownloadPhase.COMPLETE, DownloadPhase.CANCELLED)
+    }
+    val allPaused = unfinished.isNotEmpty() && unfinished.all { (_, info) ->
+        info.getStatusFlow().value in listOf(DownloadPhase.PAUSED, DownloadPhase.FAILED)
+    }
+    val hasHistory = downloads.any { (_, info) ->
+        info.getStatusFlow().value in listOf(DownloadPhase.COMPLETE, DownloadPhase.CANCELLED, DownloadPhase.FAILED)
+    }
+    val sortedDownloads = downloads.sortedBy { (_, info) ->
+        when (info.getStatusFlow().value) {
+            DownloadPhase.PAUSED, DownloadPhase.FAILED -> 1
+            DownloadPhase.QUEUED -> 2
+            DownloadPhase.COMPLETE -> 3
+            DownloadPhase.CANCELLED -> 4
+            else -> 0
         }
     }
-
-    val hasLiveTransfer = downloads.any { (_, info) -> info.isActive() }
-
-    LaunchedEffect(hasLiveTransfer) {
-        if (!hasLiveTransfer) return@LaunchedEffect
-        while (true) {
-            delay(LIVE_PROGRESS_TICK_MS)
-            tick++
-        }
-    }
-
-    downloads.forEach { (_, info) ->
-        LaunchedEffect(info) {
-            info.getStatusFlow().collect {
-                tick++
+    val listState = rememberLazyListState()
+    val density = LocalDensity.current.density
+    LaunchedEffect(listState) {
+        rightStickScrollState.collect {
+            while (kotlin.math.abs(rightStickScrollState.value) > 0.1f) {
+                val value = rightStickScrollState.value
+                val speed = 1.25f + (value * value * (32f - 1.25f))
+                listState.dispatchRawDelta(speed * (if (value > 0) 1f else -1f) * density)
+                delay(16)
             }
         }
-        // Also recompose on status-message changes. Active downloads push
-        // a changing message every progress tick, so this is what keeps
-        // the byte count / speed / progress bar refreshing live (the
-        // phase flow dedups to a single DOWNLOADING emission).
-        LaunchedEffect(info) {
-            info.getStatusMessageFlow().collect {
-                tick++
-            }
-        }
     }
-
     CompositionLocalProvider(LocalPaneNav provides navRegistry) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-            .tabScreenPadding(top = DownloadsHeaderTopPadding)
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val ev = awaitPointerEvent(PointerEventPass.Initial)
-                        if (ev.type == PointerEventType.Press) {
-                            bridge?.controllerActive = false
+        LazyColumn(
+            state = listState,
+            // UnifiedHub's Scaffold already reserves the navigation-bar inset.
+            modifier = Modifier.fillMaxSize()
+                .tabScreenPadding(top = 12.dp)
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            if (awaitPointerEvent(PointerEventPass.Initial).type == PointerEventType.Press) {
+                                bridge.controllerActive = false
+                            }
                         }
                     }
-                }
-            },
-    ) {
-        @Suppress("UNUSED_EXPRESSION")
-        tick
-
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            val selectedInfo = downloads.find { it.first == selectedId }?.second
-            val selectedStatus = selectedInfo?.getStatusFlow()?.value
-            // FAILED is resumable: the dispatcher preserves every breadcrumb
-            // on failure, so one click continues from where it left off.
-            val isResumable =
-                selectedStatus == DownloadPhase.PAUSED || selectedStatus == DownloadPhase.FAILED
-            val isComplete = selectedStatus == DownloadPhase.COMPLETE
-            val isCancelled = selectedStatus == DownloadPhase.CANCELLED
-            val pausableDownloads =
-                downloads.filter {
-                    val status = it.second.getStatusFlow().value
-                    status != DownloadPhase.COMPLETE && status != DownloadPhase.CANCELLED
-                }
-            val allPausableDownloadsPaused =
-                pausableDownloads.isNotEmpty() &&
-                    pausableDownloads.all {
-                        val s = it.second.getStatusFlow().value
-                        s == DownloadPhase.PAUSED || s == DownloadPhase.FAILED
-                    }
-
-            val pauseResumeLabel =
-                if (selectedId == null) {
-                    if (allPausableDownloadsPaused) {
-                        stringResource(
-                            R.string.downloads_queue_resume_all,
-                        )
-                    } else {
-                        stringResource(R.string.downloads_queue_pause_all)
-                    }
-                } else {
-                    when {
-                        selectedStatus == DownloadPhase.FAILED -> stringResource(R.string.session_drawer_retry)
-                        isResumable -> stringResource(R.string.session_drawer_resume)
-                        else -> stringResource(R.string.session_drawer_pause)
-                    }
-                }
-
-            val cancelLabel =
-                if (selectedId == null) {
-                    stringResource(R.string.downloads_queue_cancel_all)
-                } else {
-                    stringResource(R.string.common_ui_cancel)
-                }
-
-            // Disable pause/resume for completed or cancelled downloads
-            val pauseResumeEnabled =
-                if (selectedId != null) {
-                    !isComplete && !isCancelled
-                } else {
-                    pausableDownloads.isNotEmpty()
-                }
-
-            val cancelEnabled =
-                if (selectedId != null) {
-                    !isComplete && !isCancelled
-                } else {
-                    pausableDownloads.isNotEmpty()
-                }
-
-            DownloadsQueueButton(
-                label = pauseResumeLabel,
-                accentColor = Accent,
-                onClick = {
-                    val isResumeAction =
-                        if (selectedId == null) allPausableDownloadsPaused else isResumable
-                    val run = {
-                        when {
-                            selectedId == null && allPausableDownloadsPaused -> DownloadService.resumeAll()
-                            selectedId == null -> DownloadService.pauseAll()
-                            isResumable -> DownloadService.resumeDownload(selectedId)
-                            else -> DownloadService.pauseDownload(selectedId)
-                        }
-                    }
-                    if (isResumeAction) this@DownloadsTab.runIfOnlineOrToast(run) else run()
                 },
-                enabled = pauseResumeEnabled,
-            )
-
-            Box {
-                DownloadsQueueButton(
-                    label = cancelLabel,
-                    accentColor = DangerRed,
-                    onClick = {
-                        if (selectedId == null) {
-                            cancelWarningRequest =
-                                DownloadCancelRequest(
-                                    ids = pausableDownloads.map { it.first },
+            contentPadding = PaddingValues(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item(key = "heading") {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(stringResource(R.string.vapor_downloads_title), style = MaterialTheme.typography.headlineSmall, color = TextPrimary)
+                    Text(stringResource(R.string.vapor_downloads_intro), color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            if (downloads.isEmpty()) {
+                item(key = "empty") {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Column(Modifier.widthIn(max = 520.dp).fillMaxWidth().padding(horizontal = 16.dp, vertical = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Icon(Icons.Outlined.Download, null, tint = Accent,
+                                modifier = Modifier.size(48.dp).background(CardDark, RoundedCornerShape(12.dp)).padding(12.dp))
+                            Text(stringResource(R.string.downloads_queue_empty), color = TextPrimary,
+                                style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+                            Text(stringResource(R.string.vapor_downloads_empty_hint), color = TextSecondary,
+                                style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+                            DownloadsQueueButton(stringResource(R.string.vapor_browse_store), Accent, true, onClick = onBrowseStore)
+                        }
+                    }
+                }
+            } else {
+                item(key = "queue_controls") {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.vapor_downloads_count, unfinished.size), color = TextSecondary)
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            DownloadsQueueButton(
+                                label = stringResource(if (allPaused) R.string.downloads_queue_resume_all else R.string.downloads_queue_pause_all),
+                                accentColor = Accent,
+                                enabled = unfinished.isNotEmpty(),
+                                onClick = {
+                                    if (allPaused) runIfOnlineOrToast { DownloadService.resumeAll() }
+                                    else DownloadService.pauseAll()
+                                },
+                            )
+                            Box {
+                                DownloadsQueueButton(
+                                    label = stringResource(R.string.downloads_queue_cancel_all),
+                                    accentColor = DangerRed,
+                                    enabled = unfinished.isNotEmpty(),
+                                    onClick = { confirmCancelAll = true },
+                                )
+                                DownloadCancelWarningMenu(
+                                    expanded = confirmCancelAll,
+                                    onDismissRequest = { confirmCancelAll = false },
+                                    onConfirm = { confirmCancelAll = false; DownloadService.cancelAll() },
                                     isCancelAll = true,
                                 )
-                        } else {
-                            cancelWarningRequest =
-                                DownloadCancelRequest(
-                                    ids = listOf(selectedId),
-                                    isCancelAll = false,
-                                )
-                        }
-                    },
-                    enabled = cancelEnabled,
-                )
-
-                cancelWarningRequest?.let { request ->
-                    DownloadCancelWarningMenu(
-                        expanded = true,
-                        onDismissRequest = { cancelWarningRequest = null },
-                        onConfirm = {
-                            val activeRequest = cancelWarningRequest
-                            cancelWarningRequest = null
-                            val ids = activeRequest?.ids.orEmpty()
-                            if (activeRequest?.isCancelAll == true) {
-                                DownloadService.cancelAll()
-                            } else {
-                                ids.forEach(DownloadService::cancelDownload)
                             }
-                            onSelectDownload(null)
-                        },
-                        isCancelAll = request.isCancelAll,
-                    )
-                }
-            }
-
-            // Clear button - clears completed, cancelled, and failed downloads
-            val hasCompletedOrCancelled =
-                downloads.any {
-                    val s = it.second.getStatusFlow().value
-                    s == DownloadPhase.COMPLETE || s == DownloadPhase.CANCELLED || s == DownloadPhase.FAILED
-                }
-
-            DownloadsQueueButton(
-                label = stringResource(R.string.downloads_queue_clear),
-                accentColor = Accent,
-                onClick = {
-                    DownloadService.clearCompletedDownloads()
-                },
-                enabled = hasCompletedOrCancelled,
-            )
-        }
-
-        val listState = rememberLazyListState()
-        val activity = LocalContext.current as? UnifiedActivity
-        val density = LocalContext.current.resources.displayMetrics.density
-
-        LaunchedEffect(listState) {
-            activity?.rightStickScrollState?.collect { rz ->
-                if (kotlin.math.abs(rz) > 0.1f) {
-                    // Max scroll speed is 20 rows per second (approx 20 * 100dp / 60fps ~ 32dp per frame)
-                    // Min scroll speed is 0.75 rows per second (approx 0.75 * 100dp / 60fps ~ 1.25dp per frame)
-                    // Use a square curve for more gradual acceleration
-                    val speedFactor = kotlin.math.abs(rz)
-                    val curveFactor = speedFactor * speedFactor
-                    val baseSpeed = 1.25f + (curveFactor * (32f - 1.25f))
-                    val direction = if (rz > 0) 1f else -1f
-
-                    // Using a loop while the stick is held
-                    while (kotlin.math.abs(activity.rightStickScrollState.value) > 0.1f) {
-                        val currentRz = activity.rightStickScrollState.value
-                        val currentSpeedFactor = kotlin.math.abs(currentRz)
-                        val currentCurveFactor = currentSpeedFactor * currentSpeedFactor
-                        val currentBaseSpeed = 1.25f + (currentCurveFactor * (32f - 1.25f))
-                        val currentDirection = if (currentRz > 0) 1f else -1f
-
-                        val pixelsToScroll = currentBaseSpeed * currentDirection * density
-                        listState.dispatchRawDelta(pixelsToScroll)
-                        kotlinx.coroutines.delay(16) // roughly 60fps
+                            DownloadsQueueButton(
+                                label = stringResource(R.string.vapor_clear_download_history),
+                                accentColor = TextSecondary,
+                                enabled = hasHistory,
+                                onClick = { DownloadService.clearCompletedDownloads() },
+                            )
+                        }
+                        if (hasHistory) {
+                            Text(stringResource(R.string.vapor_download_history_hint), color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 }
-            }
-        }
-
-        // Sort so the user always sees what's actually running first, then everything
-        // they can resume, then finished items, with cancelled at the very bottom.
-        // The list re-sorts on phase transitions because `tick` (incremented by the
-        // status flow collectors above) is read here, forcing recomposition.
-        @Suppress("UNUSED_EXPRESSION")
-        tick
-        val sortedDownloads =
-            downloads.sortedBy { (_, info) ->
-                when (info.getStatusFlow().value) {
-                    // In-progress states grouped together at the top.
-                    DownloadPhase.DOWNLOADING,
-                    DownloadPhase.PREPARING,
-                    DownloadPhase.VERIFYING,
-                    DownloadPhase.PATCHING,
-                    DownloadPhase.APPLYING_DATA,
-                    DownloadPhase.FINALIZING,
-                    DownloadPhase.UNPACKING,
-                    DownloadPhase.UNKNOWN,
-                    -> 0
-                    // FAILED sorts with PAUSED — both are user-resumable;
-                    // don't bury them under finished downloads.
-                    DownloadPhase.PAUSED -> 1
-                    DownloadPhase.FAILED -> 1
-                    DownloadPhase.QUEUED -> 2
-                    DownloadPhase.COMPLETE -> 3
-                    DownloadPhase.CANCELLED -> 5
-                }
-            }
-
-        if (sortedDownloads.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                EmptyStateMessage(stringResource(R.string.downloads_queue_empty))
-            }
-        } else {
-            LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(sortedDownloads, key = { it.first }) { (id, info) ->
-                    DownloadItemDeck(
-                        id,
-                        info,
-                        isSelected = selectedId == id,
-                        animationsActive = animationsActive,
-                        onClick = {
-                            if (selectedId == id) onSelectDownload(null) else onSelectDownload(id)
-                        },
-                    )
+                    DownloadItemDeck(id = id, info = info, animationsActive = animationsActive)
                 }
             }
         }
-    }
     }
 }
 
@@ -602,139 +423,41 @@ internal fun UnifiedActivity.DownloadsQueueButton(
     accentColor: Color,
     enabled: Boolean,
     modifier: Modifier = Modifier,
+    onSecondary: () -> Unit = {},
     onClick: () -> Unit,
 ) {
-    val contentColor = if (enabled) accentColor else TextSecondary.copy(alpha = 0.48f)
-
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier =
-            modifier
-                .height(40.dp)
-                // Three of these at a 96 dp minimum plus their gaps come to 308 dp against
-                // 328 dp of usable width on a 360 dp phone — one longer label and the outer
-                // buttons leave the screen. Let them size to their text there.
-                .widthIn(min = if (isCompactWidth()) 0.dp else 96.dp)
-                .paneNavItem(cornerRadius = 8.dp, onActivate = { if (enabled) onClick() }),
-        colors =
-            ButtonDefaults.buttonColors(
-                containerColor = DownloadButtonBlack,
-                contentColor = contentColor,
-                disabledContainerColor = DownloadButtonBlack.copy(alpha = 0.18f),
-                disabledContentColor = TextSecondary.copy(alpha = 0.48f),
-            ),
-        border = BorderStroke(1.dp, contentColor.copy(alpha = if (enabled) 0.55f else 0.24f)),
-        contentPadding = PaddingValues(horizontal = 8.dp),
-        shape = RoundedCornerShape(8.dp),
+        modifier = modifier.heightIn(min = 48.dp).controllerFocusGlow()
+            .then(if (enabled) Modifier.paneNavItem(cornerRadius = 10.dp, onActivate = onClick, onSecondary = onSecondary) else Modifier),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = SurfaceDark,
+            contentColor = accentColor,
+            disabledContainerColor = SurfaceDark.copy(alpha = 0.5f),
+            disabledContentColor = TextSecondary.copy(alpha = 0.5f),
+        ),
+        border = BorderStroke(1.dp, if (enabled) accentColor.copy(alpha = 0.5f) else CardBorder),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        shape = RoundedCornerShape(10.dp),
     ) {
-        Text(
-            label,
-            color = contentColor,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Text(label, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
     }
 }
 
 @Composable
-internal fun UnifiedActivity.AnimatedDownloadProgressFill(
-    modifier: Modifier,
-    widthPx: Float,
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "downloadProgressGradient")
-    val gradientOffset by infiniteTransition.animateFloat(
-        initialValue = -widthPx,
-        targetValue = 0f,
-            animationSpec =
-                infiniteRepeatable(
-                animation = tween(durationMillis = 5000, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart,
-            ),
-        label = "downloadProgressGradientOffset",
-    )
-
-    Box(
-        modifier.background(
-            Brush.horizontalGradient(
-                colorStops = DownloadChaseGradientStops,
-                startX = gradientOffset,
-                endX = gradientOffset + (widthPx * 2f),
-                tileMode = TileMode.Repeated,
-            ),
-        ),
-    )
-}
-
-@Composable
-internal fun UnifiedActivity.DownloadChasingProgressBar(
-    progress: Float,
-    status: DownloadPhase,
-    animationsActive: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    val clampedProgress = progress.coerceIn(0f, 1f)
-    val shouldUseActiveGradient =
-        when (status) {
-            DownloadPhase.DOWNLOADING,
-            DownloadPhase.QUEUED,
-            DownloadPhase.PREPARING,
-            DownloadPhase.VERIFYING,
-            DownloadPhase.PATCHING,
-            DownloadPhase.APPLYING_DATA,
-            DownloadPhase.FINALIZING,
-            DownloadPhase.UNPACKING,
-            -> true
-            else -> false
-        }
-    val shouldAnimate = shouldUseActiveGradient && animationsActive
-    val fillColor =
-        when (status) {
-            DownloadPhase.FAILED,
-            DownloadPhase.CANCELLED,
-            -> DangerRed
+internal fun DownloadProgressBar(progress: Float, status: DownloadPhase, modifier: Modifier = Modifier) {
+    LinearProgressIndicator(
+        progress = { progress.coerceIn(0f, 1f) },
+        modifier = modifier,
+        color = when (status) {
+            DownloadPhase.FAILED, DownloadPhase.CANCELLED -> DangerRed
             DownloadPhase.COMPLETE -> StatusOnline
             DownloadPhase.PAUSED -> TextSecondary
             else -> Accent
-        }
-
-    BoxWithConstraints(
-        modifier =
-            modifier
-                .clip(CircleShape)
-                .background(Color.Black.copy(alpha = 0.34f)),
-    ) {
-        val density = LocalDensity.current
-        val widthPx = with(density) { maxWidth.toPx().coerceAtLeast(1f) }
-
-        if (clampedProgress > 0f) {
-            val fillModifier =
-                Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(clampedProgress)
-                    .clip(RectangleShape)
-
-            if (shouldUseActiveGradient) {
-                if (shouldAnimate) {
-                    AnimatedDownloadProgressFill(fillModifier, widthPx)
-                } else {
-                    Box(
-                        fillModifier.background(
-                            Brush.horizontalGradient(
-                                colorStops = DownloadChaseGradientStops,
-                                endX = widthPx * 2f,
-                                tileMode = TileMode.Repeated,
-                            ),
-                        ),
-                    )
-                }
-            } else {
-                Box(fillModifier.background(fillColor))
-            }
-        }
-    }
+        },
+        trackColor = CardBorder,
+    )
 }
 
 /**
@@ -802,10 +525,9 @@ internal fun UnifiedActivity.SteamTaskProgressBody(info: DownloadInfo) {
                 fontWeight = FontWeight.Bold,
             )
         }
-        DownloadChasingProgressBar(
+        DownloadProgressBar(
             progress = animatedFraction,
             status = status,
-            animationsActive = true,
             modifier = Modifier.fillMaxWidth().height(10.dp),
         )
         Text(
@@ -1019,17 +741,15 @@ internal fun UnifiedActivity.DownloadCancelWarningMenu(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun UnifiedActivity.DownloadItemDeck(
     id: String,
     info: DownloadInfo,
-    isSelected: Boolean,
     animationsActive: Boolean,
-    onClick: () -> Unit,
 ) {
-    var progress by remember { mutableFloatStateOf(info.getProgress()) }
+    var progress by remember(info) { mutableFloatStateOf(info.getProgress()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-
     DisposableEffect(info) {
         val listener: (Float) -> Unit = { progress = it }
         info.addProgressListener(listener)
@@ -1037,8 +757,6 @@ internal fun UnifiedActivity.DownloadItemDeck(
     }
     val status by info.getStatusFlow().collectAsState()
     val statusMessage by info.getStatusMessageFlow().collectAsState()
-    var previousStatus by remember { mutableStateOf(status) }
-    var showCompletedProgressBar by remember { mutableStateOf(status != DownloadPhase.COMPLETE) }
     val isSteam = id.startsWith("STEAM_")
     val isEpic = id.startsWith("EPIC_")
     val isGog = id.startsWith("GOG_")
@@ -1061,25 +779,11 @@ internal fun UnifiedActivity.DownloadItemDeck(
         mutableStateOf<com.winlator.cmod.feature.stores.itch.service.ItchInstalledGame?>(null)
     }
     val context = LocalContext.current
-    val clickInteractionSource = remember { MutableInteractionSource() }
     val animatedProgress by animateFloatAsState(
         targetValue = if (status == DownloadPhase.COMPLETE) 1f else progress.coerceIn(0f, 1f),
-        animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing),
+        animationSpec = tween(durationMillis = if (animationsActive) 200 else 0, easing = FastOutSlowInEasing),
         label = "downloadItemProgress",
     )
-
-    LaunchedEffect(status) {
-        if (status == DownloadPhase.COMPLETE) {
-            if (previousStatus != DownloadPhase.COMPLETE) {
-                showCompletedProgressBar = true
-                delay(900)
-            }
-            showCompletedProgressBar = false
-        } else {
-            showCompletedProgressBar = true
-        }
-        previousStatus = status
-    }
 
     LaunchedEffect(appId, gogId, itchId, isSteam, isEpic, isGog, isItch) {
         withContext(Dispatchers.IO) {
@@ -1123,285 +827,167 @@ internal fun UnifiedActivity.DownloadItemDeck(
             null
         }
 
-    val compactDownloadRow = isCompactWidth()
 
-    Surface(
-        color = if (isSelected) DownloadCardSelectedBlack else DownloadCardBlack,
-        shape = RoundedCornerShape(12.dp),
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .chasingBorder(
-                    isFocused = isSelected,
-                    paused = chasingBordersPaused.value || !animationsActive,
-                    cornerRadius = 12.dp,
-                    borderWidth = 2.dp,
-                    animationDurationMs = 8000,
-                )
-                .paneNavItem(
-                    cornerRadius = 12.dp,
-                    onActivate = onClick,
-                    onSecondary = {
-                        if (status != DownloadPhase.COMPLETE && status != DownloadPhase.CANCELLED) {
-                            showDeleteDialog = true
-                        }
+    val currentFile by info.getCurrentFileNameFlow().collectAsState()
+    val (downloadedBytes, totalBytes) = info.getDisplayBytesProgress()
+    var speed by remember(info) { mutableLongStateOf(0L) }
+    LaunchedEffect(info, status) {
+        speed = info.getCurrentDownloadSpeed() ?: 0L
+        while (status == DownloadPhase.DOWNLOADING) {
+            delay(1000)
+            speed = info.getCurrentDownloadSpeed() ?: 0L
+        }
+    }
+    val statusText =
+        when (status) {
+            DownloadPhase.DOWNLOADING -> {
+                currentFile?.let {
+                    stringResource(R.string.downloads_queue_phase_downloading_file, it)
+                } ?: stringResource(R.string.downloads_queue_phase_downloading)
+            }
+
+            DownloadPhase.PAUSED -> {
+                stringResource(R.string.downloads_queue_phase_paused)
+            }
+
+            DownloadPhase.QUEUED -> {
+                stringResource(R.string.downloads_queue_phase_queued)
+            }
+
+            DownloadPhase.PREPARING -> {
+                stringResource(R.string.downloads_queue_phase_preparing)
+            }
+
+            DownloadPhase.VERIFYING -> {
+                currentFile?.let {
+                    stringResource(R.string.downloads_queue_phase_verifying_file, it)
+                } ?: stringResource(R.string.downloads_queue_phase_verifying)
+            }
+
+            DownloadPhase.PATCHING -> {
+                stringResource(R.string.downloads_queue_phase_patching)
+            }
+
+            DownloadPhase.APPLYING_DATA -> {
+                stringResource(R.string.downloads_queue_phase_applying_data)
+            }
+
+            DownloadPhase.FINALIZING -> {
+                stringResource(R.string.downloads_queue_phase_finalizing)
+            }
+
+            DownloadPhase.UNPACKING -> {
+                stringResource(R.string.downloads_queue_phase_unpacking)
+            }
+
+            DownloadPhase.COMPLETE -> {
+                stringResource(R.string.downloads_queue_phase_complete)
+            }
+
+            DownloadPhase.CANCELLED -> {
+                stringResource(R.string.downloads_queue_phase_cancelled)
+            }
+
+            DownloadPhase.FAILED -> {
+                stringResource(
+                    R.string.downloads_queue_phase_failed,
+                    if (statusMessage != null &&
+                        statusMessage != "null"
+                    ) {
+                        statusMessage!!
+                    } else {
+                        stringResource(R.string.common_ui_unknown_error)
                     },
                 )
-                .clickable(
-                    interactionSource = clickInteractionSource,
-                    indication = null,
-                    onClick = onClick,
-                ),
-    ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model =
-                    ImageRequest
-                        .Builder(context)
-                        .data(displayImage)
-                        .crossfade(300)
-                        .build(),
-                contentDescription = null,
-                // 120 dp is about a third of the usable row width on a phone, which is what
-                // starves the name/size/speed columns beside it.
-                modifier =
-                    Modifier
-                        .size(if (compactDownloadRow) 88.dp else 120.dp, if (compactDownloadRow) 50.dp else 68.dp)
-                        .clip(RoundedCornerShape(4.dp)),
-                contentScale = ContentScale.Crop,
-            )
-
-            Spacer(Modifier.width(16.dp))
-
-            Column(Modifier.weight(1f)) {
-                val currentFile by info.getCurrentFileNameFlow().collectAsState()
-                val (downloadedBytes, totalBytes) = info.getDisplayBytesProgress()
-                val speed = info.getCurrentDownloadSpeed() ?: 0L
-                val percentage = (animatedProgress * 100).roundToInt()
-                val showDownloadSpeed =
-                    status == DownloadPhase.DOWNLOADING &&
-                        progress < 1f &&
-                        speed > 0
-
-                val sizeLabel =
-                    "${StorageUtils.formatDecimalSize(downloadedBytes)} / ${StorageUtils.formatDecimalSize(totalBytes)}"
-                // Three equal weights next to the thumbnail leave about 69 dp each on a phone,
-                // so the size string clips and the game name ellipsizes to a few characters.
-                // Below the compact threshold the name keeps the first line to itself and the
-                // size and speed share a second one.
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        displayName ?: unknownGameLabel,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary,
-                        modifier = Modifier.weight(1f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-
-                    if (!compactDownloadRow) {
-                        // Centered Size Info
-                        Text(
-                            text = sizeLabel,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = TextSecondary,
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                        )
-
-                        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                            if (showDownloadSpeed) {
-                                Text(
-                                    text = StorageUtils.formatBitsPerSecond(speed),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = Accent,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                        }
-                    }
-                }
-                if (compactDownloadRow) {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = sizeLabel,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = TextSecondary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false),
-                        )
-                        Spacer(Modifier.weight(1f))
-                        if (showDownloadSpeed) {
-                            Text(
-                                text = StorageUtils.formatBitsPerSecond(speed),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Accent,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                            )
-                        }
-                    }
-                }
-
-                val statusText =
-                    when (status) {
-                        DownloadPhase.DOWNLOADING -> {
-                            currentFile?.let {
-                                stringResource(R.string.downloads_queue_phase_downloading_file, it.take(10))
-                            } ?: stringResource(R.string.downloads_queue_phase_downloading)
-                        }
-
-                        DownloadPhase.PAUSED -> {
-                            stringResource(R.string.downloads_queue_phase_paused)
-                        }
-
-                        DownloadPhase.QUEUED -> {
-                            stringResource(R.string.downloads_queue_phase_queued)
-                        }
-
-                        DownloadPhase.PREPARING -> {
-                            stringResource(R.string.downloads_queue_phase_preparing)
-                        }
-
-                        DownloadPhase.VERIFYING -> {
-                            currentFile?.let {
-                                stringResource(R.string.downloads_queue_phase_verifying_file, it.take(10))
-                            } ?: stringResource(R.string.downloads_queue_phase_verifying)
-                        }
-
-                        DownloadPhase.PATCHING -> {
-                            stringResource(R.string.downloads_queue_phase_patching)
-                        }
-
-                        DownloadPhase.APPLYING_DATA -> {
-                            stringResource(R.string.downloads_queue_phase_applying_data)
-                        }
-
-                        DownloadPhase.FINALIZING -> {
-                            stringResource(R.string.downloads_queue_phase_finalizing)
-                        }
-
-                        DownloadPhase.UNPACKING -> {
-                            stringResource(R.string.downloads_queue_phase_unpacking)
-                        }
-
-                        DownloadPhase.COMPLETE -> {
-                            stringResource(R.string.downloads_queue_phase_complete)
-                        }
-
-                        DownloadPhase.CANCELLED -> {
-                            stringResource(R.string.downloads_queue_phase_cancelled)
-                        }
-
-                        DownloadPhase.FAILED -> {
-                            stringResource(
-                                R.string.downloads_queue_phase_failed,
-                                if (statusMessage != null &&
-                                    statusMessage != "null"
-                                ) {
-                                    statusMessage!!
-                                } else {
-                                    stringResource(R.string.common_ui_unknown_error)
-                                },
-                            )
-                        }
-
-                        else -> {
-                            stringResource(R.string.downloads_queue_phase_unknown)
-                        }
-                    }
-                val statusColor =
-                    when (status) {
-                        DownloadPhase.COMPLETE -> StatusOnline
-                        DownloadPhase.FAILED,
-                        DownloadPhase.CANCELLED,
-                        -> DangerRed
-                        DownloadPhase.PAUSED,
-                        DownloadPhase.QUEUED,
-                        -> StatusAway
-                        DownloadPhase.DOWNLOADING,
-                        DownloadPhase.PREPARING,
-                        DownloadPhase.VERIFYING,
-                        DownloadPhase.PATCHING,
-                        DownloadPhase.APPLYING_DATA,
-                        DownloadPhase.FINALIZING,
-                        DownloadPhase.UNPACKING,
-                        -> Accent
-                        else -> TextSecondary
-                    }
-
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        stringResource(R.string.downloads_queue_status_label),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary,
-                        maxLines = 1,
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        statusText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = statusColor,
-                        modifier = Modifier.weight(1f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-
-                AnimatedVisibility(
-                    visible = status != DownloadPhase.COMPLETE || showCompletedProgressBar,
-                    exit = fadeOut(tween(180)) + shrinkVertically(tween(180)),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                        DownloadChasingProgressBar(
-                            progress = if (status == DownloadPhase.COMPLETE) 1f else animatedProgress,
-                            status = status,
-                            animationsActive = animationsActive,
-                            modifier = Modifier.weight(1f).height(9.dp).padding(end = 10.dp),
-                        )
-                        Text(
-                            text = "$percentage%",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = if (status == DownloadPhase.COMPLETE) StatusOnline else TextPrimary,
-                            modifier = Modifier.width(40.dp),
-                        )
-                    }
-                }
             }
 
-            Box(contentAlignment = Alignment.Center) {
-                IconButton(
-                    onClick = { showDeleteDialog = true },
-                    enabled = status != DownloadPhase.COMPLETE && status != DownloadPhase.CANCELLED,
-                ) {
-                    Icon(
-                        Icons.Outlined.Close,
-                        contentDescription = stringResource(R.string.downloads_queue_cancel_download),
-                        tint =
-                            if (status != DownloadPhase.COMPLETE &&
-                                status != DownloadPhase.CANCELLED
-                            ) {
-                                Color(0xFFFF6B6B)
-                            } else {
-                                TextSecondary
-                            },
-                    )
+            else -> {
+                stringResource(R.string.downloads_queue_phase_unknown)
+            }
+        }
+    val statusColor =
+        when (status) {
+            DownloadPhase.COMPLETE -> StatusOnline
+            DownloadPhase.FAILED,
+            DownloadPhase.CANCELLED,
+            -> DangerRed
+            DownloadPhase.PAUSED,
+            DownloadPhase.QUEUED,
+            -> StatusAway
+            DownloadPhase.DOWNLOADING,
+            DownloadPhase.PREPARING,
+            DownloadPhase.VERIFYING,
+            DownloadPhase.PATCHING,
+            DownloadPhase.APPLYING_DATA,
+            DownloadPhase.FINALIZING,
+            DownloadPhase.UNPACKING,
+            -> Accent
+            else -> TextSecondary
+        }
+
+    val finished = status == DownloadPhase.COMPLETE || status == DownloadPhase.CANCELLED
+    val resumable = status == DownloadPhase.PAUSED || status == DownloadPhase.FAILED
+    Surface(color = CardDark, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, CardBorder)) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                AsyncImage(
+                    model = displayImage,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(88.dp, 52.dp).clip(RoundedCornerShape(8.dp)).background(SurfaceDark),
+                )
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(displayName ?: unknownGameLabel, color = TextPrimary, style = MaterialTheme.typography.titleMedium)
+                    Text(when { isSteam -> "Steam"; isEpic -> "Epic"; isGog -> "GOG"; isItch -> "itch.io"; else -> "" }, color = TextSecondary, style = MaterialTheme.typography.labelMedium)
                 }
-                if (showDeleteDialog) {
-                    DownloadCancelWarningMenu(
-                        expanded = true,
-                        onDismissRequest = { showDeleteDialog = false },
-                        onConfirm = {
-                            showDeleteDialog = false
-                            DownloadService.cancelDownload(id)
+            }
+            // Keep the complete error visible; an ellipsis here would hide the reason to retry.
+            Text(statusText, color = statusColor, style = MaterialTheme.typography.bodyMedium)
+            DownloadProgressBar(
+                progress = animatedProgress,
+                status = status,
+                modifier = Modifier.fillMaxWidth().height(8.dp),
+            )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("${(animatedProgress * 100).roundToInt()}%", color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                if (totalBytes > 0L) {
+                    Text("${StorageUtils.formatDecimalSize(downloadedBytes)} / ${StorageUtils.formatDecimalSize(totalBytes)}", color = TextSecondary)
+                }
+                if (status == DownloadPhase.DOWNLOADING && progress < 1f && speed > 0L) {
+                    Text(StorageUtils.formatBitsPerSecond(speed), color = Accent)
+                }
+            }
+            if (!finished) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    DownloadsQueueButton(
+                        label = stringResource(when {
+                            status == DownloadPhase.FAILED -> R.string.session_drawer_retry
+                            resumable -> R.string.session_drawer_resume
+                            else -> R.string.session_drawer_pause
+                        }),
+                        accentColor = Accent,
+                        enabled = true,
+                        onSecondary = { showDeleteDialog = true },
+                        onClick = {
+                            if (resumable) runIfOnlineOrToast { DownloadService.resumeDownload(id) }
+                            else DownloadService.pauseDownload(id)
                         },
                     )
+                    Box {
+                        DownloadsQueueButton(
+                            label = stringResource(R.string.downloads_queue_cancel_download),
+                            accentColor = DangerRed,
+                            enabled = true,
+                            onSecondary = { showDeleteDialog = true },
+                            onClick = { showDeleteDialog = true },
+                        )
+                        DownloadCancelWarningMenu(
+                            expanded = showDeleteDialog,
+                            onDismissRequest = { showDeleteDialog = false },
+                            onConfirm = { showDeleteDialog = false; DownloadService.cancelDownload(id) },
+                        )
+                    }
                 }
-            }
-            if (ControllerHelper.isControllerConnected()) {
-                Spacer(Modifier.width(8.dp))
-                ControllerBadge(if (ControllerHelper.isPlayStationController()) "\u2715" else "A")
             }
         }
     }
@@ -1720,6 +1306,12 @@ internal fun UnifiedActivity.GameManagerDialog(
                     }
                 },
                 onBack = onDismissRequest,
+                onPlay = {
+                    // Reuse the same genuine-client launch path as the Library.
+                    launchSteamGame(context, ContainerManager(context), app)
+                    onDismissRequest()
+                },
+                isPlayEnabled = !hasBlockingSteamDownload,
                 onInstall = {
                     if (steamDownloadRecord != null) {
                         com.winlator.cmod.shared.ui.toast.WinToast.show(

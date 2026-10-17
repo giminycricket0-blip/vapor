@@ -102,6 +102,11 @@ import coil.request.ImageRequest
 import com.winlator.cmod.R
 import com.winlator.cmod.feature.stores.steam.data.SteamChatMessage
 import com.winlator.cmod.feature.stores.steam.data.SteamFriendEntry
+import com.winlator.cmod.feature.stores.steam.friends.SteamChatAvailability
+import com.winlator.cmod.feature.stores.steam.friends.SteamChatConnectionNotice
+import com.winlator.cmod.feature.stores.steam.friends.SteamChatComposer
+import com.winlator.cmod.feature.stores.steam.friends.rememberSteamChatAvailability
+import com.winlator.cmod.feature.stores.steam.friends.rememberSteamConversation
 import com.winlator.cmod.feature.stores.steam.service.SteamService
 import com.winlator.cmod.feature.stores.steam.utils.PrefManager
 import com.winlator.cmod.shared.theme.WinNativeTheme
@@ -588,6 +593,7 @@ class ChatOverlayService : Service() {
 
     @Composable
     private fun PanelContent() {
+        val availability = rememberSteamChatAvailability()
         val svc = remember { SteamService.instance }
         val friends by svc?.friendsList?.collectAsState() ?: remember { mutableStateOf(emptyList<SteamFriendEntry>()) }
         val unread by svc?.unreadCounts?.collectAsState() ?: remember { mutableStateOf(emptyMap<Long, Int>()) }
@@ -687,6 +693,12 @@ class ChatOverlayService : Service() {
                                 Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.steam_common_back), tint = TextSecondary)
                             }
                         }
+                        if (convId == 0L) {
+                            SteamChatConnectionNotice(availability)
+                            if (availability != SteamChatAvailability.READY) Text(
+                                stringResource(R.string.vapor_chat_last_known),
+                                color = TextSecondary, modifier = Modifier.padding(horizontal = 12.dp))
+                        }
                         Crossfade(targetState = convId, label = "panelBody", modifier = Modifier.weight(1f)) { id ->
                             val conv = friends.firstOrNull { it.steamId == id }
                             if (id != 0L && conv != null) {
@@ -785,12 +797,11 @@ class ChatOverlayService : Service() {
 
     @Composable
     private fun ConversationView(friend: SteamFriendEntry, modifier: Modifier) {
-        val messages = remember(friend.steamId) { SnapshotStateList<SteamChatMessage>() }
-        var input by remember(friend.steamId) { mutableStateOf("") }
-        var sending by remember(friend.steamId) { mutableStateOf(false) }
+        val availability = rememberSteamChatAvailability()
+        val conversation = rememberSteamConversation(friend.steamId, availability)
+        val messages = conversation.messages
         val listState = rememberLazyListState()
         val scope = androidx.compose.runtime.rememberCoroutineScope()
-        val fieldFocus = remember { FocusRequester() }
         val nav = LocalPaneNav.current
         SideEffect {
             nav?.onEdgeUp = { scope.launch { runCatching { listState.animateScrollBy(-280f) } } }
@@ -809,41 +820,15 @@ class ChatOverlayService : Service() {
             Unit
         }
 
-        DisposableEffect(friend.steamId) {
-            SteamService.instance?.setActiveConversation(friend.steamId)
-            onDispose { SteamService.instance?.clearActiveConversation(friend.steamId) }
-        }
-        LaunchedEffect(friend.steamId) {
-            messages.clear()
-            messages.addAll(SteamService.instance?.loadChatHistory(friend.steamId) ?: emptyList())
-            if (messages.isNotEmpty()) listState.scrollToItem(messages.size - 1)
-            SteamService.instance?.incomingChat?.collect { (fid, m) ->
-                if (fid != friend.steamId) return@collect
-                val known = messages.map { it.timestamp to it.ordinal }.toHashSet()
-                if (m.timestamp != 0 && (m.timestamp to m.ordinal) in known) return@collect
-                val optIdx = if (m.fromSelf) messages.indexOfFirst { it.fromSelf && it.timestamp == 0 && it.text == m.text } else -1
-                if (optIdx >= 0) messages[optIdx] = m else {
-                    messages.add(m)
-                    listState.animateScrollToItem(messages.size - 1)
-                }
-            }
+        LaunchedEffect(messages.size) {
+            if (messages.isNotEmpty()) listState.animateScrollToItem(messages.size - 1)
         }
 
         fun send() {
-            val text = input.trim()
-            if (text.isEmpty() || sending) return
-            sending = true
-            input = ""
-            val optimistic = SteamChatMessage(fromSelf = true, text = text, timestamp = 0, ordinal = 0)
-            messages.add(optimistic)
             scope.launch {
-                listState.animateScrollToItem(messages.size - 1)
-                val ok = SteamService.instance?.sendChatMessage(friend.steamId, text) ?: false
-                if (!ok) {
-                    val idx = messages.indexOf(optimistic)
-                    if (idx >= 0) messages[idx] = optimistic.copy(text = "$text  " + getString(R.string.steam_chat_not_sent))
+                conversation.send(availability == SteamChatAvailability.READY) { text ->
+                    SteamService.instance?.sendChatMessage(friend.steamId, text)
                 }
-                sending = false
             }
         }
 
@@ -856,50 +841,7 @@ class ChatOverlayService : Service() {
             ) {
                 items(messages.size) { i -> OverlayMessageBubble(messages[i]) }
             }
-            Row(
-                Modifier.fillMaxWidth().background(SurfaceDark).padding(horizontal = 8.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(
-                    onClick = openImagePicker,
-                    modifier = Modifier.paneNavItem(onActivate = openImagePicker, tapToSelect = true, navRow = 1, navCol = 0),
-                ) {
-                    Icon(Icons.Outlined.Image, contentDescription = stringResource(R.string.steam_chat_send_image), tint = Accent)
-                }
-                OutlinedTextField(
-                    value = input,
-                    onValueChange = { input = it },
-                    placeholder = { Text(stringResource(R.string.steam_chat_message_hint), color = TextSecondary) },
-                    singleLine = true,
-                    modifier = Modifier
-                        .weight(1f)
-                        .focusRequester(fieldFocus)
-                        .paneNavItem(onActivate = { runCatching { fieldFocus.requestFocus() } }, navRow = 1, navCol = 1, isEntry = true),
-                    keyboardOptions = KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Send),
-                    keyboardActions = KeyboardActions(onSend = { send() }),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = BgDark,
-                        unfocusedContainerColor = BgDark,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary,
-                        cursorColor = Accent,
-                        focusedIndicatorColor = Accent,
-                        unfocusedIndicatorColor = CardBorder,
-                    ),
-                )
-                Spacer(Modifier.width(6.dp))
-                IconButton(
-                    onClick = { send() },
-                    enabled = input.isNotBlank() && !sending,
-                    modifier = Modifier.paneNavItem(onActivate = { send() }, tapToSelect = true, navRow = 1, navCol = 2),
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Outlined.Send,
-                        contentDescription = stringResource(R.string.steam_chat_send),
-                        tint = if (input.isNotBlank() && !sending) Accent else TextSecondary,
-                    )
-                }
-            }
+            SteamChatComposer(conversation, availability, ::send, openImagePicker)
         }
     }
 

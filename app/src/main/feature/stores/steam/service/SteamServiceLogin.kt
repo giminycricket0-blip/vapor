@@ -487,12 +487,6 @@ internal fun SteamService.Companion.dispatchOverlayRequest(serialized: String) {
     }
 }
 
-internal fun SteamService.Companion.clearUserData() {
-    PrefManager.clearAuthTokens()
-
-    clearDatabase()
-}
-
 internal fun SteamService.Companion.clearCloudSyncCaches() {
     instance?.let { svc ->
         svc.scope.launch {

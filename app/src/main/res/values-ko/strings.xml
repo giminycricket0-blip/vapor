@@ -2,7 +2,7 @@
 
 <resources>
     <!-- Common > UI Labels -->
-    <string name="common_ui_app_name">WinNative</string>
+    <string name="common_ui_app_name">Vapor</string>
     <string name="common_ui_run">실행</string>
     <string name="common_ui_edit">편집</string>
     <string name="common_ui_remove">제거</string>
@@ -87,7 +87,7 @@
     <string name="about_branding_heading">스토어 보호</string>
     <string name="about_branding_desc">이 빌드가 다른 버전을 보고하는 이유</string>
     <string name="about_reported_version_code">보고되는 버전 코드</string>
-    <string name="about_branding_explain">이 빌드는 %1$s(으)로 설치되어 기기가 해당 앱의 성능 프로필을 적용합니다. 보고되는 버전 코드는 Google Play가 게시할 수 있는 어느 값보다도 높기 때문에 Play Store는 WinNative를 대체하는 업데이트를 제안하지 않습니다. 위에 표시된 버전이 실제 버전입니다.</string>
+    <string name="about_branding_explain">이 빌드는 %1$s(으)로 설치되어 기기가 해당 앱의 성능 프로필을 적용합니다. 보고되는 버전 코드는 Google Play가 게시할 수 있는 어느 값보다도 높기 때문에 Play Store는 Vapor를 대체하는 업데이트를 제안하지 않습니다. 위에 표시된 버전이 실제 버전입니다.</string>
     <string name="about_copy">빌드 정보 복사</string>
     <string name="about_copied">빌드 정보가 복사되었습니다</string>
     <string name="common_ui_back">뒤로</string>
@@ -218,7 +218,7 @@
     <string name="library_games_no_games_installed">설치된 게임이 없습니다. 스토어 탭이나 + 버튼을 사용하여 게임을 추가하세요.</string>
     <string name="library_games_times_played_label">플레이 횟수: </string>
     <string name="library_games_playtime_label">플레이 시간: </string>
-    <string name="library_games_no_games_hub">설치된 게임 없음\n클릭하여 Winlator 백엔드 열기</string>
+    <string name="library_games_no_games_hub">설치된 게임 없음\n클릭하여 Vapor 백엔드 열기</string>
     <string name="library_games_installed_badge">설치됨</string>
     <string name="library_games_unknown_game">알 수 없는 게임</string>
     <string name="library_games_layouts_header">라이브러리 레이아웃</string>
@@ -661,8 +661,8 @@
     <string name="session_xserver_pref_kbd">키보드</string>
     <string name="session_xserver_pref_other">기타</string>
     <string name="session_xserver_pref_version">버전</string>
-    <string name="session_xserver_notification_description">WinNative XServer 메시지</string>
-    <string name="session_xserver_notification_content">WinNative가 실행 중입니다. 이 알림을 종료하거나 스와이프하지 마세요</string>
+    <string name="session_xserver_notification_description">Vapor XServer 메시지</string>
+    <string name="session_xserver_notification_content">Vapor가 실행 중입니다. 이 알림을 종료하거나 스와이프하지 마세요</string>
 
     <!-- Session > Drawer Menu -->
     <string name="session_drawer_keyboard">키보드</string>
@@ -920,7 +920,7 @@
     <string name="settings_general_open_with_android_browser">Wine에서 Android 브라우저 열기</string>
     <string name="settings_general_share_android_clipboard">Wine과 Android 클립보드 공유</string>
     <string name="settings_general_paths_title">경로 설정</string>
-    <string name="settings_general_paths_summary">Winlator가 작업 데이터를 저장하는 위치와 내보낸 바로가기가 기록되는 위치를 관리합니다.</string>
+    <string name="settings_general_paths_summary">Vapor가 작업 데이터를 저장하는 위치와 내보낸 바로가기가 기록되는 위치를 관리합니다.</string>
     <string name="settings_general_winlator_path_title">저장소 경로</string>
     <string name="settings_general_shortcut_export_path_title">바로가기 내보내기 경로</string>
     <string name="settings_general_choose_path">경로 선택</string>
@@ -930,8 +930,8 @@
     <string name="settings_general_xinput_toggle_title">XInput 비활성화</string>
     <string name="settings_general_xinput_toggle_summary">마우스와 키보드만 사용하려는 경우 XInput 처리를 끕니다.</string>
     <string name="settings_external_display_output_summary">이 화면을 미러링하는 대신 연결된 외부 디스플레이로 게임을 옮깁니다. 안경은 항상 자체 디스플레이를 사용합니다.</string>
-    <string name="settings_general_file_provider_summary">Android 문서 선택기 및 파일 관리자에 WinNative 파일을 노출합니다.</string>
-    <string name="settings_general_auto_scraping_summary">WinNative가 사용자 지정 게임 아트워크를 자동으로 가져올 수 있도록 합니다.</string>
+    <string name="settings_general_file_provider_summary">Android 문서 선택기 및 파일 관리자에 Vapor 파일을 노출합니다.</string>
+    <string name="settings_general_auto_scraping_summary">Vapor가 사용자 지정 게임 아트워크를 자동으로 가져올 수 있도록 합니다.</string>
     <string name="settings_general_open_browser_summary">지원되는 웹 링크를 Wine 내부 대신 Android 브라우저에서 엽니다.</string>
     <string name="settings_general_clipboard_summary">Android와 Wine 세션 간에 복사 및 붙여넣기를 허용합니다.</string>
     <string name="settings_general_imagefs_summary">기존 컨테이너를 제거하지 않고 번들된 시스템 파일을 복원합니다.</string>
@@ -971,7 +971,7 @@
     <string name="settings_debug_input_logs">입력 로그</string>
     <string name="settings_debug_input_logs_description">게임패드, 터치 및 키보드 입력 이벤트를 기록</string>
     <string name="settings_debug_download_logs">다운로드 로그</string>
-    <string name="settings_debug_download_logs_description">다운로드 리졸버 및 WinNative 폴백 이벤트를 기록</string>
+    <string name="settings_debug_download_logs_description">다운로드 리졸버 및 Vapor 폴백 이벤트를 기록</string>
     <string name="settings_debug_vulkan_validation_layers_title">Vulkan 검증 레이어</string>
     <string name="settings_debug_vulkan_validation_layers_subtitle">적용하려면 디스플레이를 다시 시작하세요.</string>
     <string name="settings_debug_share_logs">로그 공유</string>
@@ -987,10 +987,10 @@
     <string name="settings_debug_delete_logs_confirm_message">저장된 모든 로그 파일(%1$s)을 영구적으로 삭제합니다. 되돌릴 수 없습니다.</string>
     <string name="settings_debug_logs_browser_title">로그</string>
     <string name="settings_debug_log_truncated">이 로그의 마지막 %1$s 표시 중</string>
-    <string name="settings_debug_logs_subject">WinNative 로그 (%1$s)</string>
+    <string name="settings_debug_logs_subject">Vapor 로그 (%1$s)</string>
     <string name="settings_debug_no_logs_available">사용 가능한 디버그 로그가 없습니다. 먼저 디버그 옵션을 활성화하고 게임을 실행하세요.</string>
     <string name="settings_debug_capture_failed">로그 캡처 실패: %1$s</string>
-    <string name="settings_debug_log_to_file_desc">WinNative 프로세스 오류, 경고 및 충돌을 파일에 기록</string>
+    <string name="settings_debug_log_to_file_desc">Vapor 프로세스 오류, 경고 및 충돌을 파일에 기록</string>
     <string name="settings_filtered_logs_to_file_title">필터링된 디버그 로그</string>
     <string name="settings_filtered_logs_to_file_desc">앱의 로그를 파일에 저장합니다. 태그 필터에 설정된 대로 필터링됩니다.</string>
     <string name="settings_debug_section_emulation">에뮬레이션</string>
@@ -1219,7 +1219,7 @@
     <string name="saves_import_export_exported_failed">저장 데이터 내보내기 실패: %1$s</string>
     <string name="saves_import_export_imported">저장 데이터가 성공적으로 가져와졌습니다</string>
     <string name="saves_import_export_imported_failed">저장 데이터 가져오기 실패: %1$s</string>
-    <string name="saves_export_path_summary">저장 데이터가 /WinNative/saves로 내보내집니다</string>
+    <string name="saves_export_path_summary">저장 데이터가 /Vapor/saves로 내보내집니다</string>
     <string name="saves_export_success_path">%1$s로 내보냈습니다</string>
     <string name="saves_export_warning_title">사용자 지정 게임에만 사용하세요</string>
     <string name="saves_export_warning_body">내보내기에는 스토어에서 설치한 게임이나 클라우드 동기화 게임의 저장 데이터가 포함될 수 있습니다.</string>
@@ -1390,7 +1390,7 @@
     <string name="cloud_saves_syncing_from_provider">%1$s에서 저장 파일 다운로드 중\u2026</string>
     <string name="cloud_saves_sync_summary">%1$s에 현재 있는 버전을 가져옵니다.</string>
     <string name="cloud_saves_sync_summary_generic">현재 클라우드 버전을 가져옵니다.</string>
-    <string name="common_ui_exit_app_confirm">WinNative를 종료하시겠습니까?</string>
+    <string name="common_ui_exit_app_confirm">Vapor를 종료하시겠습니까?</string>
     <string name="container_surface_effect">표면 효과</string>
     <string name="downloads_queue_cancel_download_confirm">%1$s 다운로드를 취소하고 다운로드된 모든 파일을 삭제하시겠습니까?</string>
     <string name="downloads_queue_paused_resume_hint">일시 중지됨 - 계속하려면 재개를 탭하세요</string>
@@ -1482,7 +1482,7 @@
     <string name="downloads_queue_cancel_all_warning">DLC, 게임 또는 업데이트 다운로드를 취소하면 게임 설치가 손상될 수 있습니다.\n\n모든 다운로드를 취소하고 지금까지 다운로드한 파일을 삭제할까요?</string>
     <string name="shortcuts_properties_use_legacy_launcher">Legacy Launcher 사용</string>
     <string name="shortcuts_properties_use_legacy_launcher_description">Legacy Steam 에뮬레이션: ColdClient 런처로 게임을 실행하고 exe에서 SteamStub DRM을 제거합니다. Steam Launcher에서 작동하지 않는 오래된 게임에만 사용하세요.</string>
-    <string name="steam_section_real_client">WinNative 실제 Steam 클라이언트</string>
+    <string name="steam_section_real_client">Vapor 실제 Steam 클라이언트</string>
     <string name="steam_section_emulator">레거시 Steam 에뮬레이터</string>
     <string name="shortcuts_properties_steam_offline_mode_description">Steam 클라우드를 사용하지 않고 실행하여 저장 파일이 이 기기에 남고 연결이 없어도 게임이 시작됩니다. 끄면 Steam 클라우드가 다시 시작되며, 로컬과 클라우드 저장 파일이 다르면 어느 쪽을 유지할지 묻습니다.</string>
     <string name="input_controls_select_style">스타일 선택</string>
@@ -1509,7 +1509,7 @@
     <string name="cloud_saves_history_steam_unreachable">현재 Steam Cloud에 연결할 수 없습니다. 백그라운드에서 다시 연결 중입니다 온라인 상태가 되면 새로 고침을 누르세요.</string>
     <string name="steam_session_refused_event">Steam이 캐시된 세션을 거부했습니다(EResult=%1$d). 다시 로그인하세요.</string>
     <string name="settings_hud_record_to_file_title">성능을 파일로 기록</string>
-    <string name="settings_hud_record_to_file_summary">게임 플레이 중 초당 FPS, CPU, GPU, 온도 및 배터리 지표를 /WinNative/logs/로 내보냅니다.</string>
+    <string name="settings_hud_record_to_file_summary">게임 플레이 중 초당 FPS, CPU, GPU, 온도 및 배터리 지표를 logs/로 내보냅니다.</string>
     <string name="settings_leaderboard_category">성능</string>
     <!-- Preloader > Launch Screen -->
     <string name="preloader_preparing_steam_environment">Steam 환경 준비 중</string>
@@ -1779,11 +1779,11 @@
     <string name="session_record_now">지금 녹화</string>
     <string name="session_record_quality">품질</string>
     <string name="session_record_resolution">해상도</string>
-    <string name="session_record_saved">녹화가 WinNative/Recordings에 저장되었습니다</string>
+    <string name="session_record_saved">녹화가 Vapor/Recordings에 저장되었습니다</string>
     <string name="session_record_settings_title">녹화 설정</string>
     <string name="session_record_started">녹화 시작됨</string>
     <string name="steam_chat_setting_stay_running">백그라운드에서 실행</string>
-    <string name="steam_chat_setting_stay_running_desc">WinNative를 종료한 후에도 채팅 유지</string>
+    <string name="steam_chat_setting_stay_running_desc">Vapor를 종료한 후에도 채팅 유지</string>
     <string name="settings_content_refresh">새로고침</string>
 
     <!-- Settings > Debug -->
@@ -2391,24 +2391,12 @@
     <string name="retro_scr_sgsr_upscaling">SGSR 업스케일링</string>
     <string name="retro_scr_performance_hud">성능 HUD</string>
     <string name="retro_scr_credits_licenses">크레딧 &amp; 라이선스</string>
-    <string name="retro_scr_credits_desc">WinNative의 일부 기능은 이러한 오픈 소스 프로젝트를 기반으로 합니다. 탭하여 각 소스를 확인하세요.</string>
+    <string name="retro_scr_credits_desc">Vapor의 일부 기능은 이러한 오픈 소스 프로젝트를 기반으로 합니다. 탭하여 각 소스를 확인하세요.</string>
     <string name="retro_scr_tab_defaults">기본값</string>
     <string name="retro_scr_tab_credits">크레딧</string>
     <string name="settings_support_title">지원</string>
-    <string name="support_donate_heading">후원</string>
-    <string name="support_donate_desc">WinNative 개발에 기여하세요. 브라우저에서 열립니다.</string>
-    <string name="support_paypal">paypal.me/MaxJividen</string>
-    <string name="support_paypal_desc">PayPal • 일회성 또는 정기</string>
     <string name="support_heading">도움말</string>
     <string name="support_desc">질문하거나 문제를 보고하고, 진행 중인 작업을 확인하세요. 각 링크는 브라우저에서 열립니다.</string>
-    <string name="support_winnative_discord_desc">Discord • 지원 및 개발</string>
-    <string name="support_maxstechreview_discord_desc">Discord • 커뮤니티</string>
-    <string name="support_youtube_desc">YouTube • 가이드 및 소식</string>
-    <string name="support_reddit_desc">Reddit • 커뮤니티</string>
-    <string name="support_winnative_discord">#WinNative</string>
-    <string name="support_maxstechreview_discord">#MaxsTechReview</string>
-    <string name="support_youtube">@MaxsTechReview</string>
-    <string name="support_reddit">r/EmulatorsForAndroid</string>
     <string name="retro_scr_enable_hardcore_title">하드코어 모드를 사용하시겠습니까?</string>
     <string name="retro_scr_enable_hardcore_body">하드코어 모드는 지금 게임을 재설정하고 상태 저장 불러오기, 빨리 감기, 치트를 비활성화합니다. 저장하지 않은 진행 상황은 손실됩니다. 계속하시겠습니까?</string>
     <string name="retro_scr_cancel">취소</string>
@@ -2919,7 +2907,7 @@
     <string name="update_ignore_until_next">다음 업데이트까지 무시</string>
     <string name="update_no_notes">이 빌드에 대한 릴리스 노트가 게시되지 않았습니다.</string>
     <string name="update_apk_notice">이 업데이트는 앱 자체를 변경하므로 Android가 설치 확인을 요청합니다. 게임, 컨테이너, 설정은 그대로 유지됩니다.</string>
-    <string name="update_up_to_date">WinNative가 최신 상태입니다.</string>
+    <string name="update_up_to_date">Vapor가 최신 상태입니다.</string>
     <string name="update_unsupported_build">인앱 업데이트는 공식 서명된 릴리스에서만 제공됩니다.</string>
     <string name="settings_general_update_source">업데이트 출처</string>
     <string name="settings_general_update_source_summary">풀 리퀘스트 빌드는 해당 풀 리퀘스트를, 공식 설치는 공식 릴리스를 따릅니다.</string>
@@ -2950,15 +2938,15 @@
     <string name="container_graphics_driver_gamescope">Turnip %1$s (Linux ARM64)</string>
     <string name="container_graphics_driver_gamescope_help">Linux 런타임에 내장되어 있습니다. 다운로드한 Android 드라이버는 Wine 및 Proton 컨테이너에만 적용됩니다.</string>
     <string name="linux_runtime_windows_program">Windows 프로그램입니다. 실행하려면 바로가기 설정에서 Wine 컨테이너로 옮기세요.</string>
-    <string name="linux_steam_library_named">WinNative (%1$s)</string>
+    <string name="linux_steam_library_named">Vapor (%1$s)</string>
     <string name="linux_steam_library_internal">내부 저장소</string>
     <string name="linux_steam_library_device_storage">기기 저장소</string>
     <string name="settings_content_badge_online">온라인</string>
     <string name="gamescope_fex_title">FEX (64-bit and 32-bit)</string>
     <string name="gamescope_fex_preset">FEX Preset</string>
-    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in WinNative are not used; the preset is.</string>
+    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in Vapor are not used; the preset is.</string>
     <string name="gamescope_proton_title">Proton</string>
-    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with WinNative, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
+    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with Vapor, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
     <string name="settings_drivers_android">Android</string>
     <string name="settings_drivers_linux">Linux</string>
     <string name="settings_drivers_platform_hint">드라이버를 설치할 위치를 선택하세요. 인식된 패키지는 자동으로 올바른 플랫폼을 사용합니다.</string>

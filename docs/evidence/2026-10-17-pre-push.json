@@ -1,0 +1,96 @@
+{
+  "scope": "Selected Cloud/session and Steam catalog JVM regression checks before the first Vapor source push. No live account or device acceptance.",
+  "suites": [
+    {
+      "name": "com.winlator.cmod.app.shell.GameSessionFailureTest",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "7.686"
+    },
+    {
+      "name": "com.winlator.cmod.feature.stores.steam.service.SteamCatalogTest",
+      "tests": "14",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.078"
+    },
+    {
+      "name": "com.winlator.cmod.feature.stores.steam.service.SteamCloseSyncTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.097"
+    },
+    {
+      "name": "com.winlator.cmod.feature.stores.steam.service.SteamHandoffTest",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "11.735"
+    },
+    {
+      "name": "com.winlator.cmod.feature.stores.steam.service.SteamInstallRecoveryTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "1.84"
+    },
+    {
+      "name": "com.winlator.cmod.feature.stores.steam.wnsteam.WnLauncherStatusTailerTest",
+      "tests": "12",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.5"
+    },
+    {
+      "name": "com.winlator.cmod.runtime.display.SteamExitCloudTest",
+      "tests": "11",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.034"
+    }
+  ],
+  "result": "pass",
+  "source_base": "8409085f706acbc0749881d9bf1e85f2f347dfd4",
+  "application_code_changed_during_cleanup": false,
+  "native_fixtures": {
+    "cloud_conflict_answer": "pass; explicit local/cloud answers only, invalid answers preserve output",
+    "wayland": {
+      "cases": 55,
+      "failures": 0,
+      "source_hashes": {
+        "ahb_swapchain.c": "7ed1614bcf1342051c5ff5b956963c761be525263dd6e9c7c5af15c1482f7397",
+        "sc_layer.c": "f3e8b1842c6a557a534b412f46651ce44888eaf0ea0d7b70905bf2d1d7c1a11e",
+        "vk_present.c": "188ce178780f794eab94efd875e541e03c4d66170026766f9aa6daca7593adf9"
+      },
+      "boundary": "Actual extracted functions; mocked poll/ioctl/Vulkan/Wayland/SurfaceControl boundaries. No rendering."
+    },
+    "kgsl_wait": {
+      "baseline": {
+        "cases": 14,
+        "failures": 8,
+        "exit_code": 1
+      },
+      "corrected": {
+        "cases": 14,
+        "failures": 0,
+        "exit_code": 0
+      },
+      "boundary": "Extracted Mesa functions with mocked clock/ioctl; no physical GPU test."
+    }
+  },
+  "apk_recheck": {
+    "signature": "pass",
+    "zip_16kb_alignment": "pass",
+    "elf_16kb_alignment": "39/39 pass",
+    "rebuilt": false
+  }
+}

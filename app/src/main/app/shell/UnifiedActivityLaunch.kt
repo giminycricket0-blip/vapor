@@ -10,6 +10,7 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.os.SystemClock
 import android.provider.DocumentsContract
 import android.util.Log
 import androidx.activity.SystemBarStyle
@@ -201,6 +202,7 @@ import com.winlator.cmod.feature.sync.ui.CloudSavesContent
 import com.winlator.cmod.runtime.container.ContainerManager
 import com.winlator.cmod.runtime.container.Shortcut
 import com.winlator.cmod.runtime.display.XServerDisplayActivity
+import com.winlator.cmod.runtime.system.GameLaunchTiming
 import com.winlator.cmod.runtime.display.environment.ImageFs
 import com.winlator.cmod.runtime.input.ControllerHelper
 import com.winlator.cmod.runtime.wine.PeIconExtractor
@@ -256,6 +258,7 @@ internal fun UnifiedActivity.launchSteamGame(
     app: SteamApp,
     joinConnect: String? = null,
 ) {
+    val requestedAtMs = SystemClock.elapsedRealtime()
     lifecycleScope.launch(Dispatchers.IO) {
         val gameInstallPath = SteamService.getAppDirPath(app.id)
         val gameDir = java.io.File(gameInstallPath)
@@ -324,7 +327,7 @@ internal fun UnifiedActivity.launchSteamGame(
             intent.putExtra("shortcut_name", shortcut.name)
             if (!joinConnect.isNullOrBlank()) intent.putExtra("steam_join_connect", joinConnect)
             withContext(Dispatchers.Main) {
-                launchGame(context, intent)
+                launchGame(context, intent, requestedAtMs)
             }
         } else {
             val container = SetupWizardActivity.getPreferredGameContainer(context, containerManager)
@@ -357,6 +360,7 @@ internal fun UnifiedActivity.launchSteamGame(
             content.append("game_install_path=${gameInstallPath}\n")
             content.append("launch_exe_path=${detectedLaunchExecutable}\n")
             content.append("use_container_defaults=1\n")
+            content.append("fpsLimit=${com.winlator.cmod.runtime.container.Shortcut.DEFAULT_FPS_LIMIT}\n")
 
             com.winlator.cmod.shared.io.FileUtils
                 .writeString(shortcutFile, content.toString())
@@ -369,7 +373,7 @@ internal fun UnifiedActivity.launchSteamGame(
             intent.putExtra("shortcut_name", app.name)
             if (!joinConnect.isNullOrBlank()) intent.putExtra("steam_join_connect", joinConnect)
             withContext(Dispatchers.Main) {
-                launchGame(context, intent)
+                launchGame(context, intent, requestedAtMs)
             }
         }
     }
@@ -380,6 +384,7 @@ internal fun UnifiedActivity.launchEpicGame(
     containerManager: ContainerManager,
     app: EpicGame,
 ) {
+    val requestedAtMs = SystemClock.elapsedRealtime()
     lifecycleScope.launch(Dispatchers.IO) {
         val gameInstallPath = app.installPath.takeIf { it.isNotEmpty() } ?: EpicConstants.getGameInstallPath(context, app.appName)
         val gameDir = java.io.File(gameInstallPath)
@@ -515,7 +520,7 @@ internal fun UnifiedActivity.launchEpicGame(
             intent.putExtra("shortcut_name", epicDisplayName)
             intent.putExtra("extra_exec_args", args) // Pass fresh tokens
             withContext(Dispatchers.Main) {
-                launchGame(context, intent)
+                launchGame(context, intent, requestedAtMs)
             }
         } else {
             // No existing shortcut — create a new one
@@ -570,6 +575,7 @@ internal fun UnifiedActivity.launchEpicGame(
                 content.append("launch_exe_path=${exePath}\n")
             }
             content.append("use_container_defaults=1\n")
+            content.append("fpsLimit=${com.winlator.cmod.runtime.container.Shortcut.DEFAULT_FPS_LIMIT}\n")
 
             com.winlator.cmod.shared.io.FileUtils
                 .writeString(shortcutFile, content.toString())
@@ -607,7 +613,7 @@ internal fun UnifiedActivity.launchEpicGame(
             intent.putExtra("shortcut_name", app.title)
             intent.putExtra("extra_exec_args", args) // Pass fresh tokens
             withContext(Dispatchers.Main) {
-                launchGame(context, intent)
+                launchGame(context, intent, requestedAtMs)
             }
         }
     }
@@ -618,6 +624,7 @@ internal fun UnifiedActivity.launchGogGame(
     containerManager: ContainerManager,
     app: GOGGame,
 ) {
+    val requestedAtMs = SystemClock.elapsedRealtime()
     lifecycleScope.launch(Dispatchers.IO) {
         val gameInstallPath = app.installPath.takeIf { it.isNotEmpty() } ?: GOGConstants.getGameInstallPath(app.title)
         val gameDir = java.io.File(gameInstallPath)
@@ -712,7 +719,7 @@ internal fun UnifiedActivity.launchGogGame(
             intent.putExtra("shortcut_path", shortcut.file.path)
             intent.putExtra("shortcut_name", shortcut.name)
             withContext(Dispatchers.Main) {
-                launchGame(context, intent)
+                launchGame(context, intent, requestedAtMs)
             }
             return@launch
         }
@@ -766,6 +773,7 @@ internal fun UnifiedActivity.launchGogGame(
                 content.append("launch_exe_path=${exePath}\n")
             }
             content.append("use_container_defaults=1\n")
+            content.append("fpsLimit=${com.winlator.cmod.runtime.container.Shortcut.DEFAULT_FPS_LIMIT}\n")
 
         com.winlator.cmod.shared.io.FileUtils
             .writeString(shortcutFile, content.toString())
@@ -776,7 +784,7 @@ internal fun UnifiedActivity.launchGogGame(
         intent.putExtra("shortcut_path", shortcutFile.path)
         intent.putExtra("shortcut_name", app.title)
         withContext(Dispatchers.Main) {
-            launchGame(context, intent)
+            launchGame(context, intent, requestedAtMs)
         }
     }
 }
@@ -893,6 +901,7 @@ internal fun UnifiedActivity.launchCustomGame(
     containerManager: ContainerManager,
     gameName: String,
 ) {
+    val requestedAtMs = SystemClock.elapsedRealtime()
     lifecycleScope.launch(Dispatchers.IO) {
         val allShortcuts = containerManager.loadShortcuts()
 
@@ -947,7 +956,7 @@ internal fun UnifiedActivity.launchCustomGame(
                 return@launch
             }
             val retroIntent = com.winlator.cmod.feature.retro.RetroShortcuts.launchIntent(context, shortcut)
-            withContext(Dispatchers.Main) { launchGame(context, retroIntent) }
+            withContext(Dispatchers.Main) { launchGame(context, retroIntent, requestedAtMs) }
             return@launch
         }
 
@@ -968,7 +977,7 @@ internal fun UnifiedActivity.launchCustomGame(
         intent.putExtra("shortcut_path", shortcut.file.path)
         intent.putExtra("shortcut_name", gameName)
         withContext(Dispatchers.Main) {
-            launchGame(context, intent)
+            launchGame(context, intent, requestedAtMs)
         }
     }
 }
@@ -976,7 +985,9 @@ internal fun UnifiedActivity.launchCustomGame(
 internal fun UnifiedActivity.launchGame(
     context: android.content.Context,
     intent: Intent,
+    requestedAtMs: Long,
 ) {
+    intent.putExtra(GameLaunchTiming.EXTRA_REQUESTED_AT_MS, requestedAtMs)
     DownloadService.clearCompletedDownloads()
     context.startActivity(intent)
     // Suppress the default activity transition so the preloader stays seamless

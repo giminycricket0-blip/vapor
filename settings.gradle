@@ -22,7 +22,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Winlator"
+rootProject.name = "Vapor"
 include ':app'
 include ':framegen'
 include ':armsx2'

@@ -143,6 +143,12 @@ class WnSteamSession : AutoCloseable {
         return nativeWineBridgeLastError(h)
     }
 
+    // Mint short-lived web access using the existing CM session. Never pass refreshToken to a page.
+    fun getWebAccessToken(refreshToken: String): String? {
+        val h = nativeHandle.get(); if (h == 0L || refreshToken.isBlank()) return null
+        return nativeGetWebAccessToken(h, refreshToken)
+    }
+
     // Return a cached app ownership ticket, or null if not pre-warmed.
     fun getAppOwnershipTicket(appId: Int): ByteArray? {
         val h = nativeHandle.get(); if (h == 0L) return null
@@ -539,6 +545,13 @@ class WnSteamSession : AutoCloseable {
     }
 
     // Cached license list JSON; empty until the post-logon push arrives.
+    // Blocking free-on-demand request. Call off the main thread; only Steam can grant it.
+    fun requestFreeLicense(appId: Int): String? {
+        require(appId > 0)
+        val h = nativeHandle.get(); if (h == 0L) return null
+        return nativeRequestFreeLicense(h, appId)
+    }
+
     fun getLicenseList(): String? {
         val h = nativeHandle.get(); if (h == 0L) return null
         return nativeGetLicenseList(h)
@@ -767,7 +780,9 @@ class WnSteamSession : AutoCloseable {
         @JvmStatic private external fun nativeGetSelfPersona(handle: Long): String?
         @JvmStatic private external fun nativeGetFamilyGroup(
             handle: Long, familyGroupId: Long): String?
+        @JvmStatic private external fun nativeGetWebAccessToken(handle: Long, refreshToken: String): String?
         @JvmStatic private external fun nativeGetLicenseList(handle: Long): String?
+        @JvmStatic private external fun nativeRequestFreeLicense(handle: Long, appId: Int): String?
         @JvmStatic private external fun nativeGetFriendsList(handle: Long): LongArray
         @JvmStatic private external fun nativeGetFriendPersonas(handle: Long): String?
         @JvmStatic private external fun nativeSendFriendMessage(handle: Long, steamId: Long, message: String): String?

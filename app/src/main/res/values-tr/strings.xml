@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common > UI Labels -->
-    <string name="common_ui_app_name">WinNative</string>
+    <string name="common_ui_app_name">Vapor</string>
     <string name="common_ui_run">Çalıştır</string>
     <string name="common_ui_edit">Düzenle</string>
     <string name="common_ui_remove">Kaldır</string>
@@ -91,7 +91,7 @@
     <string name="about_branding_heading">MAĞAZA KORUMASI</string>
     <string name="about_branding_desc">Bu derlemenin neden farklı bir sürüm bildirdiği</string>
     <string name="about_reported_version_code">Bildirilen sürüm kodu</string>
-    <string name="about_branding_explain">Bu derleme %1$s olarak kurulur; böylece cihaz o uygulamanın performans profilini uygular. Bildirdiği sürüm kodu, Google Play\'in yayımlayabileceği her şeyden yüksektir; bu yüzden Play Store hiçbir zaman WinNative\'in yerini alacak bir güncelleme sunmaz. Yukarıdaki sürüm gerçek olandır.</string>
+    <string name="about_branding_explain">Bu derleme %1$s olarak kurulur; böylece cihaz o uygulamanın performans profilini uygular. Bildirdiği sürüm kodu, Google Play\'in yayımlayabileceği her şeyden yüksektir; bu yüzden Play Store hiçbir zaman Vapor\'in yerini alacak bir güncelleme sunmaz. Yukarıdaki sürüm gerçek olandır.</string>
     <string name="about_copy">Derleme bilgisini kopyala</string>
     <string name="about_copied">Derleme bilgisi kopyalandı</string>
     <string name="common_ui_back">Geri</string>
@@ -166,7 +166,7 @@
     <string name="common_ui_grant_all_files_access_browse">Klasörlere doğrudan gözatmak için tüm dosyalara erişim izni verin.</string>
     <string name="common_ui_not_configured">Yapılandırılmadı</string>
     <string name="common_ui_reinstall">Yeniden Yükle</string>
-    <string name="common_ui_exit_app_confirm">WinNative uygulamasından çıkılsın mı?</string>
+    <string name="common_ui_exit_app_confirm">Vapor uygulamasından çıkılsın mı?</string>
     <string name="common_ui_elements_count">%1$d öğe</string>
     <string name="common_ui_disabled_placeholder">-- Devre dışı --</string>
     <string name="common_ui_enabled">Etkin</string>
@@ -219,7 +219,7 @@
     <string name="library_games_no_games_installed">Yüklü oyun yok. Oyun eklemek için bir Mağaza sekmesini veya + düğmesini kullanın.</string>
     <string name="library_games_times_played_label">Oynanma sayısı: </string>
     <string name="library_games_playtime_label">Oynanma süresi: </string>
-    <string name="library_games_no_games_hub">Yüklü Oyun Yok\nWinlator Arka Ucunu açmak için tıklayın</string>
+    <string name="library_games_no_games_hub">Yüklü Oyun Yok\nVapor Arka Ucunu açmak için tıklayın</string>
     <string name="library_games_installed_badge">YÜKLÜ</string>
     <string name="library_games_unknown_game">Bilinmeyen Oyun</string>
     <string name="library_games_layouts_header">KÜTÜPHANE DÜZENLERİ</string>
@@ -416,7 +416,7 @@
     <string name="shortcuts_properties_runtime_patcher">Çalışma Zamanı DRM Yamalayıcısı</string>
     <string name="shortcuts_properties_runtime_patcher_description">Başlatma sırasında bir DRM yamalayıcı DLL\'i enjekte eder. FPS\'yi düşürür — yalnızca Eski Başlatıcı tek başına başarısız olursa kullanın.</string>
     <string name="steam_section_title">Steam</string>
-    <string name="steam_section_real_client">WinNative Gerçek Steam İstemcisi</string>
+    <string name="steam_section_real_client">Vapor Gerçek Steam İstemcisi</string>
     <string name="steam_section_emulator">Eski Steam Emülatörü</string>
     <string name="shortcuts_properties_use_steam_input">Steam Input\'u Kullan</string>
     <string name="steam_launcher_real_client">Steam Launcher</string>
@@ -743,8 +743,8 @@ E.g. <b>META</b> için <i>META tuşu</i>, \n
     <string name="session_xserver_pref_kbd">Klavye</string>
     <string name="session_xserver_pref_other">Diğer</string>
     <string name="session_xserver_pref_version">Sürüm</string>
-    <string name="session_xserver_notification_description">WinNative XServer Mesajları</string>
-    <string name="session_xserver_notification_content">WinNative çalışıyor, bu bildirimi kapatmayın veya kaydırmayın</string>
+    <string name="session_xserver_notification_description">Vapor XServer Mesajları</string>
+    <string name="session_xserver_notification_content">Vapor çalışıyor, bu bildirimi kapatmayın veya kaydırmayın</string>
 
     <!-- Session > Drawer Menu -->
     <string name="session_drawer_keyboard">Klavye</string>
@@ -980,7 +980,7 @@ E.g. <b>META</b> için <i>META tuşu</i>, \n
     <string name="session_drawer_rail_label_record">Kaydet</string>
     <string name="session_drawer_rail_label_logs">Günlükler</string>
     <string name="session_record_started">Kayıt başladı</string>
-    <string name="session_record_saved">Kayıt WinNative/Recordings konumuna kaydedildi</string>
+    <string name="session_record_saved">Kayıt Vapor/Recordings konumuna kaydedildi</string>
     <string name="session_record_failed">Kayıt başlatılamadı</string>
     <string name="session_record_settings_title">Kayıt Ayarları</string>
     <string name="session_record_fps">Kare Hızı</string>
@@ -1206,7 +1206,7 @@ E.g. <b>META</b> için <i>META tuşu</i>, \n
     <string name="settings_general_open_with_android_browser">Android Tarayıcısını Wine\'da Aç</string>
     <string name="settings_general_share_android_clipboard">Android Panosunu Wine ile Paylaş</string>
     <string name="settings_general_paths_title">Yol Ayarları</string>
-    <string name="settings_general_paths_summary">Winlator\'ın çalışma verilerini nerede sakladığını ve dışa aktarılan kısayolların nereye yazıldığını yönetin.</string>
+    <string name="settings_general_paths_summary">Vapor\'ın çalışma verilerini nerede sakladığını ve dışa aktarılan kısayolların nereye yazıldığını yönetin.</string>
     <string name="settings_general_winlator_path_title">Depolama Yolu</string>
     <string name="settings_general_shortcut_export_path_title">Kısayol Dışa Aktarma Yolu</string>
     <string name="settings_general_choose_path">Yol Seç</string>
@@ -1216,8 +1216,8 @@ E.g. <b>META</b> için <i>META tuşu</i>, \n
     <string name="settings_general_xinput_toggle_title">XInput\'u Devre Dışı Bırak</string>
     <string name="settings_general_xinput_toggle_summary">Özel fare ve klavye denetimi istediğinizde XInput işlemeyi kapatır.</string>
     <string name="settings_external_display_output_summary">Bu ekranı yansıtmak yerine oyunu bağlı bir harici ekrana taşıyın. Gözlükler her zaman kendi ekranlarını kullanır.</string>
-    <string name="settings_general_file_provider_summary">WinNative dosyalarını Android belge seçicilerine ve dosya yöneticilerine açar.</string>
-    <string name="settings_general_auto_scraping_summary">Bu ayar, WinNative\'in özel oyun görsellerini otomatik olarak getirmesine olanak tanır.</string>
+    <string name="settings_general_file_provider_summary">Vapor dosyalarını Android belge seçicilerine ve dosya yöneticilerine açar.</string>
+    <string name="settings_general_auto_scraping_summary">Bu ayar, Vapor\'in özel oyun görsellerini otomatik olarak getirmesine olanak tanır.</string>
     <string name="settings_general_open_browser_summary">Desteklenen web bağlantılarını Wine yerine Android tarayıcısında açar.</string>
     <string name="settings_general_clipboard_summary">Android ile Wine oturumları arasında kopyalama ve yapıştırmaya izin verir.</string>
     <string name="settings_general_imagefs_summary">Mevcut kapsayıcılarınızı kaldırmadan paket sistem dosyalarını geri yükler.</string>
@@ -1259,7 +1259,7 @@ E.g. <b>META</b> için <i>META tuşu</i>, \n
     <string name="settings_debug_input_logs">Giriş Günlükleri</string>
     <string name="settings_debug_input_logs_description">Oyun kumandası, dokunma ve klavye giriş olaylarını kaydet</string>
     <string name="settings_debug_download_logs">İndirme Günlükleri</string>
-    <string name="settings_debug_download_logs_description">İndirme çözümleyici ve WinNative geri dönüş olaylarını kaydet</string>
+    <string name="settings_debug_download_logs_description">İndirme çözümleyici ve Vapor geri dönüş olaylarını kaydet</string>
     <string name="settings_debug_vulkan_validation_layers_title">Vulkan Doğrulama Katmanları</string>
     <string name="settings_debug_vulkan_validation_layers_subtitle">Uygulamak için ekranı yeniden başlatın.</string>
     <string name="settings_debug_share_logs">Günlükleri Paylaş</string>
@@ -1275,10 +1275,10 @@ E.g. <b>META</b> için <i>META tuşu</i>, \n
     <string name="settings_debug_delete_logs_confirm_message">Bu işlem, kaydedilen tüm günlük dosyalarını (%1$s) kalıcı olarak siler. Bu geri alınamaz.</string>
     <string name="settings_debug_logs_browser_title">Günlükler</string>
     <string name="settings_debug_log_truncated">Bu günlüğün son %1$s kısmı gösteriliyor</string>
-    <string name="settings_debug_logs_subject">WinNative Günlükleri (%1$s)</string>
+    <string name="settings_debug_logs_subject">Vapor Günlükleri (%1$s)</string>
     <string name="settings_debug_no_logs_available">Kullanılabilir hata ayıklama günlüğü yok. Önce hata ayıklama seçeneklerini etkinleştirin ve bir oyun başlatın.</string>
     <string name="settings_debug_capture_failed">Günlükler yakalanamadı: %1$s</string>
-    <string name="settings_debug_log_to_file_desc">WinNative işlem hatalarını, uyarılarını ve çökmelerini dosyaya kaydet</string>
+    <string name="settings_debug_log_to_file_desc">Vapor işlem hatalarını, uyarılarını ve çökmelerini dosyaya kaydet</string>
     <string name="settings_filtered_logs_to_file_title">Filtrelenmiş Hata Ayıklama Günlüğü</string>
     <string name="settings_filtered_logs_to_file_desc">Uygulamanın günlüklerini, etiket filtresinde ayarlananlara göre filtreleyerek bir dosyaya kaydet.</string>
     <string name="settings_debug_section_emulation">Öykünme</string>
@@ -1608,7 +1608,7 @@ Yüklü konum:
     <string name="saves_import_export_exported_failed">Kayıtlar dışa aktarılamadı: %1$s</string>
     <string name="saves_import_export_imported">Kayıtlar başarıyla içe aktarıldı</string>
     <string name="saves_import_export_imported_failed">Kayıtlar içe aktarılamadı: %1$s</string>
-    <string name="saves_export_path_summary">Kayıtlar /WinNative/saves konumuna dışa aktarılacak</string>
+    <string name="saves_export_path_summary">Kayıtlar /Vapor/saves konumuna dışa aktarılacak</string>
     <string name="saves_export_success_path">%1$s konumuna dışa aktarıldı</string>
     <string name="saves_export_warning_title">Bunu yalnızca özel oyunlarla kullanın</string>
     <string name="saves_export_warning_body">Dışa aktarma, mağazadan yüklenen veya bulut eşitlemeli oyunların kayıtlarını içerebilir.</string>
@@ -1677,7 +1677,7 @@ Yüklü konum:
 
     <!-- Performance recording settings -->
     <string name="settings_hud_record_to_file_title">Performansı dosyaya kaydet</string>
-    <string name="settings_hud_record_to_file_summary">Oyun sırasında saniye başına FPS, CPU, GPU, sıcaklık ve pil ölçümlerini /WinNative/logs/ konumuna dışa aktarır.</string>
+    <string name="settings_hud_record_to_file_summary">Oyun sırasında saniye başına FPS, CPU, GPU, sıcaklık ve pil ölçümlerini logs/ konumuna dışa aktarır.</string>
     <string name="settings_leaderboard_category">Performans</string>
     <!-- Workshop -->
     <string name="workshop_loading_items">Workshop öğeleri yükleniyor</string>
@@ -1737,7 +1737,7 @@ Yüklü konum:
     <string name="steam_chat_setting_ingame">Oyunda Sohbeti Etkinleştir</string>
     <string name="steam_chat_setting_ingame_desc">Oynarken mesaj alın ve gönderin</string>
     <string name="steam_chat_setting_stay_running">Arka Planda Çalıştır</string>
-    <string name="steam_chat_setting_stay_running_desc">WinNative\'den çıktıktan sonra sohbeti çalışır durumda tut</string>
+    <string name="steam_chat_setting_stay_running_desc">Vapor\'den çıktıktan sonra sohbeti çalışır durumda tut</string>
     <string name="steam_chat_settings_overlay_needed">Sohbet balonlarını kullanmak için diğer uygulamaların üzerinde göstermeye izin verin</string>
     <string name="steam_chat_heads_title">Mesajlar</string>
     <string name="steam_chat_heads_recent_title">Son</string>
@@ -2388,24 +2388,12 @@ Yüklü konum:
     <string name="retro_scr_sgsr_upscaling">SGSR ölçekleme</string>
     <string name="retro_scr_performance_hud">Performans HUD</string>
     <string name="retro_scr_credits_licenses">KATKIDA BULUNANLAR &amp; LİSANSLAR</string>
-    <string name="retro_scr_credits_desc">WinNative\'in bazı özellikleri bu açık kaynaklı projeler üzerine kuruludur. Her kaynağı görüntülemek için dokunun.</string>
+    <string name="retro_scr_credits_desc">Vapor\'in bazı özellikleri bu açık kaynaklı projeler üzerine kuruludur. Her kaynağı görüntülemek için dokunun.</string>
     <string name="retro_scr_tab_defaults">Varsayılanlar</string>
     <string name="retro_scr_tab_credits">Katkıda Bulunanlar</string>
     <string name="settings_support_title">Destek</string>
-    <string name="support_donate_heading">BAĞIŞ YAP</string>
-    <string name="support_donate_desc">WinNative\'in geliştirilmesine katkıda bulunun. Tarayıcınızda açılır.</string>
-    <string name="support_paypal">paypal.me/MaxJividen</string>
-    <string name="support_paypal_desc">PayPal • tek seferlik veya düzenli</string>
     <string name="support_heading">YARDIM AL</string>
     <string name="support_desc">Soru sorun, sorun bildirin veya nelerin üzerinde çalışıldığını görün. Her bağlantı tarayıcınızda açılır.</string>
-    <string name="support_winnative_discord_desc">Discord • destek ve geliştirme</string>
-    <string name="support_maxstechreview_discord_desc">Discord • topluluk</string>
-    <string name="support_youtube_desc">YouTube • rehberler ve güncellemeler</string>
-    <string name="support_reddit_desc">Reddit • topluluk</string>
-    <string name="support_winnative_discord">#WinNative</string>
-    <string name="support_maxstechreview_discord">#MaxsTechReview</string>
-    <string name="support_youtube">@MaxsTechReview</string>
-    <string name="support_reddit">r/EmulatorsForAndroid</string>
     <string name="retro_scr_enable_hardcore_title">Hardcore modu etkinleştirilsin mi?</string>
     <string name="retro_scr_enable_hardcore_body">Hardcore modu oyunu şimdi sıfırlar ve durum kaydı yükleme, ileri sarma ile hileleri devre dışı bırakır. Kaydedilmemiş tüm ilerleme kaybolur. Devam edilsin mi?</string>
     <string name="retro_scr_cancel">İptal</string>
@@ -2916,7 +2904,7 @@ Yüklü konum:
     <string name="update_ignore_until_next">Sonraki güncellemeye kadar yoksay</string>
     <string name="update_no_notes">Bu derleme için sürüm notu yayımlanmadı.</string>
     <string name="update_apk_notice">Bu güncelleme uygulamanın kendisini değiştirir, bu yüzden Android kurulumu onaylamanızı isteyecek. Oyunlarınız, kapsayıcılarınız ve ayarlarınız korunur.</string>
-    <string name="update_up_to_date">WinNative güncel.</string>
+    <string name="update_up_to_date">Vapor güncel.</string>
     <string name="update_unsupported_build">Uygulama içi güncellemeler yalnızca resmi imzalı sürümlerde sunulur.</string>
     <string name="settings_general_update_source">Güncelleme kaynağı</string>
     <string name="settings_general_update_source_summary">Bir pull request’ten alınan yapı o pull request’i, resmi bir kurulum ise resmi sürümleri izler.</string>
@@ -2947,15 +2935,15 @@ Yüklü konum:
     <string name="container_graphics_driver_gamescope">Turnip %1$s (Linux ARM64)</string>
     <string name="container_graphics_driver_gamescope_help">Linux çalışma ortamına dahildir. İndirilen Android sürücüleri yalnızca Wine ve Proton kapsayıcıları için geçerlidir.</string>
     <string name="linux_runtime_windows_program">Bu bir Windows programı. Başlatmak için kısayol ayarlarından bir Wine kapsayıcısına taşıyın.</string>
-    <string name="linux_steam_library_named">WinNative (%1$s)</string>
+    <string name="linux_steam_library_named">Vapor (%1$s)</string>
     <string name="linux_steam_library_internal">Dahili depolama</string>
     <string name="linux_steam_library_device_storage">Cihaz depolaması</string>
     <string name="settings_content_badge_online">Çevrimiçi</string>
     <string name="gamescope_fex_title">FEX (64-bit and 32-bit)</string>
     <string name="gamescope_fex_preset">FEX Preset</string>
-    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in WinNative are not used; the preset is.</string>
+    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in Vapor are not used; the preset is.</string>
     <string name="gamescope_proton_title">Proton</string>
-    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with WinNative, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
+    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with Vapor, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
     <string name="settings_drivers_android">Android</string>
     <string name="settings_drivers_linux">Linux</string>
     <string name="settings_drivers_platform_hint">Sürücünün nereye kurulacağını seçin. Tanınan paketler otomatik olarak doğru platformu kullanır.</string>

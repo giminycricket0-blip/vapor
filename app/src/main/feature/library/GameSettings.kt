@@ -190,7 +190,8 @@ import com.winlator.cmod.shared.ui.nav.PANE_DIR_UP
 import com.winlator.cmod.shared.ui.nav.paneHighlight
 import com.winlator.cmod.shared.ui.nav.paneNavItem
 import com.winlator.cmod.shared.ui.widget.EnvVarsView
-import com.winlator.cmod.shared.ui.widget.chasingBorder
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import java.io.File
 import kotlin.math.roundToInt
 
@@ -784,23 +785,21 @@ private fun buildSections(
 ): List<Pair<Int, SidebarSection>> {
     val list = mutableListOf<Pair<Int, SidebarSection>>()
     list += SEC_GENERAL to SidebarSection(Icons.Outlined.Tune, R.string.settings_general_title)
+    list += SEC_DISPLAY to SidebarSection(Icons.Outlined.Monitor, R.string.common_ui_graphics)
+    list += SEC_INPUT to SidebarSection(Icons.Outlined.SportsEsports, R.string.common_ui_input_controls)
     // A GameScope session runs the Linux Steam client and Proton: there is no Wine prefix of ours
     // to configure, so the Steam launcher, ReShade, Windows components, drives and prefix pages
     // would change nothing.
     if (gamescope) {
-        list += SEC_DISPLAY to SidebarSection(Icons.Outlined.Monitor, R.string.common_ui_graphics)
         list += SEC_ADVANCED to SidebarSection(Icons.Outlined.Settings, R.string.common_ui_advanced)
         list += SEC_VARIABLES to SidebarSection(Icons.Outlined.Code, R.string.container_config_variables)
-        list += SEC_INPUT to SidebarSection(Icons.Outlined.SportsEsports, R.string.common_ui_input_controls)
         list += SEC_NETWORKING to SidebarSection(Icons.Outlined.Wifi, R.string.networking_section_title)
         return list
     }
     if (isSteam) list += SEC_STEAM to SidebarSection(Icons.Outlined.Science, R.string.steam_section_title)
-    list += SEC_DISPLAY to SidebarSection(Icons.Outlined.Monitor, R.string.common_ui_graphics)
     list += SEC_ADVANCED to SidebarSection(Icons.Outlined.Settings, R.string.common_ui_advanced)
     list += SEC_RESHADE to SidebarSection(Icons.Outlined.AutoAwesome, R.string.reshade_section_title)
     list += SEC_VARIABLES to SidebarSection(Icons.Outlined.Code, R.string.container_config_variables)
-    list += SEC_INPUT to SidebarSection(Icons.Outlined.SportsEsports, R.string.common_ui_input_controls)
     list += SEC_COMPONENTS to SidebarSection(Icons.Outlined.Extension, R.string.settings_content_components)
     list += SEC_NETWORKING to SidebarSection(Icons.Outlined.Wifi, R.string.networking_section_title)
     if (isContainer) {
@@ -976,7 +975,7 @@ private fun PortraitSettingsHeader(
             )
             Box(
                 modifier = Modifier
-                    .height(32.dp)
+                    .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
                     .background(CardSurface)
@@ -995,7 +994,7 @@ private fun PortraitSettingsHeader(
             SaveButton(
                 enabled = saveEnabled,
                 onClick = { nav?.tapAction(1); onSave() },
-                height = 32.dp,
+                height = 48.dp,
                 corner = 8.dp,
                 fontSize = SettingLabelSize,
                 navHighlighted = saveHighlighted,
@@ -1016,7 +1015,7 @@ private fun PortraitSettingsHeader(
                     nav != null && nav.active && !nav.inContent && !nav.onActionRow && nav.sidebarIndex == index
                 Row(
                     modifier = Modifier
-                        .height(34.dp)
+                        .heightIn(min = 48.dp)
                         .clip(RoundedCornerShape(17.dp))
                         .background(if (isSelected) AccentBlue.copy(alpha = 0.16f) else CardSurface)
                         .border(
@@ -1025,6 +1024,7 @@ private fun PortraitSettingsHeader(
                             RoundedCornerShape(17.dp)
                         )
                         .paneHighlight(chipHighlighted, cornerRadius = 17.dp, highlightColor = NavHighlight)
+                        .semantics { selected = isSelected }
                         .clickable { if (nav != null) nav.tapSection(index) else onSectionSelected(index) }
                         .padding(horizontal = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -1249,7 +1249,7 @@ private fun Sidebar(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(30.dp)
+                    .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
                     .background(CardSurface)
@@ -1267,7 +1267,7 @@ private fun Sidebar(
             SaveButton(
                 enabled = saveEnabled,
                 onClick = { nav?.tapAction(1); onSave() },
-                height = 30.dp,
+                height = 48.dp,
                 corner = 8.dp,
                 fontSize = SettingLabelSize,
                 navHighlighted = saveHighlighted,
@@ -1331,15 +1331,19 @@ private fun SidebarItem(
             .fillMaxWidth()
             .bringIntoViewRequester(bringIntoView)
             .padding(horizontal = 8.dp)
+            .heightIn(min = 48.dp)
             .clip(RoundedCornerShape(8.dp))
-            .chasingBorder(isFocused = isSelected, cornerRadius = 8.dp, borderWidth = 2.dp)
+            .background(if (isSelected) AccentBlue.copy(alpha = 0.16f) else Color.Transparent)
+            .border(1.dp, if (isSelected) AccentBlue else Color.Transparent, RoundedCornerShape(8.dp))
             .paneHighlight(navHighlighted, cornerRadius = 8.dp, highlightColor = NavHighlight)
+            .semantics { selected = isSelected }
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick
             )
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        contentAlignment = Alignment.CenterStart
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
@@ -6072,6 +6076,7 @@ private fun SettingDropdown(
                         highlightColor = NavHighlight,
                     )
                     .smartDropdownAnchor(enabled = enabled, offset = menuOffset) { expanded = true }
+                    .heightIn(min = 48.dp)
                     .padding(horizontal = SettingFieldHorizontalPadding, vertical = SettingFieldVerticalPadding),
                 verticalAlignment = Alignment.CenterVertically
             ) {

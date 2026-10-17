@@ -2,7 +2,7 @@
 
 <resources>
     <!-- Common > UI Labels -->
-    <string name="common_ui_app_name">WinNative</string>
+    <string name="common_ui_app_name">Vapor</string>
     <string name="common_ui_run">執行</string>
     <string name="common_ui_edit">編輯</string>
     <string name="common_ui_remove">移除</string>
@@ -87,7 +87,7 @@
     <string name="about_branding_heading">商店保護</string>
     <string name="about_branding_desc">為何此建置回報不同的版本</string>
     <string name="about_reported_version_code">回報的版本代碼</string>
-    <string name="about_branding_explain">此建置會以 %1$s 的身分安裝，讓裝置套用該應用程式的效能設定檔。它回報的版本代碼高於 Google Play 所能發布的任何版本，因此 Play Store 絕不會提供會取代 WinNative 的更新。上方顯示的才是真正的版本。</string>
+    <string name="about_branding_explain">此建置會以 %1$s 的身分安裝，讓裝置套用該應用程式的效能設定檔。它回報的版本代碼高於 Google Play 所能發布的任何版本，因此 Play Store 絕不會提供會取代 Vapor 的更新。上方顯示的才是真正的版本。</string>
     <string name="about_copy">複製建置資訊</string>
     <string name="about_copied">已複製建置資訊</string>
     <string name="common_ui_back">返回</string>
@@ -218,7 +218,7 @@
     <string name="library_games_no_games_installed">尚未安裝任何遊戲。請使用商店分頁或 + 按鈕來新增遊戲。</string>
     <string name="library_games_times_played_label">遊玩次數：</string>
     <string name="library_games_playtime_label">遊玩時間：</string>
-    <string name="library_games_no_games_hub">尚未安裝任何遊戲\n點擊以開啟 Winlator 後端</string>
+    <string name="library_games_no_games_hub">尚未安裝任何遊戲\n點擊以開啟 Vapor 後端</string>
     <string name="library_games_installed_badge">已安裝</string>
     <string name="library_games_unknown_game">未知遊戲</string>
     <string name="library_games_layouts_header">遊戲庫版面配置</string>
@@ -661,8 +661,8 @@
     <string name="session_xserver_pref_kbd">鍵盤</string>
     <string name="session_xserver_pref_other">其他</string>
     <string name="session_xserver_pref_version">版本</string>
-    <string name="session_xserver_notification_description">WinNative XServer 訊息</string>
-    <string name="session_xserver_notification_content">WinNative 正在運行，請勿關閉或滑動移除此通知</string>
+    <string name="session_xserver_notification_description">Vapor XServer 訊息</string>
+    <string name="session_xserver_notification_content">Vapor 正在運行，請勿關閉或滑動移除此通知</string>
 
     <!-- Session > Drawer Menu -->
     <string name="session_drawer_keyboard">鍵盤</string>
@@ -920,7 +920,7 @@
     <string name="settings_general_open_with_android_browser">在 Wine 中開啟 Android 瀏覽器</string>
     <string name="settings_general_share_android_clipboard">與 Wine 共用 Android 剪貼簿</string>
     <string name="settings_general_paths_title">路徑設定</string>
-    <string name="settings_general_paths_summary">管理 Winlator 儲存工作資料的位置以及匯出捷徑的寫入位置。</string>
+    <string name="settings_general_paths_summary">管理 Vapor 儲存工作資料的位置以及匯出捷徑的寫入位置。</string>
     <string name="settings_general_winlator_path_title">儲存路徑</string>
     <string name="settings_general_shortcut_export_path_title">捷徑匯出路徑</string>
     <string name="settings_general_choose_path">選擇路徑</string>
@@ -930,8 +930,8 @@
     <string name="settings_general_xinput_toggle_title">停用 XInput</string>
     <string name="settings_general_xinput_toggle_summary">當您想要獨佔滑鼠和鍵盤控制時，關閉 XInput 處理。</string>
     <string name="settings_external_display_output_summary">將遊戲移至已連接的外部顯示器，而非鏡像此螢幕。眼鏡一律使用自己的顯示器。</string>
-    <string name="settings_general_file_provider_summary">將 WinNative 檔案公開給 Android 文件選取器和檔案管理員。</string>
-    <string name="settings_general_auto_scraping_summary">讓 WinNative 自動擷取自訂遊戲美術圖。</string>
+    <string name="settings_general_file_provider_summary">將 Vapor 檔案公開給 Android 文件選取器和檔案管理員。</string>
+    <string name="settings_general_auto_scraping_summary">讓 Vapor 自動擷取自訂遊戲美術圖。</string>
     <string name="settings_general_open_browser_summary">在 Android 瀏覽器中開啟支援的網頁連結，而非在 Wine 內開啟。</string>
     <string name="settings_general_clipboard_summary">允許在 Android 和 Wine 工作階段之間複製和貼上。</string>
     <string name="settings_general_imagefs_summary">還原捆綁的系統檔案，而不移除您現有的容器。</string>
@@ -971,7 +971,7 @@
     <string name="settings_debug_input_logs">輸入日誌</string>
     <string name="settings_debug_input_logs_description">記錄手把、觸控和鍵盤輸入事件</string>
     <string name="settings_debug_download_logs">下載日誌</string>
-    <string name="settings_debug_download_logs_description">記錄下載解析器和 WinNative 備援事件</string>
+    <string name="settings_debug_download_logs_description">記錄下載解析器和 Vapor 備援事件</string>
     <string name="settings_debug_vulkan_validation_layers_title">Vulkan 驗證層</string>
     <string name="settings_debug_vulkan_validation_layers_subtitle">重新啟動顯示以套用。</string>
     <string name="settings_debug_share_logs">分享日誌</string>
@@ -987,10 +987,10 @@
     <string name="settings_debug_delete_logs_confirm_message">這會永久刪除所有已儲存的日誌檔案（%1$s）。此操作無法復原。</string>
     <string name="settings_debug_logs_browser_title">日誌</string>
     <string name="settings_debug_log_truncated">正在顯示此日誌的最後 %1$s</string>
-    <string name="settings_debug_logs_subject">WinNative 日誌 (%1$s)</string>
+    <string name="settings_debug_logs_subject">Vapor 日誌 (%1$s)</string>
     <string name="settings_debug_no_logs_available">沒有可用的除錯日誌。請先啟用除錯選項並啟動遊戲。</string>
     <string name="settings_debug_capture_failed">無法擷取日誌：%1$s</string>
-    <string name="settings_debug_log_to_file_desc">將 WinNative 程序錯誤、警告與當機記錄到檔案</string>
+    <string name="settings_debug_log_to_file_desc">將 Vapor 程序錯誤、警告與當機記錄到檔案</string>
     <string name="settings_filtered_logs_to_file_title">已篩選的除錯日誌</string>
     <string name="settings_filtered_logs_to_file_desc">將應用程式的日誌儲存至檔案，並依標籤過濾器的設定進行篩選。</string>
     <string name="settings_debug_section_emulation">模擬</string>
@@ -1219,7 +1219,7 @@
     <string name="saves_import_export_exported_failed">匯出存檔失敗：%1$s</string>
     <string name="saves_import_export_imported">存檔已成功匯入</string>
     <string name="saves_import_export_imported_failed">匯入存檔失敗：%1$s</string>
-    <string name="saves_export_path_summary">存檔將匯出到 /WinNative/saves</string>
+    <string name="saves_export_path_summary">存檔將匯出到 /Vapor/saves</string>
     <string name="saves_export_success_path">已匯出到 %1$s</string>
     <string name="saves_export_warning_title">僅用於自訂遊戲</string>
     <string name="saves_export_warning_body">匯出可能包含從商店安裝或啟用雲端同步的遊戲存檔。</string>
@@ -1389,7 +1389,7 @@
     <string name="cloud_saves_syncing_from_provider">正在從 %1$s 下載存檔\u2026</string>
     <string name="cloud_saves_sync_summary">取得 %1$s 目前擁有的版本。</string>
     <string name="cloud_saves_sync_summary_generic">取得目前的雲端版本。</string>
-    <string name="common_ui_exit_app_confirm">結束 WinNative？</string>
+    <string name="common_ui_exit_app_confirm">結束 Vapor？</string>
     <string name="container_surface_effect">介面效果</string>
     <string name="downloads_queue_cancel_download_confirm">取消 %1$s 的下載並刪除所有已下載的檔案？</string>
     <string name="downloads_queue_paused_resume_hint">已暫停 - 點選「繼續」以繼續下載</string>
@@ -1481,7 +1481,7 @@
     <string name="downloads_queue_cancel_all_warning">取消 DLC、遊戲或更新下載可能會損壞你的遊戲安裝。\n\n確定要取消所有下載並刪除目前已下載的檔案嗎？</string>
     <string name="shortcuts_properties_use_legacy_launcher">使用舊版啟動器</string>
     <string name="shortcuts_properties_use_legacy_launcher_description">舊版 Steam 模擬：透過 ColdClient 啟動器執行遊戲，並從 exe 中移除 SteamStub DRM。僅用於無法使用 Steam Launcher 的舊遊戲。</string>
-    <string name="steam_section_real_client">WinNative 真實 Steam 用戶端</string>
+    <string name="steam_section_real_client">Vapor 真實 Steam 用戶端</string>
     <string name="steam_section_emulator">舊版 Steam 模擬器</string>
     <string name="shortcuts_properties_steam_offline_mode_description">不使用 Steam 雲端存檔執行，存檔保留在本機，沒有連線也能啟動遊戲。關閉後會恢復 Steam 雲端存檔；若本機與雲端存檔不同，系統會詢問你要保留哪一個。</string>
     <string name="input_controls_select_style">選擇樣式</string>
@@ -1508,7 +1508,7 @@
     <string name="cloud_saves_history_steam_unreachable">Steam Cloud 目前無法存取。正在背景重新連線重新上線後點按重新整理。</string>
     <string name="steam_session_refused_event">Steam 拒絕了快取的工作階段 (EResult=%1$d)。請重新登入。</string>
     <string name="settings_hud_record_to_file_title">將效能記錄到檔案</string>
-    <string name="settings_hud_record_to_file_summary">遊戲過程中每秒將 FPS、CPU、GPU、溫度和電池指標匯出到 /WinNative/logs/。</string>
+    <string name="settings_hud_record_to_file_summary">遊戲過程中每秒將 FPS、CPU、GPU、溫度和電池指標匯出到 logs/。</string>
     <string name="settings_leaderboard_category">效能</string>
     <!-- Preloader > Launch Screen -->
     <string name="preloader_preparing_steam_environment">正在準備 Steam 環境</string>
@@ -1777,11 +1777,11 @@
     <string name="session_record_now">立即錄製</string>
     <string name="session_record_quality">品質</string>
     <string name="session_record_resolution">解析度</string>
-    <string name="session_record_saved">錄製已儲存至 WinNative/Recordings</string>
+    <string name="session_record_saved">錄製已儲存至 Vapor/Recordings</string>
     <string name="session_record_settings_title">錄製設定</string>
     <string name="session_record_started">已開始錄製</string>
     <string name="steam_chat_setting_stay_running">在背景執行</string>
-    <string name="steam_chat_setting_stay_running_desc">離開 WinNative 後保持聊天執行</string>
+    <string name="steam_chat_setting_stay_running_desc">離開 Vapor 後保持聊天執行</string>
     <string name="settings_content_refresh">重新整理</string>
 
     <!-- Settings > Debug -->
@@ -2389,24 +2389,12 @@
     <string name="retro_scr_sgsr_upscaling">SGSR 放大</string>
     <string name="retro_scr_performance_hud">效能 HUD</string>
     <string name="retro_scr_credits_licenses">鳴謝 &amp; 授權</string>
-    <string name="retro_scr_credits_desc">WinNative 的部分功能建置於這些開源專案之上。點按即可檢視各來源。</string>
+    <string name="retro_scr_credits_desc">Vapor 的部分功能建置於這些開源專案之上。點按即可檢視各來源。</string>
     <string name="retro_scr_tab_defaults">預設</string>
     <string name="retro_scr_tab_credits">鳴謝</string>
     <string name="settings_support_title">支援</string>
-    <string name="support_donate_heading">贊助</string>
-    <string name="support_donate_desc">為 WinNative 的開發提供支持。將在瀏覽器中開啟。</string>
-    <string name="support_paypal">paypal.me/MaxJividen</string>
-    <string name="support_paypal_desc">PayPal • 單次或定期</string>
     <string name="support_heading">取得協助</string>
     <string name="support_desc">提問、回報問題，或了解正在進行的開發。每個連結都會在瀏覽器中開啟。</string>
-    <string name="support_winnative_discord_desc">Discord • 支援與開發</string>
-    <string name="support_maxstechreview_discord_desc">Discord • 社群</string>
-    <string name="support_youtube_desc">YouTube • 指南與更新</string>
-    <string name="support_reddit_desc">Reddit • 社群</string>
-    <string name="support_winnative_discord">#WinNative</string>
-    <string name="support_maxstechreview_discord">#MaxsTechReview</string>
-    <string name="support_youtube">@MaxsTechReview</string>
-    <string name="support_reddit">r/EmulatorsForAndroid</string>
     <string name="retro_scr_enable_hardcore_title">啟用硬派模式？</string>
     <string name="retro_scr_enable_hardcore_body">硬派模式將立即重置遊戲，並停用載入即時存檔、快轉和金手指。任何未儲存的進度都將遺失。是否繼續？</string>
     <string name="retro_scr_cancel">取消</string>
@@ -2916,7 +2904,7 @@
     <string name="update_ignore_until_next">忽略至下次更新</string>
     <string name="update_no_notes">此建置未發布任何發行說明。</string>
     <string name="update_apk_notice">此更新會變更應用程式本身，因此 Android 會要求你確認安裝。你的遊戲、容器和設定都會保留。</string>
-    <string name="update_up_to_date">WinNative 已是最新版本。</string>
+    <string name="update_up_to_date">Vapor 已是最新版本。</string>
     <string name="update_unsupported_build">應用程式內更新僅提供給官方簽署的正式版本。</string>
     <string name="settings_general_update_source">更新來源</string>
     <string name="settings_general_update_source_summary">來自提取請求的組建會跟隨該提取請求；官方安裝則跟隨官方版本。</string>
@@ -2947,15 +2935,15 @@
     <string name="container_graphics_driver_gamescope">Turnip %1$s (Linux ARM64)</string>
     <string name="container_graphics_driver_gamescope_help">內建於 Linux 執行環境。下載的 Android 驅動程式僅適用於 Wine 和 Proton 容器。</string>
     <string name="linux_runtime_windows_program">這是 Windows 程式。請在捷徑設定中將它移至 Wine 容器後再啟動。</string>
-    <string name="linux_steam_library_named">WinNative（%1$s）</string>
+    <string name="linux_steam_library_named">Vapor（%1$s）</string>
     <string name="linux_steam_library_internal">內部儲存空間</string>
     <string name="linux_steam_library_device_storage">裝置儲存空間</string>
     <string name="settings_content_badge_online">連線</string>
     <string name="gamescope_fex_title">FEX (64-bit and 32-bit)</string>
     <string name="gamescope_fex_preset">FEX Preset</string>
-    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in WinNative are not used; the preset is.</string>
+    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in Vapor are not used; the preset is.</string>
     <string name="gamescope_proton_title">Proton</string>
-    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with WinNative, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
+    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with Vapor, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
     <string name="settings_drivers_android">Android</string>
     <string name="settings_drivers_linux">Linux</string>
     <string name="settings_drivers_platform_hint">選擇驅動程式的安裝位置。已辨識的套件會自動使用正確的平台。</string>

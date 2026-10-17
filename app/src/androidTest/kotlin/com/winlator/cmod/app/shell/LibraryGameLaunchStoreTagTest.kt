@@ -3,6 +3,7 @@ package com.winlator.cmod.app.shell
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
@@ -66,13 +67,13 @@ class LibraryGameLaunchStoreTagTest {
     }
 
     @Test
-    fun theStoresAreBehindAChangeStoreEntry() {
+    fun theStoresAreBehindManageAndChangeStore() {
         setScreen("Epic Games", stores, "EPIC")
 
-        composeRule.onNodeWithText("EPIC GAMES", useUnmergedTree = true).performClick()
+        composeRule.onNodeWithText("Manage", useUnmergedTree = true).performClick()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("Change Store", useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithText("Change Store", useUnmergedTree = true).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Steam", useUnmergedTree = true).assertDoesNotExist()
     }
 
@@ -111,12 +112,12 @@ class LibraryGameLaunchStoreTagTest {
     }
 
     @Test
-    fun aGameOwnedOnOneStoreStillHasTheStoreMenu() {
+    fun aGameOwnedOnOneStoreStillHasTheManageStoreMenu() {
         setScreen("Steam", stores.take(1), "STEAM")
 
-        composeRule.onNodeWithText("STEAM", useUnmergedTree = true).performClick()
+        composeRule.onNodeWithText("Manage", useUnmergedTree = true).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Change Store", useUnmergedTree = true).performClick()
+        composeRule.onNodeWithText("Change Store", useUnmergedTree = true).performScrollTo().performClick()
         composeRule.waitForIdle()
 
         composeRule.onNodeWithText("Steam", useUnmergedTree = true).assertIsDisplayed()
@@ -127,9 +128,9 @@ class LibraryGameLaunchStoreTagTest {
     fun aGameOwnedNowhereShowsTheEmptyStoreList() {
         setScreen("Custom", emptyList(), "")
 
-        composeRule.onNodeWithText("CUSTOM", useUnmergedTree = true).performClick()
+        composeRule.onNodeWithText("Manage", useUnmergedTree = true).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Change Store", useUnmergedTree = true).performClick()
+        composeRule.onNodeWithText("Change Store", useUnmergedTree = true).performScrollTo().performClick()
         composeRule.waitForIdle()
 
         composeRule
@@ -138,9 +139,9 @@ class LibraryGameLaunchStoreTagTest {
     }
 
     private fun openStorePicker() {
-        composeRule.onNodeWithText("EPIC GAMES", useUnmergedTree = true).performClick()
+        composeRule.onNodeWithText("Manage", useUnmergedTree = true).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Change Store", useUnmergedTree = true).performClick()
+        composeRule.onNodeWithText("Change Store", useUnmergedTree = true).performScrollTo().performClick()
         composeRule.waitForIdle()
     }
 }

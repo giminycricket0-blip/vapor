@@ -467,13 +467,23 @@ static int fence_signalled(int fd) {
     struct pollfd p = {.fd = fd, .events = POLLIN};
     int r;
     do { r = poll(&p, 1, 0); } while (r < 0 && errno == EINTR);
-    return r > 0;
+    return r > 0 && (p.revents & POLLIN) && !(p.revents & (POLLERR | POLLHUP | POLLNVAL));
+}
+
+/* The copy borrows its release fence. Keep it with the slot on every failed copy, including a
+ * failed GPU import/submit: the next frame must still wait before writing this buffer. */
+static void finish_copy_wait(struct slot *s, int fd, int copied) {
+    if (fd < 0) return;
+    if (copied) { close(fd); return; }
+    pthread_mutex_lock(&g_lock);
+    s->release_fd = fd;
+    pthread_mutex_unlock(&g_lock);
 }
 
 /* A slot SurfaceFlinger has handed back, holding a w x h buffer of AHB format fmt. -1 = none free (or
  * the buffer could not be made). A free slot whose release fence has already signalled is preferred;
  * otherwise the fence of the first free one is handed back in *wait_fd for the copy to wait on ON THE
- * GPU (vkp_blit_image / vkp_pass_copy_to consume it), so the compositor thread no longer blocks here.
+ * GPU (the copy borrows it; finish_copy_wait closes or restores it).
  * Only a driver without VK_KHR_external_semaphore_fd still waits on the CPU, bounded, as before.
  * *wait_fd is -1 whenever nothing needs waiting for (and on every failure). */
 static int take_free_slot(struct layer *l, int w, int h, uint32_t fmt, int *wait_fd) {
@@ -503,7 +513,7 @@ static int take_free_slot(struct layer *l, int w, int h, uint32_t fmt, int *wait
         struct pollfd p = {.fd = fd, .events = POLLIN};
         int r;
         do { r = poll(&p, 1, 100); } while (r < 0 && errno == EINTR);
-        if (r == 0) {
+        if (r <= 0 || !(p.revents & POLLIN) || (p.revents & (POLLERR | POLLHUP | POLLNVAL))) {
             /* Still read by the display: keep its fence with it (the next use waits again), drop this frame. */
             pthread_mutex_lock(&g_lock);
             if (s->release_fd < 0) s->release_fd = fd; else close(fd);
@@ -889,7 +899,9 @@ int sc_layer_present(struct vkp_image *src, int scene_w, int scene_h, const stru
     int wait_fd;
     int idx = take_free_slot(l, sw, sh, AHB_RGBA8, &wait_fd);
     if (idx < 0) { log_drop(l); return 0; }
-    if (vkp_blit_image(src, l->slots[idx].img, wait_fd) != 0) return -1;
+    int copied = vkp_blit_image(src, l->slots[idx].img, wait_fd);
+    finish_copy_wait(&l->slots[idx], wait_fd, copied == 0);
+    if (copied != 0) return -1;
     if (present_slot(l, idx, r, color, 0) != 0) return -1;
     if (color && color->dataspace) wnc_color_frame_shown(color, WNC_HDR_LAYER_COPY, AHB_RGBA8);
     if (!l->first_logged) {
@@ -914,7 +926,9 @@ int sc_layer_present_pass(const struct vkp_draw *draws, int n, int scene_w, int 
     int wait_fd;
     int idx = take_free_slot(l, rw, rh, AHB_RGBA8, &wait_fd);
     if (idx < 0) { vkp_pass_abort(); log_drop(l); return 0; }
-    if (vkp_pass_copy_to(l->slots[idx].img, wait_fd) != 0) return -1;
+    int copied = vkp_pass_copy_to(l->slots[idx].img, wait_fd);
+    finish_copy_wait(&l->slots[idx], wait_fd, copied == 0);
+    if (copied != 0) return -1;
     if (present_slot(l, idx, r, NULL, 0) != 0) return -1; /* the effects chain's result is 8-bit sRGB */
     if (!l->first_logged) {
         l->first_logged = 1;
@@ -956,7 +970,9 @@ int sc_layer_present_hdr_scene(const struct vkp_draw *draws, int n, const struct
         idx = take_free_slot(l, rw, rh, g_hdr_pool_fmt, &wait_fd);
     }
     if (idx < 0) { vkp_pass_abort(); log_drop(l); return 0; }
-    if (vkp_pass_copy_to(l->slots[idx].img, wait_fd) != 0) return -1;
+    int copied = vkp_pass_copy_to(l->slots[idx].img, wait_fd);
+    finish_copy_wait(&l->slots[idx], wait_fd, copied == 0);
+    if (copied != 0) return -1;
     if (present_slot(l, idx, r, tm ? NULL : color, 0) != 0) return -1; /* tone-mapped = plain sRGB: no tag */
     if (color && color->dataspace)
         wnc_color_frame_shown(color, tm ? WNC_HDR_TONEMAPPED : WNC_HDR_COMPOSED, tm ? AHB_RGBA8 : g_hdr_pool_fmt);
@@ -1053,7 +1069,9 @@ int sc_layer_present_overlay(struct vkp_image *src, const int geo[8], int transl
     if (idx < 0) { log_drop(l); return 0; }
     /* The window is copied into the layer buffer 1:1; `geo` crops it and places it, so the layer
      * is exactly the window's rectangle on screen and nothing else is blended anywhere. */
-    if (vkp_blit_image(src, l->slots[idx].img, wait_fd) != 0) return -1;
+    int copied = vkp_blit_image(src, l->slots[idx].img, wait_fd);
+    finish_copy_wait(&l->slots[idx], wait_fd, copied == 0);
+    if (copied != 0) return -1;
     if (present_slot(l, idx, geo, NULL, translucent) != 0) return -1;
     if (!l->first_logged) {
         l->first_logged = 1;

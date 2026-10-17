@@ -1,0 +1,18 @@
+--- a/FEXCore/Source/Interface/Core/DiskCache.cpp
++++ b/FEXCore/Source/Interface/Core/DiskCache.cpp
+@@ -426,6 +426,15 @@
+     fextl::string BasePath = BasePathOverride();
+     if (BasePath.empty()) {
+       BasePath = FEXCore::Config::GetCacheDirectory() + "DiskCache/";
++    }
++
++    // WOW64 disables AVX, so it and ARM64EC have different machine buckets on
++    // the same CPU. Scope pruning to the Windows frontend that owns the cache.
++    // Otherwise alternating 32-bit and 64-bit programs delete each other's cache.
++    if (HostFeatureHash.HostType == FEXCore::HostFeatures::HostTypeEnum::Wow64) {
++      BasePath += "wow64/";
++    } else if (HostFeatureHash.HostType == FEXCore::HostFeatures::HostTypeEnum::Arm64ec) {
++      BasePath += "arm64ec/";
+     }
+ 
+     const auto MachineBucketHashAsString = fextl::fmt::format("{:016x}", MachineBucketHash);

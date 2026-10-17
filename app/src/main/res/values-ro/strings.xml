@@ -2,7 +2,7 @@
 
 <resources>
     <!-- Common > UI Labels -->
-    <string name="common_ui_app_name">WinNative</string>
+    <string name="common_ui_app_name">Vapor</string>
     <string name="common_ui_run">Rulare</string>
     <string name="common_ui_edit">Editare</string>
     <string name="common_ui_remove">Eliminare</string>
@@ -87,7 +87,7 @@
     <string name="about_branding_heading">PROTECȚIE MAGAZIN</string>
     <string name="about_branding_desc">De ce această compilare raportează o altă versiune</string>
     <string name="about_reported_version_code">Cod versiune raportat</string>
-    <string name="about_branding_explain">Această compilare se instalează ca %1$s, astfel încât dispozitivul să aplice profilul de performanță al aplicației respective. Codul de versiune raportat este mai mare decât orice poate publica Google Play, așa că Play Store nu oferă niciodată o actualizare care ar înlocui WinNative. Versiunea de mai sus este cea reală.</string>
+    <string name="about_branding_explain">Această compilare se instalează ca %1$s, astfel încât dispozitivul să aplice profilul de performanță al aplicației respective. Codul de versiune raportat este mai mare decât orice poate publica Google Play, așa că Play Store nu oferă niciodată o actualizare care ar înlocui Vapor. Versiunea de mai sus este cea reală.</string>
     <string name="about_copy">Copiază informațiile de compilare</string>
     <string name="about_copied">Informații de compilare copiate</string>
     <string name="common_ui_back">Inapoi</string>
@@ -218,7 +218,7 @@
     <string name="library_games_no_games_installed">Niciun joc instalat. Foloseste un tab Magazin sau butonul + pentru a adauga jocuri.</string>
     <string name="library_games_times_played_label">Numar de sesiuni: </string>
     <string name="library_games_playtime_label">Timp de joc: </string>
-    <string name="library_games_no_games_hub">Niciun joc instalat\nApasa pentru a deschide Winlator Backend</string>
+    <string name="library_games_no_games_hub">Niciun joc instalat\nApasa pentru a deschide Advanced settings</string>
     <string name="library_games_installed_badge">INSTALAT</string>
     <string name="library_games_unknown_game">Joc necunoscut</string>
     <string name="library_games_layouts_header">ASPECTE ALE BIBLIOTECII</string>
@@ -661,8 +661,8 @@ De ex. <b>META</b> pentru <i>tasta META</i>, \n
     <string name="session_xserver_pref_kbd">Tastatura</string>
     <string name="session_xserver_pref_other">Altele</string>
     <string name="session_xserver_pref_version">Versiune</string>
-    <string name="session_xserver_notification_description">Mesaje WinNative XServer</string>
-    <string name="session_xserver_notification_content">WinNative rulează, nu închideți sau glisați această notificare</string>
+    <string name="session_xserver_notification_description">Mesaje Vapor XServer</string>
+    <string name="session_xserver_notification_content">Vapor rulează, nu închideți sau glisați această notificare</string>
 
     <!-- Session > Drawer Menu -->
     <string name="session_drawer_keyboard">Tastatura</string>
@@ -920,7 +920,7 @@ De ex. <b>META</b> pentru <i>tasta META</i>, \n
     <string name="settings_general_open_with_android_browser">Deschide browserul Android in Wine</string>
     <string name="settings_general_share_android_clipboard">Partajeaza clipboard-ul Android cu Wine</string>
     <string name="settings_general_paths_title">Setari cai</string>
-    <string name="settings_general_paths_summary">Gestioneaza unde Winlator stocheaza datele de lucru si unde sunt scrise comenzile rapide exportate.</string>
+    <string name="settings_general_paths_summary">Gestioneaza unde Vapor stocheaza datele de lucru si unde sunt scrise comenzile rapide exportate.</string>
     <string name="settings_general_winlator_path_title">Cale de stocare</string>
     <string name="settings_general_shortcut_export_path_title">Cale export comenzi rapide</string>
     <string name="settings_general_choose_path">Alege calea</string>
@@ -930,8 +930,8 @@ De ex. <b>META</b> pentru <i>tasta META</i>, \n
     <string name="settings_general_xinput_toggle_title">Dezactiveaza XInput</string>
     <string name="settings_general_xinput_toggle_summary">Opreste gestionarea XInput cand doresti control exclusiv cu mouse-ul si tastatura.</string>
     <string name="settings_external_display_output_summary">Mută jocul pe un afișaj extern conectat în loc să oglindească acest ecran. Ochelarii folosesc întotdeauna propriul afișaj.</string>
-    <string name="settings_general_file_provider_summary">Expune fisierele WinNative catre selectoarele de documente si managerii de fisiere Android.</string>
-    <string name="settings_general_auto_scraping_summary">Această setare permite WinNative să obțină automat ilustrațiile jocurilor personalizate.</string>
+    <string name="settings_general_file_provider_summary">Expune fisierele Vapor catre selectoarele de documente si managerii de fisiere Android.</string>
+    <string name="settings_general_auto_scraping_summary">Această setare permite Vapor să obțină automat ilustrațiile jocurilor personalizate.</string>
     <string name="settings_general_open_browser_summary">Deschide link-urile web compatibile in browserul Android in loc de Wine.</string>
     <string name="settings_general_clipboard_summary">Permite copierea si lipirea intre Android si sesiunile Wine.</string>
     <string name="settings_general_imagefs_summary">Restaureaza fisierele de sistem incluse fara a elimina containerele existente.</string>
@@ -971,7 +971,7 @@ De ex. <b>META</b> pentru <i>tasta META</i>, \n
     <string name="settings_debug_input_logs">Jurnale de intrare</string>
     <string name="settings_debug_input_logs_description">Inregistreaza evenimentele de intrare gamepad, tactile si tastatura</string>
     <string name="settings_debug_download_logs">Jurnale descarcari</string>
-    <string name="settings_debug_download_logs_description">Inregistreaza evenimentele de rezolvare descarcari si alternativa WinNative</string>
+    <string name="settings_debug_download_logs_description">Inregistreaza evenimentele de rezolvare descarcari si alternativa Vapor</string>
     <string name="settings_debug_vulkan_validation_layers_title">Straturi de validare Vulkan</string>
     <string name="settings_debug_vulkan_validation_layers_subtitle">Repornește afișajul pentru aplicare.</string>
     <string name="settings_debug_share_logs">Partajeaza jurnalele</string>
@@ -987,10 +987,10 @@ De ex. <b>META</b> pentru <i>tasta META</i>, \n
     <string name="settings_debug_delete_logs_confirm_message">Aceasta șterge definitiv toate fișierele jurnal salvate (%1$s). Acțiunea nu poate fi anulată.</string>
     <string name="settings_debug_logs_browser_title">Jurnale</string>
     <string name="settings_debug_log_truncated">Se afișează ultimele %1$s din acest jurnal</string>
-    <string name="settings_debug_logs_subject">Jurnale WinNative (%1$s)</string>
+    <string name="settings_debug_logs_subject">Jurnale Vapor (%1$s)</string>
     <string name="settings_debug_no_logs_available">Nu sunt disponibile jurnale de depanare. Activează mai întâi opțiunile de depanare și lansează un joc.</string>
     <string name="settings_debug_capture_failed">Capturarea jurnalelor a eșuat: %1$s</string>
-    <string name="settings_debug_log_to_file_desc">Înregistrează erorile, avertismentele și blocările procesului WinNative în fișier</string>
+    <string name="settings_debug_log_to_file_desc">Înregistrează erorile, avertismentele și blocările procesului Vapor în fișier</string>
     <string name="settings_filtered_logs_to_file_title">Jurnal de depanare filtrat</string>
     <string name="settings_filtered_logs_to_file_desc">Salvaţi jurnalele aplicaţiei într-un fişier, filtrate conform configurării din filtrul de etichete.</string>
     <string name="settings_debug_section_emulation">Emulare</string>
@@ -1219,7 +1219,7 @@ Cale instalata:
     <string name="saves_import_export_exported_failed">Exportul salvarilor a esuat: %1$s</string>
     <string name="saves_import_export_imported">Salvarile au fost importate cu succes</string>
     <string name="saves_import_export_imported_failed">Importul salvarilor a esuat: %1$s</string>
-    <string name="saves_export_path_summary">Salvarile vor fi exportate in /WinNative/saves</string>
+    <string name="saves_export_path_summary">Salvarile vor fi exportate in /Vapor/saves</string>
     <string name="saves_export_success_path">Exportat in %1$s</string>
     <string name="saves_export_warning_title">Foloseste aceasta optiune doar cu jocuri personalizate</string>
     <string name="saves_export_warning_body">Exportul poate include salvari din jocuri instalate din magazine sau sincronizate in cloud.</string>
@@ -1389,7 +1389,7 @@ Cale instalata:
     <string name="cloud_saves_syncing_from_provider">Se descarcă salvarea de la %1$s\u2026</string>
     <string name="cloud_saves_sync_summary">Preia versiunea pe care o are %1$s acum.</string>
     <string name="cloud_saves_sync_summary_generic">Preia versiunea cloud curentă.</string>
-    <string name="common_ui_exit_app_confirm">Ieși din WinNative?</string>
+    <string name="common_ui_exit_app_confirm">Ieși din Vapor?</string>
     <string name="container_surface_effect">Efect de suprafață</string>
     <string name="downloads_queue_cancel_download_confirm">Anulezi descărcarea pentru %1$s și ștergi toate fișierele descărcate?</string>
     <string name="downloads_queue_paused_resume_hint">Pauză - apasă Reluare pentru a continua</string>
@@ -1481,7 +1481,7 @@ Cale instalata:
     <string name="downloads_queue_cancel_all_warning">Anularea descărcărilor de DLC, jocuri sau actualizări poate corupe instalările jocurilor.\n\nSigur vrei să anulezi toate descărcările și să ștergi fișierele descărcate până acum?</string>
     <string name="shortcuts_properties_use_legacy_launcher">Folosește lansatorul moștenit</string>
     <string name="shortcuts_properties_use_legacy_launcher_description">Emulare Steam moștenită: rulează jocul prin lansatorul ColdClient și elimină DRM-ul SteamStub din exe. Folosește doar pentru jocuri mai vechi care nu funcționează cu Steam Launcher.</string>
-    <string name="steam_section_real_client">Client Steam real WinNative</string>
+    <string name="steam_section_real_client">Client Steam real Vapor</string>
     <string name="steam_section_emulator">Emulator Steam moștenit</string>
     <string name="shortcuts_properties_steam_offline_mode_description">Rulează fără Steam Cloud, astfel salvările rămân pe acest dispozitiv, iar jocul pornește și fără conexiune. Dezactivează opțiunea pentru a relua Steam Cloud; dacă salvarea locală diferă de cea din cloud, vei alege pe care să o păstrezi.</string>
     <string name="input_controls_select_style">Selectează stilul</string>
@@ -1508,7 +1508,7 @@ Cale instalata:
     <string name="cloud_saves_history_steam_unreachable">Steam Cloud nu este accesibil acum. Reconectare în fundal atinge reîmprospătare când revii online.</string>
     <string name="steam_session_refused_event">Steam a refuzat sesiunea din cache (EResult=%1$d). Conectează-te din nou.</string>
     <string name="settings_hud_record_to_file_title">Înregistrează performanța în fișier</string>
-    <string name="settings_hud_record_to_file_summary">Exportă în /WinNative/logs/ metrici pe secundă pentru FPS, CPU, GPU, temperatură și baterie în timpul jocului.</string>
+    <string name="settings_hud_record_to_file_summary">Exportă în logs/ metrici pe secundă pentru FPS, CPU, GPU, temperatură și baterie în timpul jocului.</string>
     <string name="settings_leaderboard_category">Performanță</string>
     <!-- Preloader > Launch Screen -->
     <string name="preloader_preparing_steam_environment">Se pregătește mediul Steam</string>
@@ -1777,11 +1777,11 @@ Cale instalata:
     <string name="session_record_now">Înregistrează acum</string>
     <string name="session_record_quality">Calitate</string>
     <string name="session_record_resolution">Rezoluție</string>
-    <string name="session_record_saved">Înregistrare salvată în WinNative/Recordings</string>
+    <string name="session_record_saved">Înregistrare salvată în Vapor/Recordings</string>
     <string name="session_record_settings_title">Setări de înregistrare</string>
     <string name="session_record_started">Înregistrare pornită</string>
     <string name="steam_chat_setting_stay_running">Rulează în fundal</string>
-    <string name="steam_chat_setting_stay_running_desc">Menține chatul activ după ce ieși din WinNative</string>
+    <string name="steam_chat_setting_stay_running_desc">Menține chatul activ după ce ieși din Vapor</string>
     <string name="settings_content_refresh">Reîmprospătează</string>
 
     <!-- Settings > Debug -->
@@ -2389,24 +2389,12 @@ Cale instalata:
     <string name="retro_scr_sgsr_upscaling">Mărire SGSR</string>
     <string name="retro_scr_performance_hud">HUD performanță</string>
     <string name="retro_scr_credits_licenses">CREDITE &amp; LICENȚE</string>
-    <string name="retro_scr_credits_desc">Unele funcții ale WinNative sunt construite pe aceste proiecte open-source. Atinge pentru a vedea fiecare sursă.</string>
+    <string name="retro_scr_credits_desc">Unele funcții ale Vapor sunt construite pe aceste proiecte open-source. Atinge pentru a vedea fiecare sursă.</string>
     <string name="retro_scr_tab_defaults">Implicite</string>
     <string name="retro_scr_tab_credits">Credite</string>
     <string name="settings_support_title">Asistență</string>
-    <string name="support_donate_heading">DONEAZĂ</string>
-    <string name="support_donate_desc">Contribuie la dezvoltarea WinNative. Se deschide în browser.</string>
-    <string name="support_paypal">paypal.me/MaxJividen</string>
-    <string name="support_paypal_desc">PayPal • o singură dată sau recurent</string>
     <string name="support_heading">OBȚINE AJUTOR</string>
     <string name="support_desc">Pune întrebări, raportează probleme sau vezi la ce se lucrează. Fiecare link se deschide în browser.</string>
-    <string name="support_winnative_discord_desc">Discord • asistență și dezvoltare</string>
-    <string name="support_maxstechreview_discord_desc">Discord • comunitate</string>
-    <string name="support_youtube_desc">YouTube • ghiduri și noutăți</string>
-    <string name="support_reddit_desc">Reddit • comunitate</string>
-    <string name="support_winnative_discord">#WinNative</string>
-    <string name="support_maxstechreview_discord">#MaxsTechReview</string>
-    <string name="support_youtube">@MaxsTechReview</string>
-    <string name="support_reddit">r/EmulatorsForAndroid</string>
     <string name="retro_scr_enable_hardcore_title">Activezi modul Hardcore?</string>
     <string name="retro_scr_enable_hardcore_body">Modul Hardcore resetează jocul acum și dezactivează încărcarea salvărilor de stare, derularea rapidă și codurile. Orice progres nesalvat va fi pierdut. Continui?</string>
     <string name="retro_scr_cancel">Anulează</string>
@@ -2917,7 +2905,7 @@ Cale instalata:
     <string name="update_ignore_until_next">Ignoră până la următoarea actualizare</string>
     <string name="update_no_notes">Nu au fost publicate note de lansare pentru această compilare.</string>
     <string name="update_apk_notice">Această actualizare modifică aplicația în sine, așa că Android îți va cere să confirmi instalarea. Jocurile, containerele și setările tale se păstrează.</string>
-    <string name="update_up_to_date">WinNative este la zi.</string>
+    <string name="update_up_to_date">Vapor este la zi.</string>
     <string name="update_unsupported_build">Actualizările din aplicație sunt oferite doar pentru versiunile oficiale semnate.</string>
     <string name="settings_general_update_source">Sursa actualizarilor</string>
     <string name="settings_general_update_source_summary">O compilare dintr-un pull request urmeaza acel pull request; o instalare oficiala urmeaza versiunile oficiale.</string>
@@ -2948,15 +2936,15 @@ Cale instalata:
     <string name="container_graphics_driver_gamescope">Turnip %1$s (Linux ARM64)</string>
     <string name="container_graphics_driver_gamescope_help">Inclus în mediul Linux. Driverele Android descărcate se aplică doar containerelor Wine și Proton.</string>
     <string name="linux_runtime_windows_program">Acesta este un program Windows. Mută-l într-un container Wine din setările scurtăturii pentru a-l porni.</string>
-    <string name="linux_steam_library_named">WinNative (%1$s)</string>
+    <string name="linux_steam_library_named">Vapor (%1$s)</string>
     <string name="linux_steam_library_internal">Stocare internă</string>
     <string name="linux_steam_library_device_storage">Stocarea dispozitivului</string>
     <string name="settings_content_badge_online">Online</string>
     <string name="gamescope_fex_title">FEX (64-bit and 32-bit)</string>
     <string name="gamescope_fex_preset">FEX Preset</string>
-    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in WinNative are not used; the preset is.</string>
+    <string name="gamescope_fex_summary">Games here run on the FEX that Steam\'s Proton (ARM64) carries, for 64-bit and 32-bit titles alike. The FEXCore, Box64 and WoWBox64 builds installed in Vapor are not used; the preset is.</string>
     <string name="gamescope_proton_title">Proton</string>
-    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with WinNative, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
+    <string name="gamescope_proton_summary">Games here start with this Proton. WN Proton Experimental comes with Vapor, and the builds downloaded under Components, Linux are listed with it. A game\'s own choice stays in step with its Compatibility setting in Steam, whichever was changed last.</string>
     <string name="settings_drivers_android">Android</string>
     <string name="settings_drivers_linux">Linux</string>
     <string name="settings_drivers_platform_hint">Alege unde se instalează driverul. Pachetele recunoscute folosesc automat platforma corectă.</string>

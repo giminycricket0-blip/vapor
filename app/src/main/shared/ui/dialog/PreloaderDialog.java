@@ -72,7 +72,6 @@ public class PreloaderDialog {
     composeState.setTitle("");
     composeState.setBadge("");
     composeState.setSubtitle("");
-    composeState.setStableContentLayout(false);
   }
 
   public synchronized void show(int textResId) {
@@ -83,11 +82,8 @@ public class PreloaderDialog {
     if (dialog == null) create();
     if (dialog == null) return;
     clearLaunchMetadata();
-    composeState.setText(activity.getString(textResId));
+    composeState.setStep(activity.getString(textResId));
     composeState.setIndeterminate(indeterminate);
-    if (!indeterminate) {
-      composeState.setProgress(0);
-    }
     showDialogSafely();
   }
 
@@ -95,20 +91,17 @@ public class PreloaderDialog {
     if (dialog == null) create();
     if (dialog == null) return;
     clearLaunchMetadata();
-    composeState.setText(text);
-    composeState.setIndeterminate(true);
+    composeState.setStep(text);
     showDialogSafely();
   }
 
   public synchronized void show(String text, String title, String badge, String subtitle) {
     if (dialog == null) create();
     if (dialog == null) return;
-    composeState.setText(text);
+    composeState.setStep(text);
     composeState.setTitle(title != null ? title : "");
     composeState.setBadge(badge != null ? badge : "");
     composeState.setSubtitle(subtitle != null ? subtitle : "");
-    composeState.setStableContentLayout(true);
-    composeState.setIndeterminate(true);
     showDialogSafely();
   }
 
@@ -164,7 +157,7 @@ public class PreloaderDialog {
   public void setStepOnUiThread(final String step) {
     uiHandler.post(
         () -> {
-          if (dialog != null) composeState.setText(step);
+          if (dialog != null) composeState.setStep(step);
         });
   }
 

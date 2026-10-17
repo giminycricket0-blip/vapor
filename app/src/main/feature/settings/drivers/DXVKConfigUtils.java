@@ -31,5 +31,8 @@ public final class DXVKConfigUtils {
 
         envVars.put("VKD3D_FEATURE_LEVEL", config.get("vkd3dLevel"));
         envVars.put("DXVK_STATE_CACHE_PATH", context.getFilesDir() + "/imagefs/" + ImageFs.CACHE_PATH);
+        // DXVK 3.x uses CreateFileW for its shader cache. Z: maps the imagefs root,
+        // so pass a guest Windows path rather than the Android filesDir path.
+        envVars.put("DXVK_SHADER_CACHE_PATH", "Z:" + ImageFs.CACHE_PATH.replace('/', '\\'));
     }
 }

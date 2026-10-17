@@ -140,7 +140,8 @@ object DeviceProfileSettings {
             widthDp <= 0 -> 4
             widthDp < 480 -> 2
             widthDp < 700 -> 3
-            else -> 4
+            widthDp < 850 -> 4
+            else -> 5
         }
 
     internal fun sessionActionCardMaxAspect(profile: DeviceProfile): Float =

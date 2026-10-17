@@ -6,6 +6,9 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,12 +19,17 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Monitor
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Text
@@ -45,7 +53,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -77,6 +88,8 @@ private val DrawerSettleAnimationSpec =
     )
 
 interface XServerDisplayHostCallbacks {
+    fun onMenuRequested()
+
     fun onDrawerSlide()
 
     fun onDrawerOpened()
@@ -87,7 +100,6 @@ interface XServerDisplayHostCallbacks {
 
     fun onDialogVisibilityChanged(visible: Boolean)
 
-    fun isControllerConnected(): Boolean
 }
 
 fun setupXServerDisplayHost(
@@ -109,7 +121,7 @@ fun setupXServerDisplayHost(
 }
 
 @Composable
-private fun XServerDisplayHost(
+internal fun XServerDisplayHost(
     displayFrame: FrameLayout,
     stateHolder: XServerDrawerStateHolder,
     listener: XServerDrawerActionListener,
@@ -199,10 +211,6 @@ private fun XServerDisplayHost(
                                     down.position.x <= edgeWidthPx
                                 }
                             if (!canStartFromHere) {
-                                if (stateHolder.isDrawerOpen && down.position.x > drawerWidthPx
-                                    && !callbacks.isControllerConnected()) {
-                                    stateHolder.closeDrawer()
-                                }
                                 return@awaitEachGesture
                             }
 
@@ -296,7 +304,8 @@ private fun XServerDisplayHost(
                 } else {
                     1f
                 }
-            val scaledDrawerWidth = DrawerWidth * evenScale
+            val scaledDrawerWidth = (DrawerWidth * evenScale)
+                .coerceAtMost((maxWidth - DrawerStartPadding * 2).coerceAtLeast(0.dp))
             // Derived, not measured, so the sheet need not exist while closed.
             val scaledDrawerWidthPx = with(density) { scaledDrawerWidth.toPx() }
             LaunchedEffect(scaledDrawerWidthPx) {
@@ -342,17 +351,51 @@ private fun XServerDisplayHost(
                 }
             }
 
-            // Closed, the sheet sits flush on the edge and its rounded corners leak a hairline.
+            if (!drawerContentComposed) {
+                val menuLabel = stringResource(R.string.vapor_open_game_menu)
+                Button(
+                    onClick = callbacks::onMenuRequested,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .safeDrawingPadding()
+                        .padding(8.dp)
+                        .heightIn(min = 48.dp)
+                        .zIndex(2f)
+                        .semantics(mergeDescendants = true) { contentDescription = menuLabel },
+                    shape = RoundedCornerShape(6.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PaneSurfaceColor,
+                        contentColor = DrawerTextPrimary,
+                    ),
+                ) {
+                    Icon(Icons.Outlined.Menu, contentDescription = null)
+                    Text(stringResource(R.string.common_ui_app_name), Modifier.padding(start = 8.dp))
+                }
+            }
+
+            // Keep the dismissal gesture away from the guest, including during the closing animation.
             if (drawerContentComposed) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .zIndex(2f)
+                        .background(Color.Black.copy(alpha = 0.28f))
+                        .testTag("session_menu_scrim")
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClickLabel = stringResource(R.string.vapor_return_to_game),
+                        ) { stateHolder.closeDrawer() },
+                )
                 ModalDrawerSheet(
-                    drawerShape = RoundedCornerShape(20.dp),
+                    drawerShape = RoundedCornerShape(6.dp),
                     drawerContainerColor = PaneSurfaceColor,
                     drawerContentColor = Color.Unspecified,
                     drawerTonalElevation = 0.dp,
                     windowInsets = WindowInsets(0, 0, 0, 0),
                     modifier =
                         Modifier
-                            .zIndex(2f)
+                            .zIndex(3f)
                             .padding(start = DrawerStartPadding, top = drawerTopInset, bottom = DrawerVerticalPadding)
                             .fillMaxHeight()
                             .width(scaledDrawerWidth)

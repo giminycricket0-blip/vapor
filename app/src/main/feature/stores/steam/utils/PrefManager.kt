@@ -263,7 +263,7 @@ object PrefManager {
     var libraryLayoutMode: String
         get() =
             libraryLayoutModeCache
-                ?: getString("library_layout_mode", "GRID_4").also {
+                ?: getString("library_layout_mode", "CAROUSEL").also {
                     libraryLayoutModeCache = it
                 }
         set(value) {
@@ -271,22 +271,9 @@ object PrefManager {
             setString("library_layout_mode", value)
         }
 
-    var libraryStoreVisible: String
-        get() {
-            val stored = getString("library_store_visible", DEFAULT_STORE_VISIBLE)
-            if (!getBoolean("library_store_visible_itch_added", false)) {
-                setBoolean("library_store_visible_itch_added", true)
-                if (stored.isNotBlank() && !stored.split(",").contains("itch")) {
-                    val merged = "$stored,itch"
-                    setString("library_store_visible", merged)
-                    return merged
-                }
-            }
-            return stored
-        }
-        set(value) {
-            setString("library_store_visible", value)
-        }
+    var storeAccountsSetupComplete: Boolean
+        get() = getBoolean("vapor_store_accounts_setup_complete", false)
+        set(value) { setBoolean("vapor_store_accounts_setup_complete", value) }
 
     var libraryContentFilters: String
         get() = getString("library_content_filters", "games")
@@ -301,7 +288,7 @@ object PrefManager {
         }
 
     var libraryImmersiveMode: Boolean
-        get() = getBoolean("library_immersive_mode", false)
+        get() = getBoolean("library_immersive_mode", true)
         set(value) {
             setBoolean("library_immersive_mode", value)
         }
@@ -454,5 +441,4 @@ object PrefManager {
         requirePrefs().edit().clear().commit()
     }
 
-    const val DEFAULT_STORE_VISIBLE = "steam,epic,gog,itch"
 }

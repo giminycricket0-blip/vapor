@@ -46,7 +46,7 @@ add_subdirectory(wn-steam-client)
 add_subdirectory(wn-steam-bootstrap)
 add_subdirectory(wn-libsteamclient)
 
-find_package(curl REQUIRED CONFIG)
+include(NativeNetwork.cmake)
 
 # ----------------------------------------------------------------------------
 # SPIR-V shader compilation
@@ -197,7 +197,7 @@ target_link_libraries(winlator
         dxbc
         libzstd_static
         liblzma
-        curl::curl
+        vapor_curl
 )
 
 # Fake evdev input shim used by the pb_controller_fix controller path.

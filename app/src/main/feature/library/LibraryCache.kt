@@ -1,6 +1,8 @@
 package com.winlator.cmod.feature.library
 
 import android.content.Context
+import com.winlator.cmod.feature.shortcuts.LibraryShortcutUtils
+import com.winlator.cmod.runtime.container.ContainerManager
 import com.winlator.cmod.feature.stores.epic.data.EpicGame
 import com.winlator.cmod.feature.stores.gog.data.GOGGame
 import com.winlator.cmod.feature.stores.steam.data.SteamApp
@@ -65,10 +67,16 @@ object LibraryCache {
         runCatching {
             val raw = prefs(context).getString(KEY_ENTRIES, null) ?: return emptyList()
             val array = JSONArray(raw)
+            // Old builds saved the optional client as a game. Identify it from the real
+            // shortcut so an upgrade never flashes that card or hides a game named Steam.
+            val clientIds = ContainerManager(context).loadShortcuts()
+                .filter(LinuxApps::isSteamClientShortcut)
+                .map(LibraryShortcutUtils::customLibraryId)
+                .toSet()
             (0 until array.length()).mapNotNull { index ->
                 val entry = array.optJSONObject(index) ?: return@mapNotNull null
                 val id = entry.optInt("id", 0)
-                if (id == 0) return@mapNotNull null
+                if (id == 0 || id in clientIds) return@mapNotNull null
                 SteamApp(
                     id = id,
                     name = entry.optString("name"),

@@ -1,3 +1,19 @@
+Vapor is a derivative of [WinNative](https://github.com/WinNative-Emu/WinNative), initially imported at `8409085f706acbc0749881d9bf1e85f2f347dfd4`. The upstream acknowledgments below are preserved. See [Vapor provenance and open distribution gates](docs/PROVENANCE.md) for this checkout's verification status.
+
+Vapor's Steam close-upload reservations are adapted from **Jeremy Bernstein's**
+[GameNative PR #1962](https://github.com/utkarshdalal/GameNative/pull/1962), merge
+`0fdaf7aba375c1510bec82c142a9b6941744aec6` (GPL-3.0). The adaptation tracks both the
+Android cloud worker and the existing genuine Steam host's exit cleanup. DroidDeck
+[PR #529](https://github.com/Droid-Deck/DroidDeck/pull/529), merge
+`eadebc46d57b6fed3bbf4a2a39edfbbe61877fa4`, informed a source audit; its code was not imported.
+
+Vapor builds its existing **OpenSSL 1.1.1q** and **curl 7.85.0** dependencies from
+upstream source. Android configure and unversioned-SONAME conventions follow
+[AOSP ndkports](https://android.googlesource.com/platform/tools/ndkports/+/2e149f73a8e792fff6dc6aadc18d0d919a071282/)
+(Apache-2.0 build tooling). The OpenSSL/SSLeay and curl notices are retained in
+`app/src/main/assets/licenses/` and included in the APK. See
+[provenance](docs/PROVENANCE.md#native-network-source-build--16-october-2026) for exact inputs.
+
 <p align="center">
   <img src="logo.png" alt="WinNative" width="360">
 </p>

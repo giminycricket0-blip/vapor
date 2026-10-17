@@ -214,7 +214,15 @@ class SteamService : Service() {
     @Volatile internal var appInForeground = true
     @Volatile internal var suspendedForBackground = false
 
-    @Volatile internal var suspendedForBionic = false
+    private val _bionicHandoffFlow = MutableStateFlow(false)
+    val bionicHandoffFlow = _bionicHandoffFlow.asStateFlow()
+    internal var suspendedForBionic: Boolean
+        get() = _bionicHandoffFlow.value
+        set(value) { _bionicHandoffFlow.value = value }
+
+    // One exit owns both the delayed reconnect and the following playing-status cleanup.
+    // Acquire cancels it before the next genuine host can take over the account.
+    @Volatile internal var handoffReleaseJob: Deferred<Boolean>? = null
 
     // Cancellable timer deferring the background suspend by BACKGROUND_IDLE_GRACE_MS — see scheduleBackgroundSuspendCheck.
     @Volatile internal var backgroundIdleJob: Job? = null
@@ -336,23 +344,51 @@ class SteamService : Service() {
 
         internal var instance: SteamService? = null
 
-        var cachedAchievements: List<com.winlator.cmod.feature.stores.steam.statsgen.Achievement>? = null
-            private set
-        var cachedAchievementsAppId: Int? = null
-            private set
-
-        fun clearCachedAchievements() {
-            cachedAchievements = null
-            cachedAchievementsAppId = null
-        }
-
-        // Generate (CM schema + unlock state) and return achievements for a game.
+        // Read the schema and unlock state from one response on the current Android session.
+        // Browsing this page must not reconnect during game ownership or the exit/reap delay.
         suspend fun loadAchievements(
             appId: Int,
             configDirectory: String,
-        ): List<com.winlator.cmod.feature.stores.steam.statsgen.Achievement> {
-            runCatching { generateAchievements(appId, configDirectory) }
-            return if (cachedAchievementsAppId == appId) cachedAchievements ?: emptyList() else emptyList()
+        ): Result<List<com.winlator.cmod.feature.stores.steam.statsgen.Achievement>> = withContext(Dispatchers.IO) {
+            try {
+                require(appId > 0)
+                val service = instance ?: throw IOException("Steam service unavailable")
+                val session = wnSession ?: throw IOException("Steam session unavailable")
+                fun currentSession() = instance === service && wnSession === session &&
+                    isRunning && !isStopping && !isLoggingOut && isLoggedIn &&
+                    !service.suspendedForBionic && !service.suspendedForBackground && session.state() == 3
+                check(currentSession()) { "Steam session not ready" }
+                val accountId = session.steamId()
+                check(accountId != 0L) { "Steam account unavailable" }
+                val json = session.getUserStatsFull(appId) ?: throw IOException("Steam stats unavailable")
+                coroutineContext.ensureActive()
+                check(currentSession() && session.steamId() == accountId) { "Steam session changed" }
+                val stats = JSONObject(json)
+                check(stats.optInt("eresult", 2) == EResult.OK.code()) { "Steam stats request failed" }
+                val hex = stats.getString("schema")
+                require(hex.isNotEmpty() && hex.length % 2 == 0 && hex.all { it.digitToIntOrNull(16) != null }) {
+                    "Steam stats schema unavailable"
+                }
+                val schema = hexToBytes(hex)
+                // A malformed/missing schema must not become a successful empty achievement list.
+                val parsed = VdfParser().binaryLoads(schema)
+                require(parsed.values.any { it is Map<*, *> && it["stats"] is Map<*, *> }) {
+                    "Steam stats schema incomplete"
+                }
+                val generated = StatsAchievementsGenerator().generateStatsAchievements(schema, configDirectory)
+                val achievements = com.winlator.cmod.feature.stores.steam.statsgen.mergeAchievementUnlockState(
+                    generated.achievements, generated.nameToBlockBit, stats,
+                )
+                coroutineContext.ensureActive()
+                check(currentSession() && session.steamId() == accountId) { "Steam session changed" }
+                Result.success(achievements)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (e: Exception) {
+                // No payload, account identifier or native error text goes to the UI/log here.
+                Timber.w("Achievements unavailable for app %d (%s)", appId, e.javaClass.simpleName)
+                Result.failure(e)
+            }
         }
 
         fun pauseAll() {
@@ -586,7 +622,11 @@ class SteamService : Service() {
             instance?.suspensionReasonForDiag() ?: "no-service"
 
         // True once onWnLoggedOn ran for the current wnSession; reset on disconnect/teardown so reconnect re-runs it. Guards the state observer double-firing.
-        @Volatile internal var wnLoggedOnHandled = false
+        private val _wnLoggedOnFlow = MutableStateFlow(false)
+        val wnLoggedOnFlow = _wnLoggedOnFlow.asStateFlow()
+        internal var wnLoggedOnHandled: Boolean
+            get() = _wnLoggedOnFlow.value
+            set(value) { _wnLoggedOnFlow.value = value }
 
         // Serializes session bring-up: concurrent callers racing into bringUpWnSession() spin up separate CM sessions that kick each other (ClientLoggedOff eresult=34) since Steam allows one per account-instance. Only bring-up is gated; reusing a logged-on session stays lock-free.
         private val wnSessionBringUpMutex = kotlinx.coroutines.sync.Mutex()
@@ -885,15 +925,26 @@ class SteamService : Service() {
         @JvmStatic
         suspend fun kickPlayingSessionIfReady(onlyGame: Boolean = true): Boolean =
             withContext(Dispatchers.IO) {
+                val service = instance ?: return@withContext false
                 try {
-                    val session = wnSession?.takeIf { it.state() == 3 } ?: return@withContext false
-                    session.markPlayingBlocked()
-                    session.kickPlayingSession(onlyGame)
-                    // kickPlayingSession clears only playing-BLOCKED, not the launcher's games-played registration — clear that too (empty CMsgClientGamesPlayed) or the next launch hits AlreadyRunning.
-                    session.notifyGamesPlayed("[]", EOSType.AndroidUnknown.code())
-                    instance?._isPlayingBlocked?.value = true
-                    Timber.i("kickPlayingSessionIfReady: dispatched (onlyGame=$onlyGame) + cleared games-played")
-                    true
+                    // Serialize the native sends with handoff acquisition. Checking a volatile
+                    // flag alone leaves a window for an old exit to kick the new game.
+                    synchronized(service) {
+                        coroutineContext.ensureActive()
+                        if (instance !== service || !isRunning || isStopping || isLoggingOut ||
+                            service.suspendedForBionic || service.suspendedForBackground
+                        ) return@synchronized false
+                        val session = wnSession?.takeIf { it.state() == 3 } ?: return@synchronized false
+                        session.markPlayingBlocked()
+                        session.kickPlayingSession(onlyGame)
+                        // Clear the launcher's games-played registration as well as playing-BLOCKED.
+                        session.notifyGamesPlayed("[]", EOSType.AndroidUnknown.code())
+                        service._isPlayingBlocked.value = true
+                        Timber.i("kickPlayingSessionIfReady: dispatched (onlyGame=$onlyGame) + cleared games-played")
+                        true
+                    }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Throwable) {
                     Timber.w(e, "kickPlayingSessionIfReady failed")
                     false
@@ -1049,6 +1100,7 @@ class SteamService : Service() {
         ) {
             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
                 try {
+                    SteamCloseSync.awaitIdle(appId)
                     val dirPath = getAppDirPath(appId)
                     val deleteCheck =
                         StoreInstallPathSafety.checkInstallDirDelete(
@@ -1489,6 +1541,8 @@ class SteamService : Service() {
 
         suspend fun deleteApp(appId: Int): Boolean =
             withContext(Dispatchers.IO) {
+                // Includes native Steam exit uploads; do not touch markers or metadata first.
+                SteamCloseSync.awaitIdle(appId)
                 val appDirPath = getAppDirPath(appId)
                 val deleteCheck =
                     StoreInstallPathSafety.checkInstallDirDelete(
@@ -2234,17 +2288,6 @@ class SteamService : Service() {
                 if (bs.currentAppId() == appId && bs.numAchievements() > 0) {
                     val list = bs.listAchievementsFull()
                     if (list.isNotEmpty()) {
-                        cachedAchievements = list.map { a ->
-                            com.winlator.cmod.feature.stores.steam.statsgen.Achievement(
-                                name        = a.apiName,
-                                displayName = a.displayName?.let { mapOf("english" to it) },
-                                description = a.description?.let { mapOf("english" to it) },
-                                hidden      = if (a.hidden) 1 else 0,
-                                unlocked    = a.achieved,
-                                unlockTimestamp = a.unlockTimeRtime32.takeIf { it > 0 },
-                            )
-                        }
-                        cachedAchievementsAppId = appId
                         Timber.i("user-stats schema via libsteamclient.so: ${list.size} achievements (app $appId)")
                         return@runCatching
                     }
@@ -2269,8 +2312,6 @@ class SteamService : Service() {
             val generator = StatsAchievementsGenerator()
             val result = generator.generateStatsAchievements(schemaArray, configDirectory)
             val nameToBlockBit = result.nameToBlockBit
-            cachedAchievements = mergeAchievementUnlockState(appId, result.achievements, nameToBlockBit)
-            cachedAchievementsAppId = appId
             if (nameToBlockBit.isNotEmpty()) {
                 val mappingJson = JSONObject()
                 nameToBlockBit.forEach { (name, pair) ->
@@ -3246,7 +3287,9 @@ class SteamService : Service() {
                     .from(prefix)
                     .toAbsPath(context, appId, accountId)
             }
-            CoroutineScope(Dispatchers.IO).launch {
+            // Register before dispatch so an immediate uninstall cannot pass a not-yet-started upload.
+            val closeSync = SteamCloseSync.reserve(appId)
+            val worker = CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val outcome =
                         closeApp(
@@ -3263,8 +3306,12 @@ class SteamService : Service() {
                     withContext(Dispatchers.Main) {
                         callback.onComplete(false, e.message ?: "Steam cloud save sync failed.")
                     }
+                } finally {
+                    closeSync.complete()
                 }
             }
+            // Also covers cancellation before the coroutine body starts.
+            worker.invokeOnCompletion { closeSync.complete() }
         }
 
         /** loginusers.vdf writer for the OAuth-style refresh-token flow. accessToken is optional (Steam ignores it if absent); personaName defaults to the AccountName. */
@@ -3686,6 +3733,7 @@ class SteamService : Service() {
             // ── Atomic state flip ──
             isLoggingOut = true
             _isLoggedInFlow.value = false
+            SteamWebSession.clearCookies()
             PrefManager.clearAuthTokens()
             instance?.let { svc ->
                 svc.scope.launch(Dispatchers.IO) {
@@ -4332,6 +4380,10 @@ class SteamService : Service() {
     private suspend fun stop() {
         Timber.i("Stopping Steam service")
         isStopping = true
+        synchronized(this) {
+            handoffReleaseJob?.cancel()
+            handoffReleaseJob = null
+        }
         connectJob?.cancel()
         reconnectJob?.cancel()
         stableConnectionJob?.cancel()
@@ -4640,26 +4692,42 @@ class SteamService : Service() {
         return fetched
     }
 
-    // Send a 1-to-1 text message to a friend. Returns true on success.
-    suspend fun sendChatMessage(steamId: Long, text: String): Boolean {
-        if (text.isBlank()) return false
-        val resp = withContext(Dispatchers.IO) { withWnSession { s -> s.sendFriendMessage(steamId, text) } }
-        return !resp.isNullOrBlank()
+    // Chat never brings up another CM connection. The game host may own the account,
+    // or an exit may be deliberately waiting before reconnecting the Android service.
+    private fun readyChatSession(): WnSteamSession? =
+        wnSession?.takeIf {
+            instance === this && isRunning && !isStopping && isLoggedIn &&
+                chatServiceEnabledFlow.value && !suspendedForBionic && !suspendedForBackground &&
+                it.state() == 3
+        }
+
+    // Return Steam's acknowledged message identity, shared with incoming echoes/history.
+    // A missing acknowledgement is not proof that the message was never delivered.
+    suspend fun sendChatMessage(steamId: Long, text: String): com.winlator.cmod.feature.stores.steam.data.SteamChatMessage? {
+        if (steamId == 0L || text.isBlank()) return null
+        return withContext(Dispatchers.IO) {
+            val resp = readyChatSession()?.sendFriendMessage(steamId, text) ?: return@withContext null
+            val ack = try { JSONObject(resp) } catch (_: Exception) { return@withContext null }
+            val timestamp = ack.optInt("serverTimestamp", 0)
+            val ordinal = ack.optInt("ordinal", -1)
+            if (timestamp <= 0 || ordinal < 0) return@withContext null
+            com.winlator.cmod.feature.stores.steam.data.SteamChatMessage(true, text, timestamp, ordinal)
+        }
     }
 
     // Upload an image to Steam chat UGC and send it to a friend; returns the URL or null.
     suspend fun sendChatImage(steamId: Long, bytes: ByteArray, fileName: String): String? {
-        if (bytes.isEmpty()) return null
+        if (steamId == 0L || bytes.isEmpty()) return null
         val refreshToken = com.winlator.cmod.feature.stores.steam.utils.PrefManager.refreshToken
         if (refreshToken.isBlank()) return null
         return withContext(Dispatchers.IO) {
-            withWnSession { s -> s.sendChatImage(steamId, refreshToken, bytes, fileName) }
+            readyChatSession()?.sendChatImage(steamId, refreshToken, bytes, fileName)
         }
     }
 
     // Load conversation history with a friend, ordered oldest-first.
     suspend fun loadChatHistory(steamId: Long, count: Int = 50): List<com.winlator.cmod.feature.stores.steam.data.SteamChatMessage> {
-        val json = withContext(Dispatchers.IO) { withWnSession { s -> s.getRecentMessages(steamId, count) } } ?: "[]"
+        val json = withContext(Dispatchers.IO) { readyChatSession()?.getRecentMessages(steamId, count) } ?: "[]"
         val arr = try { JSONArray(json) } catch (_: Exception) { JSONArray() }
         val out = ArrayList<com.winlator.cmod.feature.stores.steam.data.SteamChatMessage>(arr.length())
         for (i in 0 until arr.length()) {

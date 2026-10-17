@@ -34,7 +34,7 @@ OUT_FILE="../../assets/wnsteam/bionic/steam.exe"
 
 "$STRIP" "$OUT_FILE"
 
-echo "Built: $OUT_FILE  ($(stat -c '%s' "$OUT_FILE") bytes)"
+echo "Built: $OUT_FILE  ($(wc -c < "$OUT_FILE") bytes)"
 file "$OUT_FILE"
 
 CXX32="${CXX32:-i686-w64-mingw32-g++-posix}"
@@ -50,10 +50,11 @@ if command -v "$CXX32" >/dev/null 2>&1; then
         src/main.cpp clean_shutdown.cpp \
         -ladvapi32 -lkernel32 -luser32
     "$STRIP32" "$OUT_FILE32"
-    echo "Built: $OUT_FILE32  ($(stat -c '%s' "$OUT_FILE32") bytes)"
+    echo "Built: $OUT_FILE32  ($(wc -c < "$OUT_FILE32") bytes)"
     file "$OUT_FILE32"
 else
-    echo "SKIPPED 32-bit build: $CXX32 not installed"
+    echo "Required 32-bit compiler not found: $CXX32" >&2
+    exit 1
 fi
 
 PROBE_OUT="../../assets/wnsteam/bionic/wn-iface-probe.exe"
@@ -64,7 +65,7 @@ PROBE_OUT="../../assets/wnsteam/bionic/wn-iface-probe.exe"
     src/iface_probe.cpp \
     -lkernel32 -lcrypt32 -liphlpapi
 "$STRIP" "$PROBE_OUT"
-echo "Built: $PROBE_OUT  ($(stat -c '%s' "$PROBE_OUT") bytes)"
+echo "Built: $PROBE_OUT  ($(wc -c < "$PROBE_OUT") bytes)"
 file "$PROBE_OUT"
 
 PROBE32_OUT="../../assets/wnsteam/bionic/wn-iface-probe32.exe"
@@ -76,7 +77,7 @@ if command -v "$CXX32" >/dev/null 2>&1; then
         src/iface_probe.cpp \
         -lkernel32 -lcrypt32 -liphlpapi
     "$STRIP32" "$PROBE32_OUT"
-    echo "Built: $PROBE32_OUT  ($(stat -c '%s' "$PROBE32_OUT") bytes)"
+    echo "Built: $PROBE32_OUT  ($(wc -c < "$PROBE32_OUT") bytes)"
     file "$PROBE32_OUT"
 else
     echo "SKIPPED 32-bit probe: $CXX32 not installed"

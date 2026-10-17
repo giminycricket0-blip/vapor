@@ -112,94 +112,61 @@ fun SteamChatScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val messages = remember { mutableStateListOf<SteamChatMessage>() }
-    var input by remember { mutableStateOf("") }
-    var loading by remember { mutableStateOf(true) }
-    var sending by remember { mutableStateOf(false) }
-    var uploading by remember { mutableStateOf(false) }
+    val availability = rememberSteamChatAvailability()
+    val conversation = rememberSteamConversation(friend.steamId, availability)
+    val messages = conversation.messages
+    var uploading by remember(friend.steamId) { mutableStateOf(false) }
+    var imageFailed by remember(friend.steamId) { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
     val pickImage = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
     ) { uri ->
-        if (uri != null && !uploading) {
+        if (uri != null && !uploading && availability == SteamChatAvailability.READY) {
+            imageFailed = false
             uploading = true
             scope.launch {
-                val bytes = withContext(Dispatchers.IO) {
-                    runCatching { context.contentResolver.openInputStream(uri)?.use { it.readBytes() } }
-                        .getOrNull()
-                }
-                if (bytes == null || bytes.isEmpty()) {
+                try {
+                    val bytes = withContext(Dispatchers.IO) {
+                        context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                    }
+                    if (bytes == null || bytes.isEmpty()) {
+                        imageFailed = true
+                        return@launch
+                    }
+                    val mime = context.contentResolver.getType(uri) ?: "image/png"
+                    val ext = when {
+                        mime.contains("jpeg") || mime.contains("jpg") -> "jpeg"
+                        mime.contains("gif") -> "gif"
+                        mime.contains("webp") -> "webp"
+                        else -> "png"
+                    }
+                    val url = SteamService.instance?.sendChatImage(friend.steamId, bytes, "image.$ext")
+                    imageFailed = url.isNullOrBlank()
+                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    imageFailed = true
+                } finally {
                     uploading = false
-                    return@launch
                 }
-                val mime = context.contentResolver.getType(uri) ?: "image/png"
-                val ext = when {
-                    mime.contains("jpeg") || mime.contains("jpg") -> "jpeg"
-                    mime.contains("gif") -> "gif"
-                    mime.contains("webp") -> "webp"
-                    else -> "png"
-                }
-                val url = SteamService.instance?.sendChatImage(friend.steamId, bytes, "image.$ext")
-                if (url.isNullOrBlank()) {
-                    messages.add(SteamChatMessage(fromSelf = true, text = context.getString(R.string.steam_chat_image_failed), timestamp = 0))
-                    listState.animateScrollToItem(messages.size - 1)
-                }
-                uploading = false
             }
         }
     }
 
-    LaunchedEffect(friend.steamId) {
-        loading = true
-        messages.clear()
-        SteamService.instance?.setActiveConversation(friend.steamId)
-        messages.addAll(SteamService.instance?.loadChatHistory(friend.steamId) ?: emptyList())
-        loading = false
-        if (messages.isNotEmpty()) listState.scrollToItem(messages.size - 1)
-        SteamService.instance?.incomingChat?.collect { (fid, m) ->
-            if (fid != friend.steamId) return@collect
-            val known = messages.map { it.timestamp to it.ordinal }.toHashSet()
-            if (m.timestamp != 0 && (m.timestamp to m.ordinal) in known) return@collect
-            val mImg = imageUrlOf(m.text)
-            val optIdx = if (m.fromSelf) {
-                messages.indexOfFirst {
-                    it.fromSelf && it.timestamp == 0 &&
-                        (it.text == m.text || (mImg != null && imageUrlOf(it.text) == mImg))
-                }
-            } else -1
-            if (optIdx >= 0) {
-                messages[optIdx] = m
-            } else {
-                messages.add(m)
-                listState.animateScrollToItem(messages.size - 1)
-            }
-        }
-    }
-    DisposableEffect(friend.steamId) {
-        onDispose { SteamService.instance?.clearActiveConversation(friend.steamId) }
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) listState.animateScrollToItem(messages.size - 1)
     }
 
     fun send() {
-        val text = input.trim()
-        if (text.isEmpty() || sending) return
-        sending = true
-        input = ""
-        val optimistic = SteamChatMessage(fromSelf = true, text = text, timestamp = 0, ordinal = 0)
-        messages.add(optimistic)
         scope.launch {
-            listState.animateScrollToItem(messages.size - 1)
-            val ok = SteamService.instance?.sendChatMessage(friend.steamId, text) ?: false
-            if (!ok) {
-                val idx = messages.indexOf(optimistic)
-                if (idx >= 0) messages[idx] = optimistic.copy(text = "$text  " + context.getString(R.string.steam_chat_not_sent))
+            conversation.send(availability == SteamChatAvailability.READY) { text ->
+                SteamService.instance?.sendChatMessage(friend.steamId, text)
             }
-            sending = false
         }
     }
 
     val registry = remember { PaneNavRegistry() }
-    val fieldFocus = remember { FocusRequester() }
     registry.onEdgeUp = { scope.launch { runCatching { listState.animateScrollBy(-280f) } } }
     registry.onEdgeDown = { scope.launch { runCatching { listState.animateScrollBy(280f) } } }
 
@@ -247,7 +214,8 @@ fun SteamChatScreen(
                                 style = MaterialTheme.typography.titleMedium,
                             )
                             Text(
-                                if (friend.isPlayingGame) friend.gameName.ifBlank { stringResource(R.string.steam_friends_in_game) }
+                                if (availability != SteamChatAvailability.READY) stringResource(R.string.vapor_chat_last_known)
+                                else if (friend.isPlayingGame) friend.gameName.ifBlank { stringResource(R.string.steam_friends_in_game) }
                                 else if (friend.isOnline) stringResource(R.string.stores_accounts_status_online) else stringResource(R.string.stores_accounts_status_offline),
                                 color = if (friend.isOnline) Accent else TextSecondary,
                                 style = MaterialTheme.typography.labelSmall,
@@ -263,14 +231,14 @@ fun SteamChatScreen(
                     HorizontalDivider(color = CardBorder, thickness = 0.5.dp)
 
                     Box(Modifier.weight(1f).fillMaxWidth()) {
-                        if (loading) {
+                        if (conversation.loading && messages.isEmpty()) {
                             CircularProgressIndicator(
                                 color = Accent,
                                 modifier = Modifier.size(28.dp).align(Alignment.Center),
                             )
                         } else if (messages.isEmpty()) {
                             Text(
-                                stringResource(R.string.steam_chat_empty),
+                                stringResource(R.string.vapor_chat_empty),
                                 color = TextSecondary,
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.align(Alignment.Center),
@@ -299,69 +267,13 @@ fun SteamChatScreen(
                         }
                     }
                     HorizontalDivider(color = CardBorder, thickness = 0.5.dp)
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IconButton(
-                            onClick = {
-                                pickImage.launch(
-                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-                                )
-                            },
-                            enabled = !uploading,
-                            modifier = Modifier.size(42.dp).paneNavItem(
-                                cornerRadius = 21.dp,
-                                onActivate = {
-                                    if (!uploading) pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                                },
-                                tapToSelect = true,
-                                navRow = 1,
-                                navCol = 0,
-                            ),
-                        ) {
-                            Icon(
-                                Icons.Outlined.Image,
-                                contentDescription = stringResource(R.string.steam_chat_send_image),
-                                tint = if (uploading) TextSecondary else Accent,
-                            )
-                        }
-                        OutlinedTextField(
-                            value = input,
-                            onValueChange = { input = it },
-                            modifier = Modifier
-                                .weight(1f)
-                                .focusRequester(fieldFocus)
-                                .paneNavItem(cornerRadius = 22.dp, onActivate = { runCatching { fieldFocus.requestFocus() } }, navRow = 1, navCol = 1, isEntry = true),
-                            placeholder = { Text(stringResource(R.string.steam_chat_message_hint), color = TextSecondary) },
-                            maxLines = 4,
-                            shape = RoundedCornerShape(22.dp),
-                            keyboardActions = KeyboardActions(onSend = { send() }),
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = BgDark,
-                                unfocusedContainerColor = BgDark,
-                                focusedTextColor = TextPrimary,
-                                unfocusedTextColor = TextPrimary,
-                                cursorColor = Accent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                            ),
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        IconButton(
-                            onClick = { send() },
-                            enabled = input.isNotBlank() && !sending,
-                            modifier = Modifier.size(42.dp).paneNavItem(cornerRadius = 21.dp, onActivate = { send() }, tapToSelect = true, navRow = 1, navCol = 2),
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Outlined.Send,
-                                contentDescription = stringResource(R.string.steam_chat_send),
-                                tint = if (input.isNotBlank() && !sending) Accent else TextSecondary,
-                            )
-                        }
+                    if (imageFailed) {
+                        Text(stringResource(R.string.steam_chat_image_failed),
+                            color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(12.dp))
                     }
+                    SteamChatComposer(conversation, availability, ::send, {
+                        pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    }, uploading)
                 }
             }
         }

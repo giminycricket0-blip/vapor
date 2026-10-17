@@ -43,25 +43,36 @@ aarch64-unix/winedirectaudio.so       bionic unixlib — the AAudio backend
 11.0-6 (ABI-interchangeable). `sdk28` is built for 4 KB kernel pages, `sdk35` for
 16 KB — `DirectAudioDriver.pageSizeTag()` picks between them at runtime.
 
-## Picking between the two builds
+## Picking a compatible interface
 
 The two builds differ only in the **mmdevapi unixlib ABI** they were compiled
 against, which is observable in the shipped binary: the `__wine_unix_call_funcs`
 table in `aarch64-unix/winedirectaudio.so` holds **36** entries in the `wine10`
-build and **37** in the `wine11` build. Every Proton ships `winealsa.so` with the
-same table, so `DirectAudioDriver` reads the entry count out of the Proton layer
-and picks the build that matches, rather than parsing a version out of the
-profile name. Measured:
+build and **37** in the `wine11` build. `DirectAudioDriver` reads that count and
+the undefined `PsCreateSystemThread` import from the layer and bundled driver,
+rather than parsing a version out of the profile name. Both must match. The newer
+Wine 11 system-thread interface also has **37** entries with different slot
+meanings, so equal table sizes alone do not establish compatibility. Measured:
 
 | Proton (arm64ec) | `winealsa.so` entries | build selected |
 | --- | --- | --- |
 | 9.0 (bundled) | 36 | `wine10` |
 | 10.0-4 | 36 | `wine10` |
-| 11.0-x, incl. our 11.0-2 | 37 | `wine11` |
+| Classic 11.0-x, incl. our 11.0-2 | 37, no system-thread import | `wine11` |
+| Wine 11 system-thread interface | 37, system-thread import | No bundled matching build; default audio fallback |
 
 Note the `wine10`/`wine11` names are historical: the wine10 build also serves
-Proton 9.0. A Proton whose table matches neither build is refused and the launch
+Proton 9.0. A Proton whose interface matches neither build is refused and the launch
 falls back to the default audio driver.
+
+Vapor's regression tests use the unmodified upstream
+`directaudio-wine11-systhread-arm64ec-sdk28.zip` from `directaudio-v1.4.0`, source
+commit `8cc1227bf1b929521e6b2df2509d8b309c4c4f25`, SHA-256
+`30382cadbabc7e5d926db08166140f16e7e74eddbd2eb6d2baab0a8fae56099b`.
+It lives in `app/src/test/resources/directaudio/`, is not packaged as a runtime
+asset, and demonstrates the equal-count incompatibility. Runtime driver archives
+remain the four v1.3.2 artifacts listed above; the existing LGPL notices and the
+upstream tagged build sources also apply to this test-only fixture.
 
 The `.drv` PE halves carry no export table in the wine11 build. That is **normal
 for Wine 11** — its own `winealsa.drv` and `winepulse.drv` are byte-for-byte the

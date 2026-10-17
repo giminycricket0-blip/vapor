@@ -142,6 +142,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.winlator.cmod.feature.stores.steam.service.SteamCloseSync
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -588,10 +590,14 @@ internal fun UnifiedActivity.UninstallConfirmation(
     confirmLabel: String = stringResource(R.string.common_ui_uninstall),
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
+    enabled: Boolean = true,
 ) {
     var isUninstalling by remember { mutableStateOf(false) }
 
     GameSettingsInfoCard(message = message, accentColor = DangerRed)
+    if (!enabled) {
+        GameSettingsInfoCard(message = stringResource(R.string.library_waiting_for_exit_cloud_sync))
+    }
 
     if (isUninstalling) {
         Box(
@@ -610,13 +616,14 @@ internal fun UnifiedActivity.UninstallConfirmation(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             OutlinedButton(
+                enabled = enabled,
                 onClick = {
                     isUninstalling = true
                     onConfirm()
                 },
                 modifier = Modifier.paneNavItem(
                     cornerRadius = 8.dp,
-                    onActivate = { isUninstalling = true; onConfirm() },
+                    onActivate = { if (enabled) { isUninstalling = true; onConfirm() } },
                     isEntry = true,
                 ),
                 border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.5f)),
@@ -919,6 +926,8 @@ internal fun UnifiedActivity.GameSettingsDialog(
     val scope = rememberCoroutineScope()
     val isCustom = app.id < 0
     val isEpic = app.id >= 2000000000
+    val closeSyncApps by SteamCloseSync.activeAppIds.collectAsStateWithLifecycle()
+    val uninstallEnabled = isCustom || isEpic || app.id !in closeSyncApps
     val epicId = if (isEpic) app.id - 2000000000 else 0
     val itchGameId by produceState<Int?>(null, app.id, isCustom) {
         value =
@@ -1378,6 +1387,7 @@ internal fun UnifiedActivity.GameSettingsDialog(
 
             GameSettingsScreen.Uninstall -> {
                 UninstallConfirmation(
+                    enabled = uninstallEnabled,
                     message =
                         if (isCustom && itchGameId == null) {
                             getString(R.string.library_games_remove_confirm, app.name)
@@ -1748,6 +1758,8 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
     val isCustom = app.id < 0
     val isEpic = app.id >= 2000000000
     val isGog = gogGame != null
+    val closeSyncApps by SteamCloseSync.activeAppIds.collectAsStateWithLifecycle()
+    val uninstallEnabled = isCustom || isEpic || isGog || app.id !in closeSyncApps
     val epicId = if (isEpic) app.id - 2000000000 else 0
     val itchGameId by produceState<Int?>(null, app.id, isCustom) {
         value =
@@ -2780,6 +2792,7 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                             com.winlator.cmod.feature.retro.RetroAchievementsManager.isHardcorePreferred(context)
                                     ),
                                 onUninstall = uninstallGame,
+                                uninstallEnabled = uninstallEnabled,
                                 steamMenuEnabled = (isCustom && isItchGame) ||
                                     (
                                         !isCustom &&
@@ -3139,6 +3152,7 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                             },
                                         ),
                                     onConfirm = uninstallGame,
+                                    enabled = uninstallEnabled,
                                     onCancel = { currentScreen = LibraryDetailScreen.Main },
                                 )
                             }

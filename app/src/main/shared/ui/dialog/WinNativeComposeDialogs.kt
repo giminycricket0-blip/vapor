@@ -28,6 +28,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.BorderStroke
+import com.winlator.cmod.shared.ui.focus.controllerFocusGlow
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -319,9 +323,9 @@ fun WinNativeDialogShell(
                         .widthIn(max = maxWidth)
                         .fillMaxWidth()
                         .heightIn(max = maxHeight)
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(3.dp))
                         .background(WinNativeSurface)
-                        .border(1.dp, WinNativeOutline, RoundedCornerShape(16.dp))
+                        .border(1.dp, WinNativeOutline, RoundedCornerShape(3.dp))
                         .padding(contentPadding),
             ) {
                 Column(
@@ -354,7 +358,7 @@ fun WinNativeDialogShell(
                             Text(
                                 text = title,
                                 color = WinNativeTextPrimary,
-                                fontSize = 16.sp,
+                                fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                             )
                         }
@@ -383,24 +387,22 @@ fun WinNativeDialogButton(
     backgroundColor: Color = WinNativePanel,
     borderColor: Color = WinNativeOutline,
 ) {
-    Box(
+    Button(
+        onClick = onClick,
         modifier =
             Modifier
                 .widthIn(min = 84.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(backgroundColor)
-                .border(1.dp, borderColor, RoundedCornerShape(10.dp))
-                .clickable(
-                    interactionSource = MutableInteractionSource(),
-                    indication = null,
-                    onClick = onClick,
-                ).padding(horizontal = 18.dp, vertical = 11.dp),
-        contentAlignment = Alignment.Center,
+                .heightIn(min = 48.dp)
+                .controllerFocusGlow(cornerRadius = 3.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = backgroundColor, contentColor = textColor),
+        border = BorderStroke(1.dp, borderColor),
+        shape = RoundedCornerShape(3.dp),
+        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
     ) {
         Text(
             text = label,
             color = textColor,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
         )
     }

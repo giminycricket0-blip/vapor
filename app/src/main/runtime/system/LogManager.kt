@@ -476,7 +476,7 @@ object LogManager {
             val pid = android.os.Process.myPid()
             appLogProcess =
                 Runtime.getRuntime().exec(
-                    arrayOf("logcat", "-f", logFile.absolutePath, "-r", "8192", "-n", "2", "--pid=$pid", "*:W"),
+                    arrayOf("logcat", "-f", logFile.absolutePath, "-r", "8192", "-n", "2", "--pid=$pid", "GameEngineHints:I", "GameLaunchTiming:I", "*:W"),
                 )
             closeProcessStdin(appLogProcess)
             startSystemLogging(context)
@@ -598,7 +598,7 @@ object LogManager {
         val writer = java.io.OutputStreamWriter(out, Charsets.UTF_8)
         file.bufferedReader(Charsets.UTF_8).use { reader ->
             reader.lineSequence().forEach { line ->
-                writer.write(SESSION_TOKEN.replace(line, "[token removed by WinNative]"))
+                writer.write(SESSION_TOKEN.replace(line, "[token removed by Vapor]"))
                 writer.write("\n")
             }
         }

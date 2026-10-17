@@ -1,0 +1,131 @@
+--- a/src/core.rs
++++ b/src/core.rs
+@@ -181,10 +181,8 @@
+ 
+ const HEADER_SIZE: usize = std::mem::size_of::<Header>();
+ 
+-// Bionic exports the robust process-shared pthread mutex API (API 28+) but
+-// the libc crate does not expose it for Android, and the NDK stub libc.so
+-// omits both symbols entirely, which breaks consumers linking with
+-// --no-allow-shlib-undefined. Resolve them via dlsym at runtime instead.
++// Stock Bionic lacks robust mutexes. Resolve both APIs at runtime for
++// compatible libc variants, and reject initialization when either is absent.
+ #[cfg(target_os = "android")]
+ mod robust {
+     use std::sync::OnceLock;
+@@ -192,14 +190,12 @@
+     type ConsistentFn = unsafe extern "C" fn(*mut libc::pthread_mutex_t) -> i32;
+     type SetrobustFn = unsafe extern "C" fn(*mut libc::pthread_mutexattr_t, i32) -> i32;
+ 
+-    // Fallbacks if the symbols are somehow missing: without robust mutexes the
+-    // kernel never reports EOWNERDEAD, so no-op consistent/setrobust is safe.
+-    unsafe extern "C" fn consistent_stub(_: *mut libc::pthread_mutex_t) -> i32 { 0 }
+-    unsafe extern "C" fn setrobust_stub(_: *mut libc::pthread_mutexattr_t, _: i32) -> i32 { 0 }
+-
+-    static FUNCS: OnceLock<(ConsistentFn, SetrobustFn)> = OnceLock::new();
+-
+-    fn funcs() -> (ConsistentFn, SetrobustFn) {
++    unsafe extern "C" fn consistent_stub(_: *mut libc::pthread_mutex_t) -> i32 { libc::ENOSYS }
++    unsafe extern "C" fn setrobust_stub(_: *mut libc::pthread_mutexattr_t, _: i32) -> i32 { libc::ENOSYS }
++
++    static FUNCS: OnceLock<(ConsistentFn, SetrobustFn, bool)> = OnceLock::new();
++
++    fn funcs() -> (ConsistentFn, SetrobustFn, bool) {
+         *FUNCS.get_or_init(|| unsafe {
+             let handle = libc::dlopen(b"libc.so\0".as_ptr().cast(), libc::RTLD_NOW);
+             let lookup = |name: &[u8]| -> *mut libc::c_void {
+@@ -211,8 +207,13 @@
+             (
+                 if consistent.is_null() { consistent_stub } else { std::mem::transmute::<*mut libc::c_void, ConsistentFn>(consistent) },
+                 if setrobust.is_null() { setrobust_stub } else { std::mem::transmute::<*mut libc::c_void, SetrobustFn>(setrobust) },
++                !consistent.is_null() && !setrobust.is_null(),
+             )
+         })
++    }
++
++    pub fn supported() -> bool {
++        funcs().2
+     }
+ 
+     pub unsafe fn pthread_mutex_consistent(lock: *mut libc::pthread_mutex_t) -> i32 {
+@@ -596,6 +597,10 @@
+ }
+ 
+ fn open_and_map(path: &str) -> Result<Region, i32> {
++    #[cfg(target_os = "android")]
++    if !robust::supported() {
++        return Err(libc::ENOSYS);
++    }
+     // Distinct library layouts never share a region file: the version suffix
+     // keeps stale files from older builds out of the way. A leftover file
+     // with the wrong size/version is unlinked and recreated, never truncated
+@@ -1893,6 +1898,69 @@
+     Ok(sweep_dead_locked(r))
+ }
+ 
++#[cfg(test)]
++mod vapor_recovery_tests {
++    use super::*;
++
++    #[cfg(target_os = "android")]
++    #[test]
++    fn initialization_requires_real_robust_mutex_apis() {
++        let h = unsafe { libc::dlopen(b"libc.so\0".as_ptr().cast(), libc::RTLD_NOW) };
++        assert!(!h.is_null());
++        let missing = unsafe {
++            libc::dlsym(h, b"pthread_mutexattr_setrobust\0".as_ptr().cast()).is_null()
++                || libc::dlsym(h, b"pthread_mutex_consistent\0".as_ptr().cast()).is_null()
++        };
++        unsafe { libc::dlclose(h) };
++        let path = std::env::temp_dir().join(format!("vapor-init-{}.shm", std::process::id()));
++        let result = init(Some(path.to_str().unwrap()));
++        if missing {
++            assert_eq!(result, Err(Error::Init(libc::ENOSYS)));
++            let versioned = path.with_extension(format!("v{VERSION}.shm"));
++            assert!(!versioned.exists(), "unsupported initialization must not publish a region");
++        } else {
++            assert_eq!(result, Ok(()));
++        }
++    }
++
++    #[test]
++    fn backend_recovers_after_owner_death_or_refuses_initialization() {
++        let path = std::env::temp_dir().join(format!("vapor-owner-death-{}.shm", std::process::id()));
++        let initialized = init(Some(path.to_str().unwrap()));
++        if initialized == Err(Error::Init(libc::ENOSYS)) {
++            println!("backend unavailable: initialization refused; owner-death recovery not exercised");
++            return;
++        }
++        initialized.unwrap();
++        let r = region().unwrap();
++        let child = unsafe { libc::fork() };
++        assert!(child >= 0);
++        if child == 0 {
++            let _guard = r.lock_guard().unwrap();
++            unsafe { libc::_exit(0) };
++        }
++        let mut status = 0;
++        assert_eq!(unsafe { libc::waitpid(child, &mut status, 0) }, child);
++        assert!(libc::WIFEXITED(status) && libc::WEXITSTATUS(status) == 0);
++        let mut deadline = unsafe { std::mem::zeroed::<libc::timespec>() };
++        assert_eq!(unsafe { libc::clock_gettime(libc::CLOCK_REALTIME, &mut deadline) }, 0);
++        deadline.tv_nsec += 250_000_000;
++        if deadline.tv_nsec >= 1_000_000_000 {
++            deadline.tv_sec += 1;
++            deadline.tv_nsec -= 1_000_000_000;
++        }
++        let lock = &r.header().lock as *const libc::pthread_mutex_t as *mut _;
++        let result = unsafe { libc::pthread_mutex_timedlock(lock, &deadline) };
++        if result == libc::EOWNERDEAD {
++            assert_eq!(unsafe { pthread_mutex_consistent(lock) }, 0);
++            assert_eq!(unsafe { libc::pthread_mutex_unlock(lock) }, 0);
++        } else if result == 0 {
++            unsafe { libc::pthread_mutex_unlock(lock) };
++        }
++        assert_eq!(result, libc::EOWNERDEAD, "shared region lock did not recover after its owner process exited");
++    }
++}
++
+ /// Tests: force the auto-sweep rate limiter to consider the interval
+ /// elapsed, so the next signal op sweeps regardless of wall time.
+ #[cfg(test)]

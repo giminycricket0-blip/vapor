@@ -224,6 +224,7 @@ internal fun SteamService.Companion.createSteamShortcut(
         content.append("game_install_path=$installPath\n")
         content.append("launch_exe_path=$launchExecutable\n")
         content.append("use_container_defaults=1\n")
+        content.append("fpsLimit=${com.winlator.cmod.runtime.container.Shortcut.DEFAULT_FPS_LIMIT}\n")
 
         com.winlator.cmod.shared.io.FileUtils
             .writeString(shortcutFile, content.toString())

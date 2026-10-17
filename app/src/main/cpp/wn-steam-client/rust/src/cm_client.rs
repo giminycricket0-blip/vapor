@@ -671,6 +671,14 @@ impl CMClientCore {
         self.build_authed_service_call("Player.SetRichPresence#1", job_id, request.serialize())
     }
 
+    pub fn build_request_free_license(&self, app_id: u32, job_id: u64) -> Option<OutboundProtoMessage> {
+        if app_id == 0 { return None; }
+        self.build_job_proto_message(
+            EMsg::CLIENT_REQUEST_FREE_LICENSE, job_id,
+            crate::pb::cmsg_client_request_free_license::request(app_id), 0,
+        )
+    }
+
     pub fn build_get_app_ownership_ticket(
         &self,
         app_id: u32,
@@ -1316,6 +1324,7 @@ impl CMClientCore {
             | EMsg::CLIENT_PICS_ACCESS_TOKEN_RESPONSE
             | EMsg::CLIENT_PICS_CHANGES_SINCE_RESPONSE
             | EMsg::CLIENT_GET_APP_OWNERSHIP_TICKET_RESPONSE
+            | EMsg::CLIENT_REQUEST_FREE_LICENSE_RESPONSE
             | EMsg::CLIENT_REQUEST_ENCRYPTED_APP_TICKET_RESPONSE
             | EMsg::CLIENT_GET_USER_STATS_RESPONSE
             | EMsg::CLIENT_GET_DEPOT_DECRYPTION_KEY_RESPONSE
@@ -2007,6 +2016,18 @@ mod tests {
 
         let self_request = core.build_request_user_persona().unwrap();
         assert_eq!(self_request.emsg, EMsg::CLIENT_REQUEST_FRIEND_DATA);
+    }
+
+    #[test]
+    fn free_license_request_and_response_use_the_tracked_job() {
+        let core = logged_on_core();
+        assert!(core.build_request_free_license(0, 99).is_none());
+        let request = core.build_request_free_license(22150, 99).unwrap();
+        let decoded = crate::proto_envelope::decode_proto_envelope(&request.wire).unwrap();
+        assert_eq!(decoded.emsg, EMsg(5572));
+        assert_eq!(decoded.header.jobid_source, 99);
+        let header = CMsgProtoBufHeader { jobid_target: 99, ..Default::default() };
+        assert!(matches!(core.route_inbound(EMsg(5573), &header, &[0x08, 0x01]), InboundAction::DeliverJob(_)));
     }
 
     #[test]

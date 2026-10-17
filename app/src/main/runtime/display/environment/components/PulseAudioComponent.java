@@ -7,6 +7,7 @@ import com.winlator.cmod.runtime.display.environment.EnvironmentComponent;
 import com.winlator.cmod.runtime.system.ProcessHelper;
 import com.winlator.cmod.runtime.wine.EnvVars;
 import com.winlator.cmod.shared.io.FileUtils;
+import com.winlator.cmod.shared.io.TarCompressorUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -260,6 +261,18 @@ public class PulseAudioComponent extends EnvironmentComponent {
       FileUtils.chmod(workingDir, 0771);
     }
 
+    // Container version stamps can survive an interrupted extraction or missing app-level files.
+    // Repair the bundled audio runtime at its point of use, without resetting the game prefix.
+    if (!hasRuntimeFiles(workingDir)) {
+      if (!TarCompressorUtils.extract(
+              TarCompressorUtils.Type.ZSTD, context, "pulseaudio.tzst", workingDir)
+          || !hasRuntimeFiles(workingDir)) {
+        Log.e(TAG, "Could not restore the bundled PulseAudio runtime");
+        return;
+      }
+      Log.i(TAG, "Restored missing PulseAudio runtime files");
+    }
+
     // Clear any stale runtime state (e.g. cookie) from a previous run.
     File configDir = new File(workingDir, ".config");
     if (configDir.exists()) FileUtils.delete(configDir);
@@ -296,6 +309,17 @@ public class PulseAudioComponent extends EnvironmentComponent {
     command += " --exit-idle-time=-1";
 
     ProcessHelper.exec(command, envVars.toArray(new String[0]), workingDir);
+  }
+
+  private static boolean hasRuntimeFiles(File workingDir) {
+    for (String name : new String[] {
+        "pactl", "modules/libprotocol-native.so",
+        "modules/module-native-protocol-unix.so", "modules/module-aaudio-sink.so"
+    }) {
+      File file = new File(workingDir, name);
+      if (!file.isFile() || file.length() == 0) return false;
+    }
+    return true;
   }
 
   private String execPactlCommand(String command) {

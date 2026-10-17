@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import com.winlator.cmod.R
+import com.winlator.cmod.runtime.system.GameLaunchTiming
+import com.winlator.cmod.runtime.system.GameLaunchTiming.Event
 import java.io.File
 import java.io.RandomAccessFile
 import java.util.concurrent.atomic.AtomicBoolean
@@ -19,6 +21,8 @@ class WnLauncherStatusTailer(
     private val onBlocked: ((kind: String, blockingAppId: Int, pid: Int) -> Unit)? = null,
     private val onInsecureLaunch: (() -> Unit)? = null,
     private val onCloudConflict: ((appId: Int, localTime: Long, remoteTime: Long) -> Unit)? = null,
+    private val launchTiming: GameLaunchTiming? = null,
+    private val onGameExited: (() -> Unit)? = null,
 ) {
     private val running = AtomicBoolean(false)
     private val appContext = context.applicationContext
@@ -27,16 +31,32 @@ class WnLauncherStatusTailer(
     @Volatile private var lastEmitted: String = ""
     @Volatile private var launchAppDispatchedAt: Long = 0L
     @Volatile private var fileExistedAtStart: Boolean = false
-    @Volatile private var launchCompleteSignaled: Boolean = false
+    @Volatile private var launchResolved: Boolean = false
     @Volatile private var directExeMode: Boolean = false
     @Volatile private var insecureSignaled: Boolean = false
     @Volatile private var sawAnyLauncherLine: Boolean = false
     @Volatile private var startedAt: Long = 0L
+    @Volatile private var cloudStartedAt: Long = 0L
+    @Volatile private var cloudChoicePending: Boolean = false
+    @Volatile private var gameExitObserved: Boolean = false
+
+    /** Resume the bounded network wait only after the user has answered a save conflict. */
+    fun cloudConflictAnswered() {
+        cloudStartedAt = System.currentTimeMillis()
+        cloudChoicePending = false
+    }
 
     fun start() {
         if (!running.compareAndSet(false, true)) return
         fileExistedAtStart = logFile.exists()
-        launchCompleteSignaled = false
+        launchResolved = false
+        cloudStartedAt = 0L
+        cloudChoicePending = false
+        gameExitObserved = false
+        directExeMode = false
+        insecureSignaled = false
+        launchAppDispatchedAt = 0L
+        lastEmitted = ""
         sawAnyLauncherLine = false
         startedAt = System.currentTimeMillis()
         android.util.Log.i(TAG, "start: path=" + logFile.absolutePath
@@ -108,7 +128,7 @@ class WnLauncherStatusTailer(
                 android.util.Log.e(TAG, "tail iteration failed", e)
             }
             try {
-                Thread.sleep(pollIntervalMs)
+                Thread.sleep(if (launchResolved) maxOf(pollIntervalMs, 1000L) else pollIntervalMs)
             } catch (ie: InterruptedException) {
                 Thread.currentThread().interrupt()
                 break
@@ -117,9 +137,38 @@ class WnLauncherStatusTailer(
         android.util.Log.i(TAG, "tailLoop: exiting (running=${running.get()}, totalLinesRead=$totalLinesRead)")
     }
 
-    private fun consumeLine(line: String) {
+    internal fun consumeLine(line: String) {
         if (!line.contains("[wn-launcher]")) return
         sawAnyLauncherLine = true
+        if (launchResolved && line.contains("game \"") && line.contains(" exited (")) {
+            if (!gameExitObserved) {
+                gameExitObserved = true
+                main.post { onGameExited?.invoke() }
+            }
+            return
+        }
+        // Once playing, observe exit only; reconnect callbacks must not revive launch UI.
+        if (launchResolved) return
+        if (line.contains("cloud:")) {
+            if (cloudStartedAt == 0L) cloudStartedAt = System.currentTimeMillis()
+            if (line.contains("launch sync COMPLETE") || line.contains("launch sync skipped")) {
+                cloudStartedAt = 0L
+            } else if (line.contains("launch sync FAILED")) {
+                failLaunch(R.string.vapor_cloud_launch_failed)
+                return
+            }
+        }
+        if (line.contains("VAPOR-ERROR:")) {
+            val message = when {
+                line.contains("steam-sign-in-failed") -> R.string.vapor_steam_sign_in_failed
+                line.contains("unsupported-launch-option") -> R.string.vapor_steam_launch_option_unsupported
+                line.contains("cloud-conflict-unresolved") -> R.string.vapor_cloud_conflict_unresolved
+                line.contains("cloud-launch-failed") -> R.string.vapor_cloud_launch_failed
+                else -> R.string.preloader_steam_launcher_game_never_started
+            }
+            failLaunch(message)
+            return
+        }
         if (line.contains("BLOCKED: kind=")) {
             val kind = field(line, "kind=") ?: return
             val blocking = field(line, "blocking=")?.toIntOrNull() ?: 0
@@ -130,6 +179,7 @@ class WnLauncherStatusTailer(
             return
         }
         if (line.contains("CLOUD-CONFLICT: appid=")) {
+            cloudChoicePending = true
             val appId = field(line, "appid=")?.toIntOrNull() ?: 0
             val localTime = field(line, "local=")?.toLongOrNull() ?: 0L
             val remoteTime = field(line, "remote=")?.toLongOrNull() ?: 0L
@@ -154,17 +204,30 @@ class WnLauncherStatusTailer(
         val isCreateProcessFallback = line.contains("LaunchApp dispatched")
                 && line.contains("never appeared")
                 && line.contains("falling back to CreateProcess")
+        if (!launchResolved) {
+            // These are observations when the existing log poller reads a status line.
+            // Do not label a handoff/watch-for-exit message as an observed game process.
+            if (line.contains("in-process Steam launcher starting")) launchTiming?.mark(Event.STEAM_HOST_STARTED)
+            if (line.contains("Steam_BLoggedOn=true")) launchTiming?.mark(Event.STEAM_SIGNED_IN)
+            if (isLaunchAppDispatched) launchTiming?.mark(Event.STEAM_LAUNCH_DISPATCHED)
+            if ((line.contains("is running") && line.contains("LaunchApp")) || startedViaFallback) {
+                launchTiming?.mark(Event.STEAM_PROCESS_OBSERVED)
+            }
+        }
         val phase = phaseFor(line)
         if (phase != null && phase != lastEmitted) {
             emitPhase(phase, line)
         }
-        if (isLaunchAppDispatched) launchAppDispatchedAt = System.currentTimeMillis()
+        if (isLaunchAppDispatched) {
+            cloudStartedAt = 0L
+            launchAppDispatchedAt = System.currentTimeMillis()
+        }
         if (line.contains("LaunchApp: still waiting for") && launchAppDispatchedAt != 0L) {
             launchAppDispatchedAt = System.currentTimeMillis()
         }
         if (isTerminal) {
-            if (launchCompleteSignaled) return
-            launchCompleteSignaled = true
+            if (launchResolved) return
+            launchResolved = true
             android.util.Log.i(TAG, "terminal phase (LaunchApp is running) — signaling launch complete")
             // Disarm the watchdog: the game spawned successfully, so the 30s
             // post-dispatch timeout would otherwise fire mid-play and kill the
@@ -173,12 +236,21 @@ class WnLauncherStatusTailer(
             main.post { onLaunchComplete?.invoke() }
         } else if (isFatal) {
             android.util.Log.w(TAG, "fatal phase (launcher LoadLibrary failed) — signaling launch failure")
-            main.post { onLaunchFailed?.invoke(appContext.getString(R.string.preloader_steam_launcher_start_failed)) }
+            failLaunch(R.string.preloader_steam_launcher_start_failed)
         } else if (isCreateProcessFallback) {
             // Keep the UI on "Launching <game>" through the fallback; disarm the watchdog.
             android.util.Log.w(TAG, "LaunchApp exhausted retries — launcher will try CreateProcess fallback (UI stays on Launching)")
             launchAppDispatchedAt = 0L
         }
+    }
+
+    private fun failLaunch(message: Int) {
+        if (launchResolved) return
+        launchTiming?.mark(Event.LAUNCH_FAILED)
+        launchResolved = true
+        launchAppDispatchedAt = 0L
+        running.set(false)
+        main.post { onLaunchFailed?.invoke(appContext.getString(message)) }
     }
 
     private fun field(line: String, key: String): String? {
@@ -189,26 +261,29 @@ class WnLauncherStatusTailer(
         return if (end < 0) rest.trim() else rest.substring(0, end).trim()
     }
 
-    private fun watchdogTick() {
-        if (!sawAnyLauncherLine && !launchCompleteSignaled && startedAt != 0L &&
-            System.currentTimeMillis() - startedAt > LAUNCHER_SILENT_MS
+    internal fun watchdogTick(nowMs: Long = System.currentTimeMillis()) {
+        // The host budgets 120 seconds for Cloud. A stuck private Steam call can bypass
+        // that loop's own timeout, so Android owns the final launch deadline.
+        if (!launchResolved && !cloudChoicePending && cloudStartedAt != 0L &&
+            nowMs - cloudStartedAt > 135_000L
         ) {
-            android.util.Log.w(
-                TAG,
-                "watchdog: no [wn-launcher] line in ${LAUNCHER_SILENT_MS}ms — no Steam launcher is " +
-                    "running for this session, so the preloader is handed back to the first " +
-                    "application window instead of covering the session for good",
-            )
-            launchCompleteSignaled = true
-            main.post { onLaunchComplete?.invoke() }
+            failLaunch(R.string.vapor_cloud_launch_timeout)
+            return
+        }
+        if (!sawAnyLauncherLine && !launchResolved && startedAt != 0L &&
+            nowMs - startedAt > LAUNCHER_SILENT_MS
+        ) {
+            android.util.Log.w(TAG, "Steam launcher produced no status; stopping the launch")
+            running.set(false)
+            failLaunch(R.string.preloader_steam_launcher_start_failed)
             return
         }
         val dispatchedAt = launchAppDispatchedAt
         if (dispatchedAt == 0L) return  // disarmed on spawn / fallback
-        if (System.currentTimeMillis() - dispatchedAt > LAUNCH_APP_WATCHDOG_MS) {
+        if (nowMs - dispatchedAt > LAUNCH_APP_WATCHDOG_MS) {
             android.util.Log.w(TAG, "watchdog: ${LAUNCH_APP_WATCHDOG_MS}ms elapsed after LaunchApp with no terminal — assuming launch failed")
             launchAppDispatchedAt = 0L
-            main.post { onLaunchFailed?.invoke(appContext.getString(R.string.preloader_steam_launcher_game_never_started)) }
+            failLaunch(R.string.preloader_steam_launcher_game_never_started)
         }
     }
 
@@ -240,7 +315,7 @@ class WnLauncherStatusTailer(
         line.contains("redist scan: 0 *.exe installers") -> appContext.getString(R.string.preloader_no_redists)
         line.contains("redist scan: no _CommonRedist") -> appContext.getString(R.string.preloader_no_redists)
         line.contains("steamservice: post-start state=4") -> appContext.getString(R.string.preloader_steam_service_running)
-        line.contains("cloud: RunAutoCloudOnAppLaunch") -> appContext.getString(R.string.preloader_syncing_cloud_saves)
+        line.contains("cloud:") && !launchResolved && !line.contains("sync COMPLETE") -> appContext.getString(R.string.preloader_syncing_cloud_saves)
         line.contains("IClientAppManager.LaunchApp(appId=") -> appContext.getString(R.string.preloader_launching_game, gameDisplayName)
         line.contains("LoadLibrary(") && line.contains("FAILED after all strategies") ->
             appContext.getString(R.string.preloader_steam_launcher_failed_restaging)

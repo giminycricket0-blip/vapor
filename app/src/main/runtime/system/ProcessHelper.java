@@ -338,7 +338,7 @@ public abstract class ProcessHelper {
 
   public static int exec(
       String command, String[] envp, File workingDir, Callback<Integer> terminationCallback) {
-    if (PRINT_DEBUG) Log.d("ProcessHelper", "env: " + Arrays.toString(envp) + "\ncmd: " + command);
+    if (PRINT_DEBUG) Log.d("ProcessHelper", "Starting guest process (environment omitted)");
 
     // Store env vars for future use
     EnvironmentManager.setEnvVars(envp);

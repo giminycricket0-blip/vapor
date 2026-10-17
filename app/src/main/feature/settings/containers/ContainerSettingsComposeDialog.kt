@@ -1379,7 +1379,7 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
                 if (state.gamescopeContainer.value) {
                     DriverPackages.linuxSelectionEntries(context)
                 } else {
-                    com.winlator.cmod.runtime.system.GraphicsDriverCatalog.supportedVersions(context)
+                    com.winlator.cmod.runtime.system.GraphicsDriverCatalog.selectionEntries(context, savedVersion)
                 }
             }
             state.gfxDriverVersionEntries.value = versions
@@ -1824,7 +1824,7 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
         val sanitizedName = container.name.replace(" ", "_")
         val date = SimpleDateFormat("MMddyyyy_HHmmss", Locale.US).format(Date())
         val zipName = "${sanitizedName}_${date}.zip"
-        val exportDir = File(Environment.getExternalStorageDirectory(), "WinNative/saves")
+        val exportDir = File(Environment.getExternalStorageDirectory(), "Vapor/saves")
         if (!exportDir.exists()) exportDir.mkdirs()
         val zipFile = File(exportDir, zipName)
 
@@ -1850,7 +1850,7 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
 
                 withContext(Dispatchers.Main) {
                     onComplete()
-                    WinToast.show(context, context.getString(R.string.saves_export_success_path, "/WinNative/saves"), dialog.window?.decorView)
+                    WinToast.show(context, context.getString(R.string.saves_export_success_path, "/Vapor/saves"), dialog.window?.decorView)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

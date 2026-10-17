@@ -1,4 +1,11 @@
 package com.winlator.cmod.feature.settings
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.semantics.Role
+import com.winlator.cmod.shared.theme.*
+import com.winlator.cmod.shared.ui.focus.controllerFocusGlow
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -78,30 +85,24 @@ import com.winlator.cmod.shared.ui.widget.chasingBorder
 
 // ─── Palette ────────────────────────────────────────────────────────
 
-private val SidebarBgTop = Color(0xFF171E2E)
-private val SidebarBgBot = Color(0xFF11161F)
-private val SectionLabelClr = Color(0xFF3D4F65)
-private val HeaderTextClr = Color(0xFF58708C)
-private val TextNormal = Color(0xFF7A8FA8)
-private val TextSelected = Color(0xFFF0F4FF)
-private val IconMuted = Color(0xFF4A7A8F)
-private val SelectedBg = Color(0xFF131D2F)
-private val DividerColor = Color(0xFF212C3F)
-
-private val AccentSelected = Color(0xFF4FC3F7)
-private val AccentPressed = Color(0xFF8BDEFF)
-
-private val InterFamily = FontFamily(Font(R.font.inter_medium, FontWeight.Medium))
+private val SidebarBgTop = WinNativePanel
+private val SectionLabelClr = WinNativeTextSecondary
+private val HeaderTextClr = WinNativeTextPrimary
+private val TextNormal = WinNativeTextSecondary
+private val TextSelected = WinNativeTextPrimary
+private val IconMuted = WinNativeTextSecondary
+private val SelectedBg = WinNativeSurface
+private val DividerColor = WinNativeOutline
+private val AccentSelected = WinNativeAccent
+private val AccentPressed = WinNativeTextPrimary
+private val InterFamily = WinNativeFontFamily
 
 // ─── Navigation model ───────────────────────────────────────────────
 
-enum class NavSection {
-    DEVICE,
-    ACCOUNTS,
-    SYSTEM,
-    TOOLS,
-    CREDITS,
-    HELP,
+enum class NavSection(val titleRes: Int) {
+    EVERYDAY(R.string.vapor_settings_everyday),
+    ADVANCED(R.string.vapor_settings_advanced),
+    HELP(R.string.vapor_settings_help),
 }
 
 enum class SettingsNavItem(
@@ -110,25 +111,22 @@ enum class SettingsNavItem(
     val titleRes: Int,
     val section: NavSection,
 ) {
-    DEVICE_PROFILE(
-        R.id.main_menu_device_profile,
-        Icons.Outlined.TabletAndroid,
-        R.string.device_profile_nav_title,
-        NavSection.DEVICE,
-    ),
-    GOOGLE(R.id.main_menu_google, Icons.Outlined.AccountCircle, R.string.google_cloud_google, NavSection.ACCOUNTS),
-    STORES(R.id.main_menu_stores, Icons.Outlined.ShoppingBag, R.string.stores_accounts_title, NavSection.ACCOUNTS),
-    CONTAINERS(R.id.main_menu_containers, Icons.Outlined.ViewInAr, R.string.common_ui_containers, NavSection.SYSTEM),
-    PRESETS(R.id.main_menu_settings, Icons.Outlined.Tune, R.string.container_presets_title, NavSection.SYSTEM),
-    COMPONENTS(R.id.main_menu_contents, Icons.Outlined.Extension, R.string.settings_content_components, NavSection.SYSTEM),
-    DRIVERS(R.id.main_menu_adrenotools_gpu_drivers, Icons.Outlined.Memory, R.string.settings_drivers_title, NavSection.SYSTEM),
-    INPUT_CONTROLS(R.id.main_menu_input_controls, Icons.Outlined.SportsEsports, R.string.common_ui_input_controls, NavSection.SYSTEM),
-    RETRO(R.id.main_menu_retro, Icons.Outlined.VideogameAsset, R.string.settings_retro_title, NavSection.SYSTEM),
-    OTHER(R.id.main_menu_other, Icons.Outlined.Widgets, R.string.common_ui_other, NavSection.SYSTEM),
-    DEBUG(R.id.main_menu_advanced, Icons.Outlined.BugReport, R.string.settings_debug_title, NavSection.TOOLS),
-    CREDITS(R.id.main_menu_credits, Icons.Outlined.Info, R.string.retro_scr_tab_credits, NavSection.CREDITS),
+    // Keep this order aligned with the sidebar: the controller follows entries directly.
+    STORES(R.id.main_menu_stores, Icons.Outlined.ShoppingBag, R.string.vapor_settings_accounts_storage, NavSection.EVERYDAY),
+    INPUT_CONTROLS(R.id.main_menu_input_controls, Icons.Outlined.SportsEsports, R.string.common_ui_input_controls, NavSection.EVERYDAY),
+    OTHER(R.id.main_menu_other, Icons.Outlined.Widgets, R.string.vapor_settings_app_preferences, NavSection.EVERYDAY),
+    DEVICE_PROFILE(R.id.main_menu_device_profile, Icons.Outlined.TabletAndroid, R.string.device_profile_nav_title, NavSection.EVERYDAY),
+    MORE_STORES(R.id.main_menu_more_stores, Icons.Outlined.ShoppingBag, R.string.vapor_other_stores, NavSection.EVERYDAY),
+    GOOGLE(R.id.main_menu_google, Icons.Outlined.AccountCircle, R.string.google_cloud_google, NavSection.EVERYDAY),
+    CONTAINERS(R.id.main_menu_containers, Icons.Outlined.ViewInAr, R.string.common_ui_containers, NavSection.ADVANCED),
+    PRESETS(R.id.main_menu_settings, Icons.Outlined.Tune, R.string.container_presets_title, NavSection.ADVANCED),
+    COMPONENTS(R.id.main_menu_contents, Icons.Outlined.Extension, R.string.settings_content_components, NavSection.ADVANCED),
+    DRIVERS(R.id.main_menu_adrenotools_gpu_drivers, Icons.Outlined.Memory, R.string.settings_drivers_title, NavSection.ADVANCED),
+    RETRO(R.id.main_menu_retro, Icons.Outlined.VideogameAsset, R.string.settings_retro_title, NavSection.ADVANCED),
+    DEBUG(R.id.main_menu_advanced, Icons.Outlined.BugReport, R.string.settings_debug_title, NavSection.ADVANCED),
     SUPPORT(R.id.main_menu_support, Icons.Outlined.HelpOutline, R.string.settings_support_title, NavSection.HELP),
     ABOUT(R.id.main_menu_about, Icons.Outlined.Info, R.string.common_ui_about, NavSection.HELP),
+    CREDITS(R.id.main_menu_credits, Icons.Outlined.Info, R.string.retro_scr_tab_credits, NavSection.HELP),
     ;
 
     companion object {
@@ -147,8 +145,7 @@ fun SettingsNavSidebar(
     railActive: Boolean = true,
     onItemSelected: (SettingsNavItem) -> Unit,
     onBackPressed: () -> Unit,
-    bordersPaused: Boolean = false,
-    sidebarWidth: Dp = 220.dp,
+    sidebarWidth: Dp = 208.dp,
     showHeader: Boolean = true,
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -193,7 +190,7 @@ fun SettingsNavSidebar(
                 Modifier
                     .width(sidebarWidth)
                     .fillMaxHeight()
-                    .background(Brush.verticalGradient(listOf(SidebarBgTop, SidebarBgBot))),
+                    .background(SidebarBgTop),
         ) {
             if (showHeader) {
                 SidebarHeader(onBackPressed)
@@ -207,7 +204,7 @@ fun SettingsNavSidebar(
                 modifier =
                     Modifier
                         .weight(1f)
-                        .padding(start = 8.dp, end = 8.dp, top = 2.dp),
+                        .padding(top = 2.dp),
                 contentPadding = PaddingValues(bottom = 24.dp + navBottomInset),
             ) {
                 NavSection.entries.forEachIndexed { index, section ->
@@ -223,7 +220,7 @@ fun SettingsNavSidebar(
                         key = "header_${section.name}",
                         contentType = "sectionHeader",
                     ) {
-                        SectionHeader(section.name)
+                        SectionHeader(stringResource(section.titleRes))
                     }
                     items(
                         items = sectionedNavItems[section].orEmpty(),
@@ -234,7 +231,6 @@ fun SettingsNavSidebar(
                             item = item,
                             isSelected = item == selectedItem,
                             railActive = railActive,
-                            borderPaused = bordersPaused,
                             onClick = { onItemSelected(item) },
                         )
                     }
@@ -264,15 +260,15 @@ fun SettingsPortraitTopBar(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .background(Brush.verticalGradient(listOf(SidebarBgTop, SidebarBgBot)))
+                .background(SidebarBgTop)
                 .padding(start = 6.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
     ) {
         Box(
             modifier =
                 Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable(onClick = onBackPressed),
+                    .size(48.dp).controllerFocusGlow()
+                    .clip(RoundedCornerShape(3.dp))
+                    .clickable(role = Role.Button, onClick = onBackPressed),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -294,10 +290,10 @@ fun SettingsPortraitTopBar(
         Box(
             modifier =
                 Modifier
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .heightIn(min = 48.dp).controllerFocusGlow()
+                    .clip(RoundedCornerShape(3.dp))
                     .background(SelectedBg)
-                    .clickable(onClick = onOpenSections)
+                    .clickable(role = Role.Button, onClick = onOpenSections)
                     .padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -339,11 +335,14 @@ private fun SidebarHeader(onBackPressed: () -> Unit) {
         modifier =
             Modifier
                 .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .controllerFocusGlow()
                 .clickable(
+                    role = Role.Button,
                     interactionSource = interactionSource,
                     indication = null,
                     onClick = onBackPressed,
-                ).padding(start = 14.dp, end = 14.dp, top = 18.dp, bottom = 6.dp),
+                ).padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -369,13 +368,13 @@ private fun SidebarHeader(onBackPressed: () -> Unit) {
 @Composable
 private fun SectionHeader(label: String) {
     Text(
-        text = label,
+        text = label.uppercase(),
         color = SectionLabelClr,
-        fontSize = 10.sp,
+        fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
         fontFamily = InterFamily,
         letterSpacing = 1.2.sp,
-        modifier = Modifier.padding(start = 10.dp, top = 6.dp, bottom = 6.dp),
+        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
     )
 }
 
@@ -387,7 +386,6 @@ private fun NavItemRow(
     item: SettingsNavItem,
     isSelected: Boolean,
     railActive: Boolean = true,
-    borderPaused: Boolean = false,
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -397,26 +395,20 @@ private fun NavItemRow(
         if (isSelected) runCatching { bringIntoView.bringIntoView() }
     }
 
-    val iconTint by animateColorAsState(
-        targetValue = if (isSelected) AccentSelected else IconMuted,
-        animationSpec = tween(280),
-        label = "iconTint",
-    )
+    val focusedSelection = isSelected && railActive
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) TextSelected else TextNormal,
-        animationSpec = tween(280),
+        targetValue = when { focusedSelection -> WinNativeBackground; isSelected -> TextSelected; else -> TextNormal },
+        animationSpec = tween(120),
         label = "textColor",
     )
-    val showFill = isSelected && railActive
-    val bgAlpha by animateFloatAsState(
-        targetValue =
-            when {
-                showFill -> 1f
-                isHovered -> 0.5f
-                else -> 0f
-            },
-        animationSpec = tween(200),
-        label = "bgAlpha",
+    val rowColor by animateColorAsState(
+        targetValue = when {
+            focusedSelection -> WinNativeTextPrimary
+            isSelected || isHovered -> WinNativeSurfaceAlt
+            else -> Color.Transparent
+        },
+        animationSpec = tween(120),
+        label = "sidebarSelection",
     )
 
     Row(
@@ -425,36 +417,18 @@ private fun NavItemRow(
             Modifier
                 .fillMaxWidth()
                 .bringIntoViewRequester(bringIntoView)
-                .padding(vertical = 2.dp)
-                .background(
-                    color = SelectedBg.copy(alpha = bgAlpha),
-                    shape = RoundedCornerShape(8.dp),
-                ).then(
-                    if (isSelected) {
-                        Modifier.chasingBorder(
-                            paused = borderPaused,
-                            animationDurationMs = 8200,
-                            borderWidth = 1.5.dp,
-                        )
-                    } else {
-                        Modifier
-                    },
-                ).then(
-                    if (!isSelected && isHovered) {
-                        Modifier.staticBorder()
-                    } else {
-                        Modifier
-                    },
-                ).hoverable(interactionSource)
-                .pointerInput(Unit) {
-                    detectTapGestures { onClick() }
-                }.padding(horizontal = 12.dp, vertical = 10.dp),
+                .background(rowColor)
+                .heightIn(min = 48.dp)
+                .controllerFocusGlow(cornerRadius = 0.dp)
+                .selectable(selected = isSelected, role = Role.Tab, onClick = onClick)
+                .hoverable(interactionSource)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
         Icon(
             imageVector = item.icon,
             contentDescription = null,
-            tint = iconTint,
-            modifier = Modifier.size(22.dp),
+            tint = textColor,
+            modifier = Modifier.size(20.dp),
         )
 
         Text(
@@ -464,27 +438,7 @@ private fun NavItemRow(
             fontWeight = FontWeight.Medium,
             fontFamily = InterFamily,
             letterSpacing = 0.02.sp,
-            modifier = Modifier.padding(start = 14.dp),
+            modifier = Modifier.padding(start = 10.dp),
         )
     }
 }
-
-// ─── Static hover/focus border ──────────────────────────────────────
-
-private fun Modifier.staticBorder(
-    cornerRadius: Dp = 8.dp,
-    borderWidth: Dp = 1.5.dp,
-    color: Color = Color(0x5000D7F5),
-): Modifier =
-    this.drawWithContent {
-        drawContent()
-        val bw = borderWidth.toPx()
-        val cr = cornerRadius.toPx()
-        drawRoundRect(
-            color = color,
-            topLeft = Offset(bw / 2, bw / 2),
-            size = Size(size.width - bw, size.height - bw),
-            cornerRadius = CornerRadius(cr, cr),
-            style = Stroke(width = bw),
-        )
-    }

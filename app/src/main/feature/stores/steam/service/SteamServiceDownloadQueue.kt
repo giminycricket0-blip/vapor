@@ -164,37 +164,6 @@ import kotlin.time.Duration.Companion.seconds
 
 // Download-queue control, resume/cleanup helpers + sync flags, split out of SteamService.kt (behavior-identical).
 
-// Overlay the real unlock state onto schema-derived achievement definitions.
-internal suspend fun SteamService.Companion.mergeAchievementUnlockState(
-    appId: Int,
-    achievements: List<com.winlator.cmod.feature.stores.steam.statsgen.Achievement>,
-    nameToBlockBit: Map<String, Pair<Int, Int>>,
-): List<com.winlator.cmod.feature.stores.steam.statsgen.Achievement> {
-    if (achievements.isEmpty() || nameToBlockBit.isEmpty()) return achievements
-    val statsJson = withWnSession { s -> s.getUserStatsFull(appId) } ?: return achievements
-    val blockUnlock = HashMap<Int, List<Long>>()
-    runCatching {
-        val obj = JSONObject(statsJson)
-        if (obj.optInt("eresult", 2) != EResult.OK.code()) return achievements
-        val blocks = obj.optJSONArray("achievementBlocks") ?: return achievements
-        for (i in 0 until blocks.length()) {
-            val b = blocks.getJSONObject(i)
-            val times = b.optJSONArray("unlockTimes")
-            val list = ArrayList<Long>(times?.length() ?: 0)
-            for (j in 0 until (times?.length() ?: 0)) list.add(times!!.getLong(j))
-            blockUnlock[b.optInt("achievementId")] = list
-        }
-    }
-    if (blockUnlock.isEmpty()) return achievements
-    val unlockedTotal = blockUnlock.values.sumOf { times -> times.count { it != 0L } }
-    Timber.i("Achievements: app=$appId merged unlock state ($unlockedTotal unlocked across ${blockUnlock.size} blocks)")
-    return achievements.map { ach ->
-        val mapped = nameToBlockBit[ach.name] ?: return@map ach
-        val t = blockUnlock[mapped.first]?.getOrNull(mapped.second) ?: 0L
-        if (t != 0L) ach.copy(unlocked = true, unlockTimestamp = t.toInt()) else ach.copy(unlocked = false)
-    }
-}
-
 internal fun SteamService.Companion.downloadUrlsFor(fileName: String): List<String> {
     val alternate =
         when (fileName) {

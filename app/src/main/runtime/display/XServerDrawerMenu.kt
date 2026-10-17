@@ -525,7 +525,7 @@ private val RAIL_PANES =
         RailPaneSpec(
             pane = DrawerPane.FRAME_GEN,
             itemId = R.id.main_menu_frame_generation,
-            labelRes = R.string.session_drawer_rail_label_frame_gen,
+            labelRes = R.string.vapor_performance,
             iconOverride = Icons.Outlined.Speed,
         ),
         RailPaneSpec(
@@ -886,7 +886,8 @@ class XServerDrawerStateHolder(
 
     fun closeDrawer() {
         drawerOpen = false
-        openPane = null
+        closeOpenPane()
+        paneOverlayCloser = null
     }
 
     fun isPaneOpen(): Boolean = openPane != null
@@ -1687,6 +1688,21 @@ internal fun XServerDrawerContent(
             val paneScale = computePaneScale(maxHeight)
             CompositionLocalProvider(LocalPaneScale provides paneScale) {
                 Column(modifier = Modifier.fillMaxSize()) {
+                    Button(
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth().padding(8.dp).heightIn(min = 48.dp),
+                        shape = RoundedCornerShape(4.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TopRailSurfaceColor,
+                            contentColor = DrawerTextPrimary,
+                        ),
+                    ) {
+                        Icon(Icons.Outlined.PlayArrow, contentDescription = null)
+                        Text(
+                            stringResource(R.string.vapor_return_to_game),
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
                     val railVisible = openPane != DrawerPane.TASK_MANAGER && openPane != DrawerPane.LOGS
                     val chromeEnter =
                         expandVertically(
@@ -2892,7 +2908,7 @@ internal fun DrawerBooleanRow(
 internal val RECORD_QUALITY_LABELS = listOf("Performance", "Balance", "Quality")
 
 internal const val FPS_LIMITER_MIN = 15
-internal const val FPS_LIMITER_DEFAULT = 60
+internal const val FPS_LIMITER_DEFAULT = com.winlator.cmod.runtime.container.Shortcut.DEFAULT_FPS_LIMIT
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

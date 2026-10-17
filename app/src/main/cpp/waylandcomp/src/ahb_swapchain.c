@@ -120,11 +120,18 @@ static void send_deferred_release(struct ahb_buf *ab) {
 
 static int on_fence_readable(int fd, uint32_t mask, void *data) {
     struct ahb_buf *ab = data;
+    struct pollfd p = {.fd = fd, .events = POLLIN};
+    int r;
+    do { r = poll(&p, 1, 0); } while (r < 0 && errno == EINTR);
+    if (r == 0) return 0; /* A notification alone does not prove completion. */
+    const int ready = r > 0 && (p.revents & POLLIN) && !(p.revents & (POLLERR | POLLHUP | POLLNVAL));
     wl_event_source_remove(ab->fence_src);
     ab->fence_src = NULL;
     close(ab->fence_fd);
     ab->fence_fd = -1;
-    send_deferred_release(ab);
+    if (ready) send_deferred_release(ab);
+    else if (ab->resource)
+        wl_client_post_implementation_error(ab->client, "zero-copy: display release fence failed");
     maybe_free(ab);
     return 0;
 }
@@ -150,13 +157,26 @@ static void handle_released(uint64_t id, int fd) {
             }
             /* Wait it out in the event loop (a sync_file is readable once signalled). */
             struct pollfd p = {.fd = fd, .events = POLLIN};
-            if (poll(&p, 1, 0) > 0) {
+            int r;
+            do { r = poll(&p, 1, 0); } while (r < 0 && errno == EINTR);
+            if (r < 0 || (p.revents & (POLLERR | POLLHUP | POLLNVAL))) {
+                close(fd);
+                if (ab->resource)
+                    wl_client_post_implementation_error(ab->client, "zero-copy: display release fence failed");
+                maybe_free(ab);
+                return; /* Never give an unprotected buffer back to the game. */
+            }
+            if (r > 0 && (p.revents & POLLIN)) {
                 close(fd);
             } else {
                 ab->fence_fd = fd;
                 ab->fence_src = wl_event_loop_add_fd(g_loop, fd, WL_EVENT_READABLE, on_fence_readable, ab);
-                if (!ab->fence_src) { close(fd); ab->fence_fd = -1; }
-                else return; /* released from on_fence_readable */
+                if (!ab->fence_src) {
+                    close(fd); ab->fence_fd = -1;
+                    if (ab->resource) wl_client_post_no_memory(ab->client);
+                    maybe_free(ab);
+                }
+                return; /* Released by the callback, or destroyed with the failed client. */
             }
         }
     }
@@ -201,8 +221,9 @@ int ahb_swapchain_has_ahb(const struct dmabuf_buffer *b) {
 
 int ahb_swapchain_present(struct dmabuf_buffer *b, struct surface *s, int scene_w, int scene_h) {
     struct ahb_buf *ab = b ? *wnc_dmabuf_ahb_slot(b) : NULL;
-    if (!ab) return -1;
+    if (!ab || ab->fence_src) return -1; /* Finish the prior display release before reusing its token. */
     int dmabuf_fd = wnc_dmabuf_fd(b);
+    if (dmabuf_fd < 0) return -1;
     /* Acquire fence: the game's render fence, which its driver put into the dma-buf before the
      * commit (Mesa's implicit sync). The display waits on it, not the CPU. */
     int acquire = -1;
@@ -218,6 +239,8 @@ int ahb_swapchain_present(struct dmabuf_buffer *b, struct surface *s, int scene_
         struct pollfd p = {.fd = dmabuf_fd, .events = POLLIN}; /* readable = the writers are done */
         int r;
         do { r = poll(&p, 1, 100); } while (r < 0 && errno == EINTR);
+        if (r <= 0 || !(p.revents & POLLIN) || (p.revents & (POLLERR | POLLHUP | POLLNVAL)))
+            return -1; /* The copy path must synchronize it; do not display an unfinished frame. */
     }
     int r = sc_layer_present_ahb(ab->ahb, ab->w, ab->h, acquire, (void *)(uintptr_t)ab->id, scene_w, scene_h,
                                  s ? wnc_surface_color(s) : NULL, ab->format);
@@ -246,7 +269,7 @@ int ahb_swapchain_last_frame_age_ms(void) {
 
 int ahb_swapchain_defer_release(struct dmabuf_buffer *b, struct wl_resource *buffer, struct surface *s, int paced) {
     struct ahb_buf *ab = b ? *wnc_dmabuf_ahb_slot(b) : NULL;
-    if (!ab || !ab->on_layer || !buffer || ab->resource != buffer) return 0;
+    if (!ab || (!ab->on_layer && !ab->fence_src) || !buffer || ab->resource != buffer) return 0;
     ab->release_pending = 1;
     ab->deferred_ns = now_ns();
     ab->surface = paced ? s : NULL;

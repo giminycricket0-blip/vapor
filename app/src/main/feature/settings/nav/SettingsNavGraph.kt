@@ -99,14 +99,13 @@ class SettingsNavBridge {
     }
 }
 
-private val SettingsBg = Color(0xFF11111C)
+private val SettingsBg = com.winlator.cmod.shared.theme.WinNativeBackground
 
 @Composable
 fun SettingsHost(
     bridge: SettingsNavBridge,
     startItem: SettingsNavItem = SettingsNavItem.CONTAINERS,
     selectedProfileId: Int = 0,
-    bordersPaused: Boolean = false,
     onBack: () -> Unit,
 ) {
     val settingsNavController = rememberNavController()
@@ -134,7 +133,7 @@ fun SettingsHost(
         onDispose { bridge.onSelectItem = null }
     }
 
-    val portrait = isPortraitLayout()
+    val portrait = screenWidthDp() < 700.dp
     var sectionsOpen by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(portrait) { if (!portrait) sectionsOpen = false }
@@ -169,7 +168,6 @@ fun SettingsHost(
                         navigateTo(item)
                     },
                     onBackPressed = onBack,
-                    bordersPaused = bordersPaused,
                 )
             }
 
@@ -206,10 +204,10 @@ fun SettingsHost(
                 NavHost(
                     navController = settingsNavController,
                     startDestination = SettingsRoutes.fromNavItem(startItem),
-                    enterTransition = { fadeIn(tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing)) },
-                    exitTransition = { fadeOut(tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing)) },
-                    popEnterTransition = { fadeIn(tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing)) },
-                    popExitTransition = { fadeOut(tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing)) },
+                    enterTransition = { fadeIn(tween(180, easing = androidx.compose.animation.core.FastOutSlowInEasing)) },
+                    exitTransition = { fadeOut(tween(180, easing = androidx.compose.animation.core.FastOutSlowInEasing)) },
+                    popEnterTransition = { fadeIn(tween(180, easing = androidx.compose.animation.core.FastOutSlowInEasing)) },
+                    popExitTransition = { fadeOut(tween(180, easing = androidx.compose.animation.core.FastOutSlowInEasing)) },
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     composable(SettingsRoutes.fromNavItem(SettingsNavItem.DEVICE_PROFILE)) {
@@ -234,6 +232,11 @@ fun SettingsHost(
                     }
                     composable(SettingsRoutes.fromNavItem(SettingsNavItem.STORES)) {
                         AndroidFragment<StoresFragment>()
+                    }
+                    composable(SettingsRoutes.fromNavItem(SettingsNavItem.MORE_STORES)) {
+                        AndroidFragment<StoresFragment>(arguments = Bundle().apply {
+                            putBoolean("moreStores", true)
+                        })
                     }
                     composable(SettingsRoutes.fromNavItem(SettingsNavItem.DEBUG)) {
                         AndroidFragment<DebugFragment>()
@@ -291,7 +294,6 @@ fun SettingsHost(
                     navigateTo(item)
                 },
                 onBackPressed = { sectionsOpen = false },
-                bordersPaused = bordersPaused,
                 sidebarWidth = minOf(280.dp, screenWidthDp() - 56.dp),
                 showHeader = false,
             )

@@ -170,44 +170,7 @@ static uint64_t env_u64(const char* name) {
     return (uint64_t) _strtoui64(v, NULL, 10);
 }
 
-static int b64url_val(unsigned char c) {
-    if (c >= 'A' && c <= 'Z') return c - 'A';
-    if (c >= 'a' && c <= 'z') return c - 'a' + 26;
-    if (c >= '0' && c <= '9') return c - '0' + 52;
-    if (c == '-') return 62;
-    if (c == '_') return 63;
-    return -1;
-}
 
-static void log_token_claims(const char* token) {
-    if (!token || !*token) { log_line("[wn-launcher] token: (empty)"); return; }
-    const char* dot1 = strchr(token, '.');
-    if (!dot1) { log_line("[wn-launcher] token: not a JWT (no '.')"); return; }
-    const char* dot2 = strchr(dot1 + 1, '.');
-    if (!dot2) { log_line("[wn-launcher] token: not a JWT (one '.')"); return; }
-    size_t seglen = (size_t)(dot2 - (dot1 + 1));
-    if (seglen == 0 || seglen > 2000) {
-        log_line("[wn-launcher] token: payload segment size unusable (%zu)", seglen);
-        return;
-    }
-    char out[1536];
-    size_t op = 0;
-    uint32_t acc = 0;
-    int bits = 0;
-    for (size_t i = 0; i < seglen && op < sizeof(out) - 1; ++i) {
-        unsigned char c = (unsigned char) (dot1 + 1)[i];
-        int v = b64url_val(c);
-        if (v < 0) continue;
-        acc = (acc << 6) | (uint32_t) v;
-        bits += 6;
-        if (bits >= 8) {
-            bits -= 8;
-            out[op++] = (char)((acc >> bits) & 0xFF);
-        }
-    }
-    out[op] = '\0';
-    log_line("[wn-launcher] token JWT payload: %s", out);
-}
 
 static void seed_active_process_registry(uint32_t our_pid, uint32_t steam_account_id) {
     HKEY h = NULL;
@@ -675,103 +638,6 @@ static void dump_engine_vtable(void* engine, int count) {
         log_line("[wn-launcher] enginevt: [%d] off=0x%X fn=%p mod=%s",
                  i, (unsigned) (i * sizeof(void*)), fn, base[0] ? base : "?");
     }
-}
-
-static bool file_contains_valve_company(const std::filesystem::path& p) {
-    static const char kNeedle[] =
-        "V\0a\0l\0v\0e\0 \0C\0o\0r\0p\0o\0r\0a\0t\0i\0o\0n\0";
-    const size_t needleLen = sizeof(kNeedle) - 1;
-    FILE* f = fopen(p.string().c_str(), "rb");
-    if (!f) return false;
-    std::vector<char> buf(1 << 20);
-    size_t carry = 0;
-    bool found = false;
-    while (!found) {
-        size_t n = fread(buf.data() + carry, 1, buf.size() - carry, f);
-        if (n == 0) break;
-        size_t total = carry + n;
-        for (size_t i = 0; i + needleLen <= total; ++i) {
-            if (memcmp(buf.data() + i, kNeedle, needleLen) == 0) { found = true; break; }
-        }
-        carry = (total >= needleLen - 1) ? needleLen - 1 : total;
-        memmove(buf.data(), buf.data() + (total - carry), carry);
-    }
-    fclose(f);
-    return found;
-}
-
-static void verify_game_steam_api(const char* gameRootDir) {
-    if (!gameRootDir || !gameRootDir[0]) return;
-
-    std::vector<std::filesystem::path> apis;
-    try {
-        for (auto it = std::filesystem::recursive_directory_iterator(
-                     gameRootDir, std::filesystem::directory_options::skip_permission_denied);
-             it != std::filesystem::recursive_directory_iterator(); ++it) {
-            if (!it->is_regular_file()) continue;
-            std::string lower = it->path().filename().string();
-            for (char& c : lower) c = (char) tolower((unsigned char) c);
-            if (lower == "steam_api.dll" || lower == "steam_api64.dll") {
-                apis.push_back(it->path());
-            }
-        }
-    } catch (const std::exception& e) {
-        log_line("[wn-launcher] steam_api: scan failed (%s)", e.what());
-        return;
-    }
-
-    int emulated = 0, restored = 0;
-    for (const auto& api : apis) {
-        std::string name = api.filename().string();
-        std::string lower = name;
-        for (char& c : lower) c = (char) tolower((unsigned char) c);
-
-        uintmax_t size = 0;
-        try { size = std::filesystem::file_size(api); } catch (...) {}
-        bool genuine = file_contains_valve_company(api);
-        std::filesystem::path backup = api;
-        backup += ".orig";
-        bool haveBackup = std::filesystem::is_regular_file(backup);
-        uintmax_t backupSize = 0;
-        if (haveBackup) {
-            try { backupSize = std::filesystem::file_size(backup); } catch (...) {}
-        }
-        log_line("[wn-launcher] steam_api: %s size=%llu valve-signed=%d backup=%s%llu",
-                 api.string().c_str(), (unsigned long long) size, genuine ? 1 : 0,
-                 haveBackup ? "yes:" : "none:", (unsigned long long) backupSize);
-
-        if (genuine) continue;
-        emulated++;
-        if (!haveBackup || backupSize == 0) {
-            log_line("[wn-launcher] steam_api: WARNING — \"%s\" is NOT the game's genuine "
-                     "Valve DLL and there is no .orig backup to restore. The game's "
-                     "SteamAPI_Init cannot reach this client, so its online/version "
-                     "handshake will fail. Verify the game files.", name.c_str());
-            continue;
-        }
-        if (!CopyFileA(backup.string().c_str(), api.string().c_str(), FALSE)) {
-            log_line("[wn-launcher] steam_api: restore of \"%s\" from .orig FAILED (GLE=%lu)",
-                     name.c_str(), GetLastError());
-            continue;
-        }
-        restored++;
-        log_line("[wn-launcher] steam_api: restored genuine \"%s\" from .orig backup",
-                 name.c_str());
-
-        std::filesystem::path stub = api.parent_path() /
-            (lower == "steam_api64.dll" ? "steamclient64.dll" : "steamclient.dll");
-        std::error_code sec;
-        if (std::filesystem::is_regular_file(stub, sec)) {
-            uintmax_t stubSize = std::filesystem::file_size(stub, sec);
-            if (!sec && stubSize < 200000 && !file_contains_valve_company(stub)) {
-                std::filesystem::remove(stub, sec);
-                log_line("[wn-launcher] steam_api: removed emulator steamclient stub %s",
-                         stub.string().c_str());
-            }
-        }
-    }
-    log_line("[wn-launcher] steam_api: %zu checked, %d non-genuine, %d restored",
-             apis.size(), emulated, restored);
 }
 
 static int env_int_signed(const char* name, int fallback) {
@@ -1498,45 +1364,6 @@ static bool wait_for_game_process(const char* exeName, int maxSeconds, const cha
     return wn_launcher_count_game_processes() > 0;
 }
 
-static bool create_process_game(const char* gameExe, const char* exeName) {
-    if (wn_launcher_count_game_processes() > 0) {
-        log_line("[wn-launcher] CreateProcess fallback skipped — \"%s\" is already "
-                 "running (Steam owns the launch)", exeName);
-        return true;
-    }
-
-    char cwd[MAX_PATH];
-    snprintf(cwd, sizeof(cwd), "%s", gameExe);
-    char* slash = strrchr(cwd, '\\');
-    if (slash) *slash = '\0'; else cwd[0] = '\0';
-
-    // The same arguments LaunchApp would have handed Steam, so a +connect join survives the fallback.
-    const char* userArgs = getenv("WN_STEAM_USER_ARGS");
-    char cmd[MAX_PATH + 4096];
-    snprintf(cmd, sizeof(cmd), "\"%s\"%s%s", gameExe,
-             (userArgs && *userArgs) ? " " : "", (userArgs && *userArgs) ? userArgs : "");
-
-    STARTUPINFOA si;
-    memset(&si, 0, sizeof(si));
-    si.cb = sizeof(si);
-    PROCESS_INFORMATION pi;
-    memset(&pi, 0, sizeof(pi));
-
-    // Inherit our env (SteamAppId etc.) so the game's SteamAPI_Init attaches to
-    // our logged-on steamclient session.
-    BOOL ok = CreateProcessA(gameExe, cmd, NULL, NULL, FALSE,
-                             0, NULL, cwd[0] ? cwd : NULL, &si, &pi);
-    if (!ok) {
-        log_line("[wn-launcher] CreateProcess fallback FAILED for \"%s\" (GLE=%lu)",
-                 exeName, GetLastError());
-        return false;
-    }
-    log_line("[wn-launcher] game process started pid=%lu via CreateProcess "
-             "fallback (\"%s\")", (unsigned long) pi.dwProcessId, exeName);
-    if (pi.hThread) CloseHandle(pi.hThread);
-    if (pi.hProcess) CloseHandle(pi.hProcess);
-    return true;
-}
 
 static void dump_loaded_modules(const char* when) {
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32,
@@ -2601,7 +2428,10 @@ int main(int argc, char** argv) {
 
     const char* appIdStr = getenv("WN_STEAM_APPID");
     const char* user     = getenv("WN_STEAM_USERNAME");
-    const char* token    = getenv("WN_STEAM_TOKEN");
+    const char* tokenEnv = getenv("WN_STEAM_TOKEN");
+    const std::string loginToken = tokenEnv ? tokenEnv : "";
+    _putenv_s("WN_STEAM_TOKEN", "");
+    const char* token = loginToken.c_str();
     uint64_t    steamId  = env_u64("WN_STEAM_STEAMID");
     uint32_t    appId    = appIdStr ? (uint32_t) strtoul(appIdStr, NULL, 10) : 0;
 
@@ -2639,16 +2469,7 @@ int main(int argc, char** argv) {
              (unsigned long long) steamId,
              user ? user : "(null)",
              gameExe ? gameExe : "(null)");
-    if (token && *token) {
-        size_t tokenLen = strlen(token);
-        log_line("[wn-launcher] token len=%zu prefix=%.*s suffix=%.*s",
-                 tokenLen, tokenLen > 16 ? 16 : (int) tokenLen, token,
-                 tokenLen > 12 ? 12 : (int) tokenLen,
-                 tokenLen > 12 ? token + tokenLen - 12 : token);
-        log_token_claims(token);
-    } else {
-        log_line("[wn-launcher] token missing");
-    }
+    log_line("[wn-launcher] Steam credentials supplied: %s", token && *token ? "yes" : "no");
     if (!gameExe || !*gameExe) {
         log_line("[wn-launcher] no game exe from argv[1], spec file or WN_STEAM_GAMEEXE_FILE");
         return 1;
@@ -2667,14 +2488,7 @@ int main(int argc, char** argv) {
         log_line("[wn-launcher] game identity: exe=\"%s\" stem=\"%s\" root=\"%s\"",
                  exeName, stem, gameRootDir[0] ? gameRootDir : "(none)");
     }
-    std::thread steamApiScanThread;
-    {
-        static char scanRoot[MAX_PATH];
-        snprintf(scanRoot, sizeof(scanRoot), "%s", gameRootDir);
-        log_line("[wn-launcher] steam_api: scan started on background thread "
-                 "(overlaps steamclient load + logon)");
-        steamApiScanThread = std::thread([]() { verify_game_steam_api(scanRoot); });
-    }
+    // Game libraries remain exactly as downloaded; Steam owns file verification.
 
     const char* kSteamDir = "C:\\Program Files (x86)\\Steam";
     SetDllDirectoryA(kSteamDir);
@@ -3014,7 +2828,7 @@ int main(int argc, char** argv) {
         }
     } else if (!offlineMode || !offlineLogonOk) {
         log_line("[wn-launcher] no creds — skipping refresh-token logon "
-                 "(game may run in offline / no-auth mode)");
+                 "(a successful genuine Steam sign-in is required)");
     }
 
     bool loggedOn = false;
@@ -3107,10 +2921,11 @@ int main(int argc, char** argv) {
         }
     }
     if (!loggedOn) {
-        log_line("[wn-launcher] WARNING: Steam_BLoggedOn not true after %dx100ms "
-                 "(sawConnected=%d sawConnFail=%d) — proceeding with game launch "
-                 "anyway (game may end up in offline mode)",
-                 polls, sawConnected ? 1 : 0, sawConnFail ? 1 : 0);
+        log_line("[wn-launcher] VAPOR-ERROR: steam-sign-in-failed");
+        wn_launcher_arm_clean_shutdown(lsc, pipe, hUser, "C:\\wn-launcher.log");
+        wn_launcher_clean_shutdown_now("sign-in-failed");
+        wn_launcher_wait_clean_shutdown(90000);
+        return 10;
     }
 
     wn_launcher_arm_clean_shutdown(lsc, pipe, hUser, "C:\\wn-launcher.log");
@@ -3282,7 +3097,15 @@ int main(int argc, char** argv) {
     const bool agentCloud = cloudEnvOn && !offlineMode;
     if (loggedOn && engine && appId != 0 && agentCloud) {
         wn_launcher_set_cloud_context(engine, hUser, pipe, appId);
-        wn_launcher_cloud_run(engine, hUser, pipe, appId, 0, 120000);
+        int cloudResult = wn_launcher_cloud_run(engine, hUser, pipe, appId, 0, 120000);
+        if (cloudResult < 0) {
+            log_line(cloudResult == WN_CLOUD_CONFLICT_UNRESOLVED
+                ? "[wn-launcher] VAPOR-ERROR: cloud-conflict-unresolved"
+                : "[wn-launcher] VAPOR-ERROR: cloud-launch-failed");
+            wn_launcher_clean_shutdown_now("launch-failed");
+            wn_launcher_wait_clean_shutdown(90000);
+            return 1;
+        }
     } else if (offlineMode && engine && appId != 0) {
         log_line("[wn-launcher] cloud: launch download skipped — Steam Offline Mode keeps local "
                  "saves off the cloud until the shortcut goes back online");
@@ -3295,29 +3118,21 @@ int main(int argc, char** argv) {
                  "the app handles Steam Cloud");
     }
 
-    if (steamApiScanThread.joinable()) {
-        DWORD joinT0 = GetTickCount();
-        steamApiScanThread.join();
-        log_line("[wn-launcher] steam_api: background scan joined (blocked %lums)",
-                 (unsigned long)(GetTickCount() - joinT0));
-    }
-
     bool launchedViaApp = false;
     bool blockedAbort = false;
     bool probeOnly = false;
-    bool launchedViaFallback = false;
     const char* launchFailureReason = "LaunchApp path unavailable";
 
-    // User override: skip LaunchApp (it would spawn the app's configured entry, not the chosen exe) and CreateProcess the selected exe directly; the Steam session is already up.
+    // Vapor currently supports Steam's configured launch entries only.
     const char* directExeEnv = getenv("WN_STEAM_DIRECT_EXE");
     const bool directExe = directExeEnv && directExeEnv[0] != '\0';
-
     if (directExe) {
-        log_line("[wn-launcher] WN_STEAM_DIRECT_EXE set — user-selected exe \"%s\"; "
-                 "skipping Steam LaunchApp, launching directly via CreateProcess",
-                 exeName);
-        launchFailureReason = "direct-exe mode (LaunchApp skipped by override)";
-    } else if (engine && appId != 0) {
+        log_line("[wn-launcher] VAPOR-ERROR: unsupported-launch-option");
+        wn_launcher_clean_shutdown_now("unsupported-launch-option");
+        wn_launcher_wait_clean_shutdown(90000);
+        return 11;
+    }
+    if (engine && appId != 0) {
         void** engine_vt = *(void***) engine;
         typedef void* (WN_THISCALL *GetIClientAppManagerFn)(void* self, int hUser, int hPipe);
         GetIClientAppManagerFn getAppMgr = (GetIClientAppManagerFn)
@@ -3661,22 +3476,13 @@ int main(int argc, char** argv) {
                  exeName, launchFailureReason);
     }
 
-    // LaunchApp didn't bring the game up — start it directly; the "dispatched/never appeared/falling back" log markers disarm WnLauncherStatusTailer's post-dispatch watchdog.
-    if (!launchedViaApp && !blockedAbort && !probeOnly) {
-        if (directExe) {
-            log_line("[wn-launcher] direct-exe mode: launching user-selected \"%s\" via "
-                     "CreateProcess (Steam LaunchApp skipped)", exeName);
-        } else {
-            log_line("[wn-launcher] LaunchApp dispatched but \"%s\" never appeared "
-                     "— falling back to CreateProcess (%s)",
-                     exeName, launchFailureReason);
-        }
-        launchedViaFallback = create_process_game(gameExe, exeName);
+    if (!launchedViaApp && !probeOnly) {
+        log_line("[wn-launcher] VAPOR-ERROR: steam-launch-failed");
     }
 
-    if (launchedViaApp || launchedViaFallback) {
-        const char* path = launchedViaApp ? "LaunchApp path"
-                                           : "CreateProcess fallback";
+    if (launchedViaApp) {
+        wn_launcher_mark_game_started();
+        const char* path = "LaunchApp path";
         log_line("[wn-launcher] watching \"%s\" for exit (%s)", exeName, path);
 
         log_active_process_registry("post-launch");
@@ -3711,6 +3517,9 @@ int main(int argc, char** argv) {
 
     log_line("[wn-launcher] could not start \"%s\" via LaunchApp or CreateProcess "
              "(%s)", exeName, launchFailureReason);
-    if (cleanShutdownArmed) wn_launcher_clean_shutdown_now("launch-failed");
+    if (cleanShutdownArmed) {
+        wn_launcher_clean_shutdown_now("launch-failed");
+        wn_launcher_wait_clean_shutdown(90000);
+    }
     return 9;
 }

@@ -338,7 +338,7 @@ class DebugFragment : Fragment() {
 
         try {
             val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.US).format(java.util.Date())
-            val zipFile = File(ctx.cacheDir, "winnative_logs_$timestamp.zip")
+            val zipFile = File(ctx.cacheDir, "vapor_logs_$timestamp.zip")
             writeLogsZip(zipFile, files)
 
             lastSharedLogFile = zipFile
@@ -368,7 +368,7 @@ class DebugFragment : Fragment() {
     }
 
     private fun logsDownloadDir(): File {
-        val dir = File(android.os.Environment.getExternalStorageDirectory(), "WinNative/logs")
+        val dir = File(android.os.Environment.getExternalStorageDirectory(), "Vapor/logs")
         dir.mkdirs()
         return dir
     }
@@ -414,9 +414,9 @@ class DebugFragment : Fragment() {
 
         return try {
             val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.US).format(java.util.Date())
-            val dest = File(logsDownloadDir(), "winnative_logs_$timestamp.zip")
+            val dest = File(logsDownloadDir(), "vapor_logs_$timestamp.zip")
             writeLogsZip(dest, files)
-            "/WinNative/logs/${dest.name}"
+            "/Vapor/logs/${dest.name}"
         } catch (e: Exception) {
             WinToast.show(ctx, getString(R.string.settings_debug_capture_failed, e.message ?: ""))
             null
@@ -542,7 +542,7 @@ class DebugFragment : Fragment() {
                 com.winlator.cmod.runtime.system.LogManager.copyShareable(ctx, file, it)
             }
             markLogDownloaded(file)
-            "/WinNative/logs/${dest.name}"
+            "/Vapor/logs/${dest.name}"
         } catch (e: Exception) {
             WinToast.show(ctx, getString(R.string.settings_debug_capture_failed, e.message ?: ""))
             null

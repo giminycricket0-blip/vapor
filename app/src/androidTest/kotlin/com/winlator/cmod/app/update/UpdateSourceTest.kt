@@ -33,7 +33,7 @@ class UpdateSourceTest {
     @Test
     fun theTagAsksForThePullRequestThatWasInstalled() {
         assertEquals("pr-769", UpdateRelease.ciTag(769))
-        assertTrue(UpdateRelease.ciReleaseUrl(770).endsWith("/WinNative-CI/releases/tags/pr-770"))
+        assertTrue(UpdateRelease.ciReleaseUrl(770).endsWith("/vapor/releases/tags/pr-770"))
     }
 
     @Test

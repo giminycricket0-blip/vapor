@@ -56,6 +56,72 @@ final class XServerDisplayUtils {
         return false;
     }
 
+    enum SteamExitPhase { WAITING_FOR_GAME, SYNCING_CLOUD, CLOSING_STEAM, CLOSED }
+    enum SteamExitCloud { NOT_STARTED, PENDING, SYNCHRONIZED, SKIPPED, UNCONFIRMED }
+
+    /** A snapshot of the host's log, not proof of a remote save/restore round trip. */
+    static final class SteamExitStatus {
+        SteamExitPhase phase = SteamExitPhase.WAITING_FOR_GAME;
+        SteamExitCloud cloud = SteamExitCloud.NOT_STARTED;
+        boolean readable;
+
+        boolean cloudNeedsAttention() {
+            return cloud == SteamExitCloud.PENDING || cloud == SteamExitCloud.UNCONFIRMED;
+        }
+
+        // Only fixed states and numeric metadata leave the native host's log. It can contain
+        // account/session data, so never copy a raw line into the shareable diagnostic.
+        String diagnostic(int appId, long elapsedMs, boolean launcherExited) {
+            return "appId=" + appId + "\nphase=" + phase + "\ncloud=" + cloud
+                    + "\nhostLogReadable=" + readable + "\nlauncherExited=" + launcherExited
+                    + "\nelapsedMs=" + elapsedMs + "\n";
+        }
+    }
+
+    static SteamExitStatus readSteamExitStatus(File log) {
+        SteamExitStatus status = new SteamExitStatus();
+        if (log == null || !log.isFile()) return status;
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(new java.io.FileInputStream(log)))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.contains("[wn-launcher]")) continue;
+                if (line.contains("cloud: exit sync starting")
+                        || line.contains("cloud: RunAutoCloudOnAppExit")) {
+                    status.phase = SteamExitPhase.SYNCING_CLOUD;
+                    status.cloud = SteamExitCloud.PENDING;
+                } else if (line.contains("cloud: exit sync COMPLETE")) {
+                    status.phase = SteamExitPhase.CLOSING_STEAM;
+                    status.cloud = SteamExitCloud.SYNCHRONIZED;
+                } else if (line.contains("cloud: exit sync skipped")
+                        || line.contains("cloud: exit upload skipped")) {
+                    status.phase = SteamExitPhase.CLOSING_STEAM;
+                    status.cloud = SteamExitCloud.SKIPPED;
+                } else if (line.contains("cloud: exit sync FAILED")
+                        || line.contains("cloud: exit sync did NOT")
+                        || line.contains("cloud: exit sync left local saves ahead")) {
+                    status.phase = SteamExitPhase.CLOSING_STEAM;
+                    status.cloud = SteamExitCloud.UNCONFIRMED;
+                } else if (line.contains("Steam_LogOff sent")
+                        || line.contains("Steam_ReleaseUser done")
+                        || line.contains("Steam_BReleaseSteamPipe ->")) {
+                    status.phase = SteamExitPhase.CLOSING_STEAM;
+                } else if (line.contains("clean logoff complete")) {
+                    status.phase = SteamExitPhase.CLOSED;
+                }
+            }
+            status.readable = true;
+        } catch (Exception ignored) {
+            return new SteamExitStatus();
+        }
+        return status;
+    }
+
+    /** Called after the host has stopped or exhausted its exit budget, never mid-upload. */
+    static boolean wnLauncherExitCloudNeedsAttention(File log) {
+        return readSteamExitStatus(log).cloudNeedsAttention();
+    }
+
     static int clampSGSRUpscaleMode(int mode) {
         return SGSRResolutionUtils.clampUpscaleMode(mode);
     }

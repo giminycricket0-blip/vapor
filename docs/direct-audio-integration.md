@@ -74,7 +74,7 @@ byte-identical to its render-only build: no capture endpoints, every capture op 
 
 ---
 
-## What WinNative does
+## Host integration
 
 All host-side logic lives in
 [`runtime/audio/directaudio/DirectAudioDriver.kt`](../app/src/main/runtime/audio/directaudio/DirectAudioDriver.kt).
@@ -86,11 +86,12 @@ Two axes decide which bundled build is installed:
 - **mmdevapi unixlib ABI** — the driver plugs straight into mmdevapi's unixlib table, so the
   build that fits is a property of the Proton binary, not of its version string. Both the driver
   and every Proton's own `winealsa.so` export `__wine_unix_call_funcs`, whose size is that table:
-  **36** entries for Proton 9.0 and 10.0-4, **37** for Proton 11.x. `DirectAudioDriver` reads the
-  count out of `<layer>/lib/wine/aarch64-unix/winealsa.so` and picks the bundled build whose own
-  unixlib reports the same count. No version parsing, so custom, GE and beta Protons work on the
-  same footing as the stock ones, and a Proton whose table matches neither build is refused
-  instead of being handed a mismatched driver.
+  **36** entries for Proton 9.0 and 10.0-4, **37** for classic Proton 11.x. Wine 11's newer
+  system-thread interface also has 37 entries with different slot meanings. `DirectAudioDriver`
+  therefore matches both the table count and the undefined `PsCreateSystemThread` import in
+  `<layer>/lib/wine/aarch64-unix/winealsa.so` (or `winepulse.so`) against the bundled driver.
+  A different or unreadable signature is refused so the existing default audio fallback runs.
+  The current bundles implement the classic interfaces; a system-thread driver remains unbundled.
 - **Kernel page size** — `sdk35` for a 16 KB-page kernel (`p_align` 0x4000), `sdk28` for the
   classic 4 KB (0x1000), read via `Os.sysconf(_SC_PAGESIZE)`. Loading the wrong one fails to map.
   Nothing else in the app needed page size before, so the check is new.
@@ -134,9 +135,10 @@ pattern was built with them; `winedirectaudio.drv` is new, so it is absent and t
 identical to a missing-dependency problem and is easy to misdiagnose as an AAudio/linker issue.
 
 `DirectAudioDriver.mirrorIntoPrefix()` therefore copies both PE halves from the layer into the prefix
-after the overlay, size-gated so it is a no-op once staged. This is the same thing
-`WinComponentSetup.restoreWineBuiltinDllFiles` does for the stock builtins, and it is what makes the
-driver work on a container created before DirectAudio existed.
+after the overlay. Equal-length files must also have equal contents to skip the copy, so an older
+same-size driver is replaced and an unchanged driver keeps its timestamp.
+`WinComponentSetup.restoreWineBuiltinDllFiles` is the analogous staging path for stock builtins.
+Both guest PE halves must also be available in containers created before DirectAudio existed.
 
 Once the PE loads, two further pieces keep the unixlib loadable, entirely in the emulator, so any
 Proton layer works unchanged:

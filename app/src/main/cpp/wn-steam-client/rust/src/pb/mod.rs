@@ -19,6 +19,7 @@ pub mod cmsg_client_persona;
 pub mod cmsg_client_pics;
 pub mod cmsg_client_playing_session_state;
 pub mod cmsg_client_request_encrypted_app_ticket;
+pub mod cmsg_client_request_free_license;
 pub mod cmsg_client_store_user_stats;
 pub mod cmsg_clientserver_login;
 pub mod cplayer;

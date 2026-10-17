@@ -1434,6 +1434,23 @@ public class InputControlsView extends View {
   public Bitmap getIcon(byte id) {
     if (id < 0 || id >= icons.length) return null;
     if (icons[id] == null) {
+      // Keep the existing guide icon ID so saved layouts retain their bindings and position.
+      if (id == 40) {
+        Bitmap icon = Bitmap.createBitmap(96, 96, Bitmap.Config.ARGB_8888);
+        Paint glyphPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        glyphPaint.setColor(Color.WHITE);
+        glyphPaint.setStyle(Paint.Style.STROKE);
+        glyphPaint.setStrokeWidth(11);
+        glyphPaint.setStrokeCap(Paint.Cap.ROUND);
+        glyphPaint.setStrokeJoin(Paint.Join.ROUND);
+        Path glyph = new Path();
+        glyph.moveTo(18, 22);
+        glyph.lineTo(48, 76);
+        glyph.lineTo(78, 22);
+        new Canvas(icon).drawPath(glyph, glyphPaint);
+        icons[id] = icon;
+        return icon;
+      }
       Context context = getContext();
       try (InputStream is = context.getAssets().open("inputcontrols/icons/" + id + ".png")) {
         icons[id] = BitmapFactory.decodeStream(is);

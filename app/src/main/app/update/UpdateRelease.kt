@@ -55,11 +55,11 @@ data class UpdateRelease(
     val displayVersion: String get() = if (buildRef.isEmpty()) tag else "$tag · ${shortRef(buildRef)}"
 
     companion object {
-        const val RELEASES_URL = "https://api.github.com/repos/WinNative-Emu/WinNative/releases?per_page=30"
-        const val RELEASES_PAGE = "https://github.com/WinNative-Emu/WinNative/releases"
+        const val RELEASES_URL = "https://api.github.com/repos/giminycricket0-blip/vapor/releases?per_page=30"
+        const val RELEASES_PAGE = "https://github.com/giminycricket0-blip/vapor/releases"
 
         fun ciReleaseUrl(pullRequest: Int): String =
-            "https://api.github.com/repos/WinNative-Emu/WinNative-CI/releases/tags/${ciTag(pullRequest)}"
+            "https://api.github.com/repos/giminycricket0-blip/vapor/releases/tags/${ciTag(pullRequest)}"
 
         fun ciTag(pullRequest: Int): String = "pr-$pullRequest"
 

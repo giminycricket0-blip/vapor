@@ -48,6 +48,7 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -1089,9 +1090,7 @@ internal fun isOnlineCapableName(vararg fields: String?): Boolean =
 private fun isOnlineCapable(item: ComponentItem): Boolean =
     isOnlineCapableName(item.verName, item.key)
 
-// Badge marking first-party "WinNative" builds. A perfect square (width follows
-// the filled height) in WinNative blue, carrying only the WinNative logo for
-// "WN" branding. Pass Modifier.fillMaxHeight() to match the row's action height.
+// Marks a build published by the upstream component maintainer.
 @Composable
 private fun OfficialBadge(modifier: Modifier = Modifier) {
     Box(
@@ -1102,11 +1101,8 @@ private fun OfficialBadge(modifier: Modifier = Modifier) {
             .border(1.dp, Accent.copy(alpha = 0.30f), RoundedCornerShape(8.dp)),
         contentAlignment = Alignment.Center,
     ) {
-        Image(
-            painter = painterResource(R.drawable.ic_winnative_badge),
-            contentDescription = "Official WinNative build",
-            modifier = Modifier.fillMaxSize(0.8f),
-        )
+        Text(stringResource(R.string.vapor_upstream_component), style = MaterialTheme.typography.labelSmall,
+            color = Accent, modifier = Modifier.padding(4.dp))
     }
 }
 

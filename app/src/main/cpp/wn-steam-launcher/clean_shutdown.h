@@ -8,6 +8,8 @@ void wn_launcher_set_log_sink(void (*log_fn)(const char* line));
 
 void wn_launcher_set_game_exe(const char* exeName);
 
+void wn_launcher_mark_game_started(void);
+
 void wn_launcher_set_game_dir(const char* dirPath);
 
 int wn_launcher_count_game_processes(void);
@@ -18,6 +20,8 @@ void wn_launcher_arm_clean_shutdown(void* hSteamClient, int pipe, int user,
                                     const char* logPath);
 
 void wn_launcher_set_cloud_context(void* engine, int hUser, int hPipe, unsigned int appId);
+
+enum { WN_CLOUD_CONFLICT_UNRESOLVED = -2 };
 
 int wn_launcher_cloud_run(void* engine, int hUser, int hPipe,
                           unsigned int appId, int onExit, int timeoutMs);
@@ -32,6 +36,20 @@ void wn_launcher_wait_clean_shutdown(int maxMs);
 #include <ctype.h>
 #include <stddef.h>
 #include <string.h>
+
+// The Android answer file is a choice boundary. Cancel/partial/unknown answers
+// must never be interpreted as permission to replace a save.
+inline bool wn_parse_cloud_conflict_answer(const char* answer, bool* keepLocal) {
+    if (!answer || !keepLocal) return false;
+    if (strcmp(answer, "local") == 0) { *keepLocal = true; return true; }
+    if (strcmp(answer, "cloud") == 0) { *keepLocal = false; return true; }
+    return false;
+}
+
+// Never upload an old local save while abandoning a pre-launch Cloud operation.
+inline bool wn_cloud_exit_upload_allowed(bool gameStarted, bool unresolvedConflict) {
+    return gameStarted && !unresolvedConflict;
+}
 
 static const int kWnGameStemMinLength = 3;
 

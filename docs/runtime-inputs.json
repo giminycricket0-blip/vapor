@@ -1,0 +1,477 @@
+{
+  "upstream": {
+    "repository": "https://github.com/WinNative-Emu/WinNative",
+    "commit": "8409085f706acbc0749881d9bf1e85f2f347dfd4"
+  },
+  "steam_host_source_sha256": {
+    "app/src/main/cpp/wn-steam-launcher/src/main.cpp": "f42937e9d83fbb8d1122b36842b6decdc7024f1b433e878a29c5124651eb94a8",
+    "app/src/main/cpp/wn-steam-launcher/src/iface_probe.cpp": "bdc1029ab3cb24884a40d41fa51e62d5cb4877de34f72d18c4841072402981a2",
+    "app/src/main/cpp/wn-steam-launcher/clean_shutdown.cpp": "05cb06aaea76356609ba62467048e64c1b1eccfcfb8ed342a4deef9de8b57e91",
+    "app/src/main/cpp/wn-steam-launcher/clean_shutdown.h": "1c4f9bf4628efc54e52a9dda05c35c187c1bea42e9aa8f367403540516cfd88e",
+    "app/src/main/cpp/wn-steam-launcher/build.sh": "bcf60e1730ba2cf689b3769be96298946f9557e25f03ee7dad09c499b79227f6"
+  },
+  "binaries": [
+    {
+      "path": "app/libs/MidiSynth/MidiSynth.jar",
+      "bytes": 345659,
+      "sha256": "d00423610e59335e1445656c3398bc5bb0fd55b022e11b7381c405ea22d27d30",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/container_pattern.tzst",
+      "bytes": 8254079,
+      "sha256": "4043fa27127c663461d45e953f9023bdcacf31b21f611d954d5b4e872ebb32e6",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/container_pattern_common.tzst",
+      "bytes": 41560300,
+      "sha256": "6f5a7b011f2ab79d8be60c4783de97f635289fd901fb624b26c2a3725fc8f479",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/ddrawrapper/cnc-ddraw.tzst",
+      "bytes": 173333,
+      "sha256": "d2aea34321200dd07a979a83c329da207d67af8e72fa182c307a39257d5e1d5b",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/ddrawrapper/dd7to9.tzst",
+      "bytes": 3007672,
+      "sha256": "a35490ac6acb63c72a76cbc851b186e97d533ea722ea868e8288f10cb6d45d86",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/ddrawrapper/ddraw-11.8.tzst",
+      "bytes": 1578983,
+      "sha256": "92e6a19232dd39085584f73114a34a5ee0a49a90a440342b75493c310f53a43e",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/ddrawrapper/ddraw-4.21.tzst",
+      "bytes": 738841,
+      "sha256": "06d073dc65ab89d1b6bb3023d5d2a7b9f7b7d7dc883ecaf4eb342093431c376a",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/ddrawrapper/nglide.tzst",
+      "bytes": 1205148,
+      "sha256": "3f5eb40810376cdb5bb2d18ea374bbd08177053b4aa9f923b9b440ebefe0d554",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/directaudio/linux/winedirectaudio.so",
+      "bytes": 68040,
+      "sha256": "089b83f2d099c4e7d20c1e556676174ff2a5a883a58e60093f09b07516059fd5",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/dxwrapper/cnc-ddraw-6.6/ddraw.tzst",
+      "bytes": 166133,
+      "sha256": "eabb2d59ce7060767996d0c9597ee8772059126a3af01698e59a5e7905e49867",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/dxwrapper/d8vk-1.0.tzst",
+      "bytes": 1851455,
+      "sha256": "da30a104f83f619214a3bc67c971434837e1a11ca30703d0f79041a93f2be246",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/experimental-drm.tzst",
+      "bytes": 15525139,
+      "sha256": "cc95e069d6221d9fa7f92c8311574131d6fda277b65c587a771cc10cad898736",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/extras.tzst",
+      "bytes": 2388310,
+      "sha256": "46217601a80e16caa74a5cdb5b83597c6f57bce99ff9de6bcd260fb330da1fbe",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/ffmpeg8.tzst",
+      "bytes": 8782034,
+      "sha256": "e19acae70b1e18901521691a376f4d444839b6712f600e5a6e55a4220408eb64",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/graphics_driver/extra_libs.tzst",
+      "bytes": 18863005,
+      "sha256": "91cfbfb3366baafdbcc7e344fd0fd67d7e1b92cc02b10156512a7d6fdd7bd9eb",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/graphics_driver/virgl-23.1.9.tzst",
+      "bytes": 6395804,
+      "sha256": "c42f22641079f678d501ca920a5b2e549add2b34d8d18e1e10f19ddb838eeed0",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/graphics_driver/wrapper-gamenative.tzst",
+      "bytes": 759382,
+      "sha256": "e38683ac1d382dc875d97fcae763f56d411655e56c1d1f43c743f57a58b605bc",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/graphics_driver/wrapper-leegao.tzst",
+      "bytes": 3057352,
+      "sha256": "3eabf6fc53f3b738eb80e7f80e3b28f761a8cebaa62b7e6c1f05e0e1228a969d",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/graphics_driver/wrapper.tzst",
+      "bytes": 3815368,
+      "sha256": "718b6b22647d1246da5cd524c4b1c41933b44a71cbe41e5ab19f43ad22850ce9",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/graphics_driver/zink-22.2.5.tzst",
+      "bytes": 7129431,
+      "sha256": "8a1de929cda4699d36a27448cd4d8065103475d1238aac03a71e76b72dcb433c",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/graphics_driver/zink_dlls.tzst",
+      "bytes": 8170693,
+      "sha256": "efe27f0de6a55bfb6c2e9eab79b6baaae64b35af81ce49c097de6b720f258cbb",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/imagefs.tzst",
+      "bytes": 199788876,
+      "sha256": "0902e324b60a5c234aa29fcf457f6475a38ef8f61ac2be2118daaef4f236499a",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/layers.tzst",
+      "bytes": 4447187,
+      "sha256": "9beac20c3e2c7f2c224f2c18cc6dc253b0f70450006fc986970992c7a8814ffa",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/linuxfs/usr/lib/libvulkan_freedreno.so",
+      "bytes": 15679624,
+      "sha256": "007d008631275f66ddbcad6372026e69edefd793b4f548fc0e6277066a3a4111",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/linuxfs/usr/local/lib/libwnaudit.so",
+      "bytes": 66672,
+      "sha256": "6c6abe89baf5d7309babee0c3372a4b00c2b689e2a63de38c5e9a660626509b5",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/linuxfs/usr/local/lib/libwnfastpath.so",
+      "bytes": 67936,
+      "sha256": "93ed53a16c3444911462f2942b7f562317b8e6aa6c45d92cf90126e277081213",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/linuxfs/usr/local/lib/libwninput.so",
+      "bytes": 68280,
+      "sha256": "3b006eb2dc5ac061d2eda6dfcc8af0954b5961866d7333c983008fe434bce539",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/linuxfs/usr/local/lib/libwnsession.so",
+      "bytes": 133848,
+      "sha256": "b06968435a65e14ef0f1766d073ad7cb18670360a3b8a2077f89215ffce88ec7",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/proton-9.0-arm64ec.txz",
+      "bytes": 64654348,
+      "sha256": "e9df3e74c4a4a17660902092e30b7ceaa5a91cb465f05f28035704808512e180",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/proton-9.0-arm64ec_container_pattern.tzst",
+      "bytes": 10309411,
+      "sha256": "9826ac61405f641ca8326335208c3e1ed5cec107f4b0354f813825ec398b841b",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/proton-9.0-x86_64_container_pattern.tzst",
+      "bytes": 8698674,
+      "sha256": "fa25987a3ba4f1b951bd1161f9a65a9450f0b72b87583fd3d9971d92c63a9608",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/pulseaudio.tzst",
+      "bytes": 78340,
+      "sha256": "357bb53fbcf91ab2adcd2e6a4b7fc3f2cb95f1555610681b08dbf6d412ac4bd8",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/steampipe/steam_api.dll",
+      "bytes": 16236968,
+      "sha256": "6439aa6b3574de7c2f5279547f8ca244211c83bd131e85430b38ea8a7bd08edb",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/steampipe/steam_api64.dll",
+      "bytes": 18140072,
+      "sha256": "b06a34b865d532a9586a1ee39817a1206e385ac4b2e141429a2732cb8db13067",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/steampipe/steamclient.dll",
+      "bytes": 92072,
+      "sha256": "b8f5b8ef1869c772301a9d936baaf6630c621b74a7bc4a3f1deea9ccc275c572",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/steampipe/steamclient64.dll",
+      "bytes": 111016,
+      "sha256": "5b9f6df91806ea115f539dc85f855cb1e2184d110aab5e7d789ea37f4d313a0d",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wincomponents/ddraw.tzst",
+      "bytes": 166133,
+      "sha256": "eabb2d59ce7060767996d0c9597ee8772059126a3af01698e59a5e7905e49867",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wincomponents/direct3d.tzst",
+      "bytes": 31207067,
+      "sha256": "149d55436e050bfa3fe8caf650cb97ddb2bc9fa99cd96869bd2bc4977b708fb5",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wincomponents/directmusic.tzst",
+      "bytes": 337109,
+      "sha256": "eb906732d14766641edfae0b2d722c36f4632de7fa321a5844037115b513b77e",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wincomponents/directplay.tzst",
+      "bytes": 429728,
+      "sha256": "70eb81449230af66286f5b4d5922dca13057600c35d4cdfe91930e966c2386d9",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wincomponents/directshow.tzst",
+      "bytes": 2209278,
+      "sha256": "aa682b7ee6e5903e4571bfe5a8dc9b05d0a9f05cd860cfdc810f2ddd3745e9b4",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wincomponents/directsound.tzst",
+      "bytes": 434853,
+      "sha256": "72f0e880eef1387a55602ac02b07ef26778d23c2f70d931bd2d13e92f8dc99d4",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wincomponents/vcrun2010.tzst",
+      "bytes": 1038731,
+      "sha256": "9def7b4b5c31c839d155f05e372e0e9ce4968b57f815c1abf93b7735e7d0ceb7",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wincomponents/wmdecoder.tzst",
+      "bytes": 1717472,
+      "sha256": "a2ca365cc43265680ee71a7b13a4626ed02368feec135571fb841c7b4abf62d1",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wincomponents/xaudio.tzst",
+      "bytes": 2681573,
+      "sha256": "128ab3f25a74ff371d381cc0e028e8e2101f72e434ff46b85f629921ee0e2683",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/winnative/Graphics-Test-32bit.exe",
+      "bytes": 2333245,
+      "sha256": "e721234b7bcf1d60713b99267b00e0893eb3d7f05a3d1de9a3a47776c46a3c89",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/winnative/Graphics-Test-64bit.exe",
+      "bytes": 2361407,
+      "sha256": "3aecfa2c3adadae86fef0d92950dc5bfb7cb83030036a0115ac35811884d67a3",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/winnative/InputControl32.exe",
+      "bytes": 289656,
+      "sha256": "e84e202232d05681f67b6b19e8f659b51e8488c41e2cbda5954c908f73ac6c1f",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/winnative/InputControl64.exe",
+      "bytes": 280952,
+      "sha256": "0c9221eab06356297dc3f22cc9e55e496158e713408e539271c9ea922a8ceff2",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/winnative/refactorsize.exe",
+      "bytes": 17408,
+      "sha256": "1cf3cc833915a600e396ec91680971b9614327111ea5ee97a4e41f0cb23aa051",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/bionic/steam.exe",
+      "bytes": 993792,
+      "sha256": "9bedc22ecca494c8f826ef9ef3e79ee8b35111afeec5216881b1d4e2133d0c65",
+      "origin": "rebuilt from wn-steam-launcher source with LLVM-MinGW 20261006"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/bionic/steam32.exe",
+      "bytes": 1069056,
+      "sha256": "a3ff91742b9bdc6f61a4ae8191f3f3f0f3657e98dc1d1dc02b33d675024a7020",
+      "origin": "rebuilt from wn-steam-launcher source with LLVM-MinGW 20261006"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/bionic/steamservice.dll",
+      "bytes": 3717272,
+      "sha256": "7b6730263a0ee9fef1e1bd9a0a05a7f952f843af0412151e5f2cda835819fcca",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/bionic/steamservice.exe",
+      "bytes": 2952856,
+      "sha256": "eeed0d75b1e5f4bd1370d1a046a59830809f942ea923c3c6661636bfbddb0c19",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/bionic/valve-steam-x86_64.tzst",
+      "bytes": 15979710,
+      "sha256": "b827a4cedc5f27ac5aaf2ee742adf867bb327c2c7b1da4af34924ef12167ac01",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/bionic/wn-iface-probe.exe",
+      "bytes": 23552,
+      "sha256": "d28d938e117c2c4465a539375b52ef9bd7d039756b787324ca652f2801924867",
+      "origin": "rebuilt from wn-steam-launcher source with LLVM-MinGW 20261006"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/bionic/wn-iface-probe32.exe",
+      "bytes": 20992,
+      "sha256": "7ced4e7fb03cf7c362294db876da27bd2f1582abc300a4d78130162396d300d4",
+      "origin": "rebuilt from wn-steam-launcher source with LLVM-MinGW 20261006"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/bionic/wn-steam-helper.exe",
+      "bytes": 176128,
+      "sha256": "e90759850d86657ab12252e1af0bae0345b8f13e0aa6fbe0bfef9678867d595d",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/lsteamclient-arm64ec.tzst",
+      "bytes": 5834660,
+      "sha256": "b34d9ffdc8d8845105c247f9e8229004fc63e235d2ed784ebe041891e70756fb",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/lsteamclient-x86_64.tzst",
+      "bytes": 4087944,
+      "sha256": "e998f6c950606d639c4beb06802e81f70cada8fbf6f198271058a3bd4b7b9b39",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/steam-androidarm64.tzst",
+      "bytes": 12805003,
+      "sha256": "3bc6825d9ea95f9353ebc3fcd3380c3015fe772ba25b4ef630a9f5aa583736f6",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/steampipe/original_steam_api64.dll",
+      "bytes": 7305128,
+      "sha256": "513430ac8b869b0eed258d9e5feba5176a35446b3b61a63d01ab1d87683cdd1b",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/steampipe/steam_api.dll",
+      "bytes": 5888936,
+      "sha256": "4cc9dfcab8b4df0db507fa91d0acec6e58693fd4edd78dc80d39bda8072d08ed",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/wnsteam/steampipe/steam_api64.dll",
+      "bytes": 493494,
+      "sha256": "d4e3a74fbec39bde7108d2d2db5bb046a1baa35865b99e659453f8c9fd607f10",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/xvfb-arm64/libwinnative-setxid-noop.so",
+      "bytes": 67408,
+      "sha256": "7ad09849847abdfc25b249cd1795eff118d3b1f6d0a8509dea08d08ac5cecc72",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/assets/xvfb-arm64/libwinnative-steamwebhelper-preload.so",
+      "bytes": 72128,
+      "sha256": "adc7371649d2bc27cf4872795400e3d049670fd8a089f6efba7023037b86e8d8",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/jniLibs/arm64-v8a/libffi.so",
+      "bytes": 85912,
+      "sha256": "8855ba6dc12e9abf40729481a7a99aa391ac7b2e77bad4fbe0bb51cd66216c0e",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/jniLibs/arm64-v8a/libltdl.so",
+      "bytes": 38192,
+      "sha256": "bc12038c8cedb7ba405b6621b579ad6b643e018b12f5f1d01e6cb78169e49907",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/jniLibs/arm64-v8a/libpulse.so",
+      "bytes": 331072,
+      "sha256": "061a0479989dd406924c837d7a09a59f086aec122d8b636b518da1658f225052",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/jniLibs/arm64-v8a/libpulseaudio.so",
+      "bytes": 67040,
+      "sha256": "c70622e9dadb31aba51b36ca6313a944e0febd8beabea5ace4b9f42ce951d350",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/jniLibs/arm64-v8a/libpulsecommon-13.0.so",
+      "bytes": 473432,
+      "sha256": "febdaa6fb344775f0c980c100e33046b27c9701d24346a45890b640380147a26",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/jniLibs/arm64-v8a/libpulsecore-13.0.so",
+      "bytes": 643224,
+      "sha256": "1bbfb039b159da9b6c0090e3309e6f686b1468e8a4d77b8a61612fa3af3e576a",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/jniLibs/arm64-v8a/libsndfile.so",
+      "bytes": 476976,
+      "sha256": "d6b61f5dddedce3cd29c5db9b58b5dd16a4b3faebfcbe925bc9432e2993831ee",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "app/src/main/jniLibs/arm64-v8a/libwayland-server.so",
+      "bytes": 79632,
+      "sha256": "2daff7500b6acee55291567d786653ba75f5aecf5a5e648fce4c10fe6bc7a8ea",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "vendor/maven/org/libsdl/android/SDL3/3.4.16-winnative.1/SDL3-3.4.16-winnative.1.aar",
+      "bytes": 4819511,
+      "sha256": "b7cb9d22b91e188834747a7189316c31e543f824516600c1a046c21f31cfdf7e",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "vendor/maven/org/libsdl/android/SDL3/3.4.16-winnative.2/SDL3-3.4.16-winnative.2.aar",
+      "bytes": 4820195,
+      "sha256": "4a2c8bf5f3913991bdc110de3f4ff2e943f41403c8ea26e7e88bfa9b0f928b59",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    },
+    {
+      "path": "vendor/maven/org/libsdl/android/SDL3/3.4.16/SDL3-3.4.16.aar",
+      "bytes": 16881733,
+      "sha256": "03710fc7b49cc070551446841a843840fabf2aaaaa3043cd5739292a55e4e61c",
+      "origin": "WinNative upstream snapshot; component source mapping still needs review"
+    }
+  ]
+}

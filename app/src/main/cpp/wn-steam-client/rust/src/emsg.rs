@@ -36,6 +36,8 @@ impl EMsg {
     pub const CLIENT_GET_APP_OWNERSHIP_TICKET_RESPONSE: Self = Self(858);
     pub const CLIENT_REQUEST_ENCRYPTED_APP_TICKET: Self = Self(5526);
     pub const CLIENT_REQUEST_ENCRYPTED_APP_TICKET_RESPONSE: Self = Self(5527);
+    pub const CLIENT_REQUEST_FREE_LICENSE: Self = Self(5572);
+    pub const CLIENT_REQUEST_FREE_LICENSE_RESPONSE: Self = Self(5573);
     pub const CLIENT_GET_DEPOT_DECRYPTION_KEY: Self = Self(5438);
     pub const CLIENT_GET_DEPOT_DECRYPTION_KEY_RESPONSE: Self = Self(5439);
     pub const CLIENT_GET_USER_STATS: Self = Self(818);

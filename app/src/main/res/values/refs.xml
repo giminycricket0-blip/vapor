@@ -4,6 +4,7 @@
     <item type="id" name="main_menu_device_profile" />
     <item type="id" name="main_menu_google" />
     <item type="id" name="main_menu_stores" />
+    <item type="id" name="main_menu_more_stores" />
     <item type="id" name="main_menu_containers" />
     <item type="id" name="main_menu_settings" />
     <item type="id" name="main_menu_contents" />

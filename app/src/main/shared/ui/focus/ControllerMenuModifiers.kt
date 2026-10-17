@@ -26,7 +26,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-private val AccentBorder = Color(0xFF00D7F5)
+private val AccentBorder = com.winlator.cmod.shared.theme.WinNativeFocus
 
 /**
  * A gamepad button no control claims comes back as its Generic.kcm fallback key: Y as SPACE, Start/L3/R3 as
@@ -83,15 +83,18 @@ fun Modifier.controllerFocusGlow(
                 val cr = cornerRadius.toPx()
                 if (intensity > 0f) {
                     drawRoundRect(
-                        color = color.copy(alpha = 0.28f * intensity),
+                        color = color.copy(alpha = 0.08f * intensity),
                         cornerRadius = CornerRadius(cr, cr),
                     )
                 }
                 drawContent()
                 if (intensity > 0f) {
                     drawRoundRect(
-                        color = color.copy(alpha = 0.12f * intensity),
+                        color = color.copy(alpha = intensity),
+                        topLeft = Offset(1.dp.toPx(), 1.dp.toPx()),
+                        size = Size(size.width - 2.dp.toPx(), size.height - 2.dp.toPx()),
                         cornerRadius = CornerRadius(cr, cr),
+                        style = Stroke(width = 2.dp.toPx()),
                     )
                 }
             }
@@ -186,6 +189,22 @@ fun Modifier.controllerMenuInput(
         DisposableEffect(view) {
             val window = (view.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window
             val unregister = window?.let { com.winlator.cmod.shared.ui.nav.ControllerWindowInput.register(it) }
+            val previousCallback = window?.callback
+            // Translate before Compose tracks pressed keys. Re-entering Compose from its preview
+            // handler can lose the paired press, leaving a focused button inert on A release.
+            val confirmCallback = previousCallback?.let { original ->
+                object : android.view.Window.Callback by original {
+                    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+                        val key = if (event.keyCode == android.view.KeyEvent.KEYCODE_BUTTON_A) {
+                            android.view.KeyEvent(event.downTime, event.eventTime, event.action,
+                                android.view.KeyEvent.KEYCODE_DPAD_CENTER, event.repeatCount,
+                                event.metaState, event.deviceId, event.scanCode, event.flags, event.source)
+                        } else event
+                        return original.dispatchKeyEvent(key)
+                    }
+                }
+            }
+            if (confirmCallback != null) window.callback = confirmCallback
             val decor = view.rootView
             val listener =
                 android.view.View.OnGenericMotionListener { _, ev ->
@@ -219,6 +238,9 @@ fun Modifier.controllerMenuInput(
             decor.setOnGenericMotionListener(listener)
             onDispose {
                 unregister?.invoke()
+                if (window?.callback === confirmCallback && previousCallback != null) {
+                    window.callback = previousCallback
+                }
                 decor.setOnGenericMotionListener(null)
             }
         }

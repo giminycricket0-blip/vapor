@@ -229,7 +229,7 @@ fun AboutScreen(bridge: SettingsNavBridge? = null) {
     fun copyBuildInfo() {
         runCatching {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText("WinNative", buildInfoClipText(context)))
+            clipboard.setPrimaryClip(ClipData.newPlainText("Vapor", buildInfoClipText(context)))
             Toast.makeText(context, R.string.about_copied, Toast.LENGTH_SHORT).show()
         }
     }

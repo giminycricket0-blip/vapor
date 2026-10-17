@@ -73,32 +73,10 @@ internal fun FrameGenPaneContent(
                         .padding(horizontal = (12f * paneScale).dp, vertical = (12f * paneScale).dp),
                 verticalArrangement = Arrangement.spacedBy((10f * paneScale).dp),
             ) {
-                val engine = FrameGenEngine.of(state.frameGenEnabled, state.disFrameGenEnabled)
-
-                FrameGenEngineSection(
-                    engine = engine,
-                    lsfgAvailable = state.frameGenAvailable,
-                    targetRate = state.frameGenTargetRate,
-                    multiplier = state.frameGenMultiplier,
-                    flowScale = state.frameGenFlowScale,
-                    disScale = state.disFrameGenScale,
-                    disTargetFps = state.disFrameGenTargetFps,
-                    disDebugFlow = state.disFrameGenDebugFlow,
-                    maxRefreshRate = state.maxRefreshRate,
-                    paneScale = paneScale,
-                    onEngineSelected = listener::onFrameGenEngineSelected,
-                    onTargetRateSelected = listener::onFrameGenTargetRateSelected,
-                    onMultiplierSelected = listener::onFrameGenMultiplierSelected,
-                    onFlowScaleChanged = listener::onFrameGenFlowScaleChanged,
-                    onDisScaleChanged = listener::onDisFrameGenScaleChanged,
-                    onDisTargetFpsSelected = listener::onDisFrameGenTargetFpsSelected,
-                    onDisDebugFlowChanged = listener::onDisDebugFlowChanged,
-                )
-
-                ThinDivider()
-
                 Column(verticalArrangement = Arrangement.spacedBy((8f * paneScale).dp)) {
                     PaneSectionLabel(stringResource(R.string.session_drawer_fps_limiter))
+                    Text(stringResource(R.string.vapor_fps_limit_hint),
+                        color = DrawerTextSecondary, fontSize = (12f * paneScale).sp)
 
                     Box(
                         Modifier.fillMaxWidth().paneNavItem(
@@ -129,6 +107,30 @@ internal fun FrameGenPaneContent(
                         )
                     }
                 }
+
+                ThinDivider()
+
+                val engine = FrameGenEngine.of(state.frameGenEnabled, state.disFrameGenEnabled)
+
+                FrameGenEngineSection(
+                    engine = engine,
+                    lsfgAvailable = state.frameGenAvailable,
+                    targetRate = state.frameGenTargetRate,
+                    multiplier = state.frameGenMultiplier,
+                    flowScale = state.frameGenFlowScale,
+                    disScale = state.disFrameGenScale,
+                    disTargetFps = state.disFrameGenTargetFps,
+                    disDebugFlow = state.disFrameGenDebugFlow,
+                    maxRefreshRate = state.maxRefreshRate,
+                    paneScale = paneScale,
+                    onEngineSelected = listener::onFrameGenEngineSelected,
+                    onTargetRateSelected = listener::onFrameGenTargetRateSelected,
+                    onMultiplierSelected = listener::onFrameGenMultiplierSelected,
+                    onFlowScaleChanged = listener::onFrameGenFlowScaleChanged,
+                    onDisScaleChanged = listener::onDisFrameGenScaleChanged,
+                    onDisTargetFpsSelected = listener::onDisFrameGenTargetFpsSelected,
+                    onDisDebugFlowChanged = listener::onDisDebugFlowChanged,
+                )
             }
         }
     }

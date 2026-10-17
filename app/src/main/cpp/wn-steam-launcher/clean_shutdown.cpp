@@ -42,6 +42,7 @@ void* g_cs_engine = nullptr;
 int g_cs_hUser = 0;
 int g_cs_hPipe = 0;
 unsigned int g_cs_appId = 0;
+std::atomic<bool> g_cloudConflictUnresolved{false};
 
 constexpr int kVtEngine_GetIClientRemoteStorage = 24;
 constexpr int kVtRS_EvaluateRemoteStorageSyncState = 71;
@@ -237,6 +238,7 @@ void (*g_log_fn)(const char* line) = nullptr;
 
 std::atomic<bool> g_armed{false};
 std::atomic<bool> g_done{false};
+std::atomic<bool> g_game_started{false};
 std::atomic<bool> g_teardown_complete{false};
 std::atomic<bool> g_watch_run{false};
 
@@ -257,9 +259,9 @@ void wn_log(const char* msg) {
     std::fclose(f);
 }
 
-void teardown(const char* reason) {
+bool teardown(const char* reason) {
     bool expected = false;
-    if (!g_done.compare_exchange_strong(expected, true)) return;
+    if (!g_done.compare_exchange_strong(expected, true)) return false;
 
     char buf[256];
     std::snprintf(buf, sizeof(buf),
@@ -316,9 +318,9 @@ void teardown(const char* reason) {
     }
 
     if (g_cs_engine && g_cs_appId != 0) {
-        if (reason && strcmp(reason, "launch-failed") == 0) {
-            wn_log("cloud: exit sync skipped — the game never ran, so there is nothing new "
-                   "to upload and an exit sync could push stale local files over the cloud");
+        if (!wn_cloud_exit_upload_allowed(g_game_started.load(), g_cloudConflictUnresolved.load())) {
+            wn_log("cloud: exit sync skipped — game launch was not confirmed or a save conflict is unresolved; "
+                   "an exit sync could push stale local files over the cloud");
         } else {
             const char* acEnv = getenv("WN_STEAM_AGENT_CLOUD");
             const char* offEnv = getenv("WN_STEAM_OFFLINE");
@@ -372,6 +374,7 @@ void teardown(const char* reason) {
     ::DeleteFileA(kSentinelPath);
 
     g_teardown_complete.store(true);
+    return true;
 }
 
 BOOL WINAPI ctrl_handler(DWORD type) {
@@ -391,9 +394,15 @@ BOOL WINAPI ctrl_handler(DWORD type) {
 void watch_loop() {
     while (g_watch_run.load()) {
         if (::GetFileAttributesA(kSentinelPath) != INVALID_FILE_ATTRIBUTES) {
-            teardown("sentinel");
+            // Android can observe game exit while that thread is still uploading.
+            // A duplicate teardown returns immediately; it must not kill the owner.
+            const bool completedHere = teardown("sentinel");
             g_watch_run.store(false);
-            ::ExitProcess(0);
+            if (completedHere) {
+                ::ExitProcess(0);
+            } else {
+                wn_log("clean-shutdown sentinel deferred to existing cleanup owner");
+            }
             return;
         }
         ::Sleep(150);
@@ -404,6 +413,10 @@ void watch_loop() {
 
 extern "C" void wn_launcher_set_log_sink(void (*log_fn)(const char* line)) {
     g_log_fn = log_fn;
+}
+
+extern "C" void wn_launcher_mark_game_started(void) {
+    g_game_started.store(true);
 }
 
 extern "C" void wn_launcher_set_game_exe(const char* exeName) {
@@ -533,7 +546,10 @@ static bool cs_wait_conflict_answer(int timeoutMs, bool* keepLocalOut, int* wait
             DeleteFileA(kCloudConflictAnswerPath);
             DeleteFileA(kCloudConflictRequestPath);
             if (waitedOut) *waitedOut = waited;
-            *keepLocalOut = (strcmp(buf, "local") == 0);
+            if (!wn_parse_cloud_conflict_answer(buf, keepLocalOut)) {
+                wn_log("cloud: conflict cancelled or answer invalid — no save version selected");
+                return false;
+            }
             char line[128];
             std::snprintf(line, sizeof(line),
                           "cloud: conflict answer=\"%s\" -> keepLocal=%d",
@@ -551,6 +567,8 @@ static bool cs_wait_conflict_answer(int timeoutMs, bool* keepLocalOut, int* wait
 
 static bool cs_resolve_conflict(void* rs, void** rs_vt, unsigned int appId,
                                 int* userWaitMsOut) {
+    // Teardown can run on another thread while Android is dismissing the prompt.
+    g_cloudConflictUnresolved.store(true);
     void* tsP  = rs_vt[kVtRS_GetConflictingFileTimestamps];
     void* resP = rs_vt[kVtRS_ResolveSyncConflict];
     if (!cs_is_exec_ptr(tsP) || !cs_is_exec_ptr(resP)) {
@@ -587,12 +605,15 @@ static bool cs_resolve_conflict(void* rs, void** rs_vt, unsigned int appId,
                   "cloud: ResolveSyncConflict(app=%u keepLocal=%d) -> %d",
                   appId, keepLocal ? 1 : 0, ok ? 1 : 0);
     wn_log(line);
+    if (ok) g_cloudConflictUnresolved.store(false);
     return ok;
 }
 
 extern "C" int wn_launcher_cloud_run(void* engine, int hUser, int hPipe,
                                      unsigned int appId, int onExit, int timeoutMs) {
     if (!engine || appId == 0) return -1;
+    // Emit before private Steam calls: Android can bound a blocked call as well as polling.
+    wn_log(onExit ? "cloud: exit sync starting" : "cloud: launch sync starting");
     void** engine_vt = *reinterpret_cast<void***>(engine);
     void* getRsP = engine_vt[kVtEngine_GetIClientRemoteStorage];
     if (!cs_is_exec_ptr(getRsP)) {
@@ -894,6 +915,12 @@ extern "C" int wn_launcher_cloud_run(void* engine, int hUser, int hPipe,
             continue;
         }
         break;
+    }
+
+    if (!onExit && finalState == kSyncConflicting) {
+        g_cloudConflictUnresolved.store(true);
+        wn_log("cloud: unresolved conflict — cancelling launch without recording a launch or uploading");
+        return WN_CLOUD_CONFLICT_UNRESOLVED;
     }
 
     if (!onExit && !(sawSyncCallback && lastSyncResult != kEResultOK)) {

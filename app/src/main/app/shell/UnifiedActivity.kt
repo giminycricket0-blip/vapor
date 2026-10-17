@@ -253,36 +253,18 @@ import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-internal val BgDark = Color(0xFF18181D)
-internal val SurfaceDark = Color(0xFF1E252E)
-internal val CardDark = Color(0xFF12121B)
-internal val CardBorder = Color(0xFF2A2A3A)
-internal val Accent = Color(0xFF1A9FFF)
+internal val BgDark = com.winlator.cmod.shared.theme.WinNativeBackground
+internal val SurfaceDark = com.winlator.cmod.shared.theme.WinNativeSurface
+internal val CardDark = com.winlator.cmod.shared.theme.WinNativePanel
+internal val CardBorder = com.winlator.cmod.shared.theme.WinNativeOutline
+internal val Accent = com.winlator.cmod.shared.theme.WinNativeAccent
 internal val AccentGlow = Color(0xFF58A6FF)
-internal val TextPrimary = Color(0xFFF0F4FF)
-internal val TextSecondary = Color(0xFF7A8FA8)
+internal val TextPrimary = com.winlator.cmod.shared.theme.WinNativeTextPrimary
+internal val TextSecondary = com.winlator.cmod.shared.theme.WinNativeTextSecondary
 internal val DangerRed = Color(0xFFFF6B6B)
 internal val StatusOnline = Color(0xFF3FB950)
 internal val StatusAway = Color(0xFFF0C040)
 private val StatusOffline = Color(0xFF6E7681)
-internal val DownloadCardBlack = Color.Black.copy(alpha = 0.46f)
-internal val DownloadCardSelectedBlack = Color.Black.copy(alpha = 0.58f)
-internal val DownloadButtonBlack = Color.Black.copy(alpha = 0.38f)
-private val DownloadChaseBlue = Color(0xFF2196F3)
-private val DownloadChaseSky = Color(0xFF29B6F6)
-private val DownloadChaseCyan = Color(0xFF00E5FF)
-internal val DownloadChaseGradientStops =
-    arrayOf(
-        0.00f to DownloadChaseBlue,
-        0.125f to DownloadChaseSky,
-        0.25f to DownloadChaseCyan,
-        0.375f to DownloadChaseSky,
-        0.50f to DownloadChaseBlue,
-        0.625f to DownloadChaseSky,
-        0.75f to DownloadChaseCyan,
-        0.875f to DownloadChaseSky,
-        1.00f to DownloadChaseBlue,
-    )
 private val TabScreenHorizontalPadding = 16.dp
 private val TabScreenBottomPadding = 8.dp
 internal val UnifiedTopBarHorizontalPadding = 12.dp
@@ -293,7 +275,6 @@ internal val TabGridContentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
 internal val TabGridTopPadding = 8.dp
 internal val TabCarouselTopPadding = 12.dp
 internal val TabCarouselBottomPadding = 20.dp
-internal val DownloadsHeaderTopPadding = 2.dp
 
 internal fun Modifier.tabScreenPadding(
     top: Dp = 0.dp,
@@ -379,6 +360,7 @@ class UnifiedActivity :
     internal var taskProgressShown by mutableStateOf(false)
     internal var taskDoneMessage by mutableStateOf<String?>(null)
     internal var taskDoneFailed by mutableStateOf(false)
+    private var gameSessionFailure by mutableStateOf<GameSessionFailure?>(null)
     internal var taskCheckingShown by mutableStateOf(false)
     internal var taskCheckingGameName by mutableStateOf("")
 
@@ -393,7 +375,6 @@ class UnifiedActivity :
     // Keep first composition light while prefs/auth state and Room warm up.
     internal var startupBootstrapReady by mutableStateOf(false)
     internal var startupLibraryLayoutMode by mutableStateOf<LibraryLayoutMode?>(null)
-    internal var startupStoreVisible: Map<String, Boolean>? = null
     internal var startupContentFilters: Map<String, Boolean>? = null
 
     // Lets kept-alive library cards skip animation while their tab is hidden.
@@ -427,6 +408,8 @@ class UnifiedActivity :
 
     val storeFocusIndex = kotlinx.coroutines.flow.MutableStateFlow(0)
     var storeItemCount: Int = 0
+    // The inline catalog uses Compose focus; global shoulder buttons still change tabs.
+    internal var steamCatalogKeyHandler: ((android.view.KeyEvent) -> Boolean)? = null
 
     val storeHeaderVisible = kotlinx.coroutines.flow.MutableStateFlow(true)
 
@@ -615,7 +598,33 @@ class UnifiedActivity :
             return dispatchDrawerNavKey(event, keyCode, action, friendsDrawerNavBridge)
         }
 
+        if (currentTabKey == "steam" && keyCode !in setOf(
+                android.view.KeyEvent.KEYCODE_BUTTON_L1,
+                android.view.KeyEvent.KEYCODE_BUTTON_R1,
+                android.view.KeyEvent.KEYCODE_BUTTON_START,
+                android.view.KeyEvent.KEYCODE_BUTTON_SELECT,
+            )) {
+            steamCatalogKeyHandler?.let { handler ->
+                return handler(event) || super.dispatchKeyEvent(event)
+            }
+        }
+
+        if (currentTabKey in setOf("home", "library") && libraryItemCount == 0 && keyCode in setOf(
+                android.view.KeyEvent.KEYCODE_DPAD_LEFT, android.view.KeyEvent.KEYCODE_DPAD_RIGHT,
+                android.view.KeyEvent.KEYCODE_DPAD_UP, android.view.KeyEvent.KEYCODE_DPAD_DOWN,
+                android.view.KeyEvent.KEYCODE_BUTTON_A, android.view.KeyEvent.KEYCODE_DPAD_CENTER,
+            )) {
+            return super.dispatchKeyEvent(event)
+        }
+
         // Prevent global controller buttons from falling through to launch actions.
+        // Open a Library game on release so the new dialog cannot receive the same A release.
+        if (currentTabKey in setOf("home", "library") && keyCode in setOf(
+                android.view.KeyEvent.KEYCODE_BUTTON_A, android.view.KeyEvent.KEYCODE_DPAD_CENTER,
+            )) {
+            if (action == android.view.KeyEvent.ACTION_UP) keyEventFlow.tryEmit(event)
+            return true
+        }
         val isHandledGlobally =
             when (keyCode) {
                 android.view.KeyEvent.KEYCODE_BUTTON_START,
@@ -652,7 +661,7 @@ class UnifiedActivity :
                     val up = keyCode == android.view.KeyEvent.KEYCODE_DPAD_UP
                     val down = keyCode == android.view.KeyEvent.KEYCODE_DPAD_DOWN
                     when (currentTabKey) {
-                        "library" -> moveLibraryFocus(left, right, up, down)
+                        "home", "library" -> moveLibraryFocus(left, right, up, down)
                         "downloads" -> routeDownloadsNav(left, right, up, down)
                         else -> moveStoreFocus(left, right, up, down)
                     }
@@ -831,7 +840,8 @@ class UnifiedActivity :
                     val right = isHatRight || isJoystickRight
                     val up = isHatUp || isJoystickUp
                     val down = isHatDown || isJoystickDown
-                    if (menuNavActive || drawerOpen || rightDrawerOpen) {
+                    if (menuNavActive || drawerOpen || rightDrawerOpen ||
+                        (currentTabKey == "steam" && steamCatalogKeyHandler != null)) {
                         val dpadCode =
                             when {
                                 left -> android.view.KeyEvent.KEYCODE_DPAD_LEFT
@@ -843,7 +853,7 @@ class UnifiedActivity :
                         if (dpadCode != 0) injectKeyEvent(dpadCode)
                     } else {
                         when (currentTabKey) {
-                            "library" -> moveLibraryFocus(left, right, up, down)
+                            "home", "library" -> moveLibraryFocus(left, right, up, down)
                             "downloads" -> routeDownloadsNav(left, right, up, down)
                             else -> moveStoreFocus(left, right, up, down)
                         }
@@ -860,7 +870,7 @@ class UnifiedActivity :
         return super.dispatchGenericMotionEvent(event)
     }
 
-    internal var currentTabKey: String = "library"
+    internal var currentTabKey: String = "home"
 
     @Volatile
     private var inSettingsRoute: Boolean = false
@@ -1011,7 +1021,13 @@ class UnifiedActivity :
         super.onNewIntent(intent)
         setIntent(intent)
         if (maybeForwardFrontendLaunch()) return
+        GameSessionFailure.takeFrom(intent)?.let { gameSessionFailure = it }
         handleSettingsIntent(intent)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        GameSessionFailure.saveTo(outState, gameSessionFailure)
     }
 
     internal fun retryPendingRetroCloudBackup() = processPendingRetroCloudBackup()
@@ -1098,6 +1114,8 @@ class UnifiedActivity :
         }
 
         if (maybeForwardFrontendLaunch()) return
+
+        gameSessionFailure = GameSessionFailure.takeFrom(intent, savedInstanceState)
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(inputControlsFragmentTracker, true)
         com.winlator.cmod.runtime.display.GlassesManager.init(this)
@@ -1187,15 +1205,7 @@ class UnifiedActivity :
                 }
             }
 
-            WinNativeTheme(
-                colorScheme =
-                    darkColorScheme(
-                        primary = Accent,
-                        background = BgDark,
-                        surface = SurfaceDark,
-                        onSurface = TextPrimary,
-                    ),
-            ) {
+            WinNativeTheme {
                 NavHost(
                     navController = navController,
                     startDestination =
@@ -1322,7 +1332,6 @@ class UnifiedActivity :
                             bridge = settingsNavBridge,
                             startItem = startItem,
                             selectedProfileId = profileId,
-                            bordersPaused = chasingBordersPaused.value,
                             onBack = exitSettingsToHubOnce,
                         )
                         BackHandler(enabled = true) { exitSettingsToHubOnce() }
@@ -1350,6 +1359,26 @@ class UnifiedActivity :
                 TaskProgressHost()
 
                 UpdateHost()
+
+                gameSessionFailure?.let { failure ->
+                    GameSessionFailureDialog(
+                        failure = failure,
+                        onClose = { gameSessionFailure = null },
+                        onSettings = {
+                            gameSessionFailure = null
+                            val shortcut = if (failure.settingsShortcutPath.isNotBlank()) {
+                                ContainerManager(this@UnifiedActivity).loadShortcuts().find {
+                                    it.file.absolutePath == failure.settingsShortcutPath
+                                }
+                            } else null
+                            if (shortcut != null) {
+                                ShortcutSettingsComposeDialog(this@UnifiedActivity, shortcut).show()
+                            } else {
+                                navigateToSettings(SettingsNavItem.STORES)
+                            }
+                        },
+                    )
+                }
             }
         }
         UpdateService.onAppStarted(this)
@@ -1395,11 +1424,6 @@ class UnifiedActivity :
     internal enum class HeroLaunchPopup { BootToDesktop, RemoveShortcut }
 
     internal enum class HeroBootChoice { Desktop, Cube32, Cube64, Input32, Input64 }
-
-    internal data class DownloadCancelRequest(
-        val ids: List<String>,
-        val isCancelAll: Boolean,
-    )
 
     internal fun Shortcut.hasExistingArtwork(extraKey: String): Boolean =
         (getExtra(extraKey)

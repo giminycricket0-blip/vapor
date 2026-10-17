@@ -1,197 +1,73 @@
-name: PR CI
+name: Vapor build
 
 on:
-  push:
-    branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - '.gitignore'
   pull_request:
-    branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - '.gitignore'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: vapor-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor:
-          - name: Standard
-            artifactName: apk-standard
-            gradleTask: assembleStandardDebug
-            apkPath: app/build/outputs/apk/standard/debug/standard.apk
-          - name: Ludashi
-            artifactName: apk-ludashi
-            gradleTask: assembleLudashiDebug
-            apkPath: app/build/outputs/apk/ludashi/debug/ludashi.apk
-          - name: Pubg
-            artifactName: apk-pubg
-            gradleTask: assemblePubgDebug
-            apkPath: app/build/outputs/apk/pubg/debug/pubg.apk
-          - name: Antutu
-            artifactName: apk-antutu
-            gradleTask: assembleAntutuDebug
-            apkPath: app/build/outputs/apk/antutu/debug/antutu.apk
-
+    runs-on: ubuntu-24.04
     steps:
-    - name: Clone repository
-      uses: actions/checkout@v6
-      with:
-        submodules: recursive
-        fetch-depth: 1
-        persist-credentials: false
-
-    - name: Cache LFS
-      uses: actions/cache@v5
-      with:
-        path: .git/lfs
-        key: lfs-${{ hashFiles('**/*.txz', '**/*.tzst') }}
-        restore-keys: lfs-
-
-    - name: Pull LFS files
-      run: git lfs pull
-
-    - name: Cache NDK build outputs
-      uses: actions/cache@v5
-      with:
-        path: |
-          app/.cxx
-          app/build/intermediates/cxx
-        key: ndk-${{ hashFiles('app/src/main/cpp/**', 'app/build.gradle', 'app/src/main/cpp/CMakeLists.txt') }}
-        restore-keys: |
-          ndk-
-
-    # Cargo target dir + registry sit outside the NDK cache paths; a cold Rust build dominates job time.
-    - name: Cache Rust Steam client
-      uses: actions/cache@v5
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          app/src/main/cpp/wn-steam-client/rust/target
-        key: cargo-${{ hashFiles('app/src/main/cpp/wn-steam-client/rust/Cargo.lock') }}
-        restore-keys: cargo-
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v5
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Install Rust Android target
-      run: rustup target add aarch64-linux-android
-
-    - name: Set up Gradle
-      uses: gradle/actions/setup-gradle@v6
-      with:
-        validate-wrappers: true
-        cache-cleanup: 'on-success'
-        # PRs restore the Gradle cache read-only; only main pushes write it.
-        cache-read-only: ${{ github.event_name == 'pull_request' }}
-
-    - name: Decode keystore and build
-      timeout-minutes: 15
-      env:
-        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        GRADLE_OPTS: -Xmx4g -XX:+UseG1GC
-        PR_NUMBER_RAW: ${{ github.event.pull_request.number }}
-        HEAD_SHA_RAW: ${{ github.event.pull_request.head.sha }}
-      run: |
-        # A pull request build carries the pull request it came from and the commit the release
-        # notes name, so the update check can tell it from a later build of the same pull request.
-        # The checkout is the merge commit, so the head commit has to be passed in.
-        if [ -n "$PR_NUMBER_RAW" ]; then
-          export PR_NUMBER="$PR_NUMBER_RAW"
-          export BUILD_ID="$(printf '%s' "$HEAD_SHA_RAW" | cut -c1-8)"
-        fi
-        export KEYSTORE_FILE="${{ github.workspace }}/release.jks"
-        if [ -n "$KEYSTORE_BASE64" ]; then
-          echo "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_FILE"
-        else
-          export KEYSTORE_PASSWORD="dummypass"
-          export KEY_ALIAS="winnative"
-          export KEY_PASSWORD="dummypass"
-          keytool -genkey -v \
-            -keystore "$KEYSTORE_FILE" \
-            -alias winnative \
-            -keyalg RSA -keysize 2048 -validity 1 \
-            -storepass dummypass -keypass dummypass \
-            -dname "CN=CI, OU=CI, O=CI, L=CI, ST=CI, C=US"
-        fi
-        ./gradlew :app:${{ matrix.flavor.gradleTask }} --build-cache --parallel -x lint
-
-    - name: Compute artifact label
-      id: label
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
-          short_sha=$(printf '%s' "${{ github.event.pull_request.head.sha }}" | cut -c1-5)
-          echo "name=PR#${{ github.event.pull_request.number }}-${short_sha}" >> "$GITHUB_OUTPUT"
-        else
-          short_sha=$(printf '%s' "$GITHUB_SHA" | cut -c1-5)
-          # For merged PR commits on main, preserve the source PR number and PR head SHA.
-          num=$(git log -1 --pretty=%s | grep -oE '\(#[0-9]+\)|#[0-9]+' | tail -1 | tr -cd '0-9')
-          if [ -n "$num" ]; then
-            pr_head_sha=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$num" --jq '.head.sha' 2>/dev/null || true)
-            if [ -n "$pr_head_sha" ] && [ "$pr_head_sha" != "null" ]; then
-              short_sha=$(printf '%s' "$pr_head_sha" | cut -c1-5)
-            fi
-            echo "name=PR#${num}-${short_sha}" >> "$GITHUB_OUTPUT"
-          else
-            echo "name=main-${short_sha}" >> "$GITHUB_OUTPUT"
-          fi
-        fi
-
-    - name: Prepare APK for upload
-      run: |
-        upload_dir="artifacts/${{ matrix.flavor.artifactName }}"
-        mkdir -p "$upload_dir"
-        cp ${{ matrix.flavor.apkPath }} "$upload_dir/WinNative-Debug-${{ matrix.flavor.name }}-${{ steps.label.outputs.name }}.apk"
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v7
-      with:
-        name: ${{ matrix.flavor.artifactName }}
-        path: artifacts/${{ matrix.flavor.artifactName }}/*.apk
-        retention-days: 7
-        if-no-files-found: error
-        # APK contents are already compressed; deflating ~560MB again wastes CPU.
-        compression-level: 0
-
-  cleanup-caches:
-    needs: build
-    if: ${{ always() && github.event_name == 'push' }}
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-      contents: read
-    steps:
-    - name: Cleanup duplicate caches
-      continue-on-error: true
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        # Dedupe only main-scope caches so a newer PR-scoped twin can't get main's copy deleted.
-        gh cache list --repo "$GITHUB_REPOSITORY" --ref refs/heads/main --json id,key,createdAt --limit 100 |
-          jq -r '
-            group_by(.key | sub("-[a-f0-9]{20,}$"; ""))
-            | .[]
-            | sort_by(.createdAt) | reverse
-            | .[1:][]
-            | .id
-          ' |
-          xargs -I {} gh cache delete {} --repo "$GITHUB_REPOSITORY" || true
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          lfs: true
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Install native toolchains
+        run: |
+          sdkmanager 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
+          rustup show
+          sudo apt-get update
+          sudo apt-get install -y make perl g++-mingw-w64-x86-64-posix g++-mingw-w64-i686-posix
+      - name: Rebuild Steam hosts from source
+        run: bash app/src/main/cpp/wn-steam-launcher/build.sh
+      - name: Check cloud-conflict answers
+        run: |
+          c++ -std=c++17 -Wall -Wextra app/src/main/cpp/wn-steam-launcher/tests/cloud_conflict_answer_test.cpp -o "$RUNNER_TEMP/cloud-conflict-answer-test"
+          "$RUNNER_TEMP/cloud-conflict-answer-test"
+      - name: Build and test
+        run: >-
+          ./gradlew :app:assembleStandardDebug :app:testStandardDebugUnitTest
+          --tests '*SteamLaunchRequirementsTest'
+          --tests '*WnLauncherStatusTailerTest'
+          --tests '*PEHelperTest'
+          --tests '*GameEngineHintsTest'
+          --tests '*GameLaunchTimingTest'
+          --tests '*SteamLaunchExeFamilyTest'
+          --tests '*SteamCloudConflictDialogTest'
+          --tests '*SteamInstallRecoveryTest'
+          --tests '*SteamClientLibraryTest'
+          --tests '*LibraryViewTest'
+          --tests '*DeviceProfileTest'
+          --tests '*LibraryStoreLinkTest'
+          --tests '*VaporPreparationTest'
+          --tests '*SessionKeepAliveServiceTest'
+          --tests '*GameDisplaySettingsTest'
+          --tests '*GameSessionFailureTest'
+          --max-workers=4 --console=plain
+      - name: Check APK native alignment
+        run: |
+          bash tools/check-apk-16kb.sh app/build/outputs/apk/standard/debug/standard.apk
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 -v 4 app/build/outputs/apk/standard/debug/standard.apk
+      - name: Preserve test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: vapor-test-reports
+          path: app/build/reports/tests/
+          retention-days: 7
+      # APK publication stays disabled until runtime redistribution review and signing are complete.

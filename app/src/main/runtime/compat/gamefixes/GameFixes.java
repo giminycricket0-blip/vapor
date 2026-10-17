@@ -9,10 +9,12 @@ import com.winlator.cmod.runtime.compat.gamefixes.helpers.EpicGameFixHelper;
 import com.winlator.cmod.runtime.compat.gamefixes.helpers.GogDependencyFixHelper;
 import com.winlator.cmod.runtime.container.Container;
 import com.winlator.cmod.runtime.container.Shortcut;
+import com.winlator.cmod.runtime.display.xserver.ScreenInfo;
 import com.winlator.cmod.runtime.wine.EnvVars;
 import com.winlator.cmod.runtime.wine.WineRegistryEditor;
 import com.winlator.cmod.runtime.wine.WineUtils;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -105,29 +107,46 @@ public final class GameFixes {
 
   private GameFixes() {}
 
-  public static void applyForLaunch(Container container, Shortcut shortcut) {
+  /** Applied after render scaling so the game never receives a screen below its minimum. */
+  public static String resolveScreenSize(Shortcut shortcut, String screenSize) {
+    if (shortcut == null || !"STEAM".equals(shortcut.getExtra("game_source"))
+        || !"22150".equals(shortcut.getExtra("app_id"))) return screenSize;
+    ScreenInfo screen = new ScreenInfo(screenSize);
+    return Math.max(1024, screen.width) + "x" + Math.max(768, screen.height);
+  }
+
+  public static void applyForLaunch(Container container, Shortcut shortcut, ScreenInfo screen)
+      throws IOException {
     if (container == null || shortcut == null) return;
     String gameSource = shortcut.getExtra("game_source");
 
     if ("GOG".equals(gameSource)) {
       applyGogFixes(container, shortcut);
     } else if ("STEAM".equals(gameSource)) {
-      applySteamFixes(container, shortcut);
+      applySteamFixes(container, shortcut, screen);
     } else if ("EPIC".equals(gameSource)) {
       applyEpicFixes(container, shortcut);
     }
   }
 
-  private static void applySteamFixes(Container container, Shortcut shortcut) {
+  private static void applySteamFixes(Container container, Shortcut shortcut, ScreenInfo screen)
+      throws IOException {
     String appId = shortcut.getExtra("app_id");
     if (appId == null || appId.isEmpty()) return;
 
     Fix fix = STEAM_FIXES.get(appId);
-    if (fix == null) return;
+    boolean prepareDemoDisplay = "22150".equals(appId);
+    if (fix == null && !prepareDemoDisplay) return;
 
     String installPath = SteamBridge.getAppDirPath(Integer.parseInt(appId));
     if (installPath == null || installPath.isEmpty() || !new File(installPath).exists()) {
+      if (prepareDemoDisplay) throw new IOException("The demo installation is unavailable");
       Log.d(TAG, "Skipping Steam fix for appId " + appId + " because install path is unavailable");
+      return;
+    }
+
+    if (prepareDemoDisplay) {
+      Eu3DemoDisplaySettings.prepare(new File(installPath, "settings.txt"), screen);
       return;
     }
 

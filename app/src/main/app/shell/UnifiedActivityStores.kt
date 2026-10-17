@@ -192,6 +192,7 @@ import com.winlator.cmod.feature.stores.steam.data.SteamApp
 import com.winlator.cmod.feature.stores.steam.enums.DownloadPhase
 import com.winlator.cmod.feature.stores.steam.events.AndroidEvent
 import com.winlator.cmod.feature.stores.steam.events.EventDispatcher
+import com.winlator.cmod.feature.stores.steam.service.processLicenseList
 import com.winlator.cmod.feature.stores.steam.service.SteamService
 import com.winlator.cmod.feature.stores.steam.utils.PrefManager
 import com.winlator.cmod.feature.stores.steam.utils.getAvatarURL
@@ -313,7 +314,7 @@ internal fun UnifiedActivity.CompactActionButton(
 // Single game capsule for carousel / grid / list
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
-internal fun UnifiedActivity.GameCapsule(
+internal fun GameCapsule(
     app: SteamApp,
     gogGame: GOGGame? = null,
     epicGame: EpicGame? = null,
@@ -326,29 +327,17 @@ internal fun UnifiedActivity.GameCapsule(
     customListPath: String? = null,
     customCarouselPath: String? = null,
     customHeroPath: String? = null,
-    onClick: (() -> Unit)? = null,
+    onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
     useLibraryCapsule: Boolean = false,
     listMode: Boolean = false,
+    installStatus: Boolean? = null,
+    showCaption: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val isCustom = app.id < 0
     val isEpic = app.id >= 2000000000
-    val defaultClick: () -> Unit = {
-        val containerManager =
-            com.winlator.cmod.runtime.container
-                .ContainerManager(context)
-        if (isCustom) {
-            launchCustomGame(context, containerManager, app.name)
-        } else if (gogGame != null) {
-            launchGogGame(context, containerManager, gogGame)
-        } else if (isEpic) {
-            epicGame?.let { launchEpicGame(context, containerManager, it) }
-        } else {
-            launchSteamGame(context, containerManager, app)
-        }
-    }
     // Each view has its own shape, so prefer the slot scraped for it.
     val artworkToBeUsed =
         when {
@@ -358,7 +347,9 @@ internal fun UnifiedActivity.GameCapsule(
         }
     val clickInteraction = remember { MutableInteractionSource() }
     val isPressed by clickInteraction.collectIsPressedAsState()
-    val isFocused = isControllerActive && isFocusedOverride
+    var keyboardFocused by remember { mutableStateOf(false) }
+    val isFocused = (isControllerActive && isFocusedOverride) || keyboardFocused
+    val focusScale by animateFloatAsState(if (isFocused) 1.035f else 1f, tween(140), label = "libraryCardFocus")
     val glowAlpha by animateFloatAsState(
         targetValue = if (isPressed) 0.7f else 0f,
         animationSpec = if (isPressed) tween(100) else tween(400),
@@ -382,7 +373,7 @@ internal fun UnifiedActivity.GameCapsule(
             ).combinedClickable(
                 interactionSource = clickInteraction,
                 indication = null,
-                onClick = onClick ?: defaultClick,
+                onClick = onClick,
                 onLongClick = onLongClick,
             )
 
@@ -438,8 +429,11 @@ internal fun UnifiedActivity.GameCapsule(
         } else {
             val preferWide = !useLibraryCapsule && !listMode && DeviceProfileSettings.preferWideArtwork(context)
             val primaryRef = StoreArtworkCache.primaryRef(app, gogGame, epicGame, useLibraryCapsule, listMode, preferWide)
-            val imageModel =
-                remember(primaryRef, artworkCacheRefreshKey) { StoreArtworkCache.imageModel(context, primaryRef) }
+            var capsuleFailed by remember(primaryRef, artworkCacheRefreshKey) { mutableStateOf(false) }
+            val imageRef = if (capsuleFailed && gogGame == null && epicGame == null && useLibraryCapsule) {
+                StoreArtworkCache.steamRef(app, "header", app.getHeaderImageUrl())
+            } else primaryRef
+            val imageModel = remember(imageRef, artworkCacheRefreshKey) { StoreArtworkCache.imageModel(context, imageRef) }
             AsyncImage(
                 model =
                     ImageRequest
@@ -450,6 +444,7 @@ internal fun UnifiedActivity.GameCapsule(
                 contentDescription = app.name,
                 modifier = artModifier,
                 contentScale = ContentScale.Crop,
+                onError = { capsuleFailed = true },
             )
         }
     }
@@ -466,19 +461,17 @@ internal fun UnifiedActivity.GameCapsule(
             modifier =
                 modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(RoundedCornerShape(3.dp))
                     .then(
                         if (isControllerActive && !isFocused) {
-                            Modifier.border(1.dp, CardBorder, RoundedCornerShape(14.dp))
+                            Modifier.border(1.dp, CardBorder, RoundedCornerShape(3.dp))
                         } else {
                             Modifier
                         },
-                    ).chasingBorder(
-                        isFocused = isFocused,
-                        paused = chasingBordersPaused.value || !libraryTabActive.value,
-                        cornerRadius = 14.dp,
-                    ).background(CardDark, RoundedCornerShape(14.dp))
-                    .focusable()
+                    ).graphicsLayer { scaleX = focusScale; scaleY = focusScale }
+                    .border(if (isFocused) 2.dp else 0.dp, if (isFocused) TextPrimary else Color.Transparent, RoundedCornerShape(3.dp))
+                    .background(CardDark, RoundedCornerShape(3.dp))
+                    .onFocusChanged { keyboardFocused = it.isFocused }
                     .then(clickModifier),
         ) {
             // Hero background layer (falls back to CardDark if image fails)
@@ -555,6 +548,11 @@ internal fun UnifiedActivity.GameCapsule(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
+                installStatus?.let { installed ->
+                    Text(stringResource(if (installed) R.string.common_ui_installed else R.string.vapor_library_download),
+                        color = TextSecondary, style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(start = 12.dp))
+                }
             }
         }
     } else {
@@ -568,14 +566,12 @@ internal fun UnifiedActivity.GameCapsule(
                         if (isFocused) {
                             Modifier
                         } else {
-                            Modifier.border(1.dp, CardDark, RoundedCornerShape(12.dp))
+                            Modifier.border(1.dp, CardDark, RoundedCornerShape(3.dp))
                         },
-                    ).chasingBorder(
-                        isFocused = isFocused,
-                        paused = chasingBordersPaused.value || !libraryTabActive.value,
-                        cornerRadius = 12.dp,
-                    ).background(CardDark, RoundedCornerShape(12.dp))
-                    .focusable()
+                    ).graphicsLayer { scaleX = focusScale; scaleY = focusScale }
+                    .border(if (isFocused) 2.dp else 0.dp, if (isFocused) TextPrimary else Color.Transparent, RoundedCornerShape(3.dp))
+                    .background(CardDark, RoundedCornerShape(3.dp))
+                    .onFocusChanged { keyboardFocused = it.isFocused }
                     .then(clickModifier),
         ) {
             Box(
@@ -583,15 +579,24 @@ internal fun UnifiedActivity.GameCapsule(
                     Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                        .clip(if (showCaption) RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)
+                            else RoundedCornerShape(3.dp)),
             ) {
                 ArtContent(Modifier.fillMaxSize())
                 libraryBadgeLabel(app.id, isCustom)?.let { badge ->
                     RetroConsoleRibbon(badge, Modifier.align(Alignment.CenterStart))
                 }
+                installStatus?.let { installed ->
+                    Text(stringResource(if (installed) R.string.common_ui_installed else R.string.vapor_library_download),
+                        color = TextPrimary, style = MaterialTheme.typography.labelSmall, maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.align(Alignment.BottomStart).padding(6.dp)
+                            .background(BgDark.copy(alpha = 0.9f), RoundedCornerShape(2.dp))
+                            .padding(horizontal = 7.dp, vertical = 4.dp))
+                }
             }
 
-            Text(
+            if (showCaption) Text(
                 text = app.name,
                 modifier =
                     Modifier
@@ -1995,306 +2000,23 @@ internal fun UnifiedActivity.GOGGameManagerDialog(
     }
 }
 
-// Steam Store Tab
+// Public catalog items never become owned games until Steam reports a license.
 @Composable
 internal fun UnifiedActivity.SteamStoreTab(
-    isLoggedIn: Boolean,
-    steamApps: List<SteamApp>,
-    searchQuery: String = "",
-    layoutMode: LibraryLayoutMode = LibraryLayoutMode.GRID_4,
+    ownedSteamApps: List<SteamApp>,
+    onBack: () -> Unit,
 ) {
-    if (!isLoggedIn && !SteamService.hasStoredCredentials(this)) {
-        LoginRequiredScreen("Steam") {
-            startActivity(Intent(this@SteamStoreTab, SteamLoginActivity::class.java))
-        }
-        return
-    }
-
-    var selectedAppForDialog by remember { mutableStateOf<SteamApp?>(null) }
-    val gridState = rememberLazyGridState()
-    val activity = LocalContext.current as? UnifiedActivity
-
-    val displayedApps =
-        remember(steamApps, searchQuery) {
-            if (searchQuery.isBlank()) {
-                steamApps
-            } else {
-                steamApps.filter { it.name.contains(searchQuery, ignoreCase = true) }
-            }
-        }
-    val installStateById = rememberSteamInstallStateMap(displayedApps)
-
-    // Sync store focus infrastructure
-    LaunchedEffect(displayedApps.size) {
-        activity?.storeItemCount = displayedApps.size
-        val lastIndex = (displayedApps.size - 1).coerceAtLeast(0)
-        if (activity != null && displayedApps.isNotEmpty() && activity.storeFocusIndex.value > lastIndex) {
-            activity.storeFocusIndex.value = lastIndex
-        }
-    }
-    // Register A-button click callback and grid state for visible-area snapping
-    DisposableEffect(displayedApps) {
-        val clickCallback: (Int) -> Unit = { idx ->
-            displayedApps.getOrNull(idx)?.let { selectedAppForDialog = it }
-        }
-        activity?.storeItemClickCallback = clickCallback
-        activity?.storeGridState = gridState
-        onDispose {
-            if (activity?.storeItemClickCallback === clickCallback) {
-                activity?.storeItemClickCallback = null
-                activity?.storeGridState = null
-            }
-        }
-    }
-
-    if (layoutMode == LibraryLayoutMode.LIST) {
-        val listViewState = rememberLazyListState()
-        JoystickListScroll(listViewState, activity?.rightStickScrollState, minSpeed = 2.5f, maxSpeed = 16f, quadratic = true)
-        ListView(
-            items = displayedApps,
-            modifier = Modifier.tabScreenPadding(),
-            listState = listViewState,
-            contentPadding = TabListContentPadding,
-            keyOf = { it.id },
-        ) { app, _, _ ->
-            SteamStoreCapsule(
-                app,
-                isInstalled = installStateById[app.id] == true,
-                listMode = true,
-                isControllerActive = ControllerHelper.isControllerConnected(),
-                onClick = {
-                    selectedAppForDialog =
-                        app
-                },
-            )
-        }
-    } else {
-        val focusIndex by (activity?.storeFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsState()
-        val focusRequesters =
-            remember(displayedApps.size) {
-                List(displayedApps.size) { FocusRequester() }
-            }
-        LaunchedEffect(focusIndex, focusRequesters.size) {
-            if (searchQuery.isEmpty() && focusRequesters.isNotEmpty() && focusIndex in focusRequesters.indices) {
-                gridState.animateScrollToItem(focusIndex)
-                try {
-                    focusRequesters[focusIndex].requestFocus()
-                } catch (_: Exception) {
-                }
-            }
-        }
-        // Right joystick: 2x faster at full push with quadratic speed curve
-        JoystickGridScroll(gridState, activity?.rightStickScrollState, minSpeed = 2.5f, maxSpeed = 16f, quadratic = true)
-        // Left joystick: 75% slower scrolling (vertical only, for browsing store)
-        JoystickGridScroll(gridState, activity?.leftStickScrollState, deadZone = 0.15f, minSpeed = 0.3125f, maxSpeed = 2f)
-        FourByTwoGridView(
-            items = displayedApps,
-            modifier = Modifier.tabScreenPadding(top = TabGridTopPadding),
-            gridState = gridState,
-            keyOf = { it.id },
-        ) { app, index, rowHeight ->
-            Box(
-                Modifier.height(rowHeight).then(
-                    if (index in focusRequesters.indices) {
-                        Modifier.focusRequester(focusRequesters[index])
-                    } else {
-                        Modifier
-                    },
-                ),
-            ) {
-                SteamStoreCapsule(
-                    app,
-                    isInstalled = installStateById[app.id] == true,
-                    isFocusedOverride = index == focusIndex,
-                    isControllerActive =
-                        ControllerHelper
-                            .isControllerConnected(),
-                    onClick = {
-                        selectedAppForDialog =
-                            app
-                    },
-                )
-            }
-        }
-    }
-
-    if (selectedAppForDialog != null) {
-        GameManagerDialog(
-            app = selectedAppForDialog!!,
-            onDismissRequest = { selectedAppForDialog = null },
-        )
-    }
-}
-
-@Composable
-internal fun UnifiedActivity.SteamStoreCapsule(
-    app: SteamApp,
-    isInstalled: Boolean,
-    listMode: Boolean = false,
-    isFocusedOverride: Boolean = false,
-    isControllerActive: Boolean = false,
-    onClick: () -> Unit,
-) {
-    val context = LocalContext.current
-    var isFocused by remember { mutableStateOf(false) }
-    val clickInteraction = remember { MutableInteractionSource() }
-    val isPressed by clickInteraction.collectIsPressedAsState()
-    val glowAlpha by animateFloatAsState(
-        targetValue = if (isPressed) 0.7f else 0f,
-        animationSpec = if (isPressed) tween(100) else tween(400),
-        label = "steamCapsuleGlow",
+    var catalogSelection by remember { mutableStateOf<SteamApp?>(null) }
+    SteamCatalogScreen(
+        ownedApps = ownedSteamApps,
+        onOwnedGame = { catalogSelection = it },
+        onRefreshLibrary = { lifecycleScope.launch(Dispatchers.IO) {
+            SteamService.instance?.processLicenseList()
+            SteamService.wnLibrary?.refresh()
+        } },
+        onBack = onBack,
     )
-    val effectiveFocus = isControllerActive && (isFocusedOverride || isFocused)
-    val borderColor = if (isControllerActive) CardBorder else Color.Transparent
-
-    if (listMode) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .border(1.dp, borderColor, RoundedCornerShape(14.dp))
-                    .chasingBorder(isFocused = effectiveFocus, paused = chasingBordersPaused.value, cornerRadius = 14.dp)
-                    .background(CardDark, RoundedCornerShape(14.dp))
-                    .onFocusChanged { isFocused = it.isFocused }
-                    .focusable()
-                    .then(
-                        if (glowAlpha > 0f) {
-                            Modifier.drawWithContent {
-                                drawContent()
-                                drawRoundRect(color = AccentGlow, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
-                            }
-                        } else {
-                            Modifier
-                        },
-                    ).clickable(interactionSource = clickInteraction, indication = null, onClick = onClick),
-        ) {
-            // Hero background
-            AsyncImage(
-                model =
-                    ImageRequest
-                        .Builder(context)
-                        .data(app.getHeroUrl())
-                        .crossfade(300)
-                        .build(),
-                contentDescription = null,
-                modifier =
-                    Modifier
-                        .matchParentSize()
-                        .graphicsLayer { alpha = 0.25f },
-                contentScale = ContentScale.Crop,
-            )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 11.dp),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                Box(
-                    Modifier
-                        .height(52.dp)
-                        .aspectRatio(462f / 174f)
-                        .clip(RoundedCornerShape(8.dp)),
-                ) {
-                    AsyncImage(
-                        model =
-                            ImageRequest
-                                .Builder(context)
-                                .data(app.getSmallCapsuleUrl())
-                                .crossfade(300)
-                                .build(),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                    )
-                    if (isInstalled) {
-                        StoreInstalledBadge(
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp),
-                            compact = true,
-                        )
-                    }
-                }
-                Spacer(Modifier.width(14.dp))
-                Text(
-                    text = app.name,
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .then(if (effectiveFocus) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
-                    color = TextPrimary,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-    } else {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .border(1.dp, borderColor, RoundedCornerShape(16.dp))
-                    .chasingBorder(isFocused = effectiveFocus, paused = chasingBordersPaused.value, cornerRadius = 16.dp)
-                    .background(CardDark, RoundedCornerShape(16.dp))
-                    .onFocusChanged { isFocused = it.isFocused }
-                    .focusable()
-                    .then(
-                        if (glowAlpha > 0f) {
-                            Modifier.drawWithContent {
-                                drawContent()
-                                drawRoundRect(color = AccentGlow, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
-                            }
-                        } else {
-                            Modifier
-                        },
-                    ).clickable(interactionSource = clickInteraction, indication = null, onClick = onClick),
-        ) {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
-            ) {
-                val imageUrl = app.getCapsuleUrl()
-
-                AsyncImage(
-                    model =
-                        ImageRequest
-                            .Builder(context)
-                            .data(imageUrl)
-                            .crossfade(300)
-                            .build(),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                )
-
-                if (isInstalled) {
-                    StoreInstalledBadge(
-                        modifier = Modifier.align(Alignment.BottomEnd),
-                        attachedCorner = true,
-                    )
-                }
-            }
-
-            Text(
-                text = app.name,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 4.dp)
-                        .then(if (effectiveFocus) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
-                style = MaterialTheme.typography.bodySmall,
-                color = TextPrimary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-            )
-        }
+    catalogSelection?.let { app ->
+        GameManagerDialog(app = app, onDismissRequest = { catalogSelection = null })
     }
 }

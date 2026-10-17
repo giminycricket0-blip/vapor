@@ -1,6 +1,5 @@
 package com.winlator.cmod.runtime.input;
 
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -44,7 +43,6 @@ import com.winlator.cmod.shared.math.Mathf;
 import com.winlator.cmod.shared.ui.widget.NumberPicker;
 import com.winlator.cmod.shared.util.UnitUtils;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 public class ControlsEditorActivity extends FixedFontScaleAppCompatActivity
@@ -724,10 +722,7 @@ private void showControlElementSettings(View anchorView) {
             imageView.setSelected(true);
           });
 
-      try (InputStream is = getAssets().open("inputcontrols/icons/" + id + ".png")) {
-        imageView.setImageBitmap(BitmapFactory.decodeStream(is));
-      } catch (IOException e) {
-      }
+      imageView.setImageBitmap(inputControlsView.getIcon(id));
 
       parent.addView(imageView);
     }

@@ -90,15 +90,15 @@ static char *get_driver_path(JNIEnv *env, jobject context,
   if (context == NULL)
     return NULL;
 
-  jclass contextWrapperClass =
-      (*env)->FindClass(env, "android/content/ContextWrapper");
-  if (contextWrapperClass == NULL) {
+  jclass contextClass =
+      (*env)->FindClass(env, "android/content/Context");
+  if (contextClass == NULL) {
     (*env)->ExceptionClear(env);
     return NULL;
   }
 
   jmethodID getFilesDir = (*env)->GetMethodID(
-      env, contextWrapperClass, "getFilesDir", "()Ljava/io/File;");
+      env, contextClass, "getFilesDir", "()Ljava/io/File;");
   if (getFilesDir == NULL) {
     (*env)->ExceptionClear(env);
     return NULL;
@@ -229,17 +229,13 @@ void *winlator_open_system_vulkan(void) {
   return dlopen("/system/lib64/libvulkan.so", RTLD_LOCAL | RTLD_NOW);
 }
 
-void *winlator_open_vulkan(JNIEnv *env, jobject context, const char *driver_name) {
-  if (!driver_name || strcmp(driver_name, "System") == 0) {
-    return winlator_open_system_vulkan();
-  }
-
+static void *open_custom_vulkan(JNIEnv *env, jobject context, const char *driver_name) {
   preload_vendor_icd_deps();
 
   char *driver_path = get_driver_path(env, context, driver_name);
   if (!driver_path || access(driver_path, F_OK) != 0) {
     free(driver_path);
-    return winlator_open_system_vulkan();
+    return NULL;
   }
 
   char *library_name = get_library_name(env, context, driver_name);
@@ -259,8 +255,15 @@ void *winlator_open_vulkan(JNIEnv *env, jobject context, const char *driver_name
   free(native_library_dir);
   free(library_name);
   free(driver_path);
-  if (!handle) return winlator_open_system_vulkan();
   return handle;
+}
+
+void *winlator_open_vulkan(JNIEnv *env, jobject context, const char *driver_name) {
+  if (!driver_name || strcmp(driver_name, "System") == 0) {
+    return winlator_open_system_vulkan();
+  }
+  void *handle = open_custom_vulkan(env, context, driver_name);
+  return handle ? handle : winlator_open_system_vulkan();
 }
 
 static void init_original_vulkan() {
@@ -268,7 +271,8 @@ static void init_original_vulkan() {
 }
 
 static void init_vulkan(JNIEnv *env, jobject context, const char *driver_name) {
-  vulkan_handle = winlator_open_vulkan(env, context, driver_name);
+  // A probe must describe the requested driver, never a successful system fallback.
+  vulkan_handle = open_custom_vulkan(env, context, driver_name);
 }
 
 static VkResult create_instance(jstring driverName, JNIEnv *env,

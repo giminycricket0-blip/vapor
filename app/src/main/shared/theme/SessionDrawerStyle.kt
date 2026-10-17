@@ -38,23 +38,23 @@ object SessionDrawerStyle {
 }
 
 object GameSettingsStyle {
-    val BgDeep = Color(0xFF11111C)
-    val SidebarBg = Color(0xFF11111C)
-    val ContentBg = Color(0xFF11111C)
+    val BgDeep = WinNativeBackground
+    val SidebarBg = WinNativePanel
+    val ContentBg = WinNativeBackground
     val CardSurface = WinNativeSurface
     val CardBorder = WinNativeOutline
-    val InputSurface = Color(0xFF171722)
+    val InputSurface = WinNativePanel
     val InputBorder = WinNativeOutline
     val AccentBlue = WinNativeAccent
     val TextPrimary = WinNativeTextPrimary
     val TextSecondary = WinNativeTextSecondary
-    val TextDim = Color(0xFF6E7681)
+    val TextDim = WinNativeTextSecondary
     val Divider = WinNativeOutline
     val CheckBorder = WinNativeOutline
     val SliderInactive = WinNativeSurfaceAlt
-    val ChipSurface = Color(0xFF171722)
+    val ChipSurface = WinNativePanel
     val ChipBorder = WinNativeOutline
-    val DangerRed = Color(0xFFFF6B6B)
+    val DangerRed = WinNativeDanger
     val WarningAmber = Color(0xFFFFB74D)
-    val NavHighlight = Color(0xFF4FC3F7)
+    val NavHighlight = WinNativeAccent
 }
