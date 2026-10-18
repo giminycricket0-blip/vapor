@@ -1,0 +1,451 @@
+{
+  "date": "2026-10-18",
+  "branch": "Vapor",
+  "base_commit": "1b4747c033db4aacd0c941a539994295c1307114",
+  "scope": "Bounded automatic graphics routing, native feature probing, session/preloader integration and Wine/FEX source review. Local development qualification only.",
+  "source_sha256": {
+    ".github/workflows/pr-ci.yml": "8d10170f367801ef1235d6a873a3f9b69e46a1823f9ffcdec1713a60c8d8ec98",
+    "app/src/androidTest/kotlin/com/winlator/cmod/app/shell/DownloadQueueUiTest.kt": "bf4929a83090c1b4e46fa04768e0e8f5ae37dc368229c04e428309f2f0646a21",
+    "app/src/androidTest/kotlin/com/winlator/cmod/runtime/system/GraphicsDriverProbeDeviceTest.kt": "73d7a845ebde753be114763b3d1976f07c653ecf149c78be3d359e32dbf1e2f9",
+    "app/src/androidTest/kotlin/com/winlator/cmod/shared/ui/dialog/PreloaderDialogUiTest.kt": "c572e9f50fd213042ceb4f0ede6c1b0b8a7c9f164caf07eb7f808233236a358c",
+    "app/src/main/cpp/winlator/vulkan.c": "cd3e8557a0daea5443fc6a78fb9b5ecf3eb37834412f881439067c44fc980e30",
+    "app/src/main/feature/setup/VaporPreparation.kt": "7c5a4f06795b168dabd352644d4f5793675e41061629503100d5bc89aee7f5d5",
+    "app/src/main/feature/stores/steam/wnsteam/WnLauncherStatusTailer.kt": "628509b35d138405ca08f8b505dffe8fcaa71d918d4706cf9de97f8bb721fcf4",
+    "app/src/main/res/values/strings.xml": "72a37dd108d346c167c6276d753fcb8919887bf840ccd4a503790fe897433cc6",
+    "app/src/main/runtime/display/XServerDisplayActivity.java": "c8c91c22bf82525c7a941b8de29bcc679682a1d3d6d1cc8ce93d73f469eff05c",
+    "app/src/main/runtime/system/AutomaticGraphics.kt": "ef9e600b5bfe69307ab1a92aabc276efb7df0adf5c438cd5db62020580fabdc2",
+    "app/src/main/runtime/system/GPUInformation.java": "d843d836de0c650419dbe4259b464b705353a22ff7da1a5fa7e6ffd3d703bfe5",
+    "app/src/main/runtime/system/GraphicsDriverCatalog.kt": "c2635e89747e3dff4024c0939dba9bf71c9927e65b50f53a63bac897a52d8dc2",
+    "app/src/main/shared/ui/dialog/PreloaderDialog.java": "f929884a68ff2fef2332596dc935b97f7365ec3da8c226bb96f44e08b92be0b3",
+    "app/src/main/shared/ui/dialog/PreloaderDialogContent.kt": "515f9e45d3aacfb9dd291a5d3f3310244e7cea9e0e1014bb3bab554224edfa33",
+    "app/src/test/kotlin/com/winlator/cmod/feature/setup/VaporPreparationTest.kt": "54d5e67115a927a23f0ff777e3bc8d773b0d30065953e9d9f11b076e17644c14",
+    "app/src/test/kotlin/com/winlator/cmod/feature/stores/steam/wnsteam/WnLauncherStatusTailerTest.kt": "830040b71513e44d54458db1a1e764cd91a64542cb7af22eb023daea573edd2b",
+    "app/src/test/kotlin/com/winlator/cmod/runtime/system/AutomaticGraphicsTest.kt": "ec3f972750ebcd795ea36de0bf72acb09458647c72c148ee427da547a9dc3759",
+    "app/src/test/kotlin/com/winlator/cmod/runtime/system/GraphicsDriverCatalogTest.kt": "f3b547d2ea132b5ec9182b2d208c3aa21244b523c71aa3a5830ade6b09119a22"
+  },
+  "artifact": {
+    "filename": "Vapor-0.1.0-auto-graphics-dev.apk",
+    "package": "app.vapor.android",
+    "version": "0.1.0-dev",
+    "abi": "arm64-v8a",
+    "bytes": 680787824,
+    "sha256": "f9cb798c6cb13ce3d4d3baf9c27ebe0256db067e0881e35539fcca793022d639",
+    "signer_sha256": "7e122c925e37a47696abc9b111ec747872061cb1d686eb7be9880cfafa4a93f1",
+    "min_sdk": 29,
+    "target_sdk": 28,
+    "compile_sdk": 35,
+    "android_test_apk_sha256": "4ea1d39ffab49b71c7be50e4f57efc704477d66d4d6e51e47baad630acef6d1c"
+  },
+  "build": {
+    "result": "BUILD SUCCESSFUL",
+    "focused_jvm": "79/79 pass",
+    "suites": [
+      {
+        "class": "com.winlator.cmod.feature.setup.VaporPreparationTest",
+        "tests": 21,
+        "failures": 0,
+        "errors": 0,
+        "report_sha256": "794249068dcb47048e6d85cb1f8de0ee2ccdd4cda4f81c7cf095125d8fc987ae"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.service.SteamCloseSyncTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "report_sha256": "e218435c8c35cfdd23bb7cf9c095df140e20179ef76de24a9250b3a39e9d511c"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.wnsteam.WnLauncherStatusTailerTest",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "report_sha256": "1900c1d8d7cf2c0ed4536a1dfab2634558230374d23b3db9182c3c598a74bf57"
+      },
+      {
+        "class": "com.winlator.cmod.runtime.display.SteamExitCloudTest",
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "report_sha256": "62ffa99bf8247e09e1d9882722fbd0c004be915d4d93c2cfd92c1f35e421a2e8"
+      },
+      {
+        "class": "com.winlator.cmod.runtime.system.AutomaticGraphicsTest",
+        "tests": 16,
+        "failures": 0,
+        "errors": 0,
+        "report_sha256": "436a1537fbee5321ae398b78d0e4025175d770805db90f11b48d0ed78404e40c"
+      },
+      {
+        "class": "com.winlator.cmod.runtime.system.GraphicsDriverCatalogTest",
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "report_sha256": "254e8c61c96bc7dabd2ff60eb85f2237bab9b8821e2bf3ad7bf1ab4ffeec1caa"
+      }
+    ],
+    "log_sha256": "34ef006112538c48ff621f12fd98b52b6f566bf32bda4beb8016fddd6d175854",
+    "checks_not_run": [
+      "Whole-project test suite",
+      "Full Android lint",
+      "New Rust test run; Rust source unchanged"
+    ]
+  },
+  "emulator": {
+    "environment": "Account-free Vapor_UI_API36, ARM64 API 36, 4096-byte kernel pages",
+    "result": "OK (39 tests)",
+    "unique_cases": 39,
+    "compose_cases": 34,
+    "actual_jni_probe_cases": 5,
+    "classes": {
+      "GraphicsDriverProbeDeviceTest": 5,
+      "PreloaderDialogUiTest": 7,
+      "PrepareVaporScreenTest": 6,
+      "HomeUiTest": 10,
+      "DownloadQueueUiTest": 11
+    },
+    "final_log_sha256": "8cd57d2f6eac4721b86219f4496321a2ad405f832ce9e2f7148e2334f3b07830",
+    "controller_repeated_executions": 4,
+    "controller_repeat_results": [
+      "OK (2 tests)",
+      "OK (2 tests)"
+    ],
+    "controller_repeat_log_sha256": [
+      "c75fda8833d97b38bf735f8dcc568140a984f71c09ef0738b8e862f4a0d84f06",
+      "c6c08ad81eeaf3556a756311f56253036e385bf7f01b641148fc4dbee1b6c7f3"
+    ],
+    "fixture_timing_correction": "A preceding repetition failed two key-delivery assertions. Fixtures now await native window focus and completed input delivery. Final full batch passes, plus both extra two-case runs. The B-cancel test deliberately sends B twice to verify one-shot cancellation; this is not a retry-until-success loop.",
+    "physical_controller": false,
+    "vulkan_snapshot": [
+      4206592,
+      65541,
+      0,
+      105263203,
+      751,
+      3617857676206353780,
+      7016996523950354529
+    ],
+    "vulkan_minimum_floors": {
+      "legacy": true,
+      "modern": false,
+      "direct3d12": false
+    },
+    "effective_wrapper_conformance": false
+  },
+  "normal_app_smoke": {
+    "journey": "Normal signed-out app Home -> Downloads -> Home using text/bounds observed in UIAutomator dumps",
+    "result": "pass",
+    "started_device_time": "10-18 23:19:03.000",
+    "installed_apk_sha256": "f9cb798c6cb13ce3d4d3baf9c27ebe0256db067e0881e35539fcca793022d639",
+    "downloads_empty_state": true,
+    "home_return_captured": true,
+    "account_used": false,
+    "game_or_live_download": false,
+    "fatal_android_runtime_errors": false
+  },
+  "rendered_review": {
+    "capture": "Vapor-automatic-graphics-landscape-ui-test.png",
+    "local_receipt_filename": "automatic-graphics-landscape-final.png",
+    "sha256": "d13339ef01fead2701894b8d05c6e2e41d4fd1e720379a05e73ff20176465590",
+    "visually_reviewed": true,
+    "data": "Explicit Interface test / no game running label; placeholder art, synthetic attempt/driver/Cloud phase. Not a Turnip or game result."
+  },
+  "packaging": {
+    "signature": "pass",
+    "zip_16kb_alignment": "pass",
+    "elf_aligned": 39,
+    "elf_libraries": 39
+  },
+  "bundled_runtime_and_native": {
+    "baseline": "Vapor-0.1.0-downloads-d3d12-dev.apk",
+    "entries": 222,
+    "identical": 221,
+    "changed": [
+      "lib/arm64-v8a/libwinlator.so"
+    ],
+    "missing": [],
+    "removed": [],
+    "runtime_payload_changes": "None: only application libwinlator.so native probe changed."
+  },
+  "routing": {
+    "eligible": "Fresh Steam launch, guided Proton, unchanged baseline graphics, complete supported PE import scan; explicit per-game Wine/graphics choices retained.",
+    "drivers": "Selected installed driver and System only; no automatic driver download or experimental activation.",
+    "candidates": [
+      "Prepared legacy DXVK",
+      "Prepared modern DXVK",
+      "Paired modern DXGI and VKD3D for D3D12",
+      "WineD3D for selected D3D8/9 imports; still uses Zink/Vulkan"
+    ],
+    "maximum_attempts": 4,
+    "trigger": "Small source-checked set of explicit Vulkan initialization failures within the startup observation window.",
+    "excluded": [
+      "Ordinary DirectX feature-level probes",
+      "Generic DXGI adapter failure",
+      "Generic crash or loading delay",
+      "Steam authentication or Cloud failure",
+      "Device-lost during gameplay",
+      "Native Android process crash"
+    ],
+    "cleanup_gate": "Shared preparation/teardown worker; process/environment cleanup and existing Cloud reservation release before retry; stop for cancellation, background, failure, or changed fingerprint.",
+    "remembered_choice": "Existing shortcut extra; actual host process observation + >=120 frame observations across >=20 seconds + clean exit; device/game/component-file fingerprint; not a Verified badge.",
+    "observation_clock": "Starts with process/frame evidence, not while waiting for Steam/Cloud preparation."
+  },
+  "fex_upstream_backport": {
+    "source": "https://github.com/FEX-Emu/FEX/commit/b49837f0c3961194b35da2187e5f742982a0c716.patch",
+    "upstream_commit": "b49837f0c3961194b35da2187e5f742982a0c716",
+    "bytes": 2108,
+    "sha256": "e6f91c005d323a6656de23db8ebfe960786e8967d88d3fe62185ee8ed0c6f4fc",
+    "apply_check_returncode": 0,
+    "check_output": "",
+    "applied_to_source": false,
+    "rebuilt": false,
+    "installed_in_app": false
+  },
+  "wine_review": {
+    "binary_samples": {
+      "profile": {
+        "type": "Proton",
+        "versionName": "11.0-2-arm64ec-steam-unixlib",
+        "versionCode": 3,
+        "description": "11.0-2-arm64ec-steam-unixlib - WinNative layer with steam support",
+        "files": [],
+        "wine": {
+          "binPath": "bin",
+          "libPath": "lib",
+          "prefixPack": "prefixPack.tzst"
+        }
+      },
+      "sampled_binaries": [
+        {
+          "path": "lib/wine/aarch64-unix/ntdll.so",
+          "bytes": 863992,
+          "sha256": "9244cd67160e69fbbb1e96f6e288c8bbc5f65c558b055643d5df67fa488df8fa",
+          "selected_strings": [
+            "wine-8.0-20901-g71040f04bd3"
+          ]
+        },
+        {
+          "path": "lib/wine/aarch64-unix/winegstreamer.so",
+          "bytes": 291656,
+          "sha256": "a8a393adf05eaba3e4edd2d733b1e5dc26f4184abe8fb8a59a448d04a85bcc17",
+          "selected_strings": [
+            "gst_init_check",
+            "GStreamer library version %s; wine built with %d.%d.%d.",
+            "proton_demuxer_inner_src_query",
+            "winegstreamer: failed to initialize GStreamer: %s",
+            "proton_demuxer_sink_event",
+            "Wine GStreamer support",
+            "proton_demuxer_init",
+            "proton_demuxer_no_more_pads",
+            "proton_demuxer_inner_src_event",
+            "proton_demuxer_inner_sink_event",
+            "proton_demuxer_pad_added",
+            "proton_demuxer_inner_sink_chain",
+            "winegstreamer: failed to create %s, are %u-bit GStreamer \"%s\" plugins installed?"
+          ]
+        },
+        {
+          "path": "lib/wine/aarch64-unix/winex11.so",
+          "bytes": 521472,
+          "sha256": "a454362c7b7e486ee00519173392dcacb3fe4a8ed3aad7cf6bab948fd94e23c9",
+          "selected_strings": [
+            "WINE_DISABLE_VULKAN_OPWR",
+            "_NET_WM_HWND"
+          ]
+        }
+      ],
+      "embedded_source_or_build_manifest": false,
+      "mapping_status": "No exact source revision or complete Wine patch set is established by the profile or these string samples."
+    },
+    "version_revision_lookup": [
+      {
+        "repo": "GameNative/proton-wine",
+        "url": "https://api.github.com/repos/GameNative/proton-wine/commits/71040f04bd3",
+        "sha": "71040f04bd3a451fd2c5d2552f0b64a23dd7c69b",
+        "subject": "Merge ValveSoftware/wine proton_11.0 (Proton 11.0-2) into the WinNative fork",
+        "date": "2026-08-21T21:32:21Z",
+        "html_url": "https://github.com/GameNative/proton-wine/commit/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b"
+      },
+      {
+        "repo": "The412Banner/proton-wine",
+        "url": "https://api.github.com/repos/The412Banner/proton-wine/commits/71040f04bd3",
+        "sha": "71040f04bd3a451fd2c5d2552f0b64a23dd7c69b",
+        "subject": "Merge ValveSoftware/wine proton_11.0 (Proton 11.0-2) into the WinNative fork",
+        "date": "2026-08-21T21:32:21Z",
+        "html_url": "https://github.com/The412Banner/proton-wine/commit/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b"
+      },
+      {
+        "repo": "ValveSoftware/wine",
+        "url": "https://api.github.com/repos/ValveSoftware/wine/commits/71040f04bd3",
+        "sha": "71040f04bd3a451fd2c5d2552f0b64a23dd7c69b",
+        "subject": "Merge ValveSoftware/wine proton_11.0 (Proton 11.0-2) into the WinNative fork",
+        "date": "2026-08-21T21:32:21Z",
+        "html_url": "https://github.com/ValveSoftware/wine/commit/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b"
+      },
+      {
+        "repo": "bylaws/wine",
+        "status": 422
+      }
+    ],
+    "upstream_patch_inputs": {
+      "commit": "00095e1a945e357c22a0987d70392b9b352c1749",
+      "status": "source review only; not applied to bundled Wine; no Wine rebuild",
+      "inputs": [
+        {
+          "path": "android/patches/common/dlls_winex11_drv_init_c.patch",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/00095e1a945e357c22a0987d70392b9b352c1749/android/patches/common/dlls_winex11_drv_init_c.patch",
+          "bytes": 714,
+          "sha256": "6a8ec7f35bc589fe6ddd9872e4dcd7db08f44ad61e295ad027adfd1acd532e04"
+        },
+        {
+          "path": "android/patches/common/dlls_winex11_drv_mouse_c_clip_grab_foreground.patch",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/00095e1a945e357c22a0987d70392b9b352c1749/android/patches/common/dlls_winex11_drv_mouse_c_clip_grab_foreground.patch",
+          "bytes": 1744,
+          "sha256": "f29595a0b736c062eb7eb42da95bba3e15e879d671c3ed41bd5e04a05773879b"
+        },
+        {
+          "path": "android/patches/common/dlls_winex11_drv_mouse_c_clip_regrab.patch",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/00095e1a945e357c22a0987d70392b9b352c1749/android/patches/common/dlls_winex11_drv_mouse_c_clip_regrab.patch",
+          "bytes": 715,
+          "sha256": "99a41a97420559ce9822a512e312bee2884bfc7a280f289453b11eac33297f52"
+        },
+        {
+          "path": "android/patches/common/dlls_winex11_drv_window_c_net_wm_hwnd.patch",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/00095e1a945e357c22a0987d70392b9b352c1749/android/patches/common/dlls_winex11_drv_window_c_net_wm_hwnd.patch",
+          "bytes": 1147,
+          "sha256": "f7f5f4009dc9918d1b369d493530bed95f34425c684b1d4d855bf35fb1545e94"
+        },
+        {
+          "path": "build-scripts/build-step-arm64ec.sh",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/00095e1a945e357c22a0987d70392b9b352c1749/build-scripts/build-step-arm64ec.sh",
+          "bytes": 16443,
+          "sha256": "6ca252bc3bb80c038072ffd4fcf86ed91e5f9ff36ee87e10958fca2e66de578c"
+        },
+        {
+          "path": "README.md",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/00095e1a945e357c22a0987d70392b9b352c1749/README.md",
+          "bytes": 5450,
+          "sha256": "dfa580f97437666d522f5de33bcc1c43c2ac9f94d5d631b8c1c5beaa587e9b59"
+        }
+      ]
+    },
+    "base_source_inputs": {
+      "base": "71040f04bd3a451fd2c5d2552f0b64a23dd7c69b",
+      "inputs": [
+        {
+          "path": "dlls/winex11.drv/init.c",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b/dlls/winex11.drv/init.c",
+          "bytes": 31134,
+          "sha256": "0dbc6753d4f5093fdf29f881ea3520cb6b5240611a6f9ef1cd21dd259c244cbc"
+        },
+        {
+          "path": "dlls/winex11.drv/mouse.c",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b/dlls/winex11.drv/mouse.c",
+          "bytes": 67444,
+          "sha256": "b6f38dee482446f674a66c812bcf146cbe9d60bcfa6131383af2caa320545c76"
+        },
+        {
+          "path": "dlls/winex11.drv/window.c",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b/dlls/winex11.drv/window.c",
+          "bytes": 167611,
+          "sha256": "18cbd1f4b8182843c3417280e9be5d6eac662a5a87937f5b889164a3e31b3aac"
+        },
+        {
+          "path": "android/patches/common/dlls_winex11_drv_mouse_c.patch",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b/android/patches/common/dlls_winex11_drv_mouse_c.patch",
+          "status": 404
+        },
+        {
+          "path": "android/patches/common/dlls_winex11_drv_window_c.patch",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b/android/patches/common/dlls_winex11_drv_window_c.patch",
+          "status": 404
+        },
+        {
+          "path": "build-scripts/build-step-arm64ec.sh",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b/build-scripts/build-step-arm64ec.sh",
+          "bytes": 8665,
+          "sha256": "a206ac0421c5bf1a97a83f192b964a4c2a685d23ac81a9f53e135de393562e80"
+        }
+      ]
+    },
+    "patch_application_checks": {
+      "base": "71040f04bd3a451fd2c5d2552f0b64a23dd7c69b",
+      "purpose": "Isolated source application checks only; not a full Wine tree, binary build or runtime test",
+      "patches": [
+        {
+          "role": "baseline Android patch from base build script",
+          "path": "base-dlls_winex11.drv_mouse.c.patch",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b/android/patches/dlls_winex11.drv_mouse.c.patch",
+          "sha256": "4faec7206d6571f88d2d275d7e2bcb6401066cc9b3ccc2d62dd6bb44b623b0f8",
+          "check": 1,
+          "output": "error: patch failed: dlls/winex11.drv/mouse.c:1484\nerror: dlls/winex11.drv/mouse.c: patch does not apply\n",
+          "applied_to_fixture": false,
+          "reverse_check": 0,
+          "reverse_check_output": "",
+          "interpretation": "Already applied in the inspected base source; not reapplied."
+        },
+        {
+          "role": "baseline Android patch from base build script",
+          "path": "base-dlls_winex11.drv_window.c.patch",
+          "url": "https://raw.githubusercontent.com/GameNative/proton-wine/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b/android/patches/dlls_winex11.drv_window.c.patch",
+          "sha256": "44a6d5524b6c71cf73d107fffe2bdd82b059ec11ad9bb7e6ceca35c3fcf89438",
+          "check": 1,
+          "output": "error: patch failed: dlls/winex11.drv/window.c:1228\nerror: dlls/winex11.drv/window.c: patch does not apply\n",
+          "applied_to_fixture": false,
+          "reverse_check": 0,
+          "reverse_check_output": "",
+          "interpretation": "Already applied in the inspected base source; not reapplied."
+        },
+        {
+          "role": "upstream candidate from 00095e1a",
+          "path": "android--patches--common--dlls_winex11_drv_init_c.patch",
+          "sha256": "6a8ec7f35bc589fe6ddd9872e4dcd7db08f44ad61e295ad027adfd1acd532e04",
+          "check": 0,
+          "output": "",
+          "applied_to_fixture": true
+        },
+        {
+          "role": "upstream candidate from 00095e1a",
+          "path": "android--patches--common--dlls_winex11_drv_mouse_c_clip_regrab.patch",
+          "sha256": "99a41a97420559ce9822a512e312bee2884bfc7a280f289453b11eac33297f52",
+          "check": 0,
+          "output": "",
+          "applied_to_fixture": true
+        },
+        {
+          "role": "upstream candidate from 00095e1a",
+          "path": "android--patches--common--dlls_winex11_drv_mouse_c_clip_grab_foreground.patch",
+          "sha256": "f29595a0b736c062eb7eb42da95bba3e15e879d671c3ed41bd5e04a05773879b",
+          "check": 0,
+          "output": "",
+          "applied_to_fixture": true
+        }
+      ],
+      "omitted_candidate": {
+        "path": "dlls_winex11_drv_window_c_net_wm_hwnd.patch",
+        "reason": "The inspected base already sets _NET_WM_HWND in create_whole_window under __ANDROID__; importing this patch would duplicate that property write.",
+        "present_in_base_create_whole_window": true
+      },
+      "rebuilt": false,
+      "installed_in_vapor": false,
+      "fixture_hashes": {
+        "dlls/winex11.drv/init.c": "0aa6d21a84b1aa1b451682386cf80394c884cd1967de8a040a77ed961b681485",
+        "dlls/winex11.drv/mouse.c": "26c2c506d66430c760371a28d47d88d19748cc65b437a07289bb19e24a1b19c1",
+        "dlls/winex11.drv/window.c": "18cbd1f4b8182843c3417280e9be5d6eac662a5a87937f5b889164a3e31b3aac"
+      }
+    },
+    "full_package_patch_set_established": false,
+    "new_wine_binary_built": false,
+    "runtime_or_performance_claim": false
+  },
+  "pending": [
+    "Physical Onimusha demo GPU rejection, recovery and failure behavior on Xiaomi",
+    "Repeated genuine Steam host/Cloud handoffs through automatic attempts",
+    "Real driver behavior, native process crashes and physical controller UX",
+    "Matched launch-time/FPS/frame-time/RAM/power measurements",
+    "Complete Wine package source/patch mapping and matched Bionic build",
+    "Wine candidate input/rendering runtime checks",
+    "FEX upstream cache fix rebuild and cache qualification before activation",
+    "Modern target SDK 36 and complete Wine/FEX operation on 16 KB kernels",
+    "Existing live Cloud restoration/repeat uploads, achievements and chat gates"
+  ]
+}

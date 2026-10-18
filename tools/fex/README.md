@@ -1,6 +1,6 @@
 # FEX runtime patch candidate
 
-This directory holds a narrow patch for the FEX 2610 cache experiment. It is not
+This directory holds the source patches for the FEX 2610 cache experiment. It is not
 applied by Gradle and does not change the pinned guided-preparation package.
 
 `patches/0001-scope-windows-disk-cache-pruning.patch` applies to FEX commit
@@ -27,6 +27,32 @@ The source-build/packaging result and native checks are recorded in
 [qualification](../../docs/QUALIFICATION.md#fex-disk-cache-experiment--16-october-2026).
 Do not infer an installed runtime fix or game-speed improvement from patch presence.
 
+## Upstream cache-blob fix — built and checked 19 October 2026
+
+`patches/0002-upstream-disk-cache-blob-lifetime.patch` is the unmodified patch from
+[FEX commit b49837f0](https://github.com/FEX-Emu/FEX/commit/b49837f0c3961194b35da2187e5f742982a0c716).
+It allocates the shared cache blob before filling/publishing it instead of moving
+a local vector into the shared object later. The upstream commit identifies a
+data-blob race; no separate Vapor game reproduction or performance gain is claimed.
+The patch is 2,108 bytes, SHA-256
+`e6f91c005d323a6656de23db8ebfe960786e8967d88d3fe62185ee8ed0c6f4fc`.
+
+On 19 October, the unmodified upstream patch was applied to the isolated FEX 2610
+source alongside the optional app-config fix and Vapor's frontend-partition patch.
+Both Windows DLLs were rebuilt and packaged as the separate experimental component
+`2610-14c92681f-vapor-cache2-unix-0`. The Bionic Unix libraries are unchanged.
+
+All **15 account-free cache test phases** passed on the prepared 4 KB ARM64 API 36
+emulator. Both guest architectures also passed after restoring the previous
+2607 runtime, and the original applied DLL/SO, configuration, registry and external
+probe bytes were restored. The package leaves caching off. No APK check, Steam
+session, game performance comparison or 16 KB runtime qualification was performed.
+See [the component record](../../docs/QUALIFICATION.md#runtime-components--19-october-2026)
+and [portable receipt](../../docs/evidence/2026-10-19-runtime-components.json).
+
+The 16 October historical `vapor-cache-unix` package contains only the earlier two
+patches. The instructions below describe the newer `vapor-cache2-unix` candidate.
+
 ## Reproduce the Windows DLL build
 
 Use a separate source checkout, not the app's build directory. Check out FEX tag
@@ -39,9 +65,11 @@ The macOS universal archive SHA-256 is
 Before configuring, apply both the upstream
 [optional app-config fix](https://github.com/nicholasx417/WinNative-Components/blob/ce9f4d538c57ffae17ebafa9d6087dc377e0c11e/patch/fex-appconfig-nonfatal.patch)
 (SHA-256 `7c6888052eaf15461a17c0b10c8b6068b65bd0635e772f32dce97c27d095fa18`)
-and this directory's cache patch. The first preserves the existing package's handling
-of empty/malformed optional configuration files. The second is the only new runtime
-behavior in this experiment. `git diff --check` should pass.
+and both patches in this directory, in filename order. The app-config patch
+preserves the existing package's handling of empty/malformed optional configuration
+files. The other two changes partition Windows caches and backport the human-authored
+upstream blob-lifetime fix. `git diff --check` should pass. The FEX checkout's AI
+contribution restriction remains applicable; the upstream fix is retained unmodified.
 
 With the toolchain, CMake and Ninja on PATH, run from the FEX checkout:
 
@@ -63,15 +91,15 @@ done
 ```
 
 The outputs are `build-arm64ec/Bin/libarm64ecfex.dll` and
-`build-aarch64/Bin/libwow64fex.dll`. The recorded local directories were named
-`build_arm64ec` and `build_wow64`. Do not strip the DLLs. Both local builds completed
+`build-aarch64/Bin/libwow64fex.dll`. The 19 October local directories were named
+`build-arm64ec-lifetime` and `build-wow64-lifetime`. Do not strip the DLLs. Both local builds completed
 with inherited `_chsize` import warnings; ARM64EC also warned about X23/W23 assembly
 register usage. These warnings were retained in the build logs, not fixed by this patch.
 
 Package the two DLLs under `system32/`, with the **unchanged** two `aarch64-unix/`
 libraries and four file mappings from the pinned 2610 WCP. Give the profile a distinct
-`versionName`: `2610-14c92681f-vapor-cache-unix`, `versionCode: 0`. Use the existing
-xz-compressed tar WCP format. Include FEX's license, both patches and build inputs.
+`versionName`: `2610-14c92681f-vapor-cache2-unix`, `versionCode: 0`. Use the existing
+xz-compressed tar WCP format. Include FEX's license, all three patches and build inputs.
 This does not rebuild the Unix libraries or change their 4 KB alignment. It is not a
 complete reproducible build of every component in the runtime.
 

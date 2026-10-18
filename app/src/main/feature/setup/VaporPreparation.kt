@@ -1,16 +1,12 @@
 package com.winlator.cmod.feature.setup
 
 import android.content.Context
-import com.winlator.cmod.R
 import com.winlator.cmod.runtime.container.Container
 import com.winlator.cmod.runtime.container.ContainerCreation
 import com.winlator.cmod.runtime.container.ContainerManager
-import com.winlator.cmod.runtime.container.Shortcut
-import com.winlator.cmod.runtime.compat.gamefixes.GameEngineHints
 import com.winlator.cmod.runtime.content.ContentProfile
 import com.winlator.cmod.runtime.content.ContentProfile.ContentType
 import com.winlator.cmod.runtime.content.ContentsManager
-import com.winlator.cmod.runtime.wine.PEHelper
 import com.winlator.cmod.shared.util.KeyValueSet
 import java.io.File
 import java.security.MessageDigest
@@ -63,37 +59,6 @@ internal object VaporPreparation {
 
     private val legacyDxvk get() = packages.first { it.type == ContentType.CONTENT_TYPE_DXVK }
     private val direct3d12Dxvk get() = packages.last { it.type == ContentType.CONTENT_TYPE_DXVK }
-
-    /** Per-launch defaults only. Explicit graphics choices and saved settings are retained. */
-    @JvmStatic
-    fun applyDirect3D12Defaults(
-        context: Context,
-        contents: ContentsManager,
-        shortcut: Shortcut,
-        installRoot: File?,
-        relativeExecutable: String?,
-        graphics: KeyValueSet,
-    ): Boolean {
-        val container = shortcut.container
-        if (shortcut.getSettingExtra("wineVersion", container.wineVersion) != packages.first().entryName ||
-            shortcut.getSettingExtra("dxwrapper", container.dxWrapper) != Container.DEFAULT_DXWRAPPER ||
-            (!shortcut.usesContainerDefaults() && shortcut.getExtra("dxwrapperConfig").isNotBlank()) ||
-            graphics.get("version") != legacyDxvk.entryName.substringAfter('-') ||
-            graphics.get("vkd3dVersion") !in listOf("", "None")) return false
-
-        val imports = GameEngineHints.inspect(installRoot, relativeExecutable)
-        if (imports.architecture !in setOf("x86", "x86_64", "arm64ec") ||
-            imports.importStatus != PEHelper.ImportStatus.COMPLETE ||
-            PEHelper.GraphicsApi.D3D12 !in imports.graphicsImports) return false
-
-        val dxvk = installed(context, contents, direct3d12Dxvk)
-        val vkd3d = installed(context, contents, packages.single { it.type == ContentType.CONTENT_TYPE_VKD3D })
-        check(dxvk != null && vkd3d != null) { context.getString(R.string.vapor_d3d12_prepare_required) }
-        // VKD3D-proton shares DXVK's modern DXGI. Never pair it with the legacy baseline.
-        graphics.put("version", ContentsManager.getEntryName(dxvk).substringAfter('-'))
-        graphics.put("vkd3dVersion", ContentsManager.getEntryName(vkd3d).substringAfter('-'))
-        return true
-    }
 
     fun archiveMatches(file: File, spec: Package): Boolean {
         if (!file.isFile || file.length() != spec.downloadBytes) return false

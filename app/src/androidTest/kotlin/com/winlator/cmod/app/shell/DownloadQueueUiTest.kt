@@ -84,6 +84,7 @@ class DownloadQueueUiTest {
     @Test fun controllerAOpensACompletedInstallExactlyOnce() {
         show(info(DownloadPhase.COMPLETE, 1f), canOpen = true)
         compose.onNodeWithText("Open game").performScrollTo()
+        compose.waitUntil(5_000) { compose.runOnIdle { compose.activity.window.decorView.hasWindowFocus() } }
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         fun press(code: Int) {
             val now = SystemClock.uptimeMillis()
@@ -91,6 +92,7 @@ class DownloadQueueUiTest {
                 instrumentation.sendKeySync(KeyEvent(now, SystemClock.uptimeMillis(), action, code,
                     0, 0, -1, 0, 0, InputDevice.SOURCE_GAMEPAD))
             }
+            instrumentation.waitForIdleSync()
             compose.waitForIdle()
         }
         press(KeyEvent.KEYCODE_DPAD_DOWN)
@@ -98,6 +100,7 @@ class DownloadQueueUiTest {
         press(KeyEvent.KEYCODE_BUTTON_Y)
         compose.runOnIdle { assertEquals(0, opened) }
         press(KeyEvent.KEYCODE_BUTTON_A)
+        compose.waitUntil(5_000) { compose.runOnIdle { opened == 1 } }
         compose.runOnIdle { assertEquals(1, opened) }
     }
 

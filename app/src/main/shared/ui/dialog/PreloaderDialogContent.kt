@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -63,6 +64,19 @@ class PreloaderDialogState {
     val badge = mutableStateOf("")
     val subtitle = mutableStateOf("")
     val artwork = mutableStateOf<Bitmap?>(null)
+    val graphicsAttempt = mutableStateOf("")
+    val cancelAction = mutableStateOf<Runnable?>(null)
+
+    fun setAutomaticGraphics(description: String, cancel: Runnable?) {
+        graphicsAttempt.value = description
+        cancelAction.value = cancel
+    }
+
+    fun cancel() {
+        val action = cancelAction.value ?: return
+        cancelAction.value = null
+        action.run()
+    }
 
     /** A phase without measured progress must not inherit the previous phase's percentage. */
     fun setStep(value: String) {
@@ -233,6 +247,15 @@ private fun PreloaderPhase(state: PreloaderDialogState, modifier: Modifier) {
                     style = MaterialTheme.typography.labelLarge,
                     color = colors.onSurfaceVariant,
                 )
+            }
+            if (state.graphicsAttempt.value.isNotBlank()) {
+                Text(state.graphicsAttempt.value, style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant)
+            }
+            if (state.cancelAction.value != null) {
+                OutlinedButton(onClick = state::cancel, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.vapor_graphics_cancel))
+                }
             }
         }
     }

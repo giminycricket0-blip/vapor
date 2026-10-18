@@ -135,6 +135,16 @@ probe usable. Run it with the existing `StoreUiTestRunner` on an isolated, accou
 AVD, alongside `GameSessionFailureDialogTest` and `GameSettingsNavigationTest` for the
 error recovery controls. The emulator needs working system Vulkan for this selection.
 
+For automatic graphics attempts, run `AutomaticGraphicsTest`, `VaporPreparationTest`,
+`GraphicsDriverCatalogTest`, `WnLauncherStatusTailerTest`, `SteamCloseSyncTest` and
+`SteamExitCloudTest` through the same JVM task. These 79 selected cases cover the
+bounded plan, explicit-setting preservation, minimum feature bits, recognized
+Vulkan initialization errors, benign DirectX feature probes, cancellation,
+component/game fingerprints, process/frame evidence and cleanup/Cloud gates.
+`PreloaderDialogUiTest` checks the production loading layout and one-shot controller
+B cancellation; pair it with `GraphicsDriverProbeDeviceTest` for real JNI features.
+The tests do not launch a Steam game or validate a physical driver's recovery.
+
 For shared Steam web sign-in and the frame limit, include `--tests '*SteamWebSessionTest'` and
 `--tests '*ShortcutFrameLimitTest'`. `SteamWebPanelUiTest` uses local HTML and synthetic authentication,
 including real platform cookie cleanup and gamepad events delivered to the dialog window.
@@ -289,6 +299,13 @@ or authenticated store behavior.
 `HomeUiTest` checks selected-game actions, honest no-history labeling, card callbacks, small/large-text layouts, and Home controller routing. Its populated review capture uses labeled sample data without database writes. `LibraryViewTest` also covers the bounded Home projection and existing Windows/retro history-key formats.
 
 ## Windows translation smoke probes
+
+For the **19 October Wine X11 source build and external-pointer comparison**, see
+[the Wine component instructions](../tools/wine/README.md). They use the identified
+Proton base, pinned Termux dependencies and three unmodified upstream patches.
+The GUI-subsystem probe is built in both guest widths and receives real Android
+pointer events while testing cursor clipping. This is separate from the console
+translation checks below and does not build or requalify an APK.
 
 `tools/tests/fex-smoke.c` is an account-free Windows program for comparing installed
 FEX components through Vapor's normal display-host launch path. Build the same source

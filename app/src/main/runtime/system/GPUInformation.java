@@ -42,6 +42,15 @@ public abstract class GPUInformation {
     }
   }
 
+  /** apiVersion, vendorID, deviceID, driverVersion, feature mask, pipeline-cache UUID (2 longs). */
+  public static long[] probeCapabilities(String driverName, Context context) {
+    synchronized (PROBE_LOCK) {
+      return probeCapabilitiesNative(driverName, context);
+    }
+  }
+
+  private static native long[] probeCapabilitiesNative(String driverName, Context context);
+
   private static native String getVulkanVersionNative(String driverName, Context context);
 
   private static native int getVendorIDNative(String driverName, Context context);

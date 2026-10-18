@@ -2,6 +2,8 @@ package com.winlator.cmod.feature.setup
 
 import android.app.Application
 import com.winlator.cmod.runtime.container.Container
+import com.winlator.cmod.runtime.system.AutomaticGraphics
+import com.winlator.cmod.runtime.system.DriverProbeShadow
 import com.winlator.cmod.runtime.container.Shortcut
 import com.winlator.cmod.runtime.container.ContainerManager
 import com.winlator.cmod.runtime.content.ContentProfile
@@ -17,7 +19,7 @@ import org.robolectric.annotation.Config
 import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = Application::class, sdk = [35])
+@Config(application = Application::class, sdk = [35], shadows = [DriverProbeShadow::class])
 class VaporPreparationTest {
     private val context get() = RuntimeEnvironment.getApplication()
     private val runtime get() = VaporPreparation.packages.first()
@@ -244,88 +246,112 @@ class VaporPreparationTest {
         return root
     }
 
-    @Test fun d3d12ImportsSelectOnePreparedPairWithoutChangingSavedSettings() {
-        installModernDxvk(); installVkd3d(); installVkd3d("9999-arm64ec-experiment-99")
+    @Test fun defaultGraphicsAreEligibleWithoutRewritingSavedSettings() {
         val shortcut = launchShortcut()
-        val configBefore = shortcut.container.configFile.readBytes()
-        val shortcutBefore = shortcut.file.readBytes()
-        val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
-        assertTrue(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, game(), "Game.exe", graphics))
-        assertEquals(modernDxvk.entryName.substringAfter('-'), graphics.get("version"))
-        assertEquals(vkd3d.entryName.substringAfter('-'), graphics.get("vkd3dVersion"))
-        assertEquals("0", graphics.get("async"))
-        assertArrayEquals(configBefore, shortcut.container.configFile.readBytes())
-        assertArrayEquals(shortcutBefore, shortcut.file.readBytes())
+        val before = shortcut.file.readBytes()
+        assertTrue(AutomaticGraphics.eligible(shortcut, KeyValueSet(shortcut.container.dxWrapperConfig)))
+        assertArrayEquals(before, shortcut.file.readBytes())
     }
 
-    @Test fun olderUnknownAndEscapedExecutablesKeepTheExistingGraphicsChoice() {
+    @Test fun explicitGraphicsRemainAuthoritativeButIgnoredOverridesDoNotDisableAutomaticMode() {
         val shortcut = launchShortcut()
         val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
-        for (root in listOf(game("d3d11.dll"), null)) {
-            assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics))
+        for (key in listOf("dxwrapperConfig", "graphicsDriverConfig", "graphicsDriver")) {
+            shortcut.putExtra(key, "explicit")
+            assertFalse(key, AutomaticGraphics.eligible(shortcut, graphics))
+            shortcut.putExtra("use_container_defaults", "1")
+            assertTrue(key, AutomaticGraphics.eligible(shortcut, graphics))
+            shortcut.putExtra("use_container_defaults", "0")
+            shortcut.putExtra(key, "")
         }
-        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, game(), "../Game.exe", graphics))
-        assertEquals(dxvk.entryName.substringAfter('-'), graphics.get("version"))
-        assertEquals("None", graphics.get("vkd3dVersion"))
     }
 
-    @Test fun explicitGameGraphicsRemainAuthoritativeButIgnoredOverridesDoNotDisableDefaults() {
-        installModernDxvk(); installVkd3d()
+    @Test fun customRuntimeAndContainerGraphicsAreNotReplaced() {
         val shortcut = launchShortcut()
         val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
-        shortcut.putExtra("dxwrapperConfig", shortcut.container.dxWrapperConfig)
-        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, game(), "Game.exe", graphics))
-        shortcut.putExtra("use_container_defaults", "1")
-        assertTrue(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, game(), "Game.exe", graphics))
-    }
-
-    @Test fun customRuntimeWrapperAndContainerGraphicsAreNotReplaced() {
-        val shortcut = launchShortcut()
-        val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
-        val root = game()
         shortcut.container.wineVersion = "custom-arm64ec-0"
-        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics))
+        assertFalse(AutomaticGraphics.eligible(shortcut, graphics))
         shortcut.container.wineVersion = runtime.entryName
         shortcut.putExtra("wineVersion", "custom-arm64ec-0")
-        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics))
+        assertFalse(AutomaticGraphics.eligible(shortcut, graphics))
         shortcut.putExtra("wineVersion", "")
         shortcut.putExtra("dxwrapper", "wined3d")
-        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics))
+        assertFalse(AutomaticGraphics.eligible(shortcut, graphics))
         shortcut.putExtra("dxwrapper", "")
         graphics.put("version", "custom-kept-0")
-        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics))
+        assertFalse(AutomaticGraphics.eligible(shortcut, graphics))
     }
 
-    @Test fun aMissingModernComponentFailsBeforeChangingEitherHalfOfThePair() {
-        val shortcut = launchShortcut()
-        val root = game()
-        for (spec in listOf(modernDxvk, vkd3d)) {
-            for (required in spec.requiredFiles) {
-                installModernDxvk(); installVkd3d()
-                val profile = contents().getProfileByEntryName(spec.entryName)!!
-                File(ContentsManager.getInstallDir(context, profile), required).writeText("")
-                val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
-                try {
-                    VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics)
-                    fail("Missing $required was accepted")
-                } catch (error: IllegalStateException) {
-                    assertTrue(error.message!!.contains("Prepare Vapor"))
-                }
-                assertEquals(dxvk.entryName.substringAfter('-'), graphics.get("version"))
-                assertEquals("None", graphics.get("vkd3dVersion"))
-            }
-        }
+    private fun automaticShortcut(): Shortcut {
+        installProfile(); installFex(); installDxvk(); installModernDxvk(); installVkd3d()
+        DriverProbeShadow.renderers["System"] = "Adreno fixture"
+        DriverProbeShadow.capabilities["System"] = longArrayOf((1L shl 22) or (3L shl 12), 20803, 1, 1, 1023, 1, 1)
+        return launchShortcut()
     }
 
-    @Test fun x86AndX64D3d12ImportsAreEligibleButUnknownNativeArmIsNot() {
-        installModernDxvk(); installVkd3d()
-        val shortcut = launchShortcut()
+    @Test fun actualPreparationRoutesX86AndX64DirectX12ToThePreparedPair() {
+        val shortcut = automaticShortcut()
+        val before = shortcut.container.configFile.readBytes()
         for (machine in listOf(0x14c, 0x8664)) {
-            assertTrue(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut,
-                game(machine = machine), "Game.exe", KeyValueSet(shortcut.container.dxWrapperConfig)))
+            val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
+            val session = AutomaticGraphics.prepare(context, contents(), shortcut, game(machine = machine),
+                "Game.exe", graphics, mutableMapOf("version" to "System"), null)!!
+            assertEquals(modernDxvk.entryName.substringAfter('-'), session.route.dxvk)
+            assertEquals(vkd3d.entryName.substringAfter('-'), session.route.vkd3d)
+            assertArrayEquals(before, shortcut.container.configFile.readBytes())
         }
-        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut,
-            game(machine = 0xaa64), "Game.exe", KeyValueSet(shortcut.container.dxWrapperConfig)))
+    }
+
+    @Test fun missingPreparedDirectX12FilesStopBeforeEitherGraphicsSettingChanges() {
+        val shortcut = automaticShortcut()
+        val profile = contents().getProfileByEntryName(vkd3d.entryName)!!
+        File(ContentsManager.getInstallDir(context, profile), "system32/d3d12.dll").delete()
+        val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
+        val error = assertThrows(IllegalStateException::class.java) {
+            AutomaticGraphics.prepare(context, contents(), shortcut, game(), "Game.exe", graphics,
+                mutableMapOf("version" to "System"), null)
+        }
+        assertTrue(error.message!!.contains("Prepare Vapor"))
+        assertEquals("None", graphics.get("vkd3dVersion"))
+        assertEquals(dxvk.entryName.substringAfter('-'), graphics.get("version"))
+    }
+
+    @Test fun unchangedInputsCanRetryButReplacingAnIdenticallyNamedDllInvalidatesTheAttempt() {
+        val shortcut = automaticShortcut()
+        val root = game("d3d11.dll")
+        fun prepare(next: android.os.Bundle? = null) = AutomaticGraphics.prepare(context, contents(), shortcut, root,
+            "Game.exe", KeyValueSet(shortcut.container.dxWrapperConfig), mutableMapOf("version" to "System"), next)!!
+        val first = prepare()
+        assertTrue(first.observe("err: Failed to create Vulkan device", android.os.SystemClock.elapsedRealtime()))
+        val next = first.afterCleanup(true, true, true)!!
+        // Steam/bootstrap/shader files may be created after planning; directory mtime is not a game build ID.
+        File(root, "steam_appid.txt").writeText("test fixture")
+        assertEquals(modernDxvk.entryName.substringAfter('-'), prepare(next).route.dxvk)
+        val profile = contents().getProfileByEntryName(modernDxvk.entryName)!!
+        val dll = File(ContentsManager.getInstallDir(context, profile), "system32/d3d11.dll")
+        val modified = dll.lastModified()
+        dll.writeText("DXVK changed")
+        dll.setLastModified(modified)
+        assertThrows(IllegalStateException::class.java) { prepare(next) }
+    }
+
+    @Test fun healthyRenderingIsRememberedOnlyOnCleanExitAndRetainsUnrelatedShortcutEdits() {
+        val shortcut = automaticShortcut()
+        val route = AutomaticGraphics.Route("System", "test")
+        val session = AutomaticGraphics.start(listOf(route), "fingerprint", false, null, "")
+        session.processObserved(0)
+        repeat(121) { session.frame(it * 200L) }
+        session.remember(shortcut, false)
+        assertTrue(Shortcut(shortcut.container, shortcut.file).getExtra("vapor_graphics_choice").isEmpty())
+        Shortcut(shortcut.container, shortcut.file).apply { putExtra("launch_args", "keep me"); saveData() }
+        session.remember(shortcut, true)
+        val saved = Shortcut(shortcut.container, shortcut.file)
+        assertEquals("fingerprint|${route.id}", saved.getExtra("vapor_graphics_choice"))
+        assertEquals("keep me", saved.getExtra("launch_args"))
+        val failed = AutomaticGraphics.start(listOf(route), "fingerprint", false, null, saved.getExtra("vapor_graphics_choice"))
+        assertTrue(failed.observe("err: Failed to create Vulkan device", 1000))
+        failed.remember(saved, true)
+        assertTrue(Shortcut(shortcut.container, shortcut.file).getExtra("vapor_graphics_choice").isEmpty())
     }
 
     @Test fun downloadMustMatchBothSizeAndHashBeforeInstallation() {

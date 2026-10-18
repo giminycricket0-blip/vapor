@@ -63,11 +63,17 @@ class WnLauncherStatusTailerTest {
         val context = RuntimeEnvironment.getApplication()
         val lines = mutableListOf<String>()
         val timing = GameLaunchTiming(0L, { 100L }, lines::add)
+        var observed = 0
         val tailer = WnLauncherStatusTailer(context, File(context.cacheDir, "unused.log"), "Test game",
-            onPhase = {}, launchTiming = timing)
+            onPhase = {}, launchTiming = timing, onGameProcessObserved = { observed++ })
         tailer.consumeLine("[wn-launcher] watching \"game.exe\" for exit")
         shadowOf(Looper.getMainLooper()).idle()
         assertTrue(lines.isEmpty())
+        assertEquals(0, observed)
+        tailer.consumeLine("[wn-launcher] game is running via LaunchApp")
+        tailer.consumeLine("[wn-launcher] game is running via LaunchApp")
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(1, observed)
     }
 
     @Test fun rejectionCannotBeFollowedBySuccessfulTimingObservations() {

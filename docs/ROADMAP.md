@@ -33,46 +33,76 @@ acceptance. The Downloads continuation now separates transfer stages, filenames,
 and completion. Trusted completed Steam installs open the existing game page.
 The automatic graphics requirement below remains a separate runtime lane.
 
-## Automatic graphics attempts — accepted follow-up, 18 October 2026
+## Component continuation: Wine and FEX — 18 October 2026
 
-The intended user journey is **Play → Vapor tries an eligible preset → a recognized
-graphics failure triggers a clean retry → the working selection is remembered**.
-The user should not have to choose a driver, DXVK or VKD3D. Sensible initial
-defaults alone do not satisfy this requirement. The initial automatic D3D12 selection is implemented separately from retries.
-The retry flow is not implemented or qualified in this development build.
+The next local work skips additional APK/phone checks at the owner's request.
+Use the existing component formats and source experiments:
 
-The immediate observed gap is Onimusha Demo opening with a GPU-support rejection
-while VKD3D is `None`. The earlier guided preparation installed Proton/FEX/legacy DXVK only. The current
-implementation also prepares a pinned modern DXVK/VKD3D pair. A complete static
-D3D12 import scan can select it before Steam preparation when the guided baseline
-is unchanged. Other games and explicit graphics settings retain their current
-path. Missing pair files produce a preparation error. Static scanning, file
-readiness and local regression checks do not establish driver feature support or
-resolve the Xiaomi report.
-Build the next slice into the existing preparation, shortcut and session owners:
+1. Reconstruct the pinned Wine package's source/patch/dependency inputs from its
+   identified base and upstream build/release records. Compare existing Android
+   adaptations before importing fixes. A version string alone does not reproduce
+   the full package. Verify by a pinned input manifest and replay/build checks;
+   keep unavailable inputs explicit rather than inventing a matching recipe.
+2. Apply the unmodified upstream FEX cache-blob fix to the already-recorded 2610
+   experiment. Rebuild both ARM64EC and WOW64 Windows DLLs with the retained
+   toolchain, preserving the original Bionic Unix libraries. Package a distinct
+   experimental WCP with all patch/license/input records; no default activation.
+3. Run the existing account-free Windows cache probes on the prepared emulator,
+   checking cold/warm reuse, mixed guest architectures, invalidation and cache-off
+   behavior. Verify applied payload hashes, then restore the prior runtime and
+   test-owned settings/files. These are component checks, not APK or Steam tests.
+4. Update the existing runtime/provenance/qualification records with actual build
+   and probe results. Physical performance, Steam handoff, codecs and modern
+   Android execution remain separate gates.
 
-1. Add and verify a pinned ARM64EC VKD3D input through the existing package
-   downloader, hash/readiness checks and preparation UI. Resolve compatible
-   installed components before Steam handoff; explain a missing package instead
-   of silently launching a D3D12 game without one.
-2. Select an eligible preset using the active driver probe, Wine/component
-   architecture and observed graphics requirements. Extend existing game settings;
-   do not add a separate profile database or service. Manual overrides remain an
-   optional Advanced path.
-3. Recognize specific graphics startup failures from launch/runtime evidence.
-   Finish the existing Steam/process/Cloud cleanup before trying the next eligible
-   combination. Keep attempts bounded, cancellable and visible. Steam login,
-   ownership, Cloud errors and ordinary gameplay exits must not trigger renderer
-   retries. A loading timeout alone is not proof of a graphics failure.
-4. Remember a successful combination in existing per-game settings, with device
-   and component identities so stale choices can be re-evaluated. An error dialog
-   or a single presented frame must not be recorded as successful gameplay.
-5. Test ordering, exhaustion, cancellation, cleanup reservations, remembered
-   settings and component changes locally, then reproduce the actual Onimusha
-   failure and recovery on the Xiaomi. Unsupported graphics features can still
-   prevent every eligible preset from working; report that outcome plainly.
+**19 October result:** both FEX DLLs are rebuilt with the unmodified upstream fix;
+all 15 cache phases pass, with two restored-baseline runs and exact byte restoration.
+The Wine source/dependency path now builds its X11 target and native dependencies.
+External-pointer comparisons reproduce lost clipped clicks in the original module
+and pass all eight candidate phases across x64/x86. The original runtime/settings
+are restored. Guided defaults and the APK are unchanged. This completes the current
+bounded component pass; the complete Wine package's patch/Steam ABI mapping,
+fullscreen/Vulkan game checks and phone performance remain unqualified.
+See [results](QUALIFICATION.md#runtime-components--19-october-2026).
 
-See the [phone observation](QUALIFICATION.md#onimusha-way-of-the-sword-demo--18-october-2026).
+## Automatic graphics attempts — 18 October 2026
+
+The bounded implementation now lives in the existing launch, driver-probe, shortcut
+and exit paths. For fresh Steam launches using the guided Proton/graphics baseline,
+Vapor checks the selected installed driver and System driver, then constructs eligible
+legacy DXVK, modern DXVK, paired DXVK/VKD3D, or selected older-game WineD3D attempts.
+It does not download or enable an experimental driver as a retry. Explicit per-game
+Wine/graphics choices and other runtime configurations retain their existing path.
+
+A complete static D3D12 import scan selects the prepared modern pair first. A small
+set of explicit translator startup diagnostics can trigger another eligible attempt,
+with a total limit of four. A loading delay, one frame, generic crash, Steam login or
+Cloud error is not a graphics diagnosis. Retries stop on cancellation, backgrounding,
+uncertain cleanup, a changed target or changed components. The owning session worker
+orders preparation and teardown; another attempt runs after host/process/environment
+cleanup and release of the existing per-AppID Cloud reservation.
+
+The loading screen names the attempt and graphics choice and offers Cancel launch,
+including controller B. A remembered choice requires the host's explicit game-process
+observation, at least 120 frame observations across 20 seconds, and a clean exit.
+This is startup evidence, not a Verified badge. The existing shortcut holds the choice
+and its device, game/build and actual component-file fingerprint. Failed remembered
+choices are cleared. Steam-created files and directory timestamp changes are not
+mistaken for a new game build.
+
+Local verification and package identity are recorded in
+[qualification](QUALIFICATION.md#automatic-graphics-routing--18-october-2026).
+**Physical Onimusha failure/retry/recovery is still pending.** Minimum underlying-driver
+feature checks do not establish the whole wrapper/translator/Wine chain or all game
+feature levels. Some failures never emit a recognizable startup diagnostic. Native
+driver crashes can terminate Android itself; this flow does not claim recovery from
+those crashes or unsupported hardware features.
+
+Direct component work remains a separate qualification gate: the FEX cache-source
+patch and balanced Turnip/KGSL package under `tools/fex` and `tools/turnip` are
+experiments. The [runtime follow-up](RUNTIME-RESEARCH.md#runtime-and-driver-follow-up--18-october-2026)
+records current upstream fixes and holds. Do not activate the reviewed unsafe DXVK
+binary-semaphore fallback or non-recoverable ntsync fallback as an automatic option.
 
 ## Idle-work first pass — 18 October 2026
 

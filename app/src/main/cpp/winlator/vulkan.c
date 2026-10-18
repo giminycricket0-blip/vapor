@@ -275,8 +275,8 @@ static void init_vulkan(JNIEnv *env, jobject context, const char *driver_name) {
   vulkan_handle = open_custom_vulkan(env, context, driver_name);
 }
 
-static VkResult create_instance(jstring driverName, JNIEnv *env,
-                                jobject context) {
+static VkResult create_probe_instance(jstring driverName, JNIEnv *env,
+                                     jobject context, int query_features) {
   VkResult result;
   VkInstanceCreateInfo create_info = {};
   const char *driver_name = NULL;
@@ -314,7 +314,13 @@ static VkResult create_instance(jstring driverName, JNIEnv *env,
   app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
   app_info.pEngineName = "WinNative";
   app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-  if (apiLevel > 32)
+  if (query_features) {
+    uint32_t loader_version = VK_API_VERSION_1_0;
+    if (enumerateInstanceVersion(&loader_version) != VK_SUCCESS ||
+        loader_version < VK_API_VERSION_1_1) return VK_ERROR_INCOMPATIBLE_DRIVER;
+    // Features2 is core in 1.1. Leave the older renderer/name probes unchanged.
+    app_info.apiVersion = VK_API_VERSION_1_1;
+  } else if (apiLevel > 32)
     app_info.apiVersion = VK_API_VERSION_1_0;
   else
     enumerateInstanceVersion(&app_info.apiVersion);
@@ -347,6 +353,10 @@ static VkResult create_instance(jstring driverName, JNIEnv *env,
   return VK_SUCCESS;
 }
 
+static VkResult create_instance(jstring driverName, JNIEnv *env, jobject context) {
+  return create_probe_instance(driverName, env, context, 0);
+}
+
 static VkResult enumerate_physical_devices() {
   VkResult result;
   uint32_t deviceCount = 0;
@@ -377,6 +387,97 @@ static VkResult enumerate_physical_devices() {
     return VK_ERROR_INITIALIZATION_FAILED;
 
   return VK_SUCCESS;
+}
+
+// A single fresh snapshot, serialized by GPUInformation.PROBE_LOCK. Extension names
+// alone do not establish that a driver's feature bits are enabled/supported.
+JNIEXPORT jlongArray JNICALL
+Java_com_winlator_cmod_runtime_system_GPUInformation_probeCapabilitiesNative(
+    JNIEnv *env, jclass obj, jstring driverName, jobject context) {
+  (void)obj;
+  jlong data[7] = {0};
+  VkExtensionProperties *extensions = NULL;
+  if (create_probe_instance(driverName, env, context, 1) != VK_SUCCESS ||
+      enumerate_physical_devices() != VK_SUCCESS) goto done;
+  PFN_vkGetInstanceProcAddr gip =
+      (PFN_vkGetInstanceProcAddr)dlsym(vulkan_handle, "vkGetInstanceProcAddr");
+  PFN_vkGetPhysicalDeviceFeatures2 features2 =
+      (PFN_vkGetPhysicalDeviceFeatures2)gip(instance, "vkGetPhysicalDeviceFeatures2");
+  PFN_vkGetPhysicalDeviceProperties2 properties2 =
+      (PFN_vkGetPhysicalDeviceProperties2)gip(instance, "vkGetPhysicalDeviceProperties2");
+  if (!features2 || !properties2) goto done;
+
+  VkPhysicalDeviceProperties props = {0};
+  getPhysicalDeviceProperties(physicalDevice, &props);
+  uint32_t count = 0;
+  if (enumerateDeviceExtensionProperties(physicalDevice, NULL, &count, NULL) != VK_SUCCESS ||
+      count == 0 || count > 4096) goto done;
+  extensions = calloc(count, sizeof(*extensions));
+  if (!extensions || enumerateDeviceExtensionProperties(physicalDevice, NULL, &count, extensions) != VK_SUCCESS)
+    goto done;
+  int robustness = 0, swapchain = 0, push_descriptor = 0;
+  for (uint32_t i = 0; i < count; ++i) {
+    if (!strcmp(extensions[i].extensionName, "VK_EXT_robustness2")) robustness = 1;
+    if (!strcmp(extensions[i].extensionName, "VK_KHR_swapchain")) swapchain = 1;
+    if (!strcmp(extensions[i].extensionName, "VK_KHR_push_descriptor")) push_descriptor = 1;
+  }
+  VkPhysicalDeviceFeatures2 f = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+  VkPhysicalDeviceVulkan11Features f11 = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES};
+  VkPhysicalDeviceVulkan12Features f12 = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+  VkPhysicalDeviceVulkan13Features f13 = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+  VkPhysicalDeviceRobustness2FeaturesEXT r2 = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT};
+  // The aggregate 1.1 feature structure was introduced by Vulkan 1.2.
+  if (props.apiVersion >= VK_API_VERSION_1_2) {
+    f.pNext = &f11;
+    f11.pNext = &f12;
+    if (props.apiVersion >= VK_API_VERSION_1_3) { f12.pNext = &f13; }
+  }
+  if (robustness) { r2.pNext = f.pNext; f.pNext = &r2; }
+  features2(physicalDevice, &f);
+  VkPhysicalDeviceVulkan12Properties p12 = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES};
+  VkPhysicalDeviceProperties2 p = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+  if (props.apiVersion >= VK_API_VERSION_1_2) p.pNext = &p12;
+  properties2(physicalDevice, &p);
+
+  uint64_t flags = 0;
+  if (f.features.textureCompressionBC) flags |= 1ULL << 0;
+  if (f12.timelineSemaphore) flags |= 1ULL << 1;
+  if (f12.runtimeDescriptorArray && f12.descriptorBindingPartiallyBound &&
+      f12.descriptorBindingSampledImageUpdateAfterBind &&
+      f12.descriptorBindingStorageImageUpdateAfterBind &&
+      f12.descriptorBindingStorageBufferUpdateAfterBind &&
+      f12.descriptorBindingUniformTexelBufferUpdateAfterBind &&
+      f12.descriptorBindingStorageTexelBufferUpdateAfterBind &&
+      f12.shaderSampledImageArrayNonUniformIndexing && f12.shaderStorageImageArrayNonUniformIndexing &&
+      f12.shaderStorageBufferArrayNonUniformIndexing &&
+      f12.shaderUniformTexelBufferArrayNonUniformIndexing && f12.shaderStorageTexelBufferArrayNonUniformIndexing)
+    flags |= 1ULL << 2;
+  if (f13.dynamicRendering) flags |= 1ULL << 3;
+  if (r2.robustBufferAccess2 && r2.nullDescriptor) flags |= 1ULL << 4;
+  if (f11.shaderDrawParameters && f12.samplerMirrorClampToEdge) flags |= 1ULL << 5;
+  if (p12.maxPerStageDescriptorUpdateAfterBindSamplers >= 1000000 &&
+      p12.maxPerStageDescriptorUpdateAfterBindSampledImages >= 1000000 &&
+      p12.maxPerStageDescriptorUpdateAfterBindStorageImages >= 1000000 &&
+      p12.maxPerStageDescriptorUpdateAfterBindStorageBuffers >= 1000000 &&
+      p12.maxDescriptorSetUpdateAfterBindSamplers >= 1000000 &&
+      p12.maxDescriptorSetUpdateAfterBindSampledImages >= 1000000 &&
+      p12.maxDescriptorSetUpdateAfterBindStorageImages >= 1000000 &&
+      p12.maxDescriptorSetUpdateAfterBindStorageBuffers >= 1000000) flags |= 1ULL << 6;
+  if (swapchain) flags |= 1ULL << 7;
+  if (push_descriptor) flags |= 1ULL << 8;
+  if (f13.synchronization2 && f12.bufferDeviceAddress) flags |= 1ULL << 9;
+  data[0] = props.apiVersion;
+  data[1] = props.vendorID;
+  data[2] = props.deviceID;
+  data[3] = props.driverVersion;
+  data[4] = (jlong)flags;
+  memcpy(&data[5], props.pipelineCacheUUID, VK_UUID_SIZE);
+done:
+  free(extensions);
+  destroy_probe_instance();
+  jlongArray result = (*env)->NewLongArray(env, 7);
+  if (result) (*env)->SetLongArrayRegion(env, result, 0, 7, data);
+  return result;
 }
 
 JNIEXPORT jstring JNICALL

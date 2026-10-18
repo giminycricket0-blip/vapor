@@ -8,6 +8,170 @@ screenshot. On 15 October the owner confirmed that **all tested games had sound*
 reported EU3, TF2, You Have to Win the Game and Helltaker sessions. Audio is owner-confirmed;
 persistence and repeat-launch checks remain separate.
 
+## Runtime components — 19 October 2026
+
+This continuation builds and checks **components**, using the existing prepared
+account-free API 36 ARM64 AVD with 4 KB pages. No APK was rebuilt, installed or
+requalified. The existing 18 October app source checks remain a separate record.
+No Steam account or physical phone was used. The
+[portable receipt](evidence/2026-10-19-runtime-components.json) records inputs,
+payloads, phase results, log hashes and restoration checks.
+
+### FEX cache candidate
+
+Both Windows DLLs were rebuilt from FEX `14c92681f4d62cf84d901460e0358de09c8847a7`
+with the existing app-config/frontend-partition changes and the unmodified
+upstream [blob-lifetime fix b49837f0](https://github.com/FEX-Emu/FEX/commit/b49837f0c3961194b35da2187e5f742982a0c716).
+Its author found the stale pointer through introspection, principally at `-O0`;
+this work does not claim a new Vapor reproduction of that race or an `-O3` gain.
+The retained bylaws LLVM-MinGW 20250920 toolchain built both DLLs. The Bionic
+Unix libraries were reused unchanged and remain 4 KB aligned.
+
+The separate local WCP is `FEXCore-2610-14c92681f-vapor-cache2-unix-0.wcp`,
+**1,560,960 bytes**, SHA-256
+`93fcd0458fb3c93df5196bd8c1c542823c3fb30bbaa5461ac231ffb4ae77077d`.
+Its MIT notice, three patches, submodules, toolchain and payload records are
+included. Package caching remains **off by default**; no guided input changed.
+
+All **15/15 candidate test phases** pass integer/memory/thread checks:
+
+| Check | Recorded result |
+| --- | --- |
+| x64 cold → warm → after x86 | 87 → 1 → 1 unique compiled guest entrypoints. |
+| x86 cold → warm → after x64 | 692 → 11 → 8 unique compiled guest entrypoints. |
+| Changed code with unchanged filename, length, PE timestamp and image size | Correct updated arithmetic result, correct warm repeat and correct original result after restoring the binary. |
+| Cache disabled, both widths | Correct execution; no files in the designated off-cache lane. |
+| Small main-cache limit, cold/warm | Correct execution; the main file remains within 16,384 bytes. Indexes and other frontend/configuration caches are separate. |
+| Stale-machine pruning, both frontends | Each frontend removes only its own test stale bucket; the other frontend survives until its own run. |
+
+These are sequential, instrumented console workloads. IR counts show reuse, not
+an exact hit rate, launch benchmark, FPS or game compatibility. All applied DLL/SO
+hashes match the candidate during its runs. Both x64/x86 probes also pass after
+restoring the 2607 baseline and its actual applied payloads. The original container,
+registry and external probe bytes were restored again after those checks; only
+new test-owned cache/component paths were removed. Manual WCP import, concurrent
+mixed-child behavior, Steam/Cloud exit, game speed and 16 KB execution remain open.
+[FEX build and repeat protocol](../tools/fex/README.md).
+
+### Wine X11 source build and pointer regression
+
+The identified Proton 11.0-2 base is
+`71040f04bd3a451fd2c5d2552f0b64a23dd7c69b`. All **45** Android patches named by
+its ARM64EC recipe pass reverse-application checks. Three unmodified X11 patches
+from [GameNative/proton-wine 00095e1a](https://github.com/GameNative/proton-wine/commit/00095e1a945e357c22a0987d70392b9b352c1749)
+were applied to the full source. The fourth `_NET_WM_HWND` patch was omitted
+because the base already sets that property.
+
+Native Wine build tools and the Android `winex11.so` target build successfully
+with NDK r27d and LLVM-MinGW 20250920. The target also builds native `ntdll.so`
+and `win32u.so` dependencies. All three AArch64 ELF outputs have **16 KB LOAD
+alignment**. This partial build is not a complete Wine WCP, exact reproduction
+of `steam-unixlib-3`, or qualification of 16 KB runtime execution.
+
+The build needed modern Bison, generated protocol/Vulkan sources, explicit cross
+`llvm-readelf`/pkg-config paths and an include-root correction for macOS's
+`xlocale.h` / `Xlocale.h` collision. No application dependency or global tool
+installation was added. [Inputs and instructions](../tools/wine/README.md).
+
+The new small Windows fixture receives **external Android taps through Vapor's
+production X11 host**. It does not synthesize Windows button messages. Only
+`winex11.so` changes between comparisons; Wine dependencies, FEX and container
+settings stay fixed. Five complete clicks are sent at each phase marker.
+
+| Pointer phase | Original module, x64 / x86 | Rebuilt module, x64 / x86 |
+| --- | --- | --- |
+| Unclipped control | 5/5 clicks in both widths | 5/5 in both widths |
+| Clip once | **0/5** in both widths | **5/5** in both widths |
+| Repeat the same clip rectangle | **0/5** in both widths | **5/5** in both widths |
+| Release clipping | 5/5 in both widths | 5/5 in both widths |
+
+The candidate passes **8/8 input phases** across x64/x86, correcting a reproduced
+Vapor input failure with upstream code. The three-patch set was tested together;
+individual patch contributions and the other-process Vulkan policy were not
+isolated. A first console-subsystem fixture allowed its console to take focus;
+that invalid attempt was excluded and replaced with a GUI-subsystem fixture.
+
+The original X11 module, registry and container bytes/modes were restored and
+hashed. All four FEX baseline payloads remained unchanged. The test-owned external
+directory was removed and the headless AVD stopped. No new Wine component was
+activated in guided preparation. Full package/source/Steam ABI validation,
+fullscreen/Vulkan games, phone input and measured performance remain required
+before promoting this candidate.
+
+## Automatic graphics routing — 18 October 2026
+
+The initial D3D12 selector is replaced by one bounded routing owner. It uses the
+existing component installer, per-game shortcut extras, driver catalog, process log
+stream and display/exit owners. Guided Proton Steam launches can choose the selected
+installed driver or System and eligible legacy DXVK, modern DXVK, paired DXVK/VKD3D,
+or older-game WineD3D. Explicit per-game graphics/Wine settings remain authoritative.
+No new runtime downloads, experimental-driver activation, prefix reset or save
+modification is part of a retry. The WineD3D option still uses Zink/Vulkan here.
+
+The native C/JNI probe now obtains Vulkan feature bits, descriptor limits and actual
+driver/device identity. These are minimum underlying-driver checks; they are not
+full wrapper/translator conformance or a supported-game claim. The API 36 emulator
+reports Vulkan 1.3 but fails this modern-path minimum, illustrating why a version
+label alone is insufficient.
+
+Only a small, source-checked set of DXVK/VKD3D Vulkan initialization errors can schedule another
+eligible attempt, with at most four attempts per launch. Loading time, generic
+crashes, Steam authentication, Cloud errors and normal Quit do not change graphics.
+Ordinary DirectX feature-level probes and generic DXGI adapter failures are excluded;
+a game can make one unsuccessful probe and then select a working feature level.
+The attempt is visible and cancellable by touch or controller B. Backgrounding,
+changed components, unclean teardown or uncertain Cloud status stop retries. The
+90-second graphics observation window begins with a process/frame observation;
+waiting for Steam or Cloud does not consume it.
+
+Preparation and teardown now share the owning session worker. The retry/return
+callback is posted after the existing close-time Cloud reservation is released;
+it also requires no remaining session processes and no pending save/Steam failure.
+Changing the launch target uses this same exit path instead of recreating while a
+forced-cleanup thread is still running. Physical teardown and Steam ownership
+acceptance remain part of the phone gate below.
+
+A learned choice needs an explicit Steam game-process observation, at least 120
+frame observations spanning 20 seconds, and a clean exit. It is stored in the
+existing shortcut and checked against hardware, game/build, relevant settings and
+actual executable/component-file hashes. A failed remembered choice is cleared.
+Steam-created files or a changed installation directory timestamp do not invalidate
+an otherwise unchanged game. This learning is startup evidence, never a Verified
+badge or proof of gameplay quality.
+
+Local JVM verification is **79/79 passing**: 21 preparation, 16 routing, 13 driver,
+12 host-observation, 6 close-reservation and 11 exit/Cloud cases. The exact final
+APK passes **39/39 emulator cases**: 34 Compose and 5 real JNI probe checks on an
+account-free API 36 ARM64 / 4 KB device. Two controller fixtures were corrected
+to wait for native window focus and completed event delivery after a repeated
+batch exposed timing failures; both cases also pass two additional repetitions
+(four repeated executions, not four new cases). A normal signed-out Home →
+Downloads → Home journey passes using observed controls, with no fatal
+AndroidRuntime error in that interval. The installed APK hash matches the artifact.
+
+The native snapshot reports Vulkan 1.3, feature mask `751`, `legacyFloor=true`,
+`modernFloor=false` and `direct3d12Floor=false` on this emulator. These are real
+probe results; the attempt/Turnip text in the loading-screen capture is explicitly
+labeled synthetic UI data and does not represent a game or Turnip session.
+
+Artifact: `Vapor-0.1.0-auto-graphics-dev.apk`, **680787824 bytes**, SHA-256
+`f9cb798c6cb13ce3d4d3baf9c27ebe0256db067e0881e35539fcca793022d639`.
+Debug signature, 16 KB ZIP alignment and **39/39** native ELF alignments pass.
+Of 222 bundled asset/native entries compared with the preceding Downloads APK,
+221 are identical; only the rebuilt `lib/arm64-v8a/libwinlator.so` differs.
+Wine/FEX/translator/driver payloads are unchanged. Minimum SDK 29, target SDK 28,
+compile SDK 35 and ARM64 remain the development baseline. No public binary release
+or alpha designation is made. Source hashes, test reports and the bounded Wine/FEX
+source review are in [the portable receipt](evidence/2026-10-18-automatic-graphics.json).
+
+Remaining acceptance: the actual Onimusha demo GPU rejection and recovery, repeated
+real host/Cloud handoffs through retries, phone-driver failure behavior, physical
+controller UX, and matched performance/launch-time measurements. Some game error
+dialogs emit no recognized translator diagnostic. Native driver crashes can end the
+Android process. Unsupported feature levels cannot be created by another preset.
+The experimental Turnip and FEX candidates remain separate from this APK's routing
+implementation. The historical Downloads/D3D12 record below describes the prior build.
+
 ## Downloads and initial D3D12 preparation — 18 October 2026
 
 The existing download queue now separates stage, file, transfer progress and full
@@ -113,6 +277,15 @@ an installed VKD3D profile and falls back to `None` when none is available.
 `None` is selected. Neither source path establishes which setting was active
 on the phone. Record the effective pair and driver evidence in the next phone check; GPU-name or feature-level overrides do not implement missing
 graphics features.
+
+**19 October comparison with Ghostrunner Demo.** The supplied Ghostrunner host
+log records `d3d11.dll` and `dxgi.dll` loading, with no `d3d12.dll` module line.
+This supports a D3D11-path explanation for that run; it is not evidence that
+Ghostrunner qualified the D3D12 path needed by Onimusha. The missing VKD3D selection
+is the first concrete setup gap found, not a confirmed complete diagnosis of the
+GPU dialog. A lower resolution can reduce rendering cost but cannot supply a
+missing API implementation or hardware feature. Device age alone does not decide
+DX12 support; the effective driver/translator features and game requirements do.
 
 ## Artwork and idle-work checks — 18 October 2026
 
@@ -1787,6 +1960,13 @@ remote Steam Cloud round trip, power comparison or real chat message was tested 
 remain separate acceptance checks; the two supplied phone HUD screenshots do not close them.
 
 ## Ghostrunner Demo loading and gameplay observation — 15 October 2026
+
+**19 October phone follow-up:** the owner confirms that Ghostrunner Demo runs
+well enough to play on the Xiaomi, with gameplay and sound working and some lag.
+Lower settings/resolution are proposed tuning steps. Sustained 30–60 FPS remains
+a target to measure, not a newly verified frame-rate range. The original video,
+log and CSV qualifications below remain unchanged; no new capture, matched
+settings or sustained performance measurement was supplied with this follow-up.
 
 **Identification correction:** the owner identified `45985.jpg` and a described 2:02 gameplay
 video as **Ghostrunner Demo (AppID 1249200)**, watermark `DEMO 0.25004.315`, Unreal Engine 4,

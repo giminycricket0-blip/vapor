@@ -666,6 +666,11 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
     private kotlinx.coroutines.CompletableJob steamCloseSyncReservation;
     private final AtomicBoolean switchLaunchInProgress = new AtomicBoolean(false);
     private final AtomicBoolean winHandlerStopped = new AtomicBoolean(false);
+    private volatile com.winlator.cmod.runtime.system.AutomaticGraphics.Session automaticGraphics;
+    private Intent pendingLaunchIntent;
+    // Preparation and teardown share one worker: no new attempt may race prefix setup.
+    private final java.util.concurrent.ExecutorService sessionWorker =
+            Executors.newSingleThreadExecutor(r -> new Thread(r, "VaporSession"));
 
     private SessionRecordingController perfController;
 
@@ -1870,26 +1875,11 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
             return;
         }
 
-        Intent relaunchIntent = new Intent(intent);
-        relaunchIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        setIntent(relaunchIntent);
-        exitRequested.set(true);
-
-        if (preloaderDialog != null) {
-            preloaderDialog.showOnUiThread(getString(R.string.preloader_initializing));
-        }
-
-        new Thread(() -> {
-            performForcedSessionCleanup("switch launch target");
-            runOnUiThread(() -> {
-                if (isFinishing() || isDestroyed()) {
-                    LogManager.logW(TAG, "Switch cleanup finished after activity was destroyed", null, this);
-                    return;
-                }
-                setIntent(relaunchIntent);
-                recreate();
-            });
-        }, "XServerSwitchCleanup").start();
+        pendingLaunchIntent = new Intent(intent);
+        pendingLaunchIntent.removeExtra(com.winlator.cmod.runtime.system.AutomaticGraphics.EXTRA_ATTEMPT);
+        pendingLaunchIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        if (automaticGraphics != null) automaticGraphics.cancel();
+        exit();
     }
 
     @Override
@@ -2620,6 +2610,8 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
 
             @Override
             public void onFramePresented(Window window, WindowManager.FrameSource source, int serial) {
+                if (automaticGraphics != null && source != WindowManager.FrameSource.UNKNOWN &&
+                        isLikelyGameFrameWindow(window)) automaticGraphics.frame();
                 if (window != null && window.id == rendererWindowId) rendererWindowPresented = true;
                 if (shouldRecordFpsFrame(window, source)) {
                     frameRating.recordGameFrame(source == WindowManager.FrameSource.PRESENT, serial);
@@ -2667,7 +2659,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
             if (controlsProfile.isEmpty()) {
                 simulateConfirmInputControlsDialog();
             }
-            Executors.newSingleThreadExecutor().execute(() -> {
+            sessionWorker.execute(() -> {
                 try {
                     requireGenuineSteamLaunch();
                     boolean sessionToReuse = SessionKeepAliveService.isSessionActive() &&
@@ -2678,24 +2670,28 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
 
                     if (!sessionToReuse) {
                         launchTiming.mark(Event.PREPARATION_STARTED);
-                        if (!waylandMode && !gamescopeMode) {
-                            launchTiming.mark(Event.DRIVER_CHECK_STARTED);
-                            com.winlator.cmod.runtime.system.GraphicsDriverCatalog.requireAvailable(
-                                    this, this.graphicsDriverConfig.get("version"));
-                            launchTiming.mark(Event.DRIVER_CHECK_RETURNED);
-                        }
-                        if (isSteamShortcut() && wineInfo.isArm64EC()) {
+                        launchTiming.mark(Event.DRIVER_CHECK_STARTED);
+                        if (isSteamShortcut() && wineInfo.isArm64EC() && !gamescopeMode) {
                             int graphicsAppId = Integer.parseInt(shortcut.getExtra("app_id", "0"));
                             String graphicsInstallPath = resolveSteamGameInstallPath(graphicsAppId);
                             String graphicsExe = resolveRelativeGameExe(graphicsAppId, graphicsInstallPath);
-                            if (com.winlator.cmod.feature.setup.VaporPreparation.applyDirect3D12Defaults(
+                            automaticGraphics = com.winlator.cmod.runtime.system.AutomaticGraphics.prepare(
                                     this, contentsManager, shortcut,
                                     graphicsInstallPath == null ? null : new File(graphicsInstallPath),
-                                    graphicsExe, this.dxwrapperConfig)) {
-                                Log.i(TAG, "D3D12 imports detected: selected prepared DXVK/DXGI and VKD3D pair for appId="
-                                        + graphicsAppId + "; saved graphics settings unchanged");
+                                    graphicsExe, this.dxwrapperConfig, this.graphicsDriverConfig,
+                                    getIntent().getBundleExtra(com.winlator.cmod.runtime.system.AutomaticGraphics.EXTRA_ATTEMPT));
+                            if (automaticGraphics != null) {
+                                this.dxwrapper = automaticGraphics.getRoute().apply(this.dxwrapperConfig, this.graphicsDriverConfig);
+                                updateAutomaticGraphicsPreloader();
+                                Log.i(TAG, "Automatic graphics attempt " + automaticGraphics.getAttempt() + ": "
+                                        + automaticGraphics.getRoute().getDescription());
                             }
                         }
+                        if (!waylandMode && !gamescopeMode) {
+                            com.winlator.cmod.runtime.system.GraphicsDriverCatalog.requireAvailable(
+                                    this, this.graphicsDriverConfig.get("version"));
+                        }
+                        launchTiming.mark(Event.DRIVER_CHECK_RETURNED);
                         if (isSteamShortcut()) {
                             try {
                                 setSteamClientVisibility(true, isColdClientEnabledForShortcut());
@@ -3507,6 +3503,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
 
     @Override
     public void onPause() {
+        if (automaticGraphics != null) automaticGraphics.cancel();
         if (!isInPictureInPictureMode()) {
             // Cancel the scheduled stop immediately so it doesn't kill
             // the watcher we are about to start below.
@@ -3921,6 +3918,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
                     cachedSecond = second;
                     cachedPrefix = "[" + DateFormat.format("HH:mm:ss", second * 1000L) + "]  ";
                 }
+                observeAutomaticGraphicsFailure(line);
                 String stamped = cachedPrefix + line.replace("\n", "");
                 XServerDrawerStateHolder holder = drawerStateHolder;
                 if (holder != null) holder.appendLogLine(stamped);
@@ -3930,6 +3928,68 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
         };
         logStreamSink = sink;
         ProcessHelper.addDebugCallback(sink);
+    }
+
+    private void updateAutomaticGraphicsPreloader() {
+        com.winlator.cmod.runtime.system.AutomaticGraphics.Session attempt = automaticGraphics;
+        if (attempt == null || preloaderDialog == null) return;
+        preloaderDialog.setAutomaticGraphicsOnUiThread(
+                getString(R.string.vapor_graphics_attempt, attempt.getAttempt(),
+                        com.winlator.cmod.runtime.system.AutomaticGraphics.MAX_ATTEMPTS,
+                        attempt.getRoute().getDescription()),
+                () -> {
+                    attempt.cancel();
+                    exit();
+                });
+    }
+
+    private void observeAutomaticGraphicsFailure(String line) {
+        com.winlator.cmod.runtime.system.AutomaticGraphics.Session attempt = automaticGraphics;
+        if (attempt == null || exitRequested.get() || !attempt.observe(line)) return;
+        runOnUiThread(() -> {
+            if (exitRequested.get() || isDestroyed() || isFinishing()) return;
+            Log.w(TAG, "Recognized graphics startup failure in automatic attempt " + attempt.getAttempt());
+            if (preloaderDialog != null) preloaderDialog.setStepOnUiThread(R.string.vapor_graphics_cleaning);
+            exit();
+        });
+    }
+
+    private void finishGraphicsAttempt(boolean clean) {
+        // This callback is queued only after completeSteamCloseSync(), never before its finally.
+        if (isFinishing() || isDestroyed()) return;
+        com.winlator.cmod.runtime.system.AutomaticGraphics.Session attempt = automaticGraphics;
+        boolean cloudSafe = pendingSessionFailure == null && !steamCloudLaunchCancelled &&
+                steamCloseSyncReservation == null;
+        boolean foreground = !SessionKeepAliveService.isAppInBackground();
+        if (preloaderDialog != null) preloaderDialog.setAutomaticGraphicsOnUiThread("", null);
+        if (pendingLaunchIntent != null && clean && cloudSafe && foreground) {
+            setIntent(pendingLaunchIntent);
+            recreate();
+            return;
+        }
+        if (attempt != null) {
+            try {
+                attempt.remember(shortcut, clean && cloudSafe);
+            } catch (RuntimeException error) {
+                Log.w(TAG, "Could not save the automatic graphics choice", error);
+            }
+            Bundle next = attempt.afterCleanup(clean, cloudSafe, foreground);
+            if (next != null) {
+                Intent intent = new Intent(getIntent());
+                intent.putExtra(com.winlator.cmod.runtime.system.AutomaticGraphics.EXTRA_ATTEMPT, next);
+                setIntent(intent);
+                switchLaunchInProgress.set(true);
+                recreate();
+                return;
+            }
+            if (attempt.failed() && !attempt.isCancelled() && pendingSessionFailure == null) {
+                pendingSessionFailure = new com.winlator.cmod.app.shell.GameSessionFailure(
+                        cachedPreloaderTitle != null ? cachedPreloaderTitle : "",
+                        getString(R.string.vapor_graphics_stopped, attempt.getAttempt()),
+                        shortcut != null ? shortcut.file.getAbsolutePath() : "");
+            }
+        }
+        closeAfterSessionExit();
     }
 
     private void shareLogStream() {
@@ -4063,6 +4123,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
     }
 
     private void performForcedSessionCleanup(String trigger) {
+        if (automaticGraphics != null) automaticGraphics.cancel();
         if (!beginSessionCleanup(trigger)) {
             LogManager.log("XServerLeakCheck", "Forced session cleanup already ran; skipping duplicate request from " + trigger, this);
             return;
@@ -4088,7 +4149,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
             Log.w("XServerLeakCheck", "Failed to close preloader during forced cleanup", e);
         }
 
-        new Thread(() -> {
+        sessionWorker.execute(() -> {
             try {
                 performForcedEpicCloudUpload("forced cleanup (" + trigger + ")");
                 performForcedGogCloudUpload("forced cleanup (" + trigger + ")");
@@ -4155,7 +4216,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
             } finally {
                 completeSteamCloseSync();
             }
-        }, "XServerForcedCleanup").start();
+        });
     }
 
     private void exit() {
@@ -4178,7 +4239,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
                     getString(R.string.preloader_closing, getString(R.string.preloader_default_name)));
         }
         
-        syncStoreCloudOnExit(() -> {
+        sessionWorker.execute(() -> runOnUiThread(() -> syncStoreCloudOnExit(() -> {
             handler.postDelayed(() -> {
                 if (!beginSessionCleanup("exit")) {
                     return;
@@ -4186,7 +4247,8 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
                 savePlaytimeData(true);
                 cleanupActivityCallbacks("exit");
                 // Teardown blocks for seconds (cloud upload + clean-shutdown wait); run off the UI thread or the closing splash freezes. UI-touching calls are marshalled back.
-                new Thread(() -> {
+                sessionWorker.execute(() -> {
+                    boolean clean = false;
                     try {
                         askLinuxSteamToExit();
                         sanitizeSteamStateForNextSession("exit", true);
@@ -4213,17 +4275,22 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
                         xServer = null;
                         xServerView = null;
                         SessionKeepAliveService.stopSession(XServerDisplayActivity.this);
+                        clean = remaining.isEmpty();
+                    } catch (Throwable error) {
+                        Log.e(TAG, "Session teardown failed", error);
+                        runOnUiThread(() -> exitWithSessionFailure(getString(R.string.vapor_graphics_cleanup_failed)));
+                    } finally {
+                        completeSteamCloseSync();
+                        final boolean cleanupClean = clean;
                         runOnUiThread(() -> {
                             if (preloaderDialog != null && preloaderDialog.isShowing()) preloaderDialog.closeOnUiThread();
                             cleanupDebugDialog("exit");
-                            closeAfterSessionExit();
+                            finishGraphicsAttempt(cleanupClean);
                         });
-                    } finally {
-                        completeSteamCloseSync();
                     }
-                }, "XServerExitCleanup").start();
+                });
             }, 1000);
-        });
+        })));
     }
 
     /**
@@ -5271,6 +5338,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
 
     @Override
     protected void onDestroy() {
+        if (automaticGraphics != null) automaticGraphics.cancel();
         launchTiming.mark(Event.ACTIVITY_DESTROYED);
         activityDestroyed.set(true);
         detachWaylandSession();
@@ -5341,6 +5409,8 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
                 performForcedSessionCleanup("onDestroy");
             }
         }
+
+        sessionWorker.shutdown();
 
         String tag = "XServerLeakCheck";
         if (!exitRequested.get()) {
@@ -8697,6 +8767,10 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
                             () -> {
                                 requestExitOnUiThread("Steam host observed game exit");
                                 return kotlin.Unit.INSTANCE;
+                            },
+                            () -> {
+                                if (automaticGraphics != null) automaticGraphics.processObserved();
+                                return kotlin.Unit.INSTANCE;
                             });
                 wnLauncherStatusTailer.start();
                 wnLauncherDrivesDismiss.set(planWWrapperArgsResolved);
@@ -9229,6 +9303,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
 
             @Override
             public void onGameFrame() {
+                if (automaticGraphics != null) automaticGraphics.frame();
                 if (frameRating != null && (effectiveShowFPS || controllerHudMode)) {
                     frameRating.recordGameFrame(true, waylandFrameSerial.incrementAndGet());
                 }

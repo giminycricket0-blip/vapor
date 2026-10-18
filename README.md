@@ -58,6 +58,34 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 
 </details>
 
+## Games running on the Xiaomi
+
+![Ghostrunner Demo gameplay on the Xiaomi 17 Pro, extracted from the supplied phone video](docs/images/ghostrunner-demo-xiaomi.jpg)
+
+<p align="center"><sub>Ghostrunner Demo · Still from the supplied Xiaomi gameplay video, 15 October 2026 · Not an FPS benchmark</sub></p>
+
+Physical-phone results on the **Xiaomi 17 Pro / Snapdragon 8 Elite Gen 5** include:
+
+| Game | Observed result |
+| --- | --- |
+| Europa Universalis III | Smooth gameplay and working sound reported. |
+| Team Fortress 2 | Training runs with the Steam account connected and sound working. Online matches are not yet qualified. |
+| You Have to Win the Game | Gameplay, CRT effects, touch controls and sound work. |
+| Helltaker | Gameplay and sound work; the game recognizes controller input and shows controller prompts. |
+| **Ghostrunner Demo** | **The demanding UE4 demo reaches controllable gameplay, wallrunning and checkpoint respawn, with sound working. Some hitching remains.** |
+
+The latest Ghostrunner report confirms that the game runs well enough to play,
+with some lag. Lower settings and resolution are the next tuning steps; sustained
+**30–60 FPS is a test target, not a measured result**. These observations do not
+establish full-campaign completion or the same performance on other chipsets.
+[Gameplay and Cloud evidence](docs/QUALIFICATION.md#ghostrunner-demo-loading-and-gameplay-observation--15-october-2026).
+
+DirectX 12 has a separate compatibility gate: the required Vulkan features and a
+working VKD3D/driver combination must be present. An older chipset may lack those
+features or usable performance; its age alone is not a universal DX12 cutoff.
+Onimusha: Way of the Sword Demo's reported GPU-support error remains unresolved
+on the phone. [Investigation](docs/QUALIFICATION.md#onimusha-way-of-the-sword-demo--18-october-2026).
+
 ## Compatibility and status
 
 **The app running, a game launching, and a game playing well are different results.** Vapor does not promise the entire Steam catalog. GPU features, drivers, the runtime, game dependencies, available memory, and anti-cheat can all affect compatibility.
@@ -71,16 +99,55 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 | **Store and controls** | Public Store recovery, native UI layouts, and injected controller navigation pass local checks. | Authenticated free/demo and paid flows, live web sign-in, physical controllers, and phone UX acceptance. |
 | **Android platform** | ARM64 development APK; minimum Android 10. **39/39** APK native libraries and ZIP packaging pass 16 KB alignment. Native TLS/probe checks and startup pass on 4 KB / 16 KB emulators. | Modern target SDK 36 and complete Wine/FEX gameplay on 16 KB kernels. The current build targets SDK **28** and compiles against **35**. |
 
-The latest Downloads/D3D12 development build passes **27 selected Android UI tests**
-and **48 JVM tests**, plus two landscape repetitions. Downloads show clear recovery
-and completion actions. Guided setup prepares a matched DirectX 12 component pair
-for initial selection when the selected executable exposes D3D12 imports; automatic
-failure retries and Onimusha phone recovery remain pending.
+<details>
+<summary><strong>Engineering checks and current development builds</strong></summary>
+
+<br>
+
+The latest automatic-graphics development build passes **79 selected JVM tests**
+and **39 emulator checks** (34 Compose and 5 native GPU-probe cases). Guided Steam
+launches can try eligible installed graphics combinations after specific Vulkan
+startup failures, with clean Steam/Cloud teardown, visible cancellation and at most
+four attempts. Explicit game settings remain authoritative. Onimusha phone recovery,
+real retry/Cloud handoffs and performance comparisons remain pending.
+[Automatic graphics and component-review record](docs/evidence/2026-10-18-automatic-graphics.json).
+
+The preceding Downloads/D3D12 build passes **27 selected Android UI tests** and
+**48 JVM tests**, plus two landscape repetitions. Downloads show recovery and
+completion actions; guided setup prepares the matched DirectX 12 component pair
+used by the subsequent routing work.
 [Downloads and preparation record](docs/evidence/2026-10-18-downloads-d3d12.json).
 
 The preceding onboarding build passes **31 selected Android UI tests** and **25 JVM tests**, with three additional portrait rerenders of the same preview cases. Preparation, Steam sign-in and Steam Guard now share Vapor's native branding and layout. Live account completion and phone acceptance remain pending. [Onboarding record](docs/evidence/2026-10-18-onboarding.json).
 
 The preceding game-page build records **26 selected Android UI tests**; the earlier Store/Home pass records **46 UI tests and 14 catalog JVM tests**. These are distinct scopes, not a whole-project total. Full Android lint remains unqualified. [Game-page record](docs/evidence/2026-10-17-ui.json) · [Full qualification history](docs/QUALIFICATION.md).
+
+The separate 19 October component work rebuilt both FEX Windows DLLs and the Wine
+X11 module. **15/15 FEX cache phases** pass. External-pointer tests reproduce lost
+clipped clicks with the original Wine module and pass with the rebuilt module in
+both guest architectures. These experiments leave the guided runtime defaults
+unchanged; no new APK or phone performance result is claimed.
+[Component record](docs/QUALIFICATION.md#runtime-components--19-october-2026).
+
+</details>
+
+## What makes Vapor different
+
+Vapor focuses on a **Steam-first handheld experience in a native Android app**,
+with source-visible Steam session handling and automatic selection among eligible
+installed graphics components. It builds on WinNative and shared Wine, FEX and
+Mesa work; it does not claim a new emulation engine or a proven speed lead.
+
+| Project | Main approach | Vapor's distinction |
+| --- | --- | --- |
+| [GameNative](https://github.com/utkarshdalal/GameNative) | Native Android launcher with several stores, Cloud saves and automatically applied known game configurations. | Vapor emphasizes Steam / Big Picture-style navigation, its open inherited Steam host, bounded graphics startup retries and published test evidence. Native launching and automatic configs are shared ideas. |
+| [DroidDeck](https://github.com/Droid-Deck/DroidDeck) | Valve's actual Steam Big Picture client in a Linux environment, using ARM64 Proton. | Vapor browses and downloads through Android services, then starts the game runtime and genuine Steam host on demand. DroidDeck provides the actual Valve frontend and more client behavior directly. |
+
+The current work reaches below the interface: reproducible input fixes, translator
+cache correctness, graphics capability checks and safer game/Cloud teardown.
+Upstream fixes are credited, experimental builds stay separate, and live Steam
+feature checks remain explicit. **There is no measured Vapor-versus-competitor
+FPS, RAM or compatibility ranking yet.** [Detailed comparison](docs/COMPETITOR-COMPARISON.md).
 
 ## How Steam runs
 

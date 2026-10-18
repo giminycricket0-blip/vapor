@@ -23,6 +23,7 @@ class WnLauncherStatusTailer(
     private val onCloudConflict: ((appId: Int, localTime: Long, remoteTime: Long) -> Unit)? = null,
     private val launchTiming: GameLaunchTiming? = null,
     private val onGameExited: (() -> Unit)? = null,
+    private val onGameProcessObserved: (() -> Unit)? = null,
 ) {
     private val running = AtomicBoolean(false)
     private val appContext = context.applicationContext
@@ -39,6 +40,7 @@ class WnLauncherStatusTailer(
     @Volatile private var cloudStartedAt: Long = 0L
     @Volatile private var cloudChoicePending: Boolean = false
     @Volatile private var gameExitObserved: Boolean = false
+    private var pendingProcessObservation = false
 
     /** Resume the bounded network wait only after the user has answered a save conflict. */
     fun cloudConflictAnswered() {
@@ -53,6 +55,7 @@ class WnLauncherStatusTailer(
         cloudStartedAt = 0L
         cloudChoicePending = false
         gameExitObserved = false
+        pendingProcessObservation = false
         directExeMode = false
         insecureSignaled = false
         launchAppDispatchedAt = 0L
@@ -140,9 +143,17 @@ class WnLauncherStatusTailer(
     internal fun consumeLine(line: String) {
         if (!line.contains("[wn-launcher]")) return
         sawAnyLauncherLine = true
+        val actualProcess = (line.contains("is running") && line.contains("LaunchApp")) ||
+            (line.contains("game process started pid=") && line.contains("CreateProcess fallback"))
+        if ((!launchResolved || pendingProcessObservation) && actualProcess) {
+            pendingProcessObservation = false
+            launchTiming?.mark(Event.STEAM_PROCESS_OBSERVED)
+            main.post { onGameProcessObserved?.invoke() }
+        }
         if (launchResolved && line.contains("game \"") && line.contains(" exited (")) {
             if (!gameExitObserved) {
                 gameExitObserved = true
+                pendingProcessObservation = false
                 main.post { onGameExited?.invoke() }
             }
             return
@@ -210,9 +221,6 @@ class WnLauncherStatusTailer(
             if (line.contains("in-process Steam launcher starting")) launchTiming?.mark(Event.STEAM_HOST_STARTED)
             if (line.contains("Steam_BLoggedOn=true")) launchTiming?.mark(Event.STEAM_SIGNED_IN)
             if (isLaunchAppDispatched) launchTiming?.mark(Event.STEAM_LAUNCH_DISPATCHED)
-            if ((line.contains("is running") && line.contains("LaunchApp")) || startedViaFallback) {
-                launchTiming?.mark(Event.STEAM_PROCESS_OBSERVED)
-            }
         }
         val phase = phaseFor(line)
         if (phase != null && phase != lastEmitted) {
@@ -227,6 +235,7 @@ class WnLauncherStatusTailer(
         }
         if (isTerminal) {
             if (launchResolved) return
+            pendingProcessObservation = isWatchingForExit && !actualProcess
             launchResolved = true
             android.util.Log.i(TAG, "terminal phase (LaunchApp is running) — signaling launch complete")
             // Disarm the watchdog: the game spawned successfully, so the 30s
@@ -248,6 +257,7 @@ class WnLauncherStatusTailer(
         if (launchResolved) return
         launchTiming?.mark(Event.LAUNCH_FAILED)
         launchResolved = true
+        pendingProcessObservation = false
         launchAppDispatchedAt = 0L
         running.set(false)
         main.post { onLaunchFailed?.invoke(appContext.getString(message)) }
