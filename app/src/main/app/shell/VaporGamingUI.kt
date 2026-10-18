@@ -12,7 +12,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -43,7 +42,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -58,6 +56,7 @@ import com.winlator.cmod.shared.ui.focus.controllerConfirmOnA
 import com.winlator.cmod.shared.ui.focus.controllerMenuInput
 import com.winlator.cmod.BuildConfig
 import com.winlator.cmod.R
+import com.winlator.cmod.shared.ui.branding.VaporBrandMark
 import kotlin.math.roundToInt
 
 /** Shared browsing-panel treatment; blur belongs to artwork behind these controls. */
@@ -65,14 +64,6 @@ internal fun Modifier.vaporGlass(shape: Shape = RoundedCornerShape(16.dp)): Modi
     clip(shape)
         .background(Brush.linearGradient(listOf(Color(0xE6293D54), Color(0xEB101D2A))))
         .border(1.dp, Brush.linearGradient(listOf(Color(0x3DFFFFFF), Color(0x0AFFFFFF))), shape)
-
-/** Share the three-pivot V with the standard APK's adaptive launcher icon. */
-@Composable
-internal fun VaporBrandMark(modifier: Modifier = Modifier) {
-    Image(painterResource(R.drawable.vapor_logo), stringResource(R.string.common_ui_app_name),
-        // Launcher-safe transparent margins are unnecessary inside a measured UI slot.
-        modifier = modifier.graphicsLayer { scaleX = 1.2f; scaleY = 1.2f })
-}
 
 @Composable
 internal fun VaporClock() {

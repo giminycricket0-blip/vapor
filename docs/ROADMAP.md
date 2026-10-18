@@ -22,6 +22,64 @@ flowchart TD
     Wine --> Android[Android display, audio and controls]
 ```
 
+## Setup and sign-in continuation — 18 October 2026
+
+The native first-run screens now share Vapor's shell branding and measured layout.
+QR/account selection, Steam Guard recovery, preparation feedback and controller
+focus extend the existing owners. The auth fix cancels abandoned code challenges
+instead of leaving a receiver waiting through retries. Local UI and auth checks
+are recorded separately from live account, physical controller and Xiaomi
+acceptance. The next interface slice remains the existing Downloads queue and
+install-to-Play feedback. The automatic graphics requirement below is a separate
+runtime follow-up, not a feature of this UI pass.
+
+## Automatic graphics attempts — accepted follow-up, 18 October 2026
+
+The intended user journey is **Play → Vapor tries an eligible preset → a recognized
+graphics failure triggers a clean retry → the working selection is remembered**.
+The user should not have to choose a driver, DXVK or VKD3D. Sensible initial
+defaults alone do not satisfy this requirement. This retry flow is not implemented
+or qualified in the onboarding build.
+
+The immediate observed gap is Onimusha Demo opening with a GPU-support rejection
+while VKD3D is `None`. Guided preparation currently installs Proton/FEX/DXVK only.
+Build the next slice into the existing preparation, shortcut and session owners:
+
+1. Add and verify a pinned ARM64EC VKD3D input through the existing package
+   downloader, hash/readiness checks and preparation UI. Resolve compatible
+   installed components before Steam handoff; explain a missing package instead
+   of silently launching a D3D12 game without one.
+2. Select an eligible preset using the active driver probe, Wine/component
+   architecture and observed graphics requirements. Extend existing game settings;
+   do not add a separate profile database or service. Manual overrides remain an
+   optional Advanced path.
+3. Recognize specific graphics startup failures from launch/runtime evidence.
+   Finish the existing Steam/process/Cloud cleanup before trying the next eligible
+   combination. Keep attempts bounded, cancellable and visible. Steam login,
+   ownership, Cloud errors and ordinary gameplay exits must not trigger renderer
+   retries. A loading timeout alone is not proof of a graphics failure.
+4. Remember a successful combination in existing per-game settings, with device
+   and component identities so stale choices can be re-evaluated. An error dialog
+   or a single presented frame must not be recorded as successful gameplay.
+5. Test ordering, exhaustion, cancellation, cleanup reservations, remembered
+   settings and component changes locally, then reproduce the actual Onimusha
+   failure and recovery on the Xiaomi. Unsupported graphics features can still
+   prevent every eligible preset from working; report that outcome plainly.
+
+See the [phone observation](QUALIFICATION.md#onimusha-way-of-the-sword-demo--18-october-2026).
+
+## Idle-work first pass — 18 October 2026
+
+Keep the existing service, Library and image-loader owners. Shared decoded artwork
+now has a device-aware cache budget. Library prefetch is bounded and cancellable
+when the screen is hidden, while completed disk files and the Library snapshot stay
+available for quick returns. The launcher trims its image cache on game handoff.
+The first local pass has **21 passing JVM checks**. This is an implementation and
+local-test milestone, not measured idle RAM or phone acceptance. Measure PSS and
+warm return time on the reference phone before claiming the proposed budgets have
+been met. Existing game/download/Cloud/chat lifecycles remain unchanged.
+See [qualification](QUALIFICATION.md#artwork-and-idle-work-checks--18-october-2026).
+
 ## Native game page continuation — 17 October 2026
 
 The installed-game page now groups everyday actions beside Play and moves maintenance

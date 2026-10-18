@@ -1,12 +1,77 @@
 # Vapor: UI and app work first
 
-Updated 17 October 2026. Home and the Library carousel now share a native cover shelf,
+Updated 18 October 2026. Home and the Library carousel now share a native cover shelf,
 with selection and game actions in place. Store search suppresses repeated spelling prompts
 and preserves the current results during connection recovery. Branding uses the same artwork in the standard
 APK and native shell. The preceding passes improve page navigation, Home,
 Downloads and Quick Access with consistent spacing and reachable large-text actions. Steam remains
 the main experience; optional storefronts remain in Settings → More stores. Gameplay reports and
 account qualification remain separately recorded in [QUALIFICATION.md](QUALIFICATION.md).
+
+## Setup and Steam sign-in — 18 October 2026
+
+Prepare Vapor, first-run account setup, Steam sign-in and Steam Guard now share
+the native shell's logo, colors and spacing. The frame uses an opaque dark
+background, measured header and scrollable body with safe-area and keyboard
+insets. Wide sign-in shows account fields beside a QR code; narrower screens
+offer QR code and Account name tabs without discarding typed credentials.
+Short landscape windows use a compact header and less decoration so the
+actions retain space. Card content explicitly uses the theme's foreground color.
+
+Steam remains the primary connection, with Connect Steam and Set up later
+separate. A connected account offers Continue to Vapor. Preparation keeps its
+existing package installer, permission requests, progress, retry and Advanced
+owners. There is no additional account, setup-completion preference or service.
+The same vector logo is reused in the shell and these screens.
+
+The account form labels the Steam account name, supports IME Next/Done,
+password visibility and one clickable Keep me signed in row. Blank or busy
+submissions are disabled. Login failure, QR retry, email/authenticator code
+rejection and failed device approval each expose an appropriate recovery action.
+Steam Guard challenges are cancelled when abandoned or superseded, so an old
+request cannot consume a later retry's code. Native Steam authentication and
+token storage remain with the existing service and ViewModel.
+
+Controller entry selects the account action when input changes to keyboard or
+gamepad navigation; touch does not force that focus. Actions retain at least
+48 dp targets. The stage change uses a short Crossfade and the background is
+static. Component checks inject large text as a layout stress case; this does
+not change the Activities' existing fixed-font-scale policy.
+
+The local pass records 31 passing Android UI cases, three portrait rerenders
+and 25 passing JVM checks. The portrait/landscape captures use labeled sample
+authentication state, including a QR payload that cannot sign in to Steam.
+Live account completion, physical controllers and phone UX acceptance remain
+separate. See the [verification record](evidence/2026-10-18-onboarding.json).
+
+![Native welcome screen with sample setup state](images/onboarding-welcome-landscape.png)
+
+The [portrait sign-in preview](images/onboarding-login-portrait.png) uses a sample
+QR payload rather than an account's sign-in challenge.
+
+## Artwork and idle work — 18 October 2026
+
+The existing shared Coil loader is created on the first image request. Decoded artwork
+has a budget of one eighth of the Android app heap class, capped at **48 MiB**, or
+**16 MiB** on Android low-RAM devices. Disk caches and Coil's memory-pressure handling
+remain active. The limit covers the image cache, not bitmaps still displayed by a screen,
+all app memory, or a running game's graphics resources.
+
+Library artwork prefetch runs only while that screen's lifecycle is at least STARTED.
+Leaving the screen or hiding the launcher cancels its requests, including a response
+blocked on headers or body data. Four workers replace one coroutine per image. Completed
+files remain on disk; incomplete files are removed and retried when the screen returns.
+Only complete files are published as reusable artwork. The Library snapshot remains in
+its existing owner so a return does not begin from an empty grid. When the game Activity
+keeps the application visible, the stopped launcher explicitly trims its image cache.
+
+These changes do not suspend games or modify the Steam account, download queue or Cloud
+sync lifecycle. Steam's existing idle disconnect still waits for active work and respects
+background chat. The first performance budgets are **150–250 MB PSS** at settled
+Home/Library and a **100–150 MB** background goal with no active work. A cached warm return
+should aim for one second on the reference Xiaomi. These are proposed budgets, not
+measurements or achieved savings. Profile foreground idle, background idle, game handoff
+and a dismissed web panel separately before publishing performance claims.
 
 ## Native game page — 17 October 2026
 

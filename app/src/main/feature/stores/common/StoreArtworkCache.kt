@@ -4,22 +4,29 @@ import android.content.Context
 import com.winlator.cmod.feature.stores.epic.data.EpicGame
 import com.winlator.cmod.feature.stores.gog.data.GOGGame
 import com.winlator.cmod.feature.stores.steam.data.SteamApp
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 object StoreArtworkCache {
     private const val ROOT_DIR = "library_artwork_cache"
     private const val TAG = "StoreArtworkCache"
-    private const val MAX_CONCURRENT_DOWNLOADS = 12
+    private const val MAX_CONCURRENT_DOWNLOADS = 4
 
     private val client: OkHttpClient by lazy {
         OkHttpClient
@@ -50,25 +57,26 @@ object StoreArtworkCache {
     suspend fun cacheAll(
         context: Context,
         refs: Collection<ArtworkRef>,
-    ): Boolean {
+    ): Boolean = withContext(Dispatchers.IO) {
         val distinctRefs =
             refs
                 .filter { it.url.isNotBlank() && it.url.startsWith("http", ignoreCase = true) }
                 .distinctBy { "${it.store}:${it.gameId}:${it.slot}:${it.url}" }
-        if (distinctRefs.isEmpty()) return false
+        if (distinctRefs.isEmpty()) return@withContext false
 
-        val semaphore = Semaphore(permits = MAX_CONCURRENT_DOWNLOADS)
-        return coroutineScope {
-            distinctRefs
-                .map { ref ->
-                    async {
-                        semaphore.withPermit {
-                            cache(context, ref)
-                        }
-                    }
-                }.awaitAll()
-                .any { it }
-        }
+        // A bounded number of workers, rather than a suspended coroutine for every library image.
+        val next = AtomicInteger()
+        List(minOf(MAX_CONCURRENT_DOWNLOADS, distinctRefs.size)) {
+            async {
+                var cachedAny = false
+                while (true) {
+                    ensureActive()
+                    val ref = distinctRefs.getOrNull(next.getAndIncrement()) ?: break
+                    if (cache(context, ref)) cachedAny = true
+                }
+                cachedAny
+            }
+        }.awaitAll().any { it }
     }
 
     fun deleteGame(
@@ -239,40 +247,72 @@ object StoreArtworkCache {
             else -> gogPrimaryRef(game)
         }
 
-    private fun cache(
+    private suspend fun cache(
         context: Context,
         ref: ArtworkRef,
-    ): Boolean {
+    ): Boolean = coroutineScope {
+        ensureActive()
         val target = cacheFile(context, ref)
-        if (target.exists() && target.length() > 0L) return false
+        if (target.exists() && target.length() > 0L) return@coroutineScope false
 
-        return runCatching {
+        val call = runCatching { client.newCall(Request.Builder().url(ref.url).build()) }
+            .getOrElse { error ->
+                Timber.tag(TAG).d(error, "Invalid artwork URL %s", ref.url)
+                return@coroutineScope false
+            }
+        // Closing the socket unblocks execute/read on lifecycle cancellation. The scope waits
+        // for the writer's finally block before a resumed screen can start another prefetch.
+        val cancellation = launch(start = CoroutineStart.UNDISPATCHED) {
+            try {
+                awaitCancellation()
+            } finally {
+                call.cancel()
+            }
+        }
+        var temp: File? = null
+        try {
             target.parentFile?.mkdirs()
-            val request = Request.Builder().url(ref.url).build()
-            client.newCall(request).execute().use { response ->
+            call.execute().use { response ->
                 if (!response.isSuccessful) {
                     Timber.tag(TAG).d("Artwork request failed %s for %s", response.code, ref.url)
-                    return false
+                    return@coroutineScope false
                 }
-                val body = response.body ?: return false
-                val temp = File(target.parentFile, "${target.name}.tmp")
+                val body = response.body ?: return@coroutineScope false
+                val partial = File.createTempFile("${target.name}.", ".tmp", target.parentFile)
+                temp = partial
                 body.byteStream().use { input ->
-                    temp.outputStream().use { output -> input.copyTo(output) }
+                    partial.outputStream().use { output ->
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        while (true) {
+                            ensureActive()
+                            val count = input.read(buffer)
+                            if (count < 0) break
+                            output.write(buffer, 0, count)
+                        }
+                    }
                 }
-                if (temp.length() == 0L) {
-                    temp.delete()
-                    return false
-                }
-                if (target.exists()) target.delete()
-                if (!temp.renameTo(target)) {
-                    temp.copyTo(target, overwrite = true)
-                    temp.delete()
+                ensureActive()
+                if (partial.length() == 0L ||
+                    (body.contentLength() >= 0L && partial.length() != body.contentLength())
+                ) return@coroutineScope false
+
+                // Both paths are in the same app directory. Publish a complete file atomically;
+                // a failed/cancelled request must never leave a non-empty partial as cached art.
+                if (!partial.renameTo(target)) {
+                    throw IOException("Could not publish artwork ${target.name}")
                 }
                 true
             }
-        }.onFailure {
-            Timber.tag(TAG).d(it, "Failed to cache artwork %s", ref.url)
-        }.getOrDefault(false)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            ensureActive()
+            Timber.tag(TAG).d(error, "Failed to cache artwork %s", ref.url)
+            false
+        } finally {
+            cancellation.cancel()
+            temp?.delete()
+        }
     }
 
     private fun cacheFile(

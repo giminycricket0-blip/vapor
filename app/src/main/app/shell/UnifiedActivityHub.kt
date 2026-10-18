@@ -2141,7 +2141,9 @@ internal fun UnifiedActivity.LibraryCarousel(
         }
     }
 
+    val artworkLifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(
+        artworkLifecycle,
         visibleInstalledApps,
         visibleGogByPseudoId,
         visibleEpicByPseudoId,
@@ -2149,46 +2151,52 @@ internal fun UnifiedActivity.LibraryCarousel(
         visibleCustomIconArtworkPathByAppId,
         cachedShortcuts,
     ) {
-        var deletedCustomOverrides = false
-        val refs =
-            visibleInstalledApps.flatMap { app ->
-                val gogGame = visibleGogByPseudoId[app.id]
-                val epicGame = visibleEpicByPseudoId[app.id]
-                val overriddenSlots =
-                    customArtworkOverrideSlots(
-                        app = app,
-                        gogGame = gogGame,
-                        epicGame = epicGame,
-                        hasDefaultCustomArt = visibleCustomArtworkPathByAppId[app.id] != null,
-                        hasIconCustomArt = visibleCustomIconArtworkPathByAppId[app.id] != null,
-                        hasHeroCustomArt =
-                            findLibraryArtworkShortcut(cachedShortcuts, app, gogGame, epicGame)
-                                ?.hasExistingArtwork(LibraryShortcutArtwork.LibraryArtworkSlot.GAME_CARD.extraKey) == true,
-                    )
+        // This work belongs to the visible Library, not the Steam/download service. Resuming
+        // reuses completed disk files; STOPPED or leaving the screen cancels active HTTP calls.
+        artworkLifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            // A previous prefetch may have published files just before the screen was hidden.
+            artworkCacheRefreshKey++
+            var deletedCustomOverrides = false
+            val refs =
+                visibleInstalledApps.flatMap { app ->
+                    val gogGame = visibleGogByPseudoId[app.id]
+                    val epicGame = visibleEpicByPseudoId[app.id]
+                    val overriddenSlots =
+                        customArtworkOverrideSlots(
+                            app = app,
+                            gogGame = gogGame,
+                            epicGame = epicGame,
+                            hasDefaultCustomArt = visibleCustomArtworkPathByAppId[app.id] != null,
+                            hasIconCustomArt = visibleCustomIconArtworkPathByAppId[app.id] != null,
+                            hasHeroCustomArt =
+                                findLibraryArtworkShortcut(cachedShortcuts, app, gogGame, epicGame)
+                                    ?.hasExistingArtwork(LibraryShortcutArtwork.LibraryArtworkSlot.GAME_CARD.extraKey) == true,
+                        )
 
-                if (overriddenSlots.isNotEmpty()) {
-                    val cacheId = artworkCacheId(app, gogGame, epicGame)
-                    if (cacheId != null) {
-                        val deleted =
-                            withContext(Dispatchers.IO) {
-                                StoreArtworkCache.deleteSlots(context, cacheId.store, cacheId.gameId, overriddenSlots)
-                            }
-                        deletedCustomOverrides = deletedCustomOverrides || deleted
+                    if (overriddenSlots.isNotEmpty()) {
+                        val cacheId = artworkCacheId(app, gogGame, epicGame)
+                        if (cacheId != null) {
+                            val deleted =
+                                withContext(Dispatchers.IO) {
+                                    StoreArtworkCache.deleteSlots(context, cacheId.store, cacheId.gameId, overriddenSlots)
+                                }
+                            deletedCustomOverrides = deletedCustomOverrides || deleted
+                        }
                     }
-                }
 
-                StoreArtworkCache
-                    .libraryRefs(
-                        app = app,
-                        gogGame = gogGame,
-                        epicGame = epicGame,
-                    ).filterNot { it.slot in overriddenSlots }
-            }
-        val cachedAny =
-            withContext(Dispatchers.IO) {
-                StoreArtworkCache.cacheAll(context, refs)
-            }
-        if (cachedAny || deletedCustomOverrides) artworkCacheRefreshKey++
+                    StoreArtworkCache
+                        .libraryRefs(
+                            app = app,
+                            gogGame = gogGame,
+                            epicGame = epicGame,
+                        ).filterNot { it.slot in overriddenSlots }
+                }
+            val cachedAny =
+                withContext(Dispatchers.IO) {
+                    StoreArtworkCache.cacheAll(context, refs)
+                }
+            if (cachedAny || deletedCustomOverrides) artworkCacheRefreshKey++
+        }
     }
 
     // Room and the disk scan are authoritative, including an empty answer. Empty accounts

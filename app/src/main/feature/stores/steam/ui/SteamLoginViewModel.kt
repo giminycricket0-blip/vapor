@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicReference
 
 class SteamLoginViewModel : ViewModel() {
     private val _loginState = MutableStateFlow(UserLoginState())
@@ -28,8 +29,11 @@ class SteamLoginViewModel : ViewModel() {
     private val _snackEvents = Channel<String>()
     val snackEvents = _snackEvents.receiveAsFlow()
 
-    private val submitChannel = Channel<String>()
+    private val pendingCode = AtomicReference<CompletableFuture<String>?>(null)
     private var credentialLoginJob: Job? = null
+
+    private fun requestCode(): CompletableFuture<String> =
+        CompletableFuture<String>().also { pendingCode.getAndSet(it)?.cancel(false) }
 
     private val authenticator =
         object : WnAuthenticator {
@@ -61,11 +65,7 @@ class SteamLoginViewModel : ViewModel() {
                     )
                 }
 
-                return CompletableFuture<String>().apply {
-                    viewModelScope.launch {
-                        complete(submitChannel.receive())
-                    }
-                }
+                return requestCode()
             }
 
             override fun getEmailCode(
@@ -85,11 +85,7 @@ class SteamLoginViewModel : ViewModel() {
                     )
                 }
 
-                return CompletableFuture<String>().apply {
-                    viewModelScope.launch {
-                        complete(submitChannel.receive())
-                    }
-                }
+                return requestCode()
             }
         }
 
@@ -206,6 +202,7 @@ class SteamLoginViewModel : ViewModel() {
     }
 
     override fun onCleared() {
+        pendingCode.getAndSet(null)?.cancel(false)
         PluviaApp.events.off<SteamEvent.Connected, Unit>(onSteamConnected)
         PluviaApp.events.off<SteamEvent.LogonStarted, Unit>(onLogonStarted)
         PluviaApp.events.off<SteamEvent.LogonEnded, Unit>(onLogonEnded)
@@ -218,8 +215,10 @@ class SteamLoginViewModel : ViewModel() {
 
     fun onCredentialLogin() {
         with(_loginState.value) {
-            if (username.isEmpty() || password.isEmpty()) return@with
+            if (username.isBlank() || password.isEmpty() || isLoggingIn) return@with
+            _loginState.update { it.copy(isLoggingIn = true, loginResult = LoginResult.InProgress) }
             credentialLoginJob?.cancel()
+            pendingCode.getAndSet(null)?.cancel(false)
             credentialLoginJob =
                 viewModelScope.launch {
                     SteamService.startLoginWithCredentials(
@@ -233,19 +232,18 @@ class SteamLoginViewModel : ViewModel() {
     }
 
     fun submitTwoFactor() {
-        viewModelScope.launch {
-            submitChannel.send(
-                _loginState.value.twoFactorCode
-                    .uppercase()
-                    .trim(),
-            )
-            _loginState.update { it.copy(isLoggingIn = true) }
-        }
+        val state = _loginState.value
+        val code = state.twoFactorCode.uppercase().trim()
+        if (state.isLoggingIn || code.length < 5) return
+        val request = pendingCode.getAndSet(null) ?: return
+        _loginState.update { it.copy(isLoggingIn = true) }
+        request.complete(code)
     }
 
     fun onShowLoginScreen(loginScreen: LoginScreen) {
         credentialLoginJob?.cancel()
         credentialLoginJob = null
+        pendingCode.getAndSet(null)?.cancel(false)
 
         _loginState.update {
             it.copy(
@@ -255,6 +253,7 @@ class SteamLoginViewModel : ViewModel() {
                 qrCode = null,
                 twoFactorCode = "",
                 password = "",
+                previousCodeIncorrect = false,
             )
         }
         if (loginScreen == LoginScreen.QR) {
@@ -309,6 +308,6 @@ class SteamLoginViewModel : ViewModel() {
     }
 
     fun setTwoFactorCode(code: String) {
-        _loginState.update { it.copy(twoFactorCode = code) }
+        _loginState.update { it.copy(twoFactorCode = code, previousCodeIncorrect = false) }
     }
 }

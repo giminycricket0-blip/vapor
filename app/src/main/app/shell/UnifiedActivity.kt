@@ -715,6 +715,7 @@ class UnifiedActivity :
 
     override fun onStop() {
         stopSteamMenuInput()
+        if (PluviaApp.isGameSessionActive()) PluviaApp.instance.trimLauncherArtwork()
         super.onStop()
     }
 

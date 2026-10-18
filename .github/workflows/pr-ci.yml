@@ -3,7 +3,7 @@ name: Vapor build
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [Vapor]
   workflow_dispatch:
 
 permissions:
@@ -58,6 +58,9 @@ jobs:
           --tests '*SessionKeepAliveServiceTest'
           --tests '*GameDisplaySettingsTest'
           --tests '*GameSessionFailureTest'
+          --tests '*SteamLoginStateTest'
+          --tests '*ArtworkMemoryTest'
+          --tests '*StoreArtworkCacheTest'
           --max-workers=4 --console=plain
       - name: Check APK native alignment
         run: |

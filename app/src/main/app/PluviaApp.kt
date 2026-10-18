@@ -1,6 +1,9 @@
 package com.winlator.cmod.app
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Application
+import android.content.ComponentCallbacks2
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import com.winlator.cmod.app.config.DeviceProfileSettings
@@ -14,6 +17,9 @@ import com.winlator.cmod.feature.stores.steam.utils.PrefManager
 import com.winlator.cmod.runtime.display.XServerDisplayActivity
 import com.winlator.cmod.runtime.system.LogManager
 import com.winlator.cmod.shared.android.RefreshRateUtils
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.memory.MemoryCache
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,8 +30,20 @@ import timber.log.Timber
 import java.io.File
 
 @HiltAndroidApp
-class PluviaApp : Application() {
+class PluviaApp : Application(), ImageLoaderFactory {
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var artworkImageLoader: ImageLoader? = null
+
+    // Coil creates this singleton only when the first image is requested. Keep its disk cache
+    // and platform memory-pressure handling; bound decoded artwork independently of phone RAM.
+    override fun newImageLoader(): ImageLoader =
+        buildArtworkImageLoader(this).also { artworkImageLoader = it }
+
+    internal fun trimLauncherArtwork() {
+        // The game Activity keeps the app visible, so Coil does not receive UI_HIDDEN then.
+        // Do not initialize an image loader just to trim it.
+        artworkImageLoader?.memoryCache?.trimMemory(ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN)
+    }
 
     private fun isPs2Process(): Boolean {
         val name =
@@ -115,6 +133,18 @@ class PluviaApp : Application() {
         private var gameActivityCount = 0
 
         fun isGameSessionActive(): Boolean = gameActivityCount > 0
+
+        internal fun buildArtworkImageLoader(context: Context): ImageLoader {
+            val manager = context.getSystemService(ACTIVITY_SERVICE) as ActivityManager
+            val budgetMb = (manager.memoryClass / 8).coerceIn(1, if (manager.isLowRamDevice) 16 else 48)
+            return ImageLoader.Builder(context)
+                .memoryCache {
+                    MemoryCache.Builder(context)
+                        .maxSizeBytes(budgetMb * 1024 * 1024)
+                        .build()
+                }
+                .build()
+        }
     }
 
     private fun preloadSystemLibraries() {

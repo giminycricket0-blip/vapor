@@ -3220,4 +3220,34 @@ Installed path:
     <string name="vapor_driver_missing">The selected graphics driver (%1$s) is missing or incomplete. Reinstall it, or open Graphics in game settings and choose another driver. Your saved settings have not been changed.</string>
     <string name="vapor_driver_unavailable">The selected graphics driver (%1$s) could not start on this device. In game settings, open Graphics and choose System or another compatible driver. Your saved settings have not been changed.</string>
     <string name="vapor_driver_system_unavailable">The system Vulkan driver could not start. Restart Vapor and try again. If this continues, check the graphics settings and export a diagnostic log.</string>
+    <string name="vapor_onboarding_steam">Steam account</string>
+    <string name="vapor_onboarding_game_support">Game support</string>
+    <string name="vapor_onboarding_your_library">Your Steam library</string>
+    <string name="vapor_onboarding_connect_hint">Sign in with the Steam mobile app or your account name.</string>
+    <string name="vapor_onboarding_connected_body">Your library will update as Steam syncs. Choose a game to install when you are ready.</string>
+    <string name="vapor_onboarding_local_title">Your PC games.
+In your hands.</string>
+    <string name="vapor_login_title">Sign in to Steam</string>
+    <string name="vapor_login_body">Scan with the Steam mobile app, or use your account name.</string>
+    <string name="vapor_login_qr_tab">QR code</string>
+    <string name="vapor_login_account_tab">Account name</string>
+    <string name="vapor_login_account_name">Steam account name</string>
+    <string name="vapor_login_account_hint">Use your Steam account name, which can differ from your profile name.</string>
+    <string name="vapor_login_remember">Keep me signed in</string>
+    <string name="vapor_login_show_password">Show password</string>
+    <string name="vapor_login_hide_password">Hide password</string>
+    <string name="vapor_login_signing_in">Signing in…</string>
+    <string name="vapor_login_failed">Unable to sign in. Check your account details and connection, then try again.</string>
+    <string name="vapor_login_qr_hint">In the Steam mobile app, open Steam Guard and scan this code. Then approve the sign-in.</string>
+    <string name="vapor_login_qr_failed">QR sign-in is unavailable. Retry or use your account name.</string>
+    <string name="vapor_login_qr_retry">Get a new code</string>
+    <string name="vapor_login_guard_title">Check Steam Guard</string>
+    <string name="vapor_login_guard_body">Complete the confirmation requested by Steam to continue.</string>
+    <string name="vapor_login_guard_approve">Approve in the Steam app</string>
+    <string name="vapor_login_guard_waiting">Waiting for approval…</string>
+    <string name="vapor_login_guard_code">Enter your Steam Guard code</string>
+    <string name="vapor_login_code_incorrect">That code was not accepted. Enter the latest code and try again.</string>
+    <string name="vapor_login_verify">Confirm code</string>
+    <string name="vapor_login_verifying">Checking code…</string>
+    <string name="vapor_login_another_method">Use another sign-in method</string>
 </resources>

@@ -71,7 +71,9 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 | **Store and controls** | Public Store recovery, native UI layouts, and injected controller navigation pass local checks. | Authenticated free/demo and paid flows, live web sign-in, physical controllers, and phone UX acceptance. |
 | **Android platform** | ARM64 development APK; minimum Android 10. **39/39** APK native libraries and ZIP packaging pass 16 KB alignment. Native TLS/probe checks and startup pass on 4 KB / 16 KB emulators. | Modern target SDK 36 and complete Wine/FEX gameplay on 16 KB kernels. The current build targets SDK **28** and compiles against **35**. |
 
-The latest game-page build passes **26 selected Android UI tests in one clean batch**. The preceding Store/Home pass records **46 UI tests and 14 catalog JVM tests**. These are distinct test scopes, not a whole-project total. Full Android lint did not finish and remains unqualified. [Portable UI record](docs/evidence/2026-10-17-ui.json) · [Full qualification history](docs/QUALIFICATION.md).
+The local onboarding build passes **31 selected Android UI tests** and **25 JVM tests**, with three additional portrait rerenders of the same preview cases. Preparation, Steam sign-in and Steam Guard now share Vapor's native branding and layout. Live account completion and phone acceptance remain pending. [Onboarding record](docs/evidence/2026-10-18-onboarding.json).
+
+The preceding game-page build records **26 selected Android UI tests**; the earlier Store/Home pass records **46 UI tests and 14 catalog JVM tests**. These are distinct scopes, not a whole-project total. Full Android lint remains unqualified. [Game-page record](docs/evidence/2026-10-17-ui.json) · [Full qualification history](docs/QUALIFICATION.md).
 
 ## How Steam runs
 

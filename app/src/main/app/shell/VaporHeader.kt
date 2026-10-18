@@ -1,5 +1,7 @@
 package com.winlator.cmod.app.shell
 
+import com.winlator.cmod.shared.ui.branding.VaporBrandMark
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState

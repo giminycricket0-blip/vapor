@@ -1,0 +1,309 @@
+{
+  "date": "2026-10-18",
+  "base_commit": "cfe8c73c5175cd952902835bcda0cd7ecb76c386",
+  "source_state": "Local changes; not committed or pushed",
+  "scope": "Setup and Steam sign-in UI, auth challenge lifecycle and existing idle-work regressions; not whole-project or game qualification.",
+  "source_sha256": {
+    "app/src/androidTest/kotlin/com/winlator/cmod/feature/stores/steam/ui/SteamOnboardingUiTest.kt": "239a5565a7653c1095289cb9129293a43f5fdea4127d998aaf3c6e2a95b03bef",
+    "app/src/main/app/PluviaApp.kt": "1f92be35801f0f06efd0b6ad57d42dae06fe391148a075994960b164d3171610",
+    "app/src/main/app/shell/UnifiedActivity.kt": "b35567d308aa3fe12b3bb8e33e7c142a35f0b5123935b662330083557e822a4e",
+    "app/src/main/app/shell/UnifiedActivityHub.kt": "81fb816659e3516b6a34ed952de91728b77099eee6928a02234126b60f60db2d",
+    "app/src/main/app/shell/VaporGamingUI.kt": "03a0250849902e166299ca29172fb7e8495bcb9ed3d59ad127fd878aa5cdac00",
+    "app/src/main/app/shell/VaporHeader.kt": "6ed9d09a1ae480fae984ef670f3dffdce438d6bc3cb2bee8500312dd50e4d85c",
+    "app/src/main/feature/settings/stores/SteamAccountSetupScreen.kt": "316c350cebd8078c718db373e91300253e8171091d0e6a4fa9c967d8b78c55e7",
+    "app/src/main/feature/setup/PrepareVaporScreen.kt": "df98d7dba03959ba982f7cd7ee6ca3448fc5dc62cd95e39e752524ada55562e4",
+    "app/src/main/feature/stores/common/StoreArtworkCache.kt": "60c33ab05fb0c93798b5f1acdc2e0a76672230888350f686f54d0c0397351180",
+    "app/src/main/feature/stores/steam/SteamLoginActivity.kt": "40eea61ba2ee8c772415aacf9cd21597fb74d54c5c8d39d2fffb5b67cd92f64e",
+    "app/src/main/feature/stores/steam/ui/SteamLoginScreen.kt": "ccba814af248ab76243e5bde0664eebd68b6f9f82c9c68332e611f8af0a0858c",
+    "app/src/main/feature/stores/steam/ui/SteamLoginViewModel.kt": "a23208d491020e6b8ac92e72f7c532d7bf57556c5e5a557698b348c5d6281cb3",
+    "app/src/main/res/values/strings.xml": "8b629fd70366c5c3d99568c9b41056c47c532c7817fa6587949017c2cd4e4340",
+    "app/src/main/shared/ui/branding/VaporBrandMark.kt": "89057d014181af665aee687f8eaac5b3c62c051dec819e15e2a29b0d5a8073f8",
+    "app/src/main/shared/ui/layout/VaporOnboardingLayout.kt": "ac828709a2c41759fac8b9154eecd0c727c638727602afc8e988bd33171ffbd2",
+    "app/src/test/kotlin/com/winlator/cmod/app/ArtworkMemoryTest.kt": "7ef1134898db3ce1ddd5fe1ac98d85d131b0064096a9a0a4e1edf569a2be27d5",
+    "app/src/test/kotlin/com/winlator/cmod/feature/stores/common/StoreArtworkCacheTest.kt": "1ebcc93bc78ef6b96adb9c002837f7230460d15a1882090bf2623c0a5c2defdc",
+    "app/src/test/kotlin/com/winlator/cmod/feature/stores/steam/service/SteamLoginStateTest.kt": "84c79bcdc9849b6e504d0e38f0fb247274faa9d3998964ea35514d95b91dd535"
+  },
+  "artifact": {
+    "filename": "Vapor-0.1.0-onboarding-dev.apk",
+    "package": "app.vapor.android",
+    "version": "0.1.0-dev",
+    "abi": "arm64-v8a",
+    "bytes": 685645396,
+    "sha256": "249a659157aab946a31af202ef689880eee8a8705d99428b975e4300253cb048",
+    "signer_sha256": "7e122c925e37a47696abc9b111ec747872061cb1d686eb7be9880cfafa4a93f1",
+    "min_sdk": 29,
+    "target_sdk": 28,
+    "compile_sdk": 35
+  },
+  "unit": {
+    "tests": 25,
+    "failures": 0,
+    "errors": 0,
+    "suites": [
+      {
+        "name": "com.winlator.cmod.app.ArtworkMemoryTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.library.LibraryViewTest",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.common.StoreArtworkCacheTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.service.SteamLoginStateTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "log_sha256": "0beca2746d0a021cd7c509517c92c4b4beade657b0ff3e4b73c618c4b1f6a217",
+    "note": "Same source; serial rerun without the emulator passed after three artwork-transfer timeouts in a concurrent build/test attempt."
+  },
+  "android_ui": {
+    "tests": 31,
+    "failures": 0,
+    "classes": {
+      "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest": 15,
+      "com.winlator.cmod.feature.setup.PrepareVaporScreenTest": 6,
+      "com.winlator.cmod.app.shell.HomeUiTest": 10
+    },
+    "cases": [
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "previewSteamGuard",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "qrFailureCanBeRetriedOrSwitchedToCredentials",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "connectedAccountContinuesWithoutRequestingAnotherLogin",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "previewLogin",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "emailCodeRejectionCanBeEditedAndConfirmed",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "passwordVisibilityAndRememberLabelHaveAccessibleActions",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "failedLoginShowsRecoveryWithoutBlamingOnlyThePassword",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "phoneMethodSwitchPreservesEnteredCredentials",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "largeTextNarrowLoginKeepsRecoveryAndBackReachable",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "deviceApprovalFailureOffersAnotherMethodInsteadOfEndlessWaiting",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "previewWelcome",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "largeTextNarrowWelcomeKeepsPrimaryAndSkipReachable",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "credentialsRequireValuesAndBusyLoginCannotBeRepeated",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "accountDialogControllerConfirmsOnceAndRejectsOtherFaceButtons",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.stores.steam.ui.SteamOnboardingUiTest",
+        "test": "welcomeKeepsConnectAndSkipSeparate",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.setup.PrepareVaporScreenTest",
+        "test": "activePreparationShowsStepProgressAndCannotBeFinishedOrSwitched",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.setup.PrepareVaporScreenTest",
+        "test": "failureOffersRetryAndKeepsContinueUnavailable",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.setup.PrepareVaporScreenTest",
+        "test": "startAndAdvancedHaveSeparateActions",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.setup.PrepareVaporScreenTest",
+        "test": "unknownProgressDoesNotInventAPercentage",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.setup.PrepareVaporScreenTest",
+        "test": "successfulPreparationOffersLibraryAndOptionalDetails",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.feature.setup.PrepareVaporScreenTest",
+        "test": "missingPermissionOffersAccessBeforePreparation",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.app.shell.HomeUiTest",
+        "test": "populatedHomeRendersProductionComponentsWithLabeledSampleData",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.app.shell.HomeUiTest",
+        "test": "openingHomeDoesNotLaunchAndPrimaryActionUsesCurrentSelection",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.app.shell.HomeUiTest",
+        "test": "homeControllerMovesHorizontallyAndOpensOnReleaseOnly",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.app.shell.HomeUiTest",
+        "test": "settingsBelongToTheSelectedGame",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.app.shell.HomeUiTest",
+        "test": "tappingAnotherCoverSelectsItBeforeOpening",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.app.shell.HomeUiTest",
+        "test": "secondTapOnSelectedCoverOpensOnlyThatGame",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.app.shell.HomeUiTest",
+        "test": "uninstalledGameOffersInstallThroughItsExistingManager",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.app.shell.HomeUiTest",
+        "test": "wideShelfPreservesPortraitArtAndSpaceBelowTheGameAction",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.app.shell.HomeUiTest",
+        "test": "shortViewportAndLargeTextStillReachTheAction",
+        "result": "passed"
+      },
+      {
+        "class": "com.winlator.cmod.app.shell.HomeUiTest",
+        "test": "withoutHistoryTheHeadingDoesNotClaimRecentPlay",
+        "result": "passed"
+      }
+    ],
+    "seconds": 134.508,
+    "log_sha256": "045f14cb69f7948164d6eeda02719e37520681ed1b67ad2a3a562e50e31e0e65",
+    "application": "Bare Application fixture; no Steam auth started by these cases."
+  },
+  "portrait_previews": {
+    "tests": 3,
+    "failures": 0,
+    "new_unique_cases": 0,
+    "log_sha256": "fd0530c2847243e37447ce2a442aaa17cca864e78d31559bc513288008a05b1d"
+  },
+  "emulator": {
+    "avd": "Vapor_UI_API36",
+    "api": 36,
+    "page_size": 4096,
+    "steam_account": "none",
+    "installed_apk_sha256": "249a659157aab946a31af202ef689880eee8a8705d99428b975e4300253cb048",
+    "normal_application": {
+      "journey": "Home -> Connect Steam -> account setup -> A attempts -> Steam sign-in -> injected gamepad B -> account setup -> Set up later -> Home -> Android Home -> foreground Home",
+      "home_returned": true,
+      "controller_b_returned": true,
+      "credentials_entered": false,
+      "steam_guard_code_entered": false,
+      "android_runtime_errors": "",
+      "note": "A was injected more than once while navigation was in progress. A later screen snapshot confirmed sign-in; exact-once A is covered by the component suite, not this smoke. No timing benchmark or physical controller claim."
+    }
+  },
+  "visual_review": {
+    "captures_reviewed": 6,
+    "orientations": [
+      "2400x1080 landscape",
+      "1080x2400 portrait"
+    ],
+    "selected_captures": [
+      {
+        "path": "docs/images/onboarding-welcome-landscape.png",
+        "sha256": "4c990246176da52bdda4407c97a08f644c77359a17992a5368476bacd5306b80",
+        "content": "Production Compose UI with synthetic authentication state; QR cannot sign into Steam."
+      },
+      {
+        "path": "docs/images/onboarding-login-portrait.png",
+        "sha256": "2b9932587e4e7e4424c92436d3ad7259bbd07efab44ee862baeb0fade2c39ecc",
+        "content": "Production Compose UI with synthetic authentication state; QR cannot sign into Steam."
+      }
+    ],
+    "observations": "Shared logo and dark theme; card text contrast corrected; compact landscape welcome keeps Connect and Skip visible. Narrow/large-text recovery actions are scroll reachable."
+  },
+  "packaging": {
+    "signature": "pass",
+    "zip_16kb_alignment": "pass",
+    "elf_aligned": 39,
+    "elf_libraries": 39
+  },
+  "runtime_comparison": {
+    "baseline": "Vapor-0.1.0-idle-artwork-dev.apk",
+    "entries": 222,
+    "identical": 222,
+    "changed": [],
+    "missing": []
+  },
+  "pending": [
+    "Live Steam credential/QR/Guard completion",
+    "Physical gamepad navigation",
+    "Xiaomi visual and user acceptance",
+    "Automatic graphics preset retries and missing guided VKD3D package",
+    "Onimusha gameplay and diagnosed recovery",
+    "Full Android lint; modern target execution; full 16 KB game runtime",
+    "Measured PSS, cache latency or game performance improvement"
+  ],
+  "release": "Local debug APK; no commit, push or public binary release."
+}

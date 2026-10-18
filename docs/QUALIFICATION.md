@@ -8,6 +8,117 @@ screenshot. On 15 October the owner confirmed that **all tested games had sound*
 reported EU3, TF2, You Have to Win the Game and Helltaker sessions. Audio is owner-confirmed;
 persistence and repeat-launch checks remain separate.
 
+## Setup and Steam sign-in — 18 October 2026
+
+The preparation, account-connection, sign-in and Steam Guard screens now share
+Vapor's native logo, theme, measured header and scrollable content. Narrow
+windows use QR/account tabs; wide windows show both methods. Busy, failure,
+retry, password-visibility and code-rejection states stay with the existing
+authentication/service owners. Abandoned and superseded Steam Guard code
+requests are cancelled rather than left waiting for a later submission.
+
+| Check | Result | Boundary |
+| --- | --- | --- |
+| Native UI batch | **31/31 pass** | 15 onboarding cases, 6 existing preparation cases and 10 existing Home cases on the account-free API 36 / 4 KB ARM64 emulator. Includes dialog A/B handling, rejected/busy/retry states and injected 280 dp / 1.6 font-scale layouts. |
+| Portrait renders | **3/3 pass** | Repeat renders of welcome, sign-in and Steam Guard; these are not three additional unique interaction cases. All six portrait/landscape captures were visually inspected. Authentication state and QR content are synthetic. |
+| JVM batch | **25/25 pass** | Four actual ViewModel/Steam Guard challenge tests plus the existing 21 image-budget, cache-transfer and Library checks. No account or native authentication is started by these tests. |
+| Normal Application | **Smoke pass** | Signed-out Home → account setup → Steam sign-in → injected gamepad B back → Set up later → Home, then Android Home and foreground return. Installed APK hash matches the artifact. No credentials/Guard codes entered or AndroidRuntime errors observed. A required a later screen snapshot; exact-once confirmation is covered by the component test, not this smoke check. |
+| Package | **Pass** | Debug signature, 16 KB ZIP alignment and 39/39 native ELF-library alignment. All 222 runtime/native entries are byte-identical to the idle/artwork APK. |
+
+The first UI batch exposed a dialog-focus failure, and screen review exposed
+dark-on-dark card text. Both were corrected before the final passing batch.
+A combined build/test attempt under concurrent emulator load timed out in three
+artwork-transfer cases; the unchanged 25-case JVM batch passed when run serially
+without the emulator. These are scoped local checks, not a whole-project total.
+Full Android lint was not rerun. Live Steam sign-in/Guard completion, physical
+controllers, phone appearance and account-side round trips remain pending.
+
+Local artifact: `Vapor-0.1.0-onboarding-dev.apk`, **685645396 bytes**, SHA-256
+`249a659157aab946a31af202ef689880eee8a8705d99428b975e4300253cb048`.
+It retains `app.vapor.android`, the existing debug signer, minimum SDK 29 and
+target SDK 28. No modern-target gameplay, full 16 KB runtime, measured RAM or
+new game-compatibility result is inferred. See the
+[UI design](UI-UX.md#setup-and-steam-sign-in--18-october-2026) and
+[portable evidence](evidence/2026-10-18-onboarding.json).
+
+## Onimusha: Way of the Sword Demo — 18 October 2026
+
+The owner reports that the demo opens on the Xiaomi 17 Pro / Snapdragon 8 Elite
+Gen 5, then reports **no GPU support**. Gameplay has not been established. The
+exact dialog text, installed demo build, APK identity, selected Wine/driver/VKD3D
+versions and diagnostic log have not been supplied. This is a failure on the
+reported configuration, not a finding that the game cannot run on every device.
+
+[Steam's catalog response](https://store.steampowered.com/api/appdetails?appids=3974650&l=english)
+identifies demo `3974650` and parent game `2638890`; the installed phone build
+has not been captured. The demo response lists only the 64-bit CPU/OS requirement,
+so the fuller parent-game requirements below are an investigation lead rather
+than independently confirmed demo feature requirements.
+
+The [full game's Steam requirements](https://store.steampowered.com/app/2638890/Onimusha_Way_of_the_Sword/?l=english)
+list DirectX 12. The first investigation is therefore the D3D12 adapter and
+feature checks exposed through the selected Wine/VKD3D/driver combination; the
+message alone does not identify a missing feature or establish insufficient
+hardware performance. No game-specific overrides have been applied.
+
+The owner subsequently found **VKD3D Version: None**, **Feature Level: 12_1**,
+an ARM64EC DXVK selection, X11 and FIFO. The precise DXVK version and underlying
+driver version remain unconfirmed. The feature-level setting is not a replacement
+for a D3D12 implementation. `VaporPreparation.packages` currently pins Proton,
+FEX and DXVK 1.10.3 ARM64EC, but no VKD3D package. This is a concrete gap in the
+guided graphics setup and a possible explanation of the rejection; a corrected
+configuration has not yet been tested on the phone.
+
+In the current source, `ContainerCreation.buildDefaultDxWrapperConfig` selects
+an installed VKD3D profile and falls back to `None` when none is available.
+`XServerDisplayActivity.applyVkd3dWrapper` restores Wine's builtin D3D12 when
+`None` is selected. Neither source path establishes which setting was active
+on the phone. Capture the existing launch diagnostics before changing one
+setting at a time; GPU-name or feature-level overrides do not implement missing
+graphics features.
+
+## Artwork and idle-work checks — 18 October 2026
+
+The first idle-work pass extends the existing Coil loader and Library artwork owner.
+The decoded-image cache is capped at 48 MiB (16 MiB on Android low-RAM devices),
+with smaller heaps limited further to one eighth of their heap class. The loader
+remains lazy and retains its disk cache and Android memory-pressure callbacks.
+The stopped launcher also trims cached artwork when a game Activity keeps the
+application visible. This does not discard the Library snapshot or stop a game.
+
+Library prefetch now follows the screen's STARTED lifecycle. Four workers replace
+one coroutine per artwork entry. Cancellation closes active HTTP calls, waits for
+file cleanup, and preserves completed files. Temporary files are unique and only
+complete responses are renamed into the existing cache. Invalid URLs and HTTP
+failures remain isolated to the affected artwork.
+
+| Check | Result | Boundary |
+| --- | --- | --- |
+| Image budget | **3/3 pass** | Actual Coil cache limits with simulated 64, 256, 512 and 1024 MiB Android heap classes and low-RAM flags. |
+| Artwork transfers | **6/6 pass** | Loopback HTTP, real cache files, duplicate/repeat reuse, a 40-image bounded batch, cancellation during headers/body, retry, truncated data and per-image failures. |
+| Existing Library rules | **12/12 pass** | Existing installed/owned views, history, filtering and removal semantics. |
+| Packaged native TLS | **5/5 pass** | Existing JNI curl/OpenSSL tests on the account-free API 36 / 4 KB ARM64 emulator, after verifying the installed APK hash. Trusted transfer, certificate/hostname rejection, truncation and HTTP failure. |
+| Normal Application | **Smoke pass** | Signed-out Home → public Store with rendered artwork → Home, then Android Home and return. No AndroidRuntime errors observed. This is not a Library containing owned games or a latency benchmark. |
+| Package | **Pass** | Signature, 16 KB ZIP alignment and **39/39** native ELF-library alignment. No modern-target or 16 KB runtime claim. |
+
+All **21 JVM checks pass** in one final Gradle run. Robolectric uses a bare
+Application at API 35; the checks do not launch Steam or a Windows game. They do
+not establish real-device lifecycle behavior, measured PSS, faster navigation or
+gameplay savings. Foreground 150–250 MB PSS, background 100–150 MB with no active
+work, and a one-second cached warm return on the Xiaomi remain proposed budgets.
+No phone is connected; live account checks remain deferred. See the
+[idle-work design](UI-UX.md#artwork-and-idle-work--18-october-2026) and
+[portable verification record](evidence/2026-10-18-idle-artwork.json).
+
+Local development artifact: `Vapor-0.1.0-idle-artwork-dev.apk`, **676045702 bytes**,
+SHA-256 `d1b1c93a5df53aa37de46a548971eeb3bc9062151b22cc5b93961f8cbfde4bb1`.
+It uses the existing package identity and debug signing certificate. All **222**
+bundled runtime/native entries are compared with the preceding game-page APK:
+**221 are byte-identical**. The clean build regenerates `libcrypto.so` from the
+same pinned OpenSSL 1.1.1q source, with a changed build timestamp; it passes the
+five packaged native TLS tests above. Windows hosts, drivers and runtime archives
+remain unchanged. No public binary release is designated by these checks.
+
 ## Repository snapshot and artifact retention — 17 October 2026
 
 The first Vapor source snapshot retains the upstream history, component licenses,

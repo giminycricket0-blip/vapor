@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-18",
+  "base_commit": "cfe8c73c5175cd952902835bcda0cd7ecb76c386",
+  "source_state": "local changes; not committed or pushed",
+  "source_sha256": {
+    "app/src/main/app/PluviaApp.kt": "1f92be35801f0f06efd0b6ad57d42dae06fe391148a075994960b164d3171610",
+    "app/src/main/app/shell/UnifiedActivity.kt": "b35567d308aa3fe12b3bb8e33e7c142a35f0b5123935b662330083557e822a4e",
+    "app/src/main/app/shell/UnifiedActivityHub.kt": "81fb816659e3516b6a34ed952de91728b77099eee6928a02234126b60f60db2d",
+    "app/src/main/feature/stores/common/StoreArtworkCache.kt": "60c33ab05fb0c93798b5f1acdc2e0a76672230888350f686f54d0c0397351180",
+    "app/src/test/kotlin/com/winlator/cmod/app/ArtworkMemoryTest.kt": "7ef1134898db3ce1ddd5fe1ac98d85d131b0064096a9a0a4e1edf569a2be27d5",
+    "app/src/test/kotlin/com/winlator/cmod/feature/stores/common/StoreArtworkCacheTest.kt": "1ebcc93bc78ef6b96adb9c002837f7230460d15a1882090bf2623c0a5c2defdc"
+  },
+  "artifact": {
+    "filename": "Vapor-0.1.0-idle-artwork-dev.apk",
+    "package": "app.vapor.android",
+    "version": "0.1.0-dev",
+    "abi": "arm64-v8a",
+    "bytes": 676045702,
+    "sha256": "d1b1c93a5df53aa37de46a548971eeb3bc9062151b22cc5b93961f8cbfde4bb1",
+    "signature": "Android Debug; verified",
+    "min_sdk": 29,
+    "target_sdk": 28
+  },
+  "unit_tests": {
+    "tests": 21,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "name": "com.winlator.cmod.app.ArtworkMemoryTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.winlator.cmod.feature.library.LibraryViewTest",
+        "tests": "12",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.common.StoreArtworkCacheTest",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      }
+    ]
+  },
+  "emulator": {
+    "avd": "Vapor_UI_API36",
+    "api": 36,
+    "page_size": 4096,
+    "account": "none",
+    "installed_apk_matches_artifact": true,
+    "native_tls_tests": {
+      "tests": 5,
+      "failures": 0
+    },
+    "normal_application_smoke": "Home -> public Store with rendered artwork -> Home -> Android Home -> foreground Home; no AndroidRuntime errors observed"
+  },
+  "packaging": {
+    "signature": "pass",
+    "zip_16kb_alignment": "pass",
+    "elf_16kb_aligned_libraries": 39,
+    "elf_native_library_count": 39
+  },
+  "runtime_comparison": {
+    "baseline": "Vapor-0.1.0-game-page-dev.apk",
+    "entries": 222,
+    "identical": 221,
+    "changed": [
+      "lib/arm64-v8a/libcrypto.so"
+    ],
+    "note": "Clean rebuild of the same pinned OpenSSL 1.1.1q source. Only differing long printable string is the build timestamp; packaged native TLS tests pass. This is not a claim that all bytes or code sections are identical."
+  },
+  "measurements": {
+    "physical_device_pss": null,
+    "matched_before_after_pss": null,
+    "time_to_visible_library": null
+  },
+  "boundaries": [
+    "21 JVM checks and 5 existing native TLS emulator tests are separate suites.",
+    "Public signed-out Store smoke is not live Steam authentication, licensed downloads, Cloud, chat, achievements or gameplay qualification.",
+    "RAM and warm-return figures are proposed budgets, not demonstrated savings.",
+    "Full Android lint not rerun.",
+    "No public APK release, source commit or push."
+  ]
+}
