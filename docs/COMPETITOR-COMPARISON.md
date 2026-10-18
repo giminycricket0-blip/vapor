@@ -2,13 +2,50 @@
 
 Initial comparison checked **14 October 2026**; dated follow-ups below record later checks, including Mantis PlayHub and cross-chipset readiness on **15 October 2026**. This compares the current Vapor checkout with primary project documentation, public code descriptions and release notes. Competing apps were not installed or benchmarked in these passes. A documented feature, a maintainer's device result and a result reproduced in Vapor are different evidence.
 
-**DroidDeck is currently the closest match to the exact SteamOS experience the user describes. Vapor's credible direction is a simpler Android application with a Steam-style interface, built on WinNative. It does not yet have a proven performance or compatibility advantage.** This is an assessment of the architectures and current evidence, not a claim that every game works in DroidDeck.
+**DroidDeck is the closest architectural match to Valve's exact SteamOS interface. Vapor's direction is a native Android application with a Steam-first interface, built on WinNative, and a qualified component/launch path. It does not yet have a proven performance or compatibility advantage.** This is an assessment of the architectures and current evidence, not a claim that every game works in DroidDeck.
+
+## Positioning refresh — 19 October 2026
+
+The public [GameNative README](https://github.com/utkarshdalal/GameNative) and
+[DroidDeck README](https://github.com/Droid-Deck/DroidDeck) were checked again for
+this update. GameNative advertises automatic known configurations, Cloud saves,
+controllers, DLC, Workshop and branches. Native launching, direct Steam downloads
+and automatic settings therefore are **shared approaches**, not unique Vapor claims.
+DroidDeck uses Valve's actual Big Picture client and Linux runtime; that supplies
+more authentic client behavior directly than rebuilding each feature in Compose.
+Neither project was installed or benchmarked in this pass.
+
+Vapor's present distinction is the combination of:
+
+- A Steam / Big Picture-style native Android shell, with secondary stores in Settings.
+- The source-visible host inherited from WinNative, with Android-service/genuine-host
+  session ownership and explicit close-time Cloud reservations. GameNative's
+  [current notices](https://github.com/utkarshdalal/GameNative/blob/master/THIRD_PARTY_NOTICES)
+  identify proprietary redirect/bootstrap/launcher helpers; Valve libraries used
+  by either approach remain proprietary too.
+- Capability-filtered selection among installed graphics components, with bounded
+  retries for explicit startup errors after clean teardown. This differs from a
+  claim that every crash can be solved by trying random settings. Phone retry and
+  Onimusha recovery remain unqualified.
+- Reproducible work below the UI: the 19 October Wine comparison corrects lost
+  clipped-pointer events using unmodified upstream patches, and the FEX cache
+  candidate preserves mixed-architecture reuse through its recorded test sequence.
+  The Wine patches come from the GameNative/proton-wine project and are credited;
+  adopting them is integration work, not an exclusive Vapor invention.
+
+Ghostrunner Demo now has a further phone confirmation of working gameplay and
+sound with some hitching. Its supplied log is consistent with a D3D11 path;
+Onimusha's GPU dialog and previously missing VKD3D selection are a separate D3D12
+investigation. Lower settings may reduce cost, but stable 30–60 FPS, universal
+older-chipset limits and a competitor speed/RAM ranking are not established.
+See [component evidence](QUALIFICATION.md#runtime-components--19-october-2026)
+and [Ghostrunner evidence](QUALIFICATION.md#ghostrunner-demo-loading-and-gameplay-observation--15-october-2026).
 
 ## Comparison
 
 | Project | Interface and local execution | Source availability | What this means for Vapor |
 | --- | --- | --- | --- |
-| **Vapor** | Native Compose Home, Library, Store, Downloads and Settings. Existing Steam services and genuine-client launch host; Windows games use the inherited Wine/FEX graphics and input stack. | GPL-3.0 application foundation; current changes are local and uncommitted. Runtime source and distribution review remains open. | The owner reports EU3 running flawlessly and TF2 training with Steam connected and no observed frame drops on Xiaomi Snapdragon 8 Elite Gen 5. Exact settings and measured performance remain unrecorded; the separate six-core-game matrix is pending. [Vapor evidence](QUALIFICATION.md#owner-reported-xiaomi-gameplay--14-october-2026) |
+| **Vapor** | Native Compose Home, Library, Store, Downloads and Settings. Existing Steam services and genuine-client launch host; Windows games use the inherited Wine/FEX graphics and input stack. | GPL-3.0 application and inherited host source. Proprietary Valve libraries and component-specific licenses remain separate; complete runtime distribution review is open. | Phone reports include EU3, account-connected TF2 training, Helltaker, You Have to Win the Game and Ghostrunner Demo with sound. Ghostrunner has some hitching. Matched performance and the separate six-core-game matrix remain pending. [Vapor evidence](QUALIFICATION.md) |
 | **DroidDeck** | Runs Valve's actual Steam Big Picture client in a Linux environment inside Android, with ARM64 Proton for Windows games. | GPL-3.0 project code; Valve's Steam client remains proprietary. | Strongest reference for authentic Steam UI and client features. Current requirements specify supported Adreno hardware and a child-process setting; it is not a universal Android runtime. [Project and requirements](https://github.com/Droid-Deck/DroidDeck) |
 | **WinNative** | Android launcher integrating Windows games, Steam/Epic/GOG and retro games, with substantial runtime and input work. | GPL-3.0 project; component-specific notices still matter. | Our direct foundation and first code donor. Changes should normally extend these existing owners. [Project](https://github.com/WinNative-Emu/WinNative) |
 | **Winlator** | General Windows application/game environment using Wine and Box86/Box64, with containers and per-shortcut settings. | Public repository identifies LGPL-2.1; dependencies have their own licenses. | Useful execution and compatibility reference. Its documented workflow exposes more manual configuration than Vapor's intended install-to-Play journey. [Project](https://github.com/brunodev85/winlator) |

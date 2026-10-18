@@ -43,4 +43,20 @@ class GraphicsDriverProbeDeviceTest {
             assertEquals(renderer, GPUInformation.getRenderer("System", context))
         }
     }
+
+    @Test fun featureSnapshotDoesNotBorrowSystemCapabilitiesForAMissingDriver() {
+        val missing = GPUInformation.probeCapabilities("vapor-absent-features", context)
+        assertEquals(7, missing.size)
+        assertTrue(missing.all { it == 0L })
+        val actual = GPUInformation.probeCapabilities("System", context)
+        assertEquals(7, actual.size)
+        // This qualification device must actually exercise Features2, not pass on an empty result.
+        assertTrue("System Features2 snapshot unavailable", actual[0] >= GraphicsDriverCatalog.Capabilities.vulkan(1, 0))
+        assertTrue(actual[4] in 0..1023)
+        assertEquals(GPUInformation.getVendorID("System", context).toLong(), actual[1])
+        val caps = GraphicsDriverCatalog.Capabilities(actual.toList())
+        File(context.getExternalFilesDir(null), "Vapor-vulkan-features.txt").writeText(
+            "snapshot=${actual.joinToString(",")}\nlegacyFloor=${caps.legacyFloor}\nmodernFloor=${caps.modernFloor}\ndirect3d12Floor=${caps.direct3d12Floor}\n")
+        assertNotEquals("Unknown", GPUInformation.getRenderer("System", context))
+    }
 }

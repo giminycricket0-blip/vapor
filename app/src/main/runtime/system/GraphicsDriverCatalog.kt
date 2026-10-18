@@ -12,6 +12,34 @@ object GraphicsDriverCatalog {
     private val supportCache = ConcurrentHashMap<String, Boolean>()
     private val extensionCache = ConcurrentHashMap<String, List<String>>()
 
+    /** Underlying driver features, not a promise that a particular game/feature level works. */
+    data class Capabilities(val values: List<Long>) {
+        val api get() = values.getOrElse(0) { 0L }
+        val identity get() = values.joinToString(":")
+        private fun feature(bit: Int) = (values.getOrElse(4) { 0L } and (1L shl bit)) != 0L
+        val textureCompressionBC get() = feature(0)
+        val legacyFloor get() = api >= vulkan(1, 1) && feature(7)
+        val modernFloor get() = api >= vulkan(1, 3) && feature(1) && feature(4) && feature(9) && feature(7)
+        val direct3d12Floor get() = modernFloor && feature(2) && feature(3) && feature(5) && feature(6) && feature(8)
+
+        companion object {
+            fun vulkan(major: Int, minor: Int) = (major.toLong() shl 22) or (minor.toLong() shl 12)
+        }
+    }
+
+    /** No cache: imported payloads and device features are rechecked for each launch. */
+    @JvmStatic
+    fun probe(context: Context, version: String): Capabilities? {
+        if (unavailableReason(context, version) != null) return null
+        return try {
+            val values = GPUInformation.probeCapabilities(version, context)
+            if (values == null || values.size != 7 || values[0] == 0L) null else Capabilities(values.toList())
+        } catch (error: Throwable) {
+            Log.w(TAG, "Feature probe failed: $version", error)
+            null
+        }
+    }
+
     @JvmStatic
     fun supportedVersions(context: Context): List<String> {
         val candidates = linkedSetOf("System")

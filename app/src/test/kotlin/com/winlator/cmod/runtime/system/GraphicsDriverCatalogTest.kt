@@ -26,6 +26,7 @@ class GraphicsDriverCatalogTest {
 
     @Before fun reset() {
         DriverProbeShadow.renderers.clear()
+        DriverProbeShadow.capabilities.clear()
         DriverProbeShadow.renderers["System"] = "Adreno (TM) 830"
         GraphicsDriverCatalog.invalidate()
         SetupWizardActivity.recordInstalledDriver(context, "")
@@ -154,11 +155,16 @@ class GraphicsDriverCatalogTest {
 class DriverProbeShadow {
     companion object {
         val renderers = mutableMapOf<String, String>()
+        val capabilities = mutableMapOf<String, LongArray>()
 
         @JvmStatic @Implementation fun __staticInitializer__() = Unit
 
         @JvmStatic @Implementation
         fun getRenderer(driverName: String?, context: Context?): String =
             renderers[driverName ?: "System"] ?: "Unknown"
+
+        @JvmStatic @Implementation
+        fun probeCapabilities(driverName: String?, context: Context?): LongArray =
+            capabilities[driverName ?: "System"] ?: LongArray(7)
     }
 }

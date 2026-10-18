@@ -171,10 +171,31 @@ This is an identity inventory, not a completed source or rights audit. An archiv
 | `DXVK-2.7.1-1-gplasync-arm64ec-0` | [Dxvk-2.7.1-arm64ec-gplasync.wcp](https://github.com/nicholasx417/WinNative-Components/releases/download/Stable-Arm64ec-Dxvk/Dxvk-2.7.1-arm64ec-gplasync.wcp) | 3,556,764 | `732c12ea3b23b86e0cd73271083b16dcfe8070214cbc4d9bbb6cea1027a02ae1` |
 | `VKD3D-3.0.1-arm64ec-0` | [Vkd3d-3.0.1-arm64ec.wcp](https://github.com/nicholasx417/WinNative-Components/releases/download/Stable-arm64ec-VKD3D/Vkd3d-3.0.1-arm64ec.wcp) | 2,804,432 | `1754504f81e6a7fccd697231d4a1a49e9c3039da20981e950ece38fda6f4d0cd` |
 
-Proton and legacy DXVK retain the earlier emulator baseline. FEX 2610 and the modern DXVK/VKD3D pair are development inputs. Fresh guided containers keep legacy DXVK with VKD3D `None` as the older-game baseline. Before preparation for a fresh Steam session, a complete D3D12 import scan of the selected executable can choose the pinned modern pair for that launch. This applies only to the guided runtime with its unchanged baseline graphics; saved container data and explicit per-game graphics settings are retained. The current static scan does not detect every dynamically loaded graphics API or downstream game executable. There is no automatic retry after a graphics failure yet.
+Proton and legacy DXVK retain the earlier emulator baseline. FEX 2610 and the modern DXVK/VKD3D pair are development inputs. Fresh guided containers keep legacy DXVK with VKD3D `None` as the older-game baseline. For a fresh Steam session using unchanged guided graphics, automatic routing checks the selected installed driver and System driver against a native Vulkan feature snapshot. A complete static D3D12 import scan selects the pinned modern pair first. A small set of explicit Vulkan initialization failures can select another eligible installed combination after clean teardown and Cloud-reservation release, with at most four attempts. Saved container data and explicit per-game graphics settings are retained. The static scan does not detect every dynamically loaded graphics API or downstream game executable. See [routing qualification](QUALIFICATION.md#automatic-graphics-routing--18-october-2026) for the bounded behavior and phone gate.
 
 The new DXVK archive's installed profile identifies `2.7.1-1-gplasync-arm64ec`, despite the different word order in its filename. Its DXGI is selected together with VKD3D because [vkd3d-proton requires DXVK 2.1+ for DXGI](https://github.com/HansKristian-Work/vkd3d-proton/blob/master/README.md#using-vkd3d-proton); it is never automatically paired with the legacy DXVK 1.10.3 baseline. The VKD3D archive contains `d3d12.dll` and `d3d12core.dll` under both guest Windows system directories. LLVM recognizes ARM64EC with CHPE metadata in its `system32` pair; the `syswow64` pair is x86. This is archive/metadata inspection, not proof of execution, required Vulkan features or Onimusha compatibility. The packages' identities and nonempty required files are checked before fresh container creation and before automatic selection. Missing pair files stop that detected D3D12 launch with a Prepare Vapor repair instruction before Steam handoff.
 These inputs do not establish best performance, Snapdragon qualification or working DirectX 12 gameplay. A fresh environment retains the existing system graphics-driver policy; no automatic Turnip download is added. Already installed components are checked for their expected identity and nonempty required files, not rehashed as a complete installed tree. Mapping these binary builds and patches to reproducible source and distribution conditions remains open. The optional Advanced catalog's ARM64EC 3.0.1 fallback now reuses this verified URL rather than the old filename that does not match the release asset.
+
+The 18 October routing work rebuilds the application's `libwinlator.so` native
+probe. It does not replace bundled Wine, FEX, DXVK, VKD3D or Vulkan-wrapper
+libraries. The learned-choice fingerprint hashes relevant component files; that
+is not complete installed-tree verification or a reproducible build of the
+downloaded components. The newly inspected Wine Android X11 patches and wrapper
+allocation fix remain source-review candidates, with no binary/default change.
+
+The Wine source review sampled the pinned archive's `ntdll.so`, `winex11.so` and
+`winegstreamer.so`. `ntdll.so` embeds `wine-8.0-20901-g71040f04bd3`; the revision
+resolves to the public Proton 11.0-2 merge commit
+[`71040f04bd3a451fd2c5d2552f0b64a23dd7c69b`](https://github.com/GameNative/proton-wine/commit/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b).
+This identifies a source base, not the complete `steam-unixlib-3` patch set.
+On 18 October, three unmodified upstream Android patches were applied only to an
+isolated source fixture; the fourth was omitted because its window property is
+already set in that base. No Wine binary was built in that review pass. The
+19 October component section below records the subsequent build/comparison.
+Sampled hashes, patch identities
+and reverse/application checks are retained in the
+[18 October receipt](evidence/2026-10-18-automatic-graphics.json) and
+[runtime review](RUNTIME-RESEARCH.md#wine-source-mapping-and-android-patch-review).
 
 
 The FEX candidate release identifies source commit `14c92681f4d62cf84d901460e0358de09c8847a7`
@@ -216,6 +237,57 @@ with submodule revisions and payload hashes. FEX and third-party component licen
 remain their upstream licenses; no proprietary Steam libraries are in this WCP.
 See [build instructions](../tools/fex/README.md) and
 [bounded runtime checks](QUALIFICATION.md#fex-disk-cache-experiment--16-october-2026).
+
+The separate 18 October upstream FEX backport input is
+[`b49837f0`](https://github.com/FEX-Emu/FEX/commit/b49837f0c3961194b35da2187e5f742982a0c716),
+retained unmodified as
+[`0002-upstream-disk-cache-blob-lifetime.patch`](../tools/fex/patches/0002-upstream-disk-cache-blob-lifetime.patch).
+It is 2,108 bytes, SHA-256
+`e6f91c005d323a6656de23db8ebfe960786e8967d88d3fe62185ee8ed0c6f4fc`.
+Apply-check passed against the isolated 2610 source with the earlier two patches.
+It is **not included** in the historical 16 October WCP above or the APK. The
+separate 19 October candidate below applies and rebuilds it.
+
+## Runtime component builds — 19 October 2026
+
+The local `FEXCore-2610-14c92681f-vapor-cache2-unix-0.wcp` is **1,560,960 bytes**,
+SHA-256 `93fcd0458fb3c93df5196bd8c1c542823c3fb30bbaa5461ac231ffb4ae77077d`.
+It adds the unmodified upstream blob-lifetime fix to the earlier source experiment.
+Both Windows DLLs were rebuilt using the same pinned toolchain:
+
+| Payload | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `libarm64ecfex.dll` | 6,279,168 | `12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97` |
+| `libwow64fex.dll` | 5,648,384 | `7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5` |
+
+Both retained Unix libraries still match
+`a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db`
+and have 4 KB LOAD alignment. The WCP retains the MIT notice, three patches and
+build inputs. Caching remains off; no guided package or bundled asset changed.
+
+The separate **partial Wine build** uses source base
+`71040f04bd3a451fd2c5d2552f0b64a23dd7c69b` and three unmodified Android X11 patches
+from `00095e1a945e357c22a0987d70392b9b352c1749`, retained in
+[tools/wine](../tools/wine/README.md). Wine's per-file LGPL notices remain applicable.
+The 56,705,767-byte source archive has observed SHA-256
+`2bdd1653b206de74bbc886957af99d771d077ba13f462fdcd74b3162c510e117`;
+the 1,190,645,760-byte Termux dependency archive matches its published digest
+`b088df560c9395d7c2cc797d208d8a727d1f06fc70e5ea34eef6118ef64a7e42`.
+All 45 Android patches named by the base build recipe are already present.
+This still does not establish every change in the provider's `steam-unixlib-3`.
+
+The X11 target builds with native `ntdll`/`win32u` dependencies; all three outputs
+have 16 KB LOAD alignment. Only the new `winex11.so` was temporarily installed in
+the isolated runtime comparison: **604,624 bytes**, SHA-256
+`610da4f8e10df323dbb9b459ff11658f4882ad5fc2cd7c3cb43804c9d3a77766`.
+No new Wine WCP is designated. Tests correct lost clipped-pointer events in both
+guest widths, then restore original module/settings bytes and modes. This is not
+a complete corresponding-source map, Steam ABI qualification, codec improvement,
+16 KB runtime test or phone benchmark.
+
+All artifact/module identities, dependency inputs, patch hashes and restoration
+checks are in the [portable receipt](evidence/2026-10-19-runtime-components.json).
+See [bounded results](QUALIFICATION.md#runtime-components--19-october-2026).
 
 ## Android ntsync library audit — 16 October 2026
 

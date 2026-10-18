@@ -1,0 +1,1423 @@
+{
+  "date": "2026-10-19",
+  "branch_at_start": "Vapor",
+  "base_commit": "1b4747c033db4aacd0c941a539994295c1307114",
+  "scope": "FEX cache candidate rebuild and account-free component checks; partial Wine Android X11 source build and external-pointer regression; no new APK checks.",
+  "environment": {
+    "device": "Vapor_UI_API36",
+    "android_api": 36,
+    "abi": "arm64-v8a",
+    "memory_page_bytes": 4096,
+    "wine": "Proton-11.0-2-arm64ec-steam-unixlib-3",
+    "fex_restored": "2607-84e127a63-unix-0",
+    "wine_input_graphics": "X11; Win32 window/input fixture, no DirectX rendering test",
+    "steam_account_used": false,
+    "apk_rebuilt_or_checked": false,
+    "physical_phone_used": false
+  },
+  "fex": {
+    "artifact": {
+      "filename": "FEXCore-2610-14c92681f-vapor-cache2-unix-0.wcp",
+      "bytes": 1560960,
+      "sha256": "93fcd0458fb3c93df5196bd8c1c542823c3fb30bbaa5461ac231ffb4ae77077d",
+      "entry_name": "FEXCore-2610-14c92681f-vapor-cache2-unix-0",
+      "qualification": {
+        "date": "2026-10-19",
+        "scope": "account-free Wine/FEX component probes on a 4 KB API 36 ARM64 emulator",
+        "candidate_phases_passed": 15,
+        "candidate_phases_total": 15,
+        "restored_baseline_phases_passed": 2,
+        "cache_enabled_by_default": false,
+        "genuine_steam_tested": false,
+        "gameplay_performance_measured": false,
+        "new_apk_checked": false,
+        "restoration_verified": true
+      },
+      "files": {
+        "aarch64-unix/libarm64ecfex.so": {
+          "bytes": 110648,
+          "sha256": "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        },
+        "aarch64-unix/libwow64fex.so": {
+          "bytes": 110648,
+          "sha256": "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        },
+        "profile.json": {
+          "bytes": 797,
+          "sha256": "49dc3338e846617f3582f1bc82524326b7036e2fe01c72077fa039ed40dfa445"
+        },
+        "provenance/0001-scope-windows-disk-cache-pruning.patch": {
+          "bytes": 863,
+          "sha256": "469142174f16ee25ceb04be0484bfb941485db21a67cb566b096d30e08c232d2"
+        },
+        "provenance/0002-upstream-disk-cache-blob-lifetime.patch": {
+          "bytes": 2108,
+          "sha256": "e6f91c005d323a6656de23db8ebfe960786e8967d88d3fe62185ee8ed0c6f4fc"
+        },
+        "provenance/LICENSE-FEX": {
+          "bytes": 1094,
+          "sha256": "f34a779f56b36d22b20e1b990d23e583a6a7ca071331925fa46156441c77a1ee"
+        },
+        "provenance/fex-appconfig-nonfatal.patch": {
+          "bytes": 1607,
+          "sha256": "7c6888052eaf15461a17c0b10c8b6068b65bd0635e772f32dce97c27d095fa18"
+        },
+        "system32/libarm64ecfex.dll": {
+          "bytes": 6279168,
+          "sha256": "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97"
+        },
+        "system32/libwow64fex.dll": {
+          "bytes": 5648384,
+          "sha256": "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5"
+        }
+      }
+    },
+    "build_inputs": {
+      "source": "https://github.com/FEX-Emu/FEX",
+      "commit": "14c92681f4d62cf84d901460e0358de09c8847a7",
+      "toolchain": "https://github.com/bylaws/llvm-mingw/releases/download/20250920/llvm-mingw-20250920-ucrt-macos-universal.tar.xz",
+      "toolchain_sha256": "30681fa016b4a8a5dad4918193f5f4f99a01361b9f44810cf2337cf74fdbf81c",
+      "donor_workflow": "https://github.com/nicholasx417/WinNative-Components/blob/ce9f4d538c57ffae17ebafa9d6087dc377e0c11e/.github/workflows/FEXCore-unix-nightly.yml",
+      "unix_source_archive_sha256": "bc5c601b995acf19a958237d8aff5cb24de7aa8b96241a35b3c0ad9e03ca2178",
+      "unix_rebuilt": false,
+      "unix_elf_load_alignment": 4096,
+      "cache_enabled_by_package": false,
+      "submodules": [
+        " b3fb4b9feafcd8d91c5cb510a4775143fdbef02f External/Catch2 (b3fb4b9)",
+        " ee2ec5fd83dafce291024683b50dc89219333076 External/Vulkan-Headers (ee2ec5f)",
+        " 3e49836995c1dcb3df709440ad2f270b569c6a5f External/drm-headers (3e49836)",
+        " 442678a134e2d25e759c430cca32e06e9e142f1f External/fex-gcc-target-tests-bins (heads/main)",
+        " 71349ae6d14ac2e3e792730e240aecd8076cee6c External/fex-gvisor-tests-bins (heads/main)",
+        " 9ae29638f8000c1603f16385ed1cf6c4c23ee414 External/fex-posixtest-bins (heads/master)",
+        " c07e2aa4b130b4fd359a1c6455a5201b17af01fa External/fmt (c07e2aa)",
+        " 8436195ad5e1bc347d9b39743af3d29abee59f06 External/jemalloc_glibc (8436195)",
+        " ca1388fb9da8e69314dda222dc7b139ca84e092f External/range-v3 (ca1388f)",
+        " 2dae74bb693e42d850fb0adcc9045c5b71fbdeae External/range-v3/doc/gh-pages (2dae74b)",
+        " 09142d726429416bfa7b459151515fe3ab7622dd External/rpmalloc (09142d7)",
+        " 650c98ece70da9e155e7ba1c2b3ee16004aae118 External/tracy (650c98e)",
+        " 3234af2c03549bc85656bfd3a86993bf1cd8aef1 External/unordered_dense (3234af2)",
+        " 585d860b12cdfc3a72f5fdad5e02e4d50a64c014 External/vixl (585d860)",
+        " e626a72bc2321cd320e953a0ccf1584cad60f363 External/xxhash (e626a72)",
+        " 9bfadd6a55fc92dbd37fa3ba089bf8b36622df4f External/zydis (9bfadd6)",
+        " 75a36c45ae1ad382b0f4e0ede0af84c11ee69928 External/zydis/dependencies/zycore (75a36c4)",
+        " 9f94388a339fcbb0bc95c17768eb786c85988f6e Source/Common/cpp-optparse (heads/master)"
+      ],
+      "date": "2026-10-19",
+      "component": "2610-14c92681f-vapor-cache2-unix-0",
+      "files": {
+        "aarch64-unix/libarm64ecfex.so": {
+          "bytes": 110648,
+          "sha256": "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        },
+        "aarch64-unix/libwow64fex.so": {
+          "bytes": 110648,
+          "sha256": "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        },
+        "profile.json": {
+          "bytes": 797,
+          "sha256": "49dc3338e846617f3582f1bc82524326b7036e2fe01c72077fa039ed40dfa445"
+        },
+        "provenance/0001-scope-windows-disk-cache-pruning.patch": {
+          "bytes": 863,
+          "sha256": "469142174f16ee25ceb04be0484bfb941485db21a67cb566b096d30e08c232d2"
+        },
+        "provenance/0002-upstream-disk-cache-blob-lifetime.patch": {
+          "bytes": 2108,
+          "sha256": "e6f91c005d323a6656de23db8ebfe960786e8967d88d3fe62185ee8ed0c6f4fc"
+        },
+        "provenance/LICENSE-FEX": {
+          "bytes": 1094,
+          "sha256": "f34a779f56b36d22b20e1b990d23e583a6a7ca071331925fa46156441c77a1ee"
+        },
+        "provenance/fex-appconfig-nonfatal.patch": {
+          "bytes": 1607,
+          "sha256": "7c6888052eaf15461a17c0b10c8b6068b65bd0635e772f32dce97c27d095fa18"
+        },
+        "system32/libarm64ecfex.dll": {
+          "bytes": 6279168,
+          "sha256": "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97"
+        },
+        "system32/libwow64fex.dll": {
+          "bytes": 5648384,
+          "sha256": "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5"
+        }
+      },
+      "source_diff_sha256": "9acc74663ad980c901e72353ef750fd18ed538523117e21e666d4a6f891db410",
+      "cmake_version": "3.22.1-g37088a8",
+      "ninja_version": "1.10.2",
+      "upstream_cache_fix": "b49837f0c3961194b35da2187e5f742982a0c716",
+      "build_logs": {
+        "arm64ec": "1f722df3e61e4b4ee073fe97ee0f80edf29efa94386cd4c923f68897cdf0e990",
+        "wow64": "f38dfe02564e826f83cd8653ca170887d0bf39a505310fe3725b80f5a2f5c219"
+      },
+      "qualification": {
+        "date": "2026-10-19",
+        "scope": "account-free Wine/FEX component probes on a 4 KB API 36 ARM64 emulator",
+        "candidate_phases_passed": 15,
+        "candidate_phases_total": 15,
+        "restored_baseline_phases_passed": 2,
+        "cache_enabled_by_default": false,
+        "genuine_steam_tested": false,
+        "gameplay_performance_measured": false,
+        "new_apk_checked": false,
+        "restoration_verified": true
+      }
+    },
+    "phases": [
+      {
+        "phase": "x64-cold",
+        "arch": "x86_64",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 64-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 87,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "ea7fb57f783c1e1843dd7762490d029495056748e2a6e1e5988c3a2dc5804810",
+        "ir_entrypoint_list_sha256": "33fdfdef6f3a8faf79397935e5a7eb6b633b4b2b3d9de48ef804a4bf6a0c7cb9"
+      },
+      {
+        "phase": "x64-warm",
+        "arch": "x86_64",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 64-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 1,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "421f3b24f9ed348945ebada064383945878afc419e461b7a52cc710e109e679d",
+        "ir_entrypoint_list_sha256": "deab74517da9bea51cc27514c9578333b27e6ba6bf2414c5cccb80c354e79cfd"
+      },
+      {
+        "phase": "x86-cold",
+        "arch": "i686",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 32-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 692,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1515309",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|88508"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "2eee35f0727f718cc4701fe73d9d0fc9c5c832b38b2040949bf0976cd08b44b7",
+        "ir_entrypoint_list_sha256": "4c790c61257c8e80ca79d53ad2d8dc4a140be08a8ebb10a0300790a0c8814cb2"
+      },
+      {
+        "phase": "x86-warm",
+        "arch": "i686",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 32-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 11,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519066",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89036"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "1403299984d789c7f056925763d562f85b3b54bbd5fd3def9796d030a6380c11",
+        "ir_entrypoint_list_sha256": "36c61d224f097bb7cca3b594426d7accd8d6e83dafc8863a4d700efbb284fd70"
+      },
+      {
+        "phase": "x64-after-x86",
+        "arch": "x86_64",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 64-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 1,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519066",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89036"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "cb4b1c38054c2bdf1c9eb63e392de3f8957c7a8f99f50218db261c1e961b67b5",
+        "ir_entrypoint_list_sha256": "deab74517da9bea51cc27514c9578333b27e6ba6bf2414c5cccb80c354e79cfd"
+      },
+      {
+        "phase": "x86-after-x64",
+        "arch": "i686",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 32-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 8,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519788",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89160"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "3b2a4f7040d4b22db0d7a8767edccb3e4e02ae0b9799edd829d10a1f87a769dd",
+        "ir_entrypoint_list_sha256": "a92c75c4a4c9ddb96c55a2d2d1127fa46de52cbc834eceee844cf69d81ae1374"
+      },
+      {
+        "phase": "x64-updated",
+        "arch": "x86_64",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 64-bit Windows guest",
+          "integer=PASS value=0205546eb3c8a509",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 1,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519788",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89160"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "cd32772bf7b6a2c20c90067aef268ab80be9cabe0f9aef2539f26f2eac6ab93b",
+        "ir_entrypoint_list_sha256": "deab74517da9bea51cc27514c9578333b27e6ba6bf2414c5cccb80c354e79cfd"
+      },
+      {
+        "phase": "x64-updated-warm",
+        "arch": "x86_64",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 64-bit Windows guest",
+          "integer=PASS value=0205546eb3c8a509",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 1,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519788",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89160"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "e36b75bb283bcf067c38eaaf869c63a8a6eaac8c628c0d8765ecdfdd01119113",
+        "ir_entrypoint_list_sha256": "deab74517da9bea51cc27514c9578333b27e6ba6bf2414c5cccb80c354e79cfd"
+      },
+      {
+        "phase": "x64-original-restored",
+        "arch": "x86_64",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 64-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 1,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519788",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89160"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "2d8e8a43f3e58ed3ee737d6138f248031a12cbaa5928fc06c90984d6e309598a",
+        "ir_entrypoint_list_sha256": "deab74517da9bea51cc27514c9578333b27e6ba6bf2414c5cccb80c354e79cfd"
+      },
+      {
+        "phase": "x64-disabled",
+        "arch": "x86_64",
+        "cache_enabled": false,
+        "result": [
+          "Vapor FEX smoke: 64-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 87,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519788",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89160"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "bb0f4750194c21b2b51adbffe7c64d2895d633a259c5c0575abb46797cc5fc73",
+        "ir_entrypoint_list_sha256": "688a90a6c77c1c0ea1b51bc58d680c411b197d1d94b2e6ab305846708837709e"
+      },
+      {
+        "phase": "x86-disabled",
+        "arch": "i686",
+        "cache_enabled": false,
+        "result": [
+          "Vapor FEX smoke: 32-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 695,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519788",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89160"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "c5d787c2c53ce4e93e1dc3f980a644f216ad0f6de798f8dfacb8174ae92a3997",
+        "ir_entrypoint_list_sha256": "dcce9108adf5d43b8992a774754c02d102fa6acb36812844397acd9035ed96fe"
+      },
+      {
+        "phase": "x64-cap-cold",
+        "arch": "x86_64",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 64-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 87,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519788",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89160",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|10462",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|936"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "98581254ca78643bd06cadf8c6a38f76f0e5aa67615162eb573386f752427c67",
+        "ir_entrypoint_list_sha256": "688a90a6c77c1c0ea1b51bc58d680c411b197d1d94b2e6ab305846708837709e"
+      },
+      {
+        "phase": "x64-cap-warm",
+        "arch": "x86_64",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 64-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 82,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519788",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89160",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|10462",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|936"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "1c8bbeb128adfbb916558ae18c021989e180d4d7a9ffcf1bf434c019e96e1bd9",
+        "ir_entrypoint_list_sha256": "ef68e9595f52328ef1ecef948004400e5f99fb7f2110e6ba076ed523d654ea4e"
+      },
+      {
+        "phase": "x64-prune",
+        "arch": "x86_64",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 64-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 1,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1519788",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89160",
+          "cache/wow64/stale-vapor-fixture/sentinel|0",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|10462",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|936"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "e14473ac2612c69e755e313a81da5ef5c575ea276c11c3f28fef82483b9e8d6b",
+        "ir_entrypoint_list_sha256": "deab74517da9bea51cc27514c9578333b27e6ba6bf2414c5cccb80c354e79cfd"
+      },
+      {
+        "phase": "x86-prune",
+        "arch": "i686",
+        "cache_enabled": true,
+        "result": [
+          "Vapor FEX smoke: 32-bit Windows guest",
+          "integer=PASS value=1973681da6a03468",
+          "memory=PASS",
+          "threads=PASS total=20000",
+          "result=PASS failures=0"
+        ],
+        "ir_unique_entrypoints": 7,
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1520818",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89284",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|10462",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|936"
+        ],
+        "applied_sha256": [
+          "12878e06771044950c5bf528d32615bbb88f60eb12dc5f9b1339e14c2f4f3f97",
+          "7ad04b8dedb41900b42102691b0d68b6c24b6e28624a52a3f9e673d2b906e9c5",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db",
+          "a2ab73baef634c9fce01286bfc28c84fcd07e6798db857b2511223f87cdd59db"
+        ],
+        "raw_log_sha256": "ccda89d694450b9f16c7b2d631f4c8da883df35560e3c6717dad618ab031f7b3",
+        "ir_entrypoint_list_sha256": "57d093b3ffad59c5aaa882514dbd0a9de4c3304d024b06ae9557b21fcf65440f"
+      }
+    ],
+    "candidate_phases_passed": 15,
+    "restored_baseline_phases": [
+      {
+        "runtime": "2607-84e127a63-unix-0",
+        "applied_hashes": [
+          "d98106abbe3d1a7179bf615010b2151279f1acdaecafaa25f47570c522adf21c  files/imagefs/home/xuser/.wine/drive_c/windows/system32/libarm64ecfex.dll",
+          "e6fe5db82c51d29a0f44e76d41ac3771787f7b9afc5aa68b658944646050be4c  files/imagefs/home/xuser/.wine/drive_c/windows/system32/libwow64fex.dll",
+          "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26  files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libarm64ecfex.so",
+          "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26  files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libwow64fex.so"
+        ],
+        "phase": "baseline-restored-x64",
+        "arch": "x86_64",
+        "cache_enabled": false,
+        "ir_unique_entrypoints": 87,
+        "result": "Vapor FEX smoke: 64-bit Windows guest\ninteger=PASS value=1973681da6a03468\nmemory=PASS\nthreads=PASS total=20000\nresult=PASS failures=0",
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1520818",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89284",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|10462",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|936"
+        ],
+        "note": "IR tracing and ADB polling active; completion interval is not a performance benchmark."
+      },
+      {
+        "runtime": "2607-84e127a63-unix-0",
+        "applied_hashes": [
+          "d98106abbe3d1a7179bf615010b2151279f1acdaecafaa25f47570c522adf21c  files/imagefs/home/xuser/.wine/drive_c/windows/system32/libarm64ecfex.dll",
+          "e6fe5db82c51d29a0f44e76d41ac3771787f7b9afc5aa68b658944646050be4c  files/imagefs/home/xuser/.wine/drive_c/windows/system32/libwow64fex.dll",
+          "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26  files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libarm64ecfex.so",
+          "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26  files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libwow64fex.so"
+        ],
+        "phase": "baseline-restored-x86",
+        "arch": "i686",
+        "cache_enabled": false,
+        "ir_unique_entrypoints": 695,
+        "result": "Vapor FEX smoke: 32-bit Windows guest\ninteger=PASS value=1973681da6a03468\nmemory=PASS\nthreads=PASS total=20000\nresult=PASS failures=0",
+        "cache_files": [
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|84576",
+          "cache/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|14724",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa.foz|1520818",
+          "cache/wow64/6dfd13689411385b/RWCacheDB_e144af70f48cd9fa_idx.foz|89284",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa.foz|10462",
+          "cache/cap/arm64ec/8e3ad3e52d2cf324/RWCacheDB_a495491314f6c0aa_idx.foz|936"
+        ],
+        "note": "IR tracing and ADB polling active; completion interval is not a performance benchmark."
+      }
+    ],
+    "prune_check": [
+      {
+        "phase": "x64-prune",
+        "stale_fixture_exists": {
+          "arm64ec": false,
+          "wow64": true
+        }
+      },
+      {
+        "phase": "x86-prune",
+        "stale_fixture_exists": {
+          "arm64ec": false,
+          "wow64": false
+        }
+      }
+    ],
+    "same_metadata_fixture": {
+      "source": "tools/tests/fex-smoke.c",
+      "source_sha256": "75e7560604b6ad0bbc5e78c0a5f62e54f685275442d51d84458bd2911414fd1d",
+      "original_sha256": "a70e736a007e5616bfad54cd566318d232678dc425d491275df11977ed5031f3",
+      "variant_sha256": "4aadbca1ddc8abf138658949582466ea475b4e3b78c5117990e1afe965713058",
+      "length": 94720,
+      "timestamp": 1792365037,
+      "image_size": 131072,
+      "patches": [
+        {
+          "offset": 17920,
+          "before": "0x123456789abcdef0",
+          "after": "0x123456789abcdef1"
+        },
+        {
+          "offset": 2350,
+          "before": "0x1973681da6a03468",
+          "after": "0x205546eb3c8a509"
+        }
+      ],
+      "expected_result_hex": "0205546eb3c8a509",
+      "purpose": "Modify only the test-owned arithmetic seed and expected machine-code constant while preserving filename, length, PE timestamp and SizeOfImage."
+    },
+    "restoration": {
+      "device": "Vapor_UI_API36",
+      "applied_payload_and_settings": [
+        {
+          "path": "files/imagefs/home/xuser-1/.container",
+          "sha256": "226d3c984225563e5576979b3c949724255afa1ddb812cd009d7c985399bb4c3",
+          "matches_before": true
+        },
+        {
+          "path": "files/imagefs/home/xuser-1/.wine/system.reg",
+          "sha256": "708bce752f666b928438eeb762551fbf19f60628ee5575e194312f0450698b61",
+          "matches_before": true
+        },
+        {
+          "path": "files/imagefs/home/xuser-1/.wine/user.reg",
+          "sha256": "bf2e1e3edee0a56051b004a6787abab4c81e64f519791ff936175ee369cabbb2",
+          "matches_before": true
+        },
+        {
+          "path": "files/imagefs/home/xuser-1/.wine/userdef.reg",
+          "sha256": "9e8f914cb3602bd2c91462429a2e464ad7852dbba8d73b286770a0ad5cdc69dc",
+          "matches_before": true
+        },
+        {
+          "path": "files/imagefs/home/xuser-1/.wine/drive_c/windows/system32/libarm64ecfex.dll",
+          "sha256": "d98106abbe3d1a7179bf615010b2151279f1acdaecafaa25f47570c522adf21c",
+          "matches_before": true
+        },
+        {
+          "path": "files/imagefs/home/xuser-1/.wine/drive_c/windows/system32/libwow64fex.dll",
+          "sha256": "e6fe5db82c51d29a0f44e76d41ac3771787f7b9afc5aa68b658944646050be4c",
+          "matches_before": true
+        },
+        {
+          "path": "files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libarm64ecfex.so",
+          "sha256": "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26",
+          "matches_before": true
+        },
+        {
+          "path": "files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libwow64fex.so",
+          "sha256": "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26",
+          "matches_before": true
+        }
+      ],
+      "external_files": [
+        {
+          "path": "/sdcard/Download/VaporFexSmoke/fex-smoke-x86_64.exe",
+          "sha256": "69432a7851e8fb96129922359f9ecdd3f8664ba64d1183f6dc6236d57c6d4ae9",
+          "matches_before": true
+        },
+        {
+          "path": "/sdcard/Download/VaporFexSmoke/fex-smoke-x86_64.exe.result",
+          "sha256": "cb2445fae2aed7d88ea1419119ccbaed5ab9108eb379e372876b827bfeeb0ac9",
+          "matches_before": true
+        },
+        {
+          "path": "/sdcard/Download/VaporFexSmoke/fex-smoke-i686.exe",
+          "sha256": "cd7a56fab0779946b20619e609340a8d3e1c1a54cfbe87bc5170b1d499551f3f",
+          "matches_before": true
+        },
+        {
+          "path": "/sdcard/Download/VaporFexSmoke/fex-smoke-i686.exe.result",
+          "sha256": "926aaac0410129aafc1836405d7b1b1d4f4d4a4d69da1a69ffbc82edcb67625f",
+          "matches_before": true
+        }
+      ],
+      "removed_test_owned_paths": [
+        "files/imagefs/home/xuser-1/.wine/drive_c/VaporFexCacheLifetime",
+        "files/contents/FEXCore/2610-14c92681f-vapor-cache2-unix-0"
+      ],
+      "baseline_runtime_probes": [
+        "baseline-restored-x64",
+        "baseline-restored-x86"
+      ],
+      "apk_checks": "skipped",
+      "note": "Byte hashes restored after baseline execution; original baseline DLL/SO execution separately verified."
+    },
+    "limits": [
+      "The upstream blob race was identified through upstream introspection, principally at -O0; no separate Vapor race reproduction is claimed.",
+      "Compiled-entrypoint counts indicate reuse; they are not an exact hit rate, launch-time or FPS benchmark.",
+      "Sequential console probes do not qualify concurrent mixed children, Steam handoff, Cloud sync or gameplay.",
+      "Retained Unix libraries still have 4 KB LOAD alignment.",
+      "Cache remains off by default; guided component selection unchanged."
+    ]
+  },
+  "wine": {
+    "source_base": "71040f04bd3a451fd2c5d2552f0b64a23dd7c69b",
+    "source_archives": [
+      {
+        "filename": "wine-base-71040f04.tar.gz",
+        "url": "https://codeload.github.com/GameNative/proton-wine/tar.gz/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b",
+        "bytes": 56705767,
+        "sha256": "2bdd1653b206de74bbc886957af99d771d077ba13f462fdcd74b3162c510e117",
+        "expected_sha256": null
+      },
+      {
+        "filename": "termuxfs-aarch64.tar",
+        "url": "https://github.com/WinNative-Emu/proton-wine/releases/download/Assets/termuxfs-aarch64.tar",
+        "bytes": 1190645760,
+        "sha256": "b088df560c9395d7c2cc797d208d8a727d1f06fc70e5ea34eef6118ef64a7e42",
+        "expected_sha256": "b088df560c9395d7c2cc797d208d8a727d1f06fc70e5ea34eef6118ef64a7e42"
+      }
+    ],
+    "bison_source": {
+      "formula_url": "https://raw.githubusercontent.com/Homebrew/homebrew-core/HEAD/Formula/b/bison.rb",
+      "url": "https://ftpmirror.gnu.org/bison/bison-3.8.2.tar.xz",
+      "sha256": "9bba0214ccf7f1079c5d59210045227bcf619519840ebfa80cd3849cff5a5bf2",
+      "bytes": 2817324
+    },
+    "patches": [
+      {
+        "path": "tools/wine/patches/0001-disable-cross-process-vulkan-default.patch",
+        "bytes": 714,
+        "sha256": "6a8ec7f35bc589fe6ddd9872e4dcd7db08f44ad61e295ad027adfd1acd532e04",
+        "upstream_commit": "00095e1a945e357c22a0987d70392b9b352c1749",
+        "unmodified": true
+      },
+      {
+        "path": "tools/wine/patches/0002-avoid-unchanged-clip-regrab.patch",
+        "bytes": 715,
+        "sha256": "99a41a97420559ce9822a512e312bee2884bfc7a280f289453b11eac33297f52",
+        "upstream_commit": "00095e1a945e357c22a0987d70392b9b352c1749",
+        "unmodified": true
+      },
+      {
+        "path": "tools/wine/patches/0003-grab-foreground-window.patch",
+        "bytes": 1744,
+        "sha256": "f29595a0b736c062eb7eb42da95bba3e15e879d671c3ed41bd5e04a05773879b",
+        "upstream_commit": "00095e1a945e357c22a0987d70392b9b352c1749",
+        "unmodified": true
+      }
+    ],
+    "base_recipe_patches": [
+      {
+        "path": "dlls_advapi32_advapi.c.patch",
+        "sha256": "5a4a9c12afc0af308e1d467c21fbe621a8d463729044dfef18abd913a407c72d",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_amd_ags_x64_unixlib.c.patch",
+        "sha256": "f20511265c8b2a84bcf7a815f197ebc627bb5d35a05cfd5a98c31e7c06979bd5",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_dnsapi_libresolv.c.patch",
+        "sha256": "3b36da5ce9c60f234d53d7ae85c25138c11e3c36be8dec0d87ea3529c336cc85",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_dnsapi_record.c.patch",
+        "sha256": "19c374dbd38ef309f4b5383a41ca7add26c8fab453eeef37d0b14a8abf5c2e65",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_midimap_Makefile.in.patch",
+        "sha256": "20ac71433507dd62c6348f8972ccddfd3128f23c3d679a96c53bda0e7ea0845c",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_midimap_midimap.c.patch",
+        "sha256": "be27684c7b11e3c1d45c2d2f9c7a7031827ca5aa9a83e07893ef45d9032e695a",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_nsiproxy.sys_nsi_common.h.patch",
+        "sha256": "c9c6459e4efb6d9400b0fa249e1c417f214c4bfa09fd3f0ed24ecbf8c42d2c5d",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_nsiproxy.sys_ip.c.patch",
+        "sha256": "9c5b5d8189df87934ef10f213fbf11976b991b500976785bc27c0d6ad4429f1e",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_nsiproxy.sys_ndis.c.patch",
+        "sha256": "452563b0c23709deaef4ce8e491ce03780c6d064b86a028b7c81684b2c21172e",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_ntdll_Makefile.in.patch",
+        "sha256": "c8cb7a4d9febaa8ec62a8cbc38366f610d67b2fcc00a05f2e961a6620768cd89",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_ntdll_unix_fsync.c.patch",
+        "sha256": "a66d1fea17b8675280a36ca0e1c324959ce03738f40c2eb4eb07a96871924ff9",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_ntdll_unix_loader.c.patch",
+        "sha256": "7ffc1fb7b1d71d7a354f790db2bdfff0414716020d615765b2bb8272e519e964",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_ntdll_unix_server.c.patch",
+        "sha256": "35e41bd05cdf2649b9d1b9b7dcaa115b2dce11f1c16e73f2f02e012d59cb7113",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_ntdll_unix_sync.c.patch",
+        "sha256": "058125925873357677773ebb6cdf95eea4d769ab77cdc9b9a8a54d0e117d7cd3",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_ntdll_unix_virtual.c.patch",
+        "sha256": "a07b11afa91317b739cf28f92c0b43bb51e71817364209c0caaefd26b7d78f35",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_ntdll_unix_signal_x86_64.c.patch",
+        "sha256": "d4cee84aad931ac2fe6c1a4ecec4b161dc298bb187a9cbe2022c0ab10ac4af67",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_opengl32_unix_wgl.c.patch",
+        "sha256": "274ce7655251e939d09cae820aed722ab636679a95b3719115a3982fa3cf06d5",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_user32_Makefile.in.patch",
+        "sha256": "e2f425970e6e27d0278b0b843c8383f6b3eba4e305907d19ca35b5d50f2fe124",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_win32u_clipboard.c.patch",
+        "sha256": "8db738adefda7825b5e804a93b6b8be0778fccbeb06822a0541c4732555cc8b4",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_winebus.sys_bus_sdl.c.patch",
+        "sha256": "7651d678b7b29d5f37543584c1b05f12af88f16e19be551a7b95f6c4233aaf08",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_winepulse.drv_pulse.c.patch",
+        "sha256": "0a630e6056b18fc510dffb759f3131f4802d40c3dde7ae28edd985a539cfcee4",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_winex11.drv_bitblt.c.patch",
+        "sha256": "9cabbe8846677d1886708f69d0765aad3d5c4dd79931f5dd48c3994e65276003",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_winex11.drv_keyboard.c.patch",
+        "sha256": "87a6362f3c2dcbe39a51774cbcae8b4c1d14e4f1d9951cdc694dbd3ef6e1d588",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_winex11.drv_mouse.c.patch",
+        "sha256": "4faec7206d6571f88d2d275d7e2bcb6401066cc9b3ccc2d62dd6bb44b623b0f8",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_winex11.drv_opengl.c.patch",
+        "sha256": "82d1785de45c7a1bbf09bebf460e223c74eef3d6cab6b781a176d244ef00d9bf",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_winex11.drv_window.c.patch",
+        "sha256": "44a6d5524b6c71cf73d107fffe2bdd82b059ec11ad9bb7e6ceca35c3fcf89438",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_winex11.drv_x11drv.h.patch",
+        "sha256": "a5b4b06605b5b2920243be45f818282db0ff4ae4c9d81f816c0675c1482cc641",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_winex11.drv_x11drv_main.c.patch",
+        "sha256": "d8f633a67006c8bdad267dfbbcc066eba4557b5d26ff2157320cbf7d5f1ebc5b",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_wow64_syscall.c.patch",
+        "sha256": "9c232e55f6a19d52d2ef80d0e1adfc2cdb50b2a0534e8d6fc216ca0afe74fabd",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "loader_preloader.c.patch",
+        "sha256": "5c8214adcb2dfff5518ebf64f94de16e417600496415bea6cfb6f08eb971a066",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "programs_explorer_desktop.c.patch",
+        "sha256": "e146678d682a12985784e4f8886fe7d4ab8c4aeebac550d4eefccfacebd32d1a",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "programs_wineboot_wineboot.c.patch",
+        "sha256": "7966d48a479f8ced1377189a356e4ad9f706c892898bf7e69cfce9e7fcd9a5a7",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "programs_winebrowser_Makefile.in.patch",
+        "sha256": "48c37543fc74e05fb434440161083e8955225b284108b73c78cb45efc1903f5a",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "programs_winebrowser_main.c.patch",
+        "sha256": "521063d4f74d00f638bcb6671ae268fc50ef15e9baa0ec508781c9a296221f41",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "programs_winemenubuilder_winemenubuilder.c.patch",
+        "sha256": "ed59a2a9e80c8089ac2cff3ae86951421355c65b5e92387a73f46bdc80491f53",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "server_Makefile.in.patch",
+        "sha256": "5f3b54b11e430f3b4d3592f012ff3ee71e890e9096475b476bd3c87f86b4e8ae",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "server_fsync.c.patch",
+        "sha256": "ffe780c4238b1f135fb8ebdaa46af29cbae0c8c72066e0b7f497a23de3cc1f5d",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "server_inproc_sync.c.patch",
+        "sha256": "afff21e6723f2d56cbdc4549703dddfa0262c2e9b29127cc17d59eb4bd99d7bf",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "server_main.c.patch",
+        "sha256": "111714c89e00750ca04d4c3907205f9b26190137c56ae4dee332c393e2dde8d8",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "server_thread.c.patch",
+        "sha256": "dbf266b7d28b13e19e99a244528adc3ea4ba2258fba4ffcd5b3005c97031d753",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "server_unicode.c.patch",
+        "sha256": "53997eceb957e0aa59e33f04d0834e7d9e38415e9bdc387410230c15e28dc31d",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_ntdll_unix_esync.c.patch",
+        "sha256": "d26939ee149bc79400f875f36ed6bcf02ef592a7633effb0cde632e9ed54c778",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "dlls_ntdll_unix_esync.h.patch",
+        "sha256": "f188277d180446481d47cd49e02ec7239918f4f61b2905b268398bd4132b851f",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "server_esync.c.patch",
+        "sha256": "fc5238adb3badc7f3cdda43b2f01b84c43f546d5f8ad7a0e76d326747b269876",
+        "status": "already_applied",
+        "diagnostic": null
+      },
+      {
+        "path": "server_esync.h.patch",
+        "sha256": "6ebcff67625248afc07040ae39eeae1a5d536ac54b137c49e5f786e64e32a141",
+        "status": "already_applied",
+        "diagnostic": null
+      }
+    ],
+    "cross_configure": {
+      "command": [
+        "$WINE_WORK/full-source/proton-wine-71040f04bd3a451fd2c5d2552f0b64a23dd7c69b/configure",
+        "--enable-archs=arm64ec,aarch64,i386",
+        "--host=aarch64-linux-android28",
+        "--prefix=$WINE_WORK/candidate-install",
+        "--bindir=$WINE_WORK/candidate-install/bin",
+        "--libdir=$WINE_WORK/candidate-install/lib",
+        "--exec-prefix=$WINE_WORK/candidate-install",
+        "--with-wine-tools=$WINE_WORK/full-source/proton-wine-71040f04bd3a451fd2c5d2552f0b64a23dd7c69b/wine-host-tools",
+        "--with-mingw=clang",
+        "--enable-win64",
+        "--disable-win16",
+        "--enable-nls",
+        "--disable-amd_ags_x64",
+        "--enable-wineandroid_drv=no",
+        "--disable-tests",
+        "--with-alsa",
+        "--without-capi",
+        "--without-coreaudio",
+        "--without-cups",
+        "--without-dbus",
+        "--without-ffmpeg",
+        "--with-fontconfig",
+        "--with-freetype",
+        "--without-gcrypt",
+        "--without-gettext",
+        "--with-gettextpo=no",
+        "--without-gphoto",
+        "--with-gnutls",
+        "--without-gssapi",
+        "--with-gstreamer",
+        "--without-inotify",
+        "--without-krb5",
+        "--without-netapi",
+        "--without-opencl",
+        "--with-opengl",
+        "--without-oss",
+        "--without-pcap",
+        "--without-pcsclite",
+        "--without-piper",
+        "--with-pthread",
+        "--with-pulse",
+        "--without-sane",
+        "--with-sdl",
+        "--without-udev",
+        "--without-unwind",
+        "--without-usb",
+        "--without-v4l2",
+        "--without-vosk",
+        "--with-vulkan",
+        "--without-wayland",
+        "--without-xcomposite",
+        "--without-xfixes",
+        "--without-xinerama",
+        "--without-xrandr",
+        "--without-xrender",
+        "--without-xshape",
+        "--with-xshm",
+        "--without-xxf86vm"
+      ],
+      "environment": {
+        "RANLIB": "$ANDROID_NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ranlib",
+        "GSTREAMER_LIBS": "-L$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/lib -lgstgl-1.0 -lgstapp-1.0 -lgstvideo-1.0 -lgstaudio-1.0 -lglib-2.0 -lgobject-2.0 -lgio-2.0 -lgsttag-1.0 -lgstbase-1.0 -lgstreamer-1.0",
+        "ACLOCAL_PATH": "$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/lib/aclocal:$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/share/aclocal",
+        "FONTCONFIG_LIBS": "-L$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/lib -lfontconfig -lfreetype -lexpat",
+        "PULSE_CFLAGS": "-I$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/include/pulse",
+        "LDFLAGS": "-L$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/lib -Wl,-rpath=/data/data/com.termux/files/usr/lib -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384",
+        "SDL2_LIBS": "-L$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/lib -lSDL2",
+        "CXX": "$ANDROID_NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android28-clang++",
+        "SDL2_CFLAGS": "-I$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/include/SDL2",
+        "LD": "$ANDROID_NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/ld",
+        "X_CFLAGS": "-I$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/include",
+        "FREETYPE_CFLAGS": "-I$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/include/freetype2",
+        "PKG_CONFIG_LIBDIR": "$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/lib/pkgconfig:$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/share/pkgconfig",
+        "AR": "$ANDROID_NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar",
+        "CPPFLAGS": "-I$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/include --sysroot=$ANDROID_NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/../sysroot",
+        "DLLTOOL": "$FEX_TOOLCHAIN/bin/llvm-dlltool",
+        "PULSE_LIBS": "-L$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/lib/pulseaudio -lpulse",
+        "CC": "$ANDROID_NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android28-clang",
+        "STRIP": "$ANDROID_NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-strip",
+        "GSTREAMER_CFLAGS": "-I$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/include/gstreamer-1.0 -I$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/include/glib-2.0 -I$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/lib/glib-2.0/include -I$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/glib-2.0/include -I$WINE_WORK/termuxfs-aarch64/data/data/com.termux/files/usr/lib/gstreamer-1.0/include",
+        "CXXFLAGS": "-Wno-declaration-after-statement -Wno-implicit-function-declaration -Wno-int-conversion",
+        "X_LIBS": "-landroid-sysvshm",
+        "CFLAGS": "-Wno-declaration-after-statement -Wno-implicit-function-declaration -Wno-int-conversion",
+        "AS": "$ANDROID_NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android28-clang",
+        "READELF": "$ANDROID_NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-readelf",
+        "PKG_CONFIG": "/opt/homebrew/bin/pkg-config",
+        "PKG_CONFIG_SYSROOT_DIR": "$WINE_WORK/termuxfs-aarch64"
+      },
+      "path_requirements": [
+        "task-local Bison 3.8.2",
+        "bylaws LLVM-MinGW 20250920 UCRT",
+        "Android NDK 27.3.13750724",
+        "native compiler",
+        "Autoconf",
+        "M4",
+        "Flex",
+        "pkg-config",
+        "make"
+      ]
+    },
+    "module_build_command": [
+      "make",
+      "-j2",
+      "dlls/winex11.drv/winex11.so"
+    ],
+    "native_sysvshm_dependency": {
+      "bytes": 11696,
+      "sha256": "8d7ccdc3e008e4bae4db5ed9e2066e7dd2db1d1dcf912325a042030e7e73af67"
+    },
+    "outputs": [
+      {
+        "path": "wine-android-build/dlls/winex11.drv/winex11.so",
+        "bytes": 604624,
+        "sha256": "610da4f8e10df323dbb9b459ff11658f4882ad5fc2cd7c3cb43804c9d3a77766",
+        "load_alignments": [
+          16384,
+          16384,
+          16384,
+          16384
+        ]
+      },
+      {
+        "path": "wine-android-build/dlls/ntdll/ntdll.so",
+        "bytes": 967592,
+        "sha256": "52bcd67cee6409a996144b9075dfd2608fcae4fee9bb3e68d4d7b2b2b0a00c26",
+        "load_alignments": [
+          16384,
+          16384,
+          16384,
+          16384
+        ]
+      },
+      {
+        "path": "wine-android-build/dlls/win32u/win32u.so",
+        "bytes": 2825160,
+        "sha256": "e759405da71d17f2435ac7fcbfc529ff0a936dd1663ff4ddb23e6c61f24cb4ab",
+        "load_alignments": [
+          16384,
+          16384,
+          16384,
+          16384
+        ]
+      }
+    ],
+    "build_log_sha256": "b2aa524bccea936fd3392c0946a877a7f9687263bc97c16c35914bd36c0d21bc",
+    "host_tools_build_log_sha256": "887f67859decebb901e1d461e45dedea40c66ce8d38761aecbc92cf27d48b8d4",
+    "cross_configure_log_sha256": "e2d45f9fd3824b532ce7885ea365605b3f9f4da454ccc8cae5679e7209a512ad",
+    "input_fixture": {
+      "source": "tools/tests/wine-input-smoke.c",
+      "source_sha256": "bd22bcfe8ffa53f24e73321b06bbd544a77a56afab3eb14cad942e31646b3187",
+      "command": "<arch>-w64-mingw32-clang -std=c11 -O2 -Wall -Wextra -Werror -mwindows tools/tests/wine-input-smoke.c -luser32 -o wine-input-<arch>.exe",
+      "artifacts": {
+        "x86_64": {
+          "bytes": 89600,
+          "sha256": "9d448e08a1f29325ab09d0e211bfb3fb70505c527341cf0c8be7793963240fbb"
+        },
+        "i686": {
+          "bytes": 78848,
+          "sha256": "4236c503be375eed1c03ee3fab21c48703eca2192c26027fcb89aa94e2f38082"
+        }
+      },
+      "note": "GUI-subsystem fixture. The first console-subsystem attempt had focus interference and was excluded; neither its failures nor its screenshots qualify the patch."
+    },
+    "input_runs": [
+      {
+        "phase": "baseline-x64",
+        "arch": "x86_64",
+        "module_sha256": "a454362c7b7e486ee00519173392dcacb3fe4a8ed3aad7cf6bab948fd94e23c9",
+        "external_taps_per_phase": 5,
+        "phases_sent": [
+          "unclipped",
+          "clip-once",
+          "clip-repeated",
+          "released"
+        ],
+        "result": "Vapor Wine X11 pointer smoke: 64-bit Windows guest\nphase=unclipped ready clipped=0 foreground=0 center=640,360\nphase=unclipped PASS downs=5 ups=5 api_failures=0\nphase=clip-once ready clipped=1 foreground=1 center=640,360\nphase=clip-once FAIL downs=0 ups=0 api_failures=0\nphase=clip-repeated ready clipped=1 foreground=1 center=640,360\nphase=clip-repeated FAIL downs=0 ups=0 api_failures=0\nphase=released ready clipped=0 foreground=1 center=640,360\nphase=released PASS downs=5 ups=5 api_failures=0\nresult=FAIL failures=2\n",
+        "all_phases_passed": false,
+        "scope": "External Android touchscreen taps through the existing Vapor X11 host, not SendInput or injected Windows messages.",
+        "raw_log_sha256": "6dcd0c1536ad6e1a798644bc877381ac9cc9cbccdbb9887ba7383af08b4b79e6"
+      },
+      {
+        "phase": "candidate-x64",
+        "arch": "x86_64",
+        "module_sha256": "610da4f8e10df323dbb9b459ff11658f4882ad5fc2cd7c3cb43804c9d3a77766",
+        "external_taps_per_phase": 5,
+        "phases_sent": [
+          "unclipped",
+          "clip-once",
+          "clip-repeated",
+          "released"
+        ],
+        "result": "Vapor Wine X11 pointer smoke: 64-bit Windows guest\nphase=unclipped ready clipped=0 foreground=0 center=640,360\nphase=unclipped PASS downs=5 ups=5 api_failures=0\nphase=clip-once ready clipped=1 foreground=1 center=640,360\nphase=clip-once PASS downs=5 ups=5 api_failures=0\nphase=clip-repeated ready clipped=1 foreground=1 center=640,360\nphase=clip-repeated PASS downs=5 ups=5 api_failures=0\nphase=released ready clipped=0 foreground=1 center=640,360\nphase=released PASS downs=5 ups=5 api_failures=0\nresult=PASS failures=0\n",
+        "all_phases_passed": true,
+        "scope": "External Android touchscreen taps through the existing Vapor X11 host, not SendInput or injected Windows messages.",
+        "raw_log_sha256": "e1576a0b72d50dc42c4ba4aee2736905e2d8317cebff07fbc4ebfc33ac247e32"
+      },
+      {
+        "phase": "baseline-x86",
+        "arch": "i686",
+        "module_sha256": "a454362c7b7e486ee00519173392dcacb3fe4a8ed3aad7cf6bab948fd94e23c9",
+        "external_taps_per_phase": 5,
+        "phases_sent": [
+          "unclipped",
+          "clip-once",
+          "clip-repeated",
+          "released"
+        ],
+        "result": "Vapor Wine X11 pointer smoke: 32-bit Windows guest\nphase=unclipped ready clipped=0 foreground=1 center=640,360\nphase=unclipped PASS downs=5 ups=5 api_failures=0\nphase=clip-once ready clipped=1 foreground=1 center=640,360\nphase=clip-once FAIL downs=0 ups=0 api_failures=0\nphase=clip-repeated ready clipped=1 foreground=1 center=640,360\nphase=clip-repeated FAIL downs=0 ups=0 api_failures=0\nphase=released ready clipped=0 foreground=1 center=640,360\nphase=released PASS downs=5 ups=5 api_failures=0\nresult=FAIL failures=2\n",
+        "all_phases_passed": false,
+        "scope": "External Android touchscreen taps through the existing Vapor X11 host, not SendInput or injected Windows messages.",
+        "raw_log_sha256": "998519a5f6b897e2368b9a5db0679c2c007caa9a04819366a5a58a3c05562b51"
+      },
+      {
+        "phase": "candidate-x86",
+        "arch": "i686",
+        "module_sha256": "610da4f8e10df323dbb9b459ff11658f4882ad5fc2cd7c3cb43804c9d3a77766",
+        "external_taps_per_phase": 5,
+        "phases_sent": [
+          "unclipped",
+          "clip-once",
+          "clip-repeated",
+          "released"
+        ],
+        "result": "Vapor Wine X11 pointer smoke: 32-bit Windows guest\nphase=unclipped ready clipped=0 foreground=1 center=640,360\nphase=unclipped PASS downs=5 ups=5 api_failures=0\nphase=clip-once ready clipped=1 foreground=1 center=640,360\nphase=clip-once PASS downs=5 ups=5 api_failures=0\nphase=clip-repeated ready clipped=1 foreground=1 center=640,360\nphase=clip-repeated PASS downs=5 ups=5 api_failures=0\nphase=released ready clipped=0 foreground=1 center=640,360\nphase=released PASS downs=5 ups=5 api_failures=0\nresult=PASS failures=0\n",
+        "all_phases_passed": true,
+        "scope": "External Android touchscreen taps through the existing Vapor X11 host, not SendInput or injected Windows messages.",
+        "raw_log_sha256": "90f26eedce7b9229b1e940e124831c3bfb0eaec448f64c183b4de4a479082e21"
+      }
+    ],
+    "result": "Original module fails both clipped-click phases and passes unclipped/released controls in both guest widths. Rebuilt winex11 module passes all four phases in both widths (8/8 candidate phases). Only winex11.so was replaced during these comparisons.",
+    "restoration": {
+      "restored": [
+        {
+          "path": "files/imagefs/home/xuser-1/.container",
+          "sha256": "226d3c984225563e5576979b3c949724255afa1ddb812cd009d7c985399bb4c3",
+          "mode": 384,
+          "matches_before": true
+        },
+        {
+          "path": "files/imagefs/home/xuser-1/.wine/system.reg",
+          "sha256": "708bce752f666b928438eeb762551fbf19f60628ee5575e194312f0450698b61",
+          "mode": 384,
+          "matches_before": true
+        },
+        {
+          "path": "files/imagefs/home/xuser-1/.wine/user.reg",
+          "sha256": "bf2e1e3edee0a56051b004a6787abab4c81e64f519791ff936175ee369cabbb2",
+          "mode": 384,
+          "matches_before": true
+        },
+        {
+          "path": "files/imagefs/home/xuser-1/.wine/userdef.reg",
+          "sha256": "9e8f914cb3602bd2c91462429a2e464ad7852dbba8d73b286770a0ad5cdc69dc",
+          "mode": 384,
+          "matches_before": true
+        },
+        {
+          "path": "files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/winex11.so",
+          "sha256": "a454362c7b7e486ee00519173392dcacb3fe4a8ed3aad7cf6bab948fd94e23c9",
+          "mode": 505,
+          "matches_before": true
+        }
+      ],
+      "fex_baseline_unchanged": [
+        {
+          "path": "files/imagefs/home/xuser-1/.wine/drive_c/windows/system32/libarm64ecfex.dll",
+          "existed": true,
+          "sha256": "d98106abbe3d1a7179bf615010b2151279f1acdaecafaa25f47570c522adf21c",
+          "matches_before": true
+        },
+        {
+          "path": "files/imagefs/home/xuser-1/.wine/drive_c/windows/system32/libwow64fex.dll",
+          "existed": true,
+          "sha256": "e6fe5db82c51d29a0f44e76d41ac3771787f7b9afc5aa68b658944646050be4c",
+          "matches_before": true
+        },
+        {
+          "path": "files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libarm64ecfex.so",
+          "existed": true,
+          "sha256": "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26",
+          "matches_before": true
+        },
+        {
+          "path": "files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libwow64fex.so",
+          "existed": true,
+          "sha256": "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26",
+          "matches_before": true
+        }
+      ],
+      "removed_test_owned_external_directory": "/sdcard/Download/VaporWineInputCheck",
+      "all_match": true
+    },
+    "limits": [
+      "Three combined upstream patches tested; their individual contributions are not isolated.",
+      "The other-process Vulkan policy was built but not exercised by this window/input fixture.",
+      "Native ntdll/win32u outputs were built as link dependencies, not installed in the runtime test.",
+      "This is not a complete Wine package rebuild or proof of every steam-unixlib-3 source/ABI input.",
+      "16 KB ELF alignment is not 16 KB runtime execution qualification.",
+      "No Steam, game, fullscreen Vulkan, acoustic audio, codec or phone performance test."
+    ]
+  },
+  "game_followup": {
+    "date": "2026-10-19",
+    "game": "Ghostrunner Demo",
+    "app_id": 1249200,
+    "device": "Xiaomi 17 Pro / Snapdragon 8 Elite Gen 5",
+    "source": "User phone report in this conversation",
+    "outcome": "Gameplay and sound work; some lag/hitching remains.",
+    "performance_target": "Reduced-settings 30 FPS baseline, then 40/60 where measured sustainable; not verified 30\u201360 FPS.",
+    "log_observation": "Previously supplied host log contains d3d11.dll/dxgi.dll module loads, no d3d12.dll module line. This is consistent with a D3D11 path, not DX12 qualification.",
+    "onimusha_status": "GPU-support dialog remains unresolved on the phone; previously selected VKD3D=None is a concrete setup gap.",
+    "landing_image": {
+      "path": "docs/images/ghostrunner-demo-xiaomi.jpg",
+      "bytes": 33429,
+      "sha256": "c36c62ee839a4930d9d1bd709721acb7641caed2c2298b6a3150814bfa8eb95f",
+      "source": "Previously decoded frame-09.jpg from the supplied phone video, approximately 64 seconds; copied without further image alteration.",
+      "original_video_sha256": "a12f08dd47e0a60d689e52b71731947cb9db6803be954cf6e0d90bfc147181d2",
+      "fps_benchmark": false
+    }
+  },
+  "release_boundary": "Local component qualification. No APK release, guided runtime promotion, physical game acceptance or competitor speed advantage is established.",
+  "competitor_refresh": {
+    "date": "2026-10-19",
+    "GameNative": {
+      "commit": "5e7a8063e3f3a133f3c2fe55699965fc93dbbccd",
+      "urls": [
+        "https://github.com/utkarshdalal/GameNative",
+        "https://github.com/utkarshdalal/GameNative/blob/master/THIRD_PARTY_NOTICES"
+      ]
+    },
+    "DroidDeck": {
+      "commit": "1873a9aee79b874b88c77b4f59f09e5971281fd9",
+      "urls": [
+        "https://github.com/Droid-Deck/DroidDeck"
+      ]
+    },
+    "physical_benchmark": false
+  },
+  "pre_merge_checks": {
+    "previous_automatic_graphics_source_hashes_match": 18,
+    "strict_current_pointer_fixture_compile": [
+      "x86_64: pass (-Wall -Wextra -Werror -mwindows)",
+      "i686: pass (-Wall -Wextra -Werror -mwindows)"
+    ],
+    "applied_source_patch_checks": "Wine reverse-application checks and FEX diff whitespace checks pass",
+    "artifact_hash_check": "Final FEX WCP hash and size match receipt",
+    "local_document_links": "checked",
+    "staged_whitespace": "pass",
+    "credential_pattern_spot_check": "pass",
+    "additional_local_apk_checks": "skipped as requested"
+  }
+}

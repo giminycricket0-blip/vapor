@@ -29,6 +29,14 @@ public class PreloaderDialog {
     dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
     dialog.setCancelable(false);
     dialog.setCanceledOnTouchOutside(false);
+    dialog.setOnKeyListener((ignored, code, event) -> {
+      if ((code == android.view.KeyEvent.KEYCODE_BACK || code == android.view.KeyEvent.KEYCODE_BUTTON_B)
+          && composeState.getCancelAction().getValue() != null) {
+        if (event.getAction() == android.view.KeyEvent.ACTION_UP) composeState.cancel();
+        return true;
+      }
+      return false;
+    });
 
     Window window = dialog.getWindow();
     if (window != null) {
@@ -159,6 +167,10 @@ public class PreloaderDialog {
         () -> {
           if (dialog != null) composeState.setStep(step);
         });
+  }
+
+  public void setAutomaticGraphicsOnUiThread(String description, Runnable cancel) {
+    uiHandler.post(() -> composeState.setAutomaticGraphics(description, cancel));
   }
 
   public void setStepOnUiThread(final int stepResId) {

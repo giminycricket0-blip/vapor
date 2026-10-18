@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
+    <string name="vapor_graphics_cancel">Cancel launch</string>
+    <string name="vapor_graphics_attempt">Automatic graphics · attempt %1$d of up to %2$d\n%3$s</string>
+    <string name="vapor_graphics_cleaning">Closing Steam safely before trying another graphics option…</string>
+    <string name="vapor_graphics_cleanup_failed">The game session could not close cleanly. Automatic graphics stopped. Your local saves are kept.</string>
+    <string name="vapor_graphics_stopped">Automatic graphics stopped after %1$d attempt(s). No further eligible option was tried. Check this session’s diagnostic log and Graphics in game settings.</string>
     <string name="vapor_open_game_menu">Open Vapor game menu</string>
     <string name="vapor_return_to_game">Return to game</string>
     <string name="library_waiting_for_exit_cloud_sync">Finishing cloud save sync. Uninstall will be available when it ends.</string>

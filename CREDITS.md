@@ -14,6 +14,15 @@ upstream source. Android configure and unversioned-SONAME conventions follow
 `app/src/main/assets/licenses/` and included in the APK. See
 [provenance](docs/PROVENANCE.md#native-network-source-build--16-october-2026) for exact inputs.
 
+Vapor's separate Wine X11 experiment retains three unmodified Android patches
+from [GameNative/proton-wine `00095e1a`](https://github.com/GameNative/proton-wine/commit/00095e1a945e357c22a0987d70392b9b352c1749),
+on the public Proton 11.0-2 base. The input correction was reproduced in Vapor's
+X11 host; it is upstream work, not an original Vapor driver implementation.
+The FEX cache experiment also backports the unmodified
+[upstream blob-lifetime fix `b49837f0`](https://github.com/FEX-Emu/FEX/commit/b49837f0c3961194b35da2187e5f742982a0c716).
+See [Wine experiment](tools/wine/README.md) and [FEX experiment](tools/fex/README.md)
+for source, patch and license boundaries.
+
 <p align="center">
   <img src="logo.png" alt="WinNative" width="360">
 </p>

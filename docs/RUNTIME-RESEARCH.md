@@ -10,6 +10,96 @@ The earlier compatibility database, save history and launch diagnostics proposal
 
 Do not start a new emulator, graphics API, container framework or optimization service. Most of the proposed mechanisms already have public implementations. Extend their existing owners, and select original work from an observed bottleneck.
 
+## Runtime and driver follow-up — 18 October 2026
+
+**19 October implementation follow-up:** the reviewed FEX upstream fix is now
+applied in a separate rebuilt cache candidate, with 15/15 account-free phases
+passing and the original runtime restored. The three Wine X11 patches now build
+against the full identified base. External-pointer tests reproduce clipped-click
+loss with the original module and pass all eight candidate phases across x64/x86.
+These are source/build/runtime results below the UI, using credited upstream work;
+they are not a measured FPS advantage or a new emulator. The dated 18 October
+review below describes the earlier discovery stage. No guided default or APK was
+changed by the component pass. [Component evidence](QUALIFICATION.md#runtime-components--19-october-2026)
+and [Wine build recipe](../tools/wine/README.md).
+
+The automatic routing implementation extends the actual JNI Vulkan probe in
+`app/src/main/cpp/winlator/vulkan.c`. It reads physical-device feature bits,
+update-after-bind descriptor limits, driver/device IDs and pipeline-cache identity
+instead of relying on a Vulkan version string or extension names alone. The
+underlying-driver snapshot is a minimum filter; it is not an effective-wrapper
+conformance test or a game/device compatibility claim. No replacement translator,
+service or compatibility database was introduced.
+
+The guided inputs are now Proton `11.0-2-arm64ec-steam-unixlib-3`, FEX
+`2610-14c92681f-unix-0`, legacy DXVK `1.10.3-arm64ec-async-0`, modern DXVK
+`2.7.1-1-gplasync-arm64ec-0`, and VKD3D `3.0.1-arm64ec-0`.
+[Provenance](PROVENANCE.md#guided-preparation-downloads) owns their URLs and hashes.
+Existing user runtime choices are not overwritten. The earlier baseline table
+below remains the 16 October starting snapshot.
+
+| Component work | Source evidence and decision |
+| --- | --- |
+| Wine/Proton Android integration | Reviewed [GameNative/proton-wine `00095e1a`](https://github.com/GameNative/proton-wine/commit/00095e1a945e357c22a0987d70392b9b352c1749). Three input/rendering patches apply to an isolated fixture of the identified base source. Omit the fourth window-handle patch: this base already sets `_NET_WM_HWND` at window creation. This avoids duplicating an inherited adaptation. Source application is not a Wine build or a Vapor gameplay fix; no Wine package was replaced. |
+| Turnip/KGSL synchronization | The existing Mesa `a51a4189` candidate includes [MR 44838](https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/44838). Its extracted wait functions pass 14 mocked cases; the old source fails eight. This is a source/build result, not a phone improvement. Keep the balanced experimental driver manually selected until a matched physical benchmark and stability test pass. |
+| FEX disk-cache correctness | Upstream [b49837f0](https://github.com/FEX-Emu/FEX/commit/b49837f0c3961194b35da2187e5f742982a0c716) changes the cache blob's allocation/lifetime before it is filled and published. The routing pass initially retained an apply-checked patch only. The separate [19 October FEX experiment](../tools/fex/README.md#upstream-cache-blob-fix--built-and-checked-19-october-2026) applies it and rebuilds both DLLs. No automatic cache activation or gameplay gain is claimed. |
+| Vulkan-wrapper allocation | Upstream [0d2bb123](https://github.com/leegao/bionic-vulkan-wrapper/commit/0d2bb123c7c1aa9a11b8d76543f3edeb20a9092b), merged in `3abf4870`, clears an optional dedicated-allocation preference while preserving required dedicated allocations. Its comment identifies Mali/DXVK 1.x allocation pressure. It is a candidate for a Mali test, not measured Xiaomi efficiency, and has not replaced the bundled wrapper. |
+| DXVK/VKD3D | Keep the pinned modern DXGI/VKD3D pair together for eligible D3D12 launches. [VKD3D 3.0.1's requirements](https://github.com/HansKristian-Work/vkd3d-proton/blob/v3.0.1/README.md#drivers) include feature bits and descriptor limits beyond a Vulkan version. DXVK 3.1.1 remains a separately built candidate; the earlier emulator device-initialization failure does not qualify it for the phone. |
+| Windows synchronization | The previously reviewed userspace ntsync path lacks recoverable robust-mutex behavior on this Bionic configuration. Keep the fail-closed experiment and activation hold. Do not trade a possible speedup for owner-death hangs during game/Steam exit. |
+
+The metadata refresh checked FEX head `741e146f` (30 commits after `FEX-2610`),
+wrapper head `3abf4870` (two commits after `v0.0.5r5`), Drivers head `c71f600a`,
+DXVK head `d744290a` and GameNative/proton-wine head `00095e1a`. Commit counts and
+subjects are discovery evidence, not an audit or qualification of every intervening
+change. Raw snapshots/diffs are in `../automatic-graphics-qualification/`.
+
+### Wine source mapping and Android patch review
+
+Wine is part of the component work, not merely a launch-argument target. Its
+Android display/input, audio, media and Windows synchronization modules must be
+built together with the appropriate Bionic/ARM64EC interfaces and Steam host.
+
+The pinned WCP's `ntdll.so` contains `wine-8.0-20901-g71040f04bd3`. The revision
+resolves to [`71040f04bd3a451fd2c5d2552f0b64a23dd7c69b`](https://github.com/GameNative/proton-wine/commit/71040f04bd3a451fd2c5d2552f0b64a23dd7c69b),
+whose subject records the Proton 11.0-2 merge into the WinNative fork. The old tag
+in that describe string is not evidence that this is a Wine 8 release. The
+provider's release has an empty description and the WCP profile supplies no source
+revision or build manifest. The embedded revision identifies a useful source base;
+it does not establish every subsequent patch in `steam-unixlib-3`.
+
+Inspection found `_NET_WM_HWND` already written in `create_whole_window()` under
+`__ANDROID__`. Its baseline mouse/window patch files pass reverse-application
+checks against that source, confirming those sampled adaptations are present.
+Do not reapply the new upstream window-property patch. The other three patches
+apply sequentially in an isolated source fixture without editing their contents:
+
+- Skip a redundant pointer grab when the clipping rectangle is unchanged.
+- Grab the foreground window while retaining the separate confinement window.
+- Disable other-process Vulkan rendering by default on Android, preserving an
+  explicit environment override.
+
+Vapor's `Window.getHandle()` reads the same property, and absolute ButtonPress
+delivery in `InputDeviceManager` uses the grab window's listeners. Those are real
+interfaces to test; an upstream phone report does not prove a Vapor failure or fix.
+At the 18 October review stage, the fixture was not a full source tree or compiled
+module. The 19 October follow-up above now builds the X11 module from the full
+base and reproduces/corrects clipped-click delivery on Vapor's host. The complete
+package patch set, Steam ABI, fullscreen Vulkan input and matched phone behavior
+remain separate gates before replacing the normal Wine package.
+
+The guided archive still lacks the matching Wine Wayland module; copying an
+unrelated module or enabling the blocked ntsync experiment would not establish
+compatibility. Media changes likewise need a reproducible failing format and
+decoder trace. Source/build qualification must precede default activation or an
+efficiency claim. Patch identities, fixture results and sampled binary hashes are
+in the [routing and component-review receipt](evidence/2026-10-18-automatic-graphics.json).
+
+The next direct runtime/driver experiment should compare the already-built balanced
+Turnip synchronization candidate against the phone's working driver, with the same
+game scene, graphics settings and temperature range. Ghostrunner's reported frame
+hitching does not itself identify a driver wait, Wine lock, shader compilation or
+CPU translation as the cause. Capture the bottleneck before choosing the next patch.
+
 ## Scope and evidence
 
 The live checkout is `Vapor`, based on WinNative commit `8409085f706acbc0749881d9bf1e85f2f347dfd4`, with retained Vapor changes. The investigation sampled the current launch, preparation, display, graphics, audio and component-selection code. It also inspected selected files from the cached Proton/DXVK packages and the supplied Ghostrunner log/CSV.
