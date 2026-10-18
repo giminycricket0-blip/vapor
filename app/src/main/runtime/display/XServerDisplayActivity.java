@@ -2684,6 +2684,18 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
                                     this, this.graphicsDriverConfig.get("version"));
                             launchTiming.mark(Event.DRIVER_CHECK_RETURNED);
                         }
+                        if (isSteamShortcut() && wineInfo.isArm64EC()) {
+                            int graphicsAppId = Integer.parseInt(shortcut.getExtra("app_id", "0"));
+                            String graphicsInstallPath = resolveSteamGameInstallPath(graphicsAppId);
+                            String graphicsExe = resolveRelativeGameExe(graphicsAppId, graphicsInstallPath);
+                            if (com.winlator.cmod.feature.setup.VaporPreparation.applyDirect3D12Defaults(
+                                    this, contentsManager, shortcut,
+                                    graphicsInstallPath == null ? null : new File(graphicsInstallPath),
+                                    graphicsExe, this.dxwrapperConfig)) {
+                                Log.i(TAG, "D3D12 imports detected: selected prepared DXVK/DXGI and VKD3D pair for appId="
+                                        + graphicsAppId + "; saved graphics settings unchanged");
+                            }
+                        }
                         if (isSteamShortcut()) {
                             try {
                                 setSteamClientVisibility(true, isColdClientEnabledForShortcut());
@@ -7749,12 +7761,9 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
 
         ensureWinePrefixEssentialFiles();
 
-        String dxwrapper = shortcut != null ? getShortcutSetting("dxwrapper", this.dxwrapper) : this.dxwrapper;
-        String dxwrapperConfig =
-                shortcut != null
-                        ? getShortcutSetting("dxwrapperConfig", this.dxwrapperConfig.toString())
-                        : this.dxwrapperConfig.toString();
-        KeyValueSet currentDXWrapperConfig = DXVKConfigUtils.parseConfig(dxwrapperConfig);
+        // Both manual choices and automatic defaults were resolved before Steam preparation.
+        String dxwrapper = this.dxwrapper;
+        KeyValueSet currentDXWrapperConfig = this.dxwrapperConfig;
 
         if (dxwrapper.contains("dxvk")) {
             String dxvkWrapper = "dxvk-" + currentDXWrapperConfig.get("version");

@@ -12,7 +12,7 @@ Do not start a new emulator, graphics API, container framework or optimization s
 
 ## Scope and evidence
 
-The live checkout is `codex/vapor-foundation`, based on WinNative commit `8409085f706acbc0749881d9bf1e85f2f347dfd4`, with substantial existing uncommitted Vapor work. The investigation sampled the current launch, preparation, display, graphics, audio and component-selection code. It also inspected selected files from the cached Proton/DXVK packages and the supplied Ghostrunner log/CSV.
+The live checkout is `Vapor`, based on WinNative commit `8409085f706acbc0749881d9bf1e85f2f347dfd4`, with retained Vapor changes. The investigation sampled the current launch, preparation, display, graphics, audio and component-selection code. It also inspected selected files from the cached Proton/DXVK packages and the supplied Ghostrunner log/CSV.
 
 The repository inventory below records 35 pinned public repository snapshots. Review depth varies: implementation and build files for the most relevant paths; documentation, release notes or metadata for comparison projects. This is not an exhaustive audit of every public fork or every line in those repositories. Mesa documentation and MiceWine's public project page were also consulted. GitHub API retrieval of the MiceWine repository failed, so its current implementation is not independently verified here.
 

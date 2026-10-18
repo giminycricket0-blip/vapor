@@ -402,6 +402,10 @@
     <string name="itch_store_error_generic">The download could not be completed</string>
 
     <!-- Downloads > Queue -->
+    <string name="vapor_d3d12_prepare_required">This game needs the DirectX 12 components. Run Prepare Vapor in Settings to install or repair them, then try again. Your game files and saves are kept.</string>
+    <string name="vapor_download_ready">Ready to play</string>
+    <string name="vapor_download_failed">Download interrupted</string>
+    <string name="vapor_download_time_left">About %1$s left</string>
     <string name="downloads_queue_cancel_all">Cancel All</string>
     <string name="downloads_queue_preparing_download">Preparing download</string>
     <string name="downloads_queue_installing_package">Installing package</string>
@@ -3121,7 +3125,7 @@ Installed path:
     <string name="vapor_prepare_continue">Continue to library</string>
     <string name="vapor_prepare_grant_storage">Allow file access</string>
     <string name="vapor_prepare_storage_note">Vapor needs file access to install and open games. Android will ask you to allow access on the next screen.</string>
-    <string name="vapor_prepare_download_note">Downloads about 115 MB for game support. Allow 3 GB of free space for a fresh setup. Components already installed are reused.</string>
+    <string name="vapor_prepare_download_note">Downloads about %1$d MB for game support. Allow 3 GB of free space for a fresh setup. Components already installed are reused.</string>
     <string name="vapor_prepare_notifications">Allow notifications (optional)</string>
     <string name="vapor_prepare_advanced">Advanced setup</string>
     <string name="vapor_prepare_back">Back to guided setup</string>

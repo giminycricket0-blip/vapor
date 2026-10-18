@@ -1,12 +1,16 @@
 package com.winlator.cmod.feature.setup
 
 import android.content.Context
+import com.winlator.cmod.R
 import com.winlator.cmod.runtime.container.Container
 import com.winlator.cmod.runtime.container.ContainerCreation
 import com.winlator.cmod.runtime.container.ContainerManager
+import com.winlator.cmod.runtime.container.Shortcut
+import com.winlator.cmod.runtime.compat.gamefixes.GameEngineHints
 import com.winlator.cmod.runtime.content.ContentProfile
 import com.winlator.cmod.runtime.content.ContentProfile.ContentType
 import com.winlator.cmod.runtime.content.ContentsManager
+import com.winlator.cmod.runtime.wine.PEHelper
 import com.winlator.cmod.shared.util.KeyValueSet
 import java.io.File
 import java.security.MessageDigest
@@ -43,7 +47,53 @@ internal object VaporPreparation {
             "520291823b59843aa1af2682db482c3bc657ed8afb34903cb88145125ab54098", 13911832,
             listOf("system32/d3d9.dll", "system32/d3d11.dll", "system32/dxgi.dll", "syswow64/d3d9.dll", "syswow64/d3d11.dll", "syswow64/dxgi.dll"),
         ),
+        Package(
+            ContentType.CONTENT_TYPE_DXVK, "DXVK-2.7.1-1-gplasync-arm64ec-0",
+            "https://github.com/nicholasx417/WinNative-Components/releases/download/Stable-Arm64ec-Dxvk/Dxvk-2.7.1-arm64ec-gplasync.wcp",
+            "732c12ea3b23b86e0cd73271083b16dcfe8070214cbc4d9bbb6cea1027a02ae1", 3556764,
+            listOf("system32/d3d9.dll", "system32/d3d11.dll", "system32/dxgi.dll", "syswow64/d3d9.dll", "syswow64/d3d11.dll", "syswow64/dxgi.dll"),
+        ),
+        Package(
+            ContentType.CONTENT_TYPE_VKD3D, "VKD3D-3.0.1-arm64ec-0",
+            "https://github.com/nicholasx417/WinNative-Components/releases/download/Stable-arm64ec-VKD3D/Vkd3d-3.0.1-arm64ec.wcp",
+            "1754504f81e6a7fccd697231d4a1a49e9c3039da20981e950ece38fda6f4d0cd", 2804432,
+            listOf("system32/d3d12.dll", "system32/d3d12core.dll", "syswow64/d3d12.dll", "syswow64/d3d12core.dll"),
+        ),
     )
+
+    private val legacyDxvk get() = packages.first { it.type == ContentType.CONTENT_TYPE_DXVK }
+    private val direct3d12Dxvk get() = packages.last { it.type == ContentType.CONTENT_TYPE_DXVK }
+
+    /** Per-launch defaults only. Explicit graphics choices and saved settings are retained. */
+    @JvmStatic
+    fun applyDirect3D12Defaults(
+        context: Context,
+        contents: ContentsManager,
+        shortcut: Shortcut,
+        installRoot: File?,
+        relativeExecutable: String?,
+        graphics: KeyValueSet,
+    ): Boolean {
+        val container = shortcut.container
+        if (shortcut.getSettingExtra("wineVersion", container.wineVersion) != packages.first().entryName ||
+            shortcut.getSettingExtra("dxwrapper", container.dxWrapper) != Container.DEFAULT_DXWRAPPER ||
+            (!shortcut.usesContainerDefaults() && shortcut.getExtra("dxwrapperConfig").isNotBlank()) ||
+            graphics.get("version") != legacyDxvk.entryName.substringAfter('-') ||
+            graphics.get("vkd3dVersion") !in listOf("", "None")) return false
+
+        val imports = GameEngineHints.inspect(installRoot, relativeExecutable)
+        if (imports.architecture !in setOf("x86", "x86_64", "arm64ec") ||
+            imports.importStatus != PEHelper.ImportStatus.COMPLETE ||
+            PEHelper.GraphicsApi.D3D12 !in imports.graphicsImports) return false
+
+        val dxvk = installed(context, contents, direct3d12Dxvk)
+        val vkd3d = installed(context, contents, packages.single { it.type == ContentType.CONTENT_TYPE_VKD3D })
+        check(dxvk != null && vkd3d != null) { context.getString(R.string.vapor_d3d12_prepare_required) }
+        // VKD3D-proton shares DXVK's modern DXGI. Never pair it with the legacy baseline.
+        graphics.put("version", ContentsManager.getEntryName(dxvk).substringAfter('-'))
+        graphics.put("vkd3dVersion", ContentsManager.getEntryName(vkd3d).substringAfter('-'))
+        return true
+    }
 
     fun archiveMatches(file: File, spec: Package): Boolean {
         if (!file.isFile || file.length() != spec.downloadBytes) return false
@@ -73,14 +123,17 @@ internal object VaporPreparation {
 
         val fex = installed(context, contents, packages.single { it.type == ContentType.CONTENT_TYPE_FEXCORE })
             ?: return null
-        val dxvk = installed(context, contents, packages.single { it.type == ContentType.CONTENT_TYPE_DXVK })
+        val dxvk = installed(context, contents, legacyDxvk)
             ?: return null
+        if (installed(context, contents, direct3d12Dxvk) == null ||
+            installed(context, contents, packages.single { it.type == ContentType.CONTENT_TYPE_VKD3D }) == null) return null
         return ContainerCreation.createContainerForProfile(context, manager, contents, runtime, "Vapor")?.also {
             // The manual factory chooses the newest installed component. Guided setup uses its
             // verified package instead, without changing any existing container or game override.
             it.setFEXCoreVersion(ContentsManager.getEntryName(fex).substringAfter('-'))
             val graphics = KeyValueSet(it.dxWrapperConfig)
             graphics.put("version", ContentsManager.getEntryName(dxvk).substringAfter('-'))
+            graphics.put("vkd3dVersion", "None")
             it.setDXWrapperConfig(graphics.toString())
             it.saveData()
         }

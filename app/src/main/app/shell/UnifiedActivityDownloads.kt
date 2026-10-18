@@ -1,5 +1,6 @@
 package com.winlator.cmod.app.shell
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent
@@ -266,6 +267,7 @@ internal fun UnifiedActivity.DownloadsTab(
     var tick by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
     var confirmCancelAll by remember { mutableStateOf(false) }
+    var completedGame by remember { mutableStateOf<SteamApp?>(null) }
     val bridge = downloadsNavBridge
     val navRegistry = remember(bridge) { PaneNavRegistry(initialSignal = bridge.navSignal) }
     navRegistry.controllerActive = bridge.controllerActive
@@ -410,15 +412,19 @@ internal fun UnifiedActivity.DownloadsTab(
                     }
                 }
                 items(sortedDownloads, key = { it.first }) { (id, info) ->
-                    DownloadItemDeck(id = id, info = info, animationsActive = animationsActive)
+                    DownloadItemDeck(id = id, info = info, animationsActive = animationsActive,
+                        onOpenGame = { completedGame = it })
                 }
             }
         }
     }
+    completedGame?.let { game ->
+        LibraryGameDetailDialog(app = game, onDismissRequest = { completedGame = null })
+    }
 }
 
 @Composable
-internal fun UnifiedActivity.DownloadsQueueButton(
+internal fun DownloadsQueueButton(
     label: String,
     accentColor: Color,
     enabled: Boolean,
@@ -719,7 +725,7 @@ internal fun UnifiedActivity.TaskCompleteDialog(message: String, failed: Boolean
 }
 
 @Composable
-internal fun UnifiedActivity.DownloadCancelWarningMenu(
+internal fun DownloadCancelWarningMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
@@ -747,16 +753,8 @@ internal fun UnifiedActivity.DownloadItemDeck(
     id: String,
     info: DownloadInfo,
     animationsActive: Boolean,
+    onOpenGame: (SteamApp) -> Unit,
 ) {
-    var progress by remember(info) { mutableFloatStateOf(info.getProgress()) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    DisposableEffect(info) {
-        val listener: (Float) -> Unit = { progress = it }
-        info.addProgressListener(listener)
-        onDispose { info.removeProgressListener(listener) }
-    }
-    val status by info.getStatusFlow().collectAsState()
-    val statusMessage by info.getStatusMessageFlow().collectAsState()
     val isSteam = id.startsWith("STEAM_")
     val isEpic = id.startsWith("EPIC_")
     val isGog = id.startsWith("GOG_")
@@ -779,12 +777,6 @@ internal fun UnifiedActivity.DownloadItemDeck(
         mutableStateOf<com.winlator.cmod.feature.stores.itch.service.ItchInstalledGame?>(null)
     }
     val context = LocalContext.current
-    val animatedProgress by animateFloatAsState(
-        targetValue = if (status == DownloadPhase.COMPLETE) 1f else progress.coerceIn(0f, 1f),
-        animationSpec = tween(durationMillis = if (animationsActive) 200 else 0, easing = FastOutSlowInEasing),
-        label = "downloadItemProgress",
-    )
-
     LaunchedEffect(appId, gogId, itchId, isSteam, isEpic, isGog, isItch) {
         withContext(Dispatchers.IO) {
             if (isSteam) {
@@ -827,170 +819,18 @@ internal fun UnifiedActivity.DownloadItemDeck(
             null
         }
 
-
-    val currentFile by info.getCurrentFileNameFlow().collectAsState()
-    val (downloadedBytes, totalBytes) = info.getDisplayBytesProgress()
-    var speed by remember(info) { mutableLongStateOf(0L) }
-    LaunchedEffect(info, status) {
-        speed = info.getCurrentDownloadSpeed() ?: 0L
-        while (status == DownloadPhase.DOWNLOADING) {
-            delay(1000)
-            speed = info.getCurrentDownloadSpeed() ?: 0L
-        }
-    }
-    val statusText =
-        when (status) {
-            DownloadPhase.DOWNLOADING -> {
-                currentFile?.let {
-                    stringResource(R.string.downloads_queue_phase_downloading_file, it)
-                } ?: stringResource(R.string.downloads_queue_phase_downloading)
-            }
-
-            DownloadPhase.PAUSED -> {
-                stringResource(R.string.downloads_queue_phase_paused)
-            }
-
-            DownloadPhase.QUEUED -> {
-                stringResource(R.string.downloads_queue_phase_queued)
-            }
-
-            DownloadPhase.PREPARING -> {
-                stringResource(R.string.downloads_queue_phase_preparing)
-            }
-
-            DownloadPhase.VERIFYING -> {
-                currentFile?.let {
-                    stringResource(R.string.downloads_queue_phase_verifying_file, it)
-                } ?: stringResource(R.string.downloads_queue_phase_verifying)
-            }
-
-            DownloadPhase.PATCHING -> {
-                stringResource(R.string.downloads_queue_phase_patching)
-            }
-
-            DownloadPhase.APPLYING_DATA -> {
-                stringResource(R.string.downloads_queue_phase_applying_data)
-            }
-
-            DownloadPhase.FINALIZING -> {
-                stringResource(R.string.downloads_queue_phase_finalizing)
-            }
-
-            DownloadPhase.UNPACKING -> {
-                stringResource(R.string.downloads_queue_phase_unpacking)
-            }
-
-            DownloadPhase.COMPLETE -> {
-                stringResource(R.string.downloads_queue_phase_complete)
-            }
-
-            DownloadPhase.CANCELLED -> {
-                stringResource(R.string.downloads_queue_phase_cancelled)
-            }
-
-            DownloadPhase.FAILED -> {
-                stringResource(
-                    R.string.downloads_queue_phase_failed,
-                    if (statusMessage != null &&
-                        statusMessage != "null"
-                    ) {
-                        statusMessage!!
-                    } else {
-                        stringResource(R.string.common_ui_unknown_error)
-                    },
-                )
-            }
-
-            else -> {
-                stringResource(R.string.downloads_queue_phase_unknown)
-            }
-        }
-    val statusColor =
-        when (status) {
-            DownloadPhase.COMPLETE -> StatusOnline
-            DownloadPhase.FAILED,
-            DownloadPhase.CANCELLED,
-            -> DangerRed
-            DownloadPhase.PAUSED,
-            DownloadPhase.QUEUED,
-            -> StatusAway
-            DownloadPhase.DOWNLOADING,
-            DownloadPhase.PREPARING,
-            DownloadPhase.VERIFYING,
-            DownloadPhase.PATCHING,
-            DownloadPhase.APPLYING_DATA,
-            DownloadPhase.FINALIZING,
-            DownloadPhase.UNPACKING,
-            -> Accent
-            else -> TextSecondary
-        }
-
-    val finished = status == DownloadPhase.COMPLETE || status == DownloadPhase.CANCELLED
-    val resumable = status == DownloadPhase.PAUSED || status == DownloadPhase.FAILED
-    Surface(color = CardDark, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, CardBorder)) {
-        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                AsyncImage(
-                    model = displayImage,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(88.dp, 52.dp).clip(RoundedCornerShape(8.dp)).background(SurfaceDark),
-                )
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(displayName ?: unknownGameLabel, color = TextPrimary, style = MaterialTheme.typography.titleMedium)
-                    Text(when { isSteam -> "Steam"; isEpic -> "Epic"; isGog -> "GOG"; isItch -> "itch.io"; else -> "" }, color = TextSecondary, style = MaterialTheme.typography.labelMedium)
-                }
-            }
-            // Keep the complete error visible; an ellipsis here would hide the reason to retry.
-            Text(statusText, color = statusColor, style = MaterialTheme.typography.bodyMedium)
-            DownloadProgressBar(
-                progress = animatedProgress,
-                status = status,
-                modifier = Modifier.fillMaxWidth().height(8.dp),
-            )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("${(animatedProgress * 100).roundToInt()}%", color = TextPrimary, fontWeight = FontWeight.SemiBold)
-                if (totalBytes > 0L) {
-                    Text("${StorageUtils.formatDecimalSize(downloadedBytes)} / ${StorageUtils.formatDecimalSize(totalBytes)}", color = TextSecondary)
-                }
-                if (status == DownloadPhase.DOWNLOADING && progress < 1f && speed > 0L) {
-                    Text(StorageUtils.formatBitsPerSecond(speed), color = Accent)
-                }
-            }
-            if (!finished) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DownloadsQueueButton(
-                        label = stringResource(when {
-                            status == DownloadPhase.FAILED -> R.string.session_drawer_retry
-                            resumable -> R.string.session_drawer_resume
-                            else -> R.string.session_drawer_pause
-                        }),
-                        accentColor = Accent,
-                        enabled = true,
-                        onSecondary = { showDeleteDialog = true },
-                        onClick = {
-                            if (resumable) runIfOnlineOrToast { DownloadService.resumeDownload(id) }
-                            else DownloadService.pauseDownload(id)
-                        },
-                    )
-                    Box {
-                        DownloadsQueueButton(
-                            label = stringResource(R.string.downloads_queue_cancel_download),
-                            accentColor = DangerRed,
-                            enabled = true,
-                            onSecondary = { showDeleteDialog = true },
-                            onClick = { showDeleteDialog = true },
-                        )
-                        DownloadCancelWarningMenu(
-                            expanded = showDeleteDialog,
-                            onDismissRequest = { showDeleteDialog = false },
-                            onConfirm = { showDeleteDialog = false; DownloadService.cancelDownload(id) },
-                        )
-                    }
-                }
-            }
-        }
-    }
+    val status by info.getStatusFlow().collectAsStateWithLifecycle()
+    val app = steamApp
+    val canOpen = isSteam && app != null && status == DownloadPhase.COMPLETE && SteamService.isAppInstalled(appId)
+    DownloadQueueCard(
+        title = displayName ?: unknownGameLabel, image = displayImage,
+        store = when { isSteam -> "Steam"; isEpic -> "Epic"; isGog -> "GOG"; isItch -> "itch.io"; else -> "" },
+        info = info, animationsActive = animationsActive,
+        onPause = { DownloadService.pauseDownload(id) },
+        onResume = { runIfOnlineOrToast { DownloadService.resumeDownload(id) } },
+        onCancel = { DownloadService.cancelDownload(id) },
+        onOpenGame = if (canOpen) ({ onOpenGame(app!!) }) else null,
+    )
 }
 
 // Game Manager Dialog

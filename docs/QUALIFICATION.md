@@ -8,6 +8,44 @@ screenshot. On 15 October the owner confirmed that **all tested games had sound*
 reported EU3, TF2, You Have to Win the Game and Helltaker sessions. Audio is owner-confirmed;
 persistence and repeat-launch checks remain separate.
 
+## Downloads and initial D3D12 preparation — 18 October 2026
+
+The existing download queue now separates stage, file, transfer progress and full
+failure text. Unknown totals and unfinished finalization remain visibly in progress.
+Trusted completed Steam installs offer **Open game**, using the existing native game
+page and its Play/session/save checks. Retry, resume and confirmed cancellation stay
+with the existing download service; listeners and speed sampling follow the screen lifecycle.
+
+Guided preparation now includes a pinned modern DXVK/DXGI and VKD3D pair alongside
+the older-game baseline. For a fresh Steam session with unchanged guided graphics, a complete static
+D3D12 import scan can select that pair before Steam/Cloud preparation. Explicit
+per-game Wine/graphics settings and saved container graphics remain authoritative.
+Missing pair files stop that detected launch with a Prepare Vapor repair instruction.
+This is initial selection, **not an automatic failure/retry loop**. Static imports
+can miss dynamically loaded APIs and child executables; driver features and actual
+D3D12 gameplay are not established by these checks. See [provenance](PROVENANCE.md#guided-preparation-downloads).
+
+| Check | Result | Boundary |
+| --- | --- | --- |
+| Focused JVM batch | **48/48 pass** | 20 preparation/selection tests, 15 read-only engine/path tests and 13 PE/import tests. Includes preservation of explicit Wine/graphics choices and failure before partially selecting a missing component pair. |
+| Native UI batch | **27/27 pass** | 11 Downloads cases plus 6 preparation and 10 Home regressions on an account-free API 36 ARM64 / 4 KB emulator. Includes failure recovery, unknown totals, finalization, narrow/large-text layouts and injected D-pad/A/Y behavior. |
+| Landscape repetition | **2/2 pass** | The same queue render and controller case repeated after changing the viewport; these are not two additional unique tests. |
+| Rendered review | **Reviewed** | Labeled portrait/landscape production-card previews and normal-app empty Downloads. The wide queue scrolls; no real transfer or owned game is represented by the previews. |
+| Normal app | **Pass** | Home → Downloads through observed native controls, no account or live download. Installed APK hash matches the supplied artifact; no fatal AndroidRuntime error in this smoke interval. |
+| Packaging | **Pass** | Debug signature, 16 KB ZIP alignment, 39/39 native ELF alignments and 222/222 compared runtime entries identical to the onboarding APK. The new WCPs are Prepare downloads, not newly bundled runtime binaries. |
+
+Artifact: `Vapor-0.1.0-downloads-d3d12-dev.apk`, **676054306 bytes**, SHA-256
+`88225734660e5daefde3cb7f56dfc294422af65706cb83ed58ac4a35c9133f59`.
+ARM64, minimum SDK 29, target SDK 28, compile SDK 35. This is a local development
+APK, with no public binary release or alpha designation. The default source branch
+is now `Vapor`; donor history and notices remain.
+
+Onimusha phone recovery, live installs, Steam round trips and physical controller
+acceptance remain pending. The core reference-game/device matrix is unchanged.
+Reproduce the focused tests with `:app:testStandardDebugUnitTest` filtered to
+`VaporPreparationTest`, `GameEngineHintsTest` and `PEHelperTest`; Android test
+classes and exact source/artifact hashes are in [the portable evidence](evidence/2026-10-18-downloads-d3d12.json).
+
 ## Setup and Steam sign-in — 18 October 2026
 
 The preparation, account-connection, sign-in and Steam Guard screens now share
@@ -64,17 +102,16 @@ hardware performance. No game-specific overrides have been applied.
 The owner subsequently found **VKD3D Version: None**, **Feature Level: 12_1**,
 an ARM64EC DXVK selection, X11 and FIFO. The precise DXVK version and underlying
 driver version remain unconfirmed. The feature-level setting is not a replacement
-for a D3D12 implementation. `VaporPreparation.packages` currently pins Proton,
-FEX and DXVK 1.10.3 ARM64EC, but no VKD3D package. This is a concrete gap in the
-guided graphics setup and a possible explanation of the rejection; a corrected
-configuration has not yet been tested on the phone.
+for a D3D12 implementation. The preceding onboarding build pinned Proton, FEX
+and legacy DXVK but no VKD3D package. The Downloads/D3D12 continuation above
+adds a matched modern pair and bounded initial selection. This addresses a
+guided-setup gap; a corrected configuration has not yet been tested on the phone.
 
-In the current source, `ContainerCreation.buildDefaultDxWrapperConfig` selects
+The manual factory, `ContainerCreation.buildDefaultDxWrapperConfig`, selects
 an installed VKD3D profile and falls back to `None` when none is available.
 `XServerDisplayActivity.applyVkd3dWrapper` restores Wine's builtin D3D12 when
 `None` is selected. Neither source path establishes which setting was active
-on the phone. Capture the existing launch diagnostics before changing one
-setting at a time; GPU-name or feature-level overrides do not implement missing
+on the phone. Record the effective pair and driver evidence in the next phone check; GPU-name or feature-level overrides do not implement missing
 graphics features.
 
 ## Artwork and idle-work checks — 18 October 2026

@@ -8,6 +8,27 @@ Downloads and Quick Access with consistent spacing and reachable large-text acti
 the main experience; optional storefronts remain in Settings → More stores. Gameplay reports and
 account qualification remain separately recorded in [QUALIFICATION.md](QUALIFICATION.md).
 
+## Downloads and completed installs — 18 October 2026
+
+The queue keeps its existing DownloadService, DownloadCoordinator and per-store
+records. Cards now separate the current phase, an optional single-line file name,
+transfer totals and the complete error text. Unknown transfer totals use an
+indeterminate indicator instead of an invented zero percent. Processing phases
+at full transfer progress continue to show work in progress rather than suggesting
+installation is ready. A time estimate appears only when the existing download
+model has recent speed samples.
+
+Completed, trusted Steam installations offer Open game, using the existing native
+game page. The game page remains responsible for Play, session requirements and
+save reservations. Completion without a trusted installation does not offer that
+action. Pause, resume/retry and confirmed cancellation use the existing callbacks.
+Progress listeners and speed polling follow the screen's STARTED lifecycle.
+The presentation reuses the native theme, queue buttons and cancellation dialog;
+there is no new download queue, record schema or launcher. The 27-case UI batch
+and two landscape repeats pass locally; physical gamepad/phone acceptance and live
+transfers remain pending. [Portrait preview](images/downloads-portrait.png) ·
+[Landscape preview](images/downloads-landscape.png) · [Evidence](evidence/2026-10-18-downloads-d3d12.json).
+
 ## Setup and Steam sign-in — 18 October 2026
 
 Prepare Vapor, first-run account setup, Steam sign-in and Steam Guard now share

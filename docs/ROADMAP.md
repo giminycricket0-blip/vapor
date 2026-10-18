@@ -29,20 +29,26 @@ QR/account selection, Steam Guard recovery, preparation feedback and controller
 focus extend the existing owners. The auth fix cancels abandoned code challenges
 instead of leaving a receiver waiting through retries. Local UI and auth checks
 are recorded separately from live account, physical controller and Xiaomi
-acceptance. The next interface slice remains the existing Downloads queue and
-install-to-Play feedback. The automatic graphics requirement below is a separate
-runtime follow-up, not a feature of this UI pass.
+acceptance. The Downloads continuation now separates transfer stages, filenames, recovery actions
+and completion. Trusted completed Steam installs open the existing game page.
+The automatic graphics requirement below remains a separate runtime lane.
 
 ## Automatic graphics attempts — accepted follow-up, 18 October 2026
 
 The intended user journey is **Play → Vapor tries an eligible preset → a recognized
 graphics failure triggers a clean retry → the working selection is remembered**.
 The user should not have to choose a driver, DXVK or VKD3D. Sensible initial
-defaults alone do not satisfy this requirement. This retry flow is not implemented
-or qualified in the onboarding build.
+defaults alone do not satisfy this requirement. The initial automatic D3D12 selection is implemented separately from retries.
+The retry flow is not implemented or qualified in this development build.
 
 The immediate observed gap is Onimusha Demo opening with a GPU-support rejection
-while VKD3D is `None`. Guided preparation currently installs Proton/FEX/DXVK only.
+while VKD3D is `None`. The earlier guided preparation installed Proton/FEX/legacy DXVK only. The current
+implementation also prepares a pinned modern DXVK/VKD3D pair. A complete static
+D3D12 import scan can select it before Steam preparation when the guided baseline
+is unchanged. Other games and explicit graphics settings retain their current
+path. Missing pair files produce a preparation error. Static scanning, file
+readiness and local regression checks do not establish driver feature support or
+resolve the Xiaomi report.
 Build the next slice into the existing preparation, shortcut and session owners:
 
 1. Add and verify a pinned ARM64EC VKD3D input through the existing package

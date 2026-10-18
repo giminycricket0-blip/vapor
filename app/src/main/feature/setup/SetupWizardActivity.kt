@@ -473,7 +473,7 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
             PackageSpec(
                 label = "VKD3D ARM64EC 3.0.1",
                 type = ContentProfile.ContentType.CONTENT_TYPE_VKD3D,
-                url = "https://github.com/nicholasx417/WinNative-Components/releases/download/Stable-arm64ec-VKD3D/Vkd3d-arm64ec-3.0.1.wcp",
+                url = VaporPreparation.packages.single { it.type == ContentProfile.ContentType.CONTENT_TYPE_VKD3D }.url,
             ),
             PackageSpec(
                 label = "DXVK 2.4.1 pre-reg",

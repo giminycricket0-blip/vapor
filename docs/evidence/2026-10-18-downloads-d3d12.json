@@ -1,0 +1,153 @@
+{
+  "date": "2026-10-18",
+  "branch": "Vapor",
+  "base_commit": "79793854c19a4c213d711bd6beb8cffea5ab62aa",
+  "scope": "Downloads presentation and initial static D3D12 component selection; not whole-project, phone, Steam account or game qualification.",
+  "source_sha256": {
+    "app/src/androidTest/kotlin/com/winlator/cmod/app/shell/DownloadQueueUiTest.kt": "61049e3bc4a7f7b0866273cb177edffbfd13752bfc90b403b01d10960d0fe67e",
+    "app/src/main/app/shell/DownloadQueueCard.kt": "4f641784299684e623a8a5ffd45e67179ce795a9f6f17a0175b2c5b1a5403ef7",
+    "app/src/main/app/shell/UnifiedActivityDownloads.kt": "ec04128b38eace178db37ec34272da48c8ce86af2ca7d9ae0c29603360a3a334",
+    "app/src/main/feature/setup/PrepareVaporScreen.kt": "eede62c6e781893840819ea2c466ea05977d38c4522fac29818650d50c0eb87f",
+    "app/src/main/feature/setup/SetupWizardActivity.kt": "f7e4055c1fc0b7cfdb5b84720af418aefafb4b42e2d3afe164bea60ad30a1e5e",
+    "app/src/main/feature/setup/VaporPreparation.kt": "a666c990504e6a991cc54c1a918baec00a14017c3f024f894b85ed1fdb3dee5c",
+    "app/src/main/res/values/strings.xml": "05634fcfe61c5e10958a4a0bd6147c65d7b2dfa513d34b94bd1249188357b8f1",
+    "app/src/main/runtime/display/XServerDisplayActivity.java": "7f57eecda25d60859c5859abaf2dfde8dbb3851a9e9cd522ec5744f3dd31cdb0",
+    "app/src/test/kotlin/com/winlator/cmod/feature/setup/VaporPreparationTest.kt": "73ab4ed2dacab304f3d4383f6689b32f2620a22117fabce9cfa0c6f4fd66e2ae"
+  },
+  "artifact": {
+    "filename": "Vapor-0.1.0-downloads-d3d12-dev.apk",
+    "package": "app.vapor.android",
+    "version": "0.1.0-dev",
+    "abi": "arm64-v8a",
+    "bytes": 676054306,
+    "sha256": "88225734660e5daefde3cb7f56dfc294422af65706cb83ed58ac4a35c9133f59",
+    "signer_sha256": "7e122c925e37a47696abc9b111ec747872061cb1d686eb7be9880cfafa4a93f1",
+    "min_sdk": 29,
+    "target_sdk": 28,
+    "compile_sdk": 35
+  },
+  "build": {
+    "application_and_android_test_apk": "pass",
+    "focused_jvm": "48/48 pass",
+    "suites": [
+      {
+        "class": "com.winlator.cmod.feature.setup.VaporPreparationTest",
+        "tests": 20,
+        "failures": 0,
+        "errors": 0,
+        "report_sha256": "c104640564db4235ecdc1a6d19486be0c4dadcd5cd22bea30cc25ea9702d1e52"
+      },
+      {
+        "class": "com.winlator.cmod.runtime.wine.PEHelperTest",
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "report_sha256": "440de34a9d8f7727879689e0065013e12cd618cbe792ca2fdd6d0e46ee84ef36"
+      },
+      {
+        "class": "com.winlator.cmod.runtime.compat.gamefixes.GameEngineHintsTest",
+        "tests": 15,
+        "failures": 0,
+        "errors": 0,
+        "report_sha256": "0cce88828378b77ccc2e704afa0d0aaeeae47d8084aa55ddc36b09781bea6bd7"
+      }
+    ],
+    "controller_fixture_correction": "The first run requested focus in touch mode. The final fixture sends a real D-pad key before asserting focus and A/Y behavior. Production UI source was unchanged by that test correction."
+  },
+  "android_ui": {
+    "environment": "Account-free API 36 ARM64 emulator; 4096-byte kernel pages",
+    "portrait_unique_cases": 27,
+    "portrait_classes": {
+      "DownloadQueueUiTest": 11,
+      "PrepareVaporScreenTest": 6,
+      "HomeUiTest": 10
+    },
+    "portrait_result": "OK (27 tests)",
+    "landscape_repeated_cases": 2,
+    "landscape_result": "OK (2 tests)",
+    "landscape_cases": [
+      "previewQueue",
+      "controllerAOpensACompletedInstallExactlyOnce"
+    ],
+    "physical_controller": false,
+    "layout_cases": "280 dp width with 1.6 font scale; portrait and landscape; ordinary queue scrolling retained",
+    "portrait_log_sha256": "d8b5278a911ae28a507d2247e11b04f863fb5ac3a25a949e85533e06e528561f",
+    "landscape_log_sha256": "cdfc0e617b90a42ac7be0d1932bb0fb4ad300500676ee7d92d24a5a3f239be91"
+  },
+  "rendered_review": [
+    {
+      "path": "docs/images/downloads-portrait.png",
+      "sha256": "351c40a499ad1939e20510ece5cbc0f2a2b1d2deed1174c8ab0bd5eaa09141e8",
+      "data": "Labeled synthetic transfers; production card and real DownloadInfo state",
+      "visually_reviewed": true
+    },
+    {
+      "path": "docs/images/downloads-landscape.png",
+      "sha256": "99fbef075fa529a127be7f30809de55da62de885cf0cfc662067e4ad3fd0fefb",
+      "data": "Labeled synthetic transfers; production card and real DownloadInfo state",
+      "visually_reviewed": true
+    }
+  ],
+  "normal_app_smoke": {
+    "journey": "Normal app Home \u2192 Downloads using observed native controls",
+    "result": "pass",
+    "downloads_empty_state": true,
+    "account": "No Steam account used",
+    "transfer": "No live download performed",
+    "installed_apk_sha256": "88225734660e5daefde3cb7f56dfc294422af65706cb83ed58ac4a35c9133f59",
+    "fatal_android_runtime_errors": false,
+    "home_return_control": "Tapped; final Home state was not separately captured"
+  },
+  "packaging": {
+    "signature": "pass",
+    "zip_16kb_alignment": "pass",
+    "elf_aligned": 39,
+    "elf_libraries": 39
+  },
+  "bundled_runtime_and_native": {
+    "baseline": "Vapor-0.1.0-onboarding-dev.apk",
+    "entries": 222,
+    "identical": 222,
+    "changed": [],
+    "missing": []
+  },
+  "new_downloaded_components": [
+    {
+      "filename": "Vkd3d-3.0.1-arm64ec.wcp",
+      "bytes": 2804432,
+      "sha256": "1754504f81e6a7fccd697231d4a1a49e9c3039da20981e950ece38fda6f4d0cd",
+      "profile_type": "VKD3D",
+      "profile_version": "3.0.1-arm64ec",
+      "all_mapped_sources_present": true
+    },
+    {
+      "filename": "Dxvk-2.7.1-arm64ec-gplasync.wcp",
+      "bytes": 3556764,
+      "sha256": "732c12ea3b23b86e0cd73271083b16dcfe8070214cbc4d9bbb6cea1027a02ae1",
+      "profile_type": "DXVK",
+      "profile_version": "2.7.1-1-gplasync-arm64ec",
+      "all_mapped_sources_present": true
+    }
+  ],
+  "runtime_selection": {
+    "eligible": "Fresh Steam session, guided ARM64EC runtime, unchanged legacy DXVK/None baseline, no explicit game graphics override, complete static D3D12 import evidence",
+    "effect": "Select prepared modern DXVK/DXGI and VKD3D together in launch memory before Steam/Cloud preparation; missing pair files fail with a repair instruction.",
+    "preserved": "Saved graphics, explicit per-game Wine/graphics choices, other games, original game Steam libraries and existing session/Cloud owners",
+    "not_implemented": [
+      "Automatic retry after a recognized graphics failure",
+      "Remembering a qualified working preset",
+      "Complete driver/translator feature qualification",
+      "Detection of every downstream or dynamically loaded D3D12 executable"
+    ]
+  },
+  "pending": [
+    "Onimusha failure and recovery on Xiaomi",
+    "Live download completion to game launch",
+    "Live Steam authentication, Cloud restoration/repeat uploads, achievements and chat",
+    "Physical controller and phone UX acceptance",
+    "Modern target SDK 36 and full Wine/FEX execution on 16 KB kernels",
+    "Independent source/redistribution mapping for downloaded component builds"
+  ],
+  "publication": "Development source on Vapor; no public APK release or alpha designation",
+  "environment_cleanup": "Original 1080x2400 display, rotation 0 and auto-rotation 1 restored; owned emulator stopped"
+}

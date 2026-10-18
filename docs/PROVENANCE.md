@@ -2,7 +2,7 @@
 
 ## Source foundation
 
-WinNative source commit: `8409085f706acbc0749881d9bf1e85f2f347dfd4` from https://github.com/WinNative-Emu/WinNative. The local branch descends from that commit; history was retained. `origin` names https://github.com/giminycricket0-blip/vapor. No commits or pushes have been made for the implementation snapshot.
+WinNative source commit: `8409085f706acbc0749881d9bf1e85f2f347dfd4` from https://github.com/WinNative-Emu/WinNative. The local branch descends from that commit; history was retained. `origin` names https://github.com/giminycricket0-blip/vapor. The public default branch is `Vapor`; it retains the donor history. Vapor changes are published to its own origin.
 
 | Source input | Pin |
 | --- | --- |
@@ -161,15 +161,20 @@ This is an identity inventory, not a completed source or rights audit. An archiv
 
 ## Guided preparation downloads
 
-`VaporPreparation.kt` owns the fixed initial download set. These are downloaded on the user's Prepare action, not newly bundled into the APK. Each URL is pinned to the byte size and SHA-256 below, independently checked against the release asset digest and a local download: Proton/DXVK on 14 October 2026 and the FEX candidate on 16 October 2026. The inherited manual component catalog remains optional under Advanced and may offer different versions.
+`VaporPreparation.kt` owns the fixed initial download set. These are downloaded on the user's Prepare action, not newly bundled into the APK. Each URL is pinned to the byte size and SHA-256 below, independently checked against the release asset digest and a local download: Proton/DXVK on 14 October 2026, the FEX candidate on 16 October 2026, and the modern DXVK/VKD3D pair on 18 October 2026. The inherited manual component catalog remains optional under Advanced and may offer different versions.
 
 | Component / exact installed entry | Original upstream release asset | Bytes | SHA-256 |
 | --- | --- | ---: | --- |
 | `Proton-11.0-2-arm64ec-steam-unixlib-3` | [Proton-11.0-2-arm64ec-steam-unix.wcp](https://github.com/nicholasx417/WinNative-Components/releases/download/Proton/Proton-11.0-2-arm64ec-steam-unix.wcp) | 105,027,943 | `6de8fe5581c04d87b5ae4cef23d96de136090c696e3733201a92b1ce59e5163e` |
 | `FEXCore-2610-14c92681f-unix-0` | [FEXCore-2610-14c92681f-unix.wcp](https://github.com/nicholasx417/WinNative-Components/releases/download/fex-unix-2610-14c92681f/FEXCore-2610-14c92681f-unix.wcp) | 1,555,528 | `bc5c601b995acf19a958237d8aff5cb24de7aa8b96241a35b3c0ad9e03ca2178` |
 | `DXVK-1.10.3-arm64ec-async-0` | [Dxvk-1.10.3-arm64ec-async.wcp](https://github.com/nicholasx417/WinNative-Components/releases/download/Stable-Arm64ec-Dxvk/Dxvk-1.10.3-arm64ec-async.wcp) | 13,911,832 | `520291823b59843aa1af2682db482c3bc657ed8afb34903cb88145125ab54098` |
+| `DXVK-2.7.1-1-gplasync-arm64ec-0` | [Dxvk-2.7.1-arm64ec-gplasync.wcp](https://github.com/nicholasx417/WinNative-Components/releases/download/Stable-Arm64ec-Dxvk/Dxvk-2.7.1-arm64ec-gplasync.wcp) | 3,556,764 | `732c12ea3b23b86e0cd73271083b16dcfe8070214cbc4d9bbb6cea1027a02ae1` |
+| `VKD3D-3.0.1-arm64ec-0` | [Vkd3d-3.0.1-arm64ec.wcp](https://github.com/nicholasx417/WinNative-Components/releases/download/Stable-arm64ec-VKD3D/Vkd3d-3.0.1-arm64ec.wcp) | 2,804,432 | `1754504f81e6a7fccd697231d4a1a49e9c3039da20981e950ece38fda6f4d0cd` |
 
-Proton and DXVK retain the earlier emulator baseline. FEX 2610 is the new development candidate for fresh guided containers; preparation preserves existing containers and their selected translator. These inputs do not establish best performance, Snapdragon qualification or DirectX 12 support. A fresh environment retains the existing system graphics-driver policy; no automatic Turnip download is added. Already installed components are checked for their expected identity and nonempty required files, not rehashed as a complete installed tree. Mapping these binary builds and patches to reproducible source and distribution conditions remains open.
+Proton and legacy DXVK retain the earlier emulator baseline. FEX 2610 and the modern DXVK/VKD3D pair are development inputs. Fresh guided containers keep legacy DXVK with VKD3D `None` as the older-game baseline. Before preparation for a fresh Steam session, a complete D3D12 import scan of the selected executable can choose the pinned modern pair for that launch. This applies only to the guided runtime with its unchanged baseline graphics; saved container data and explicit per-game graphics settings are retained. The current static scan does not detect every dynamically loaded graphics API or downstream game executable. There is no automatic retry after a graphics failure yet.
+
+The new DXVK archive's installed profile identifies `2.7.1-1-gplasync-arm64ec`, despite the different word order in its filename. Its DXGI is selected together with VKD3D because [vkd3d-proton requires DXVK 2.1+ for DXGI](https://github.com/HansKristian-Work/vkd3d-proton/blob/master/README.md#using-vkd3d-proton); it is never automatically paired with the legacy DXVK 1.10.3 baseline. The VKD3D archive contains `d3d12.dll` and `d3d12core.dll` under both guest Windows system directories. LLVM recognizes ARM64EC with CHPE metadata in its `system32` pair; the `syswow64` pair is x86. This is archive/metadata inspection, not proof of execution, required Vulkan features or Onimusha compatibility. The packages' identities and nonempty required files are checked before fresh container creation and before automatic selection. Missing pair files stop that detected D3D12 launch with a Prepare Vapor repair instruction before Steam handoff.
+These inputs do not establish best performance, Snapdragon qualification or working DirectX 12 gameplay. A fresh environment retains the existing system graphics-driver policy; no automatic Turnip download is added. Already installed components are checked for their expected identity and nonempty required files, not rehashed as a complete installed tree. Mapping these binary builds and patches to reproducible source and distribution conditions remains open. The optional Advanced catalog's ARM64EC 3.0.1 fallback now reuses this verified URL rather than the old filename that does not match the release asset.
 
 
 The FEX candidate release identifies source commit `14c92681f4d62cf84d901460e0358de09c8847a7`

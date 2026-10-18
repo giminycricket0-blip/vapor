@@ -59,7 +59,9 @@ internal fun PrepareVaporScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
                     if (!ready && error == null) Text(
-                        stringResource(if (storageGranted) R.string.vapor_prepare_download_note else R.string.vapor_prepare_storage_note),
+                        if (storageGranted) stringResource(R.string.vapor_prepare_download_note,
+                            (VaporPreparation.packages.sumOf { it.downloadBytes } + 999_999) / 1_000_000)
+                        else stringResource(R.string.vapor_prepare_storage_note),
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (error != null) {
                         Surface(color = MaterialTheme.colorScheme.errorContainer, shape = RoundedCornerShape(12.dp)) {

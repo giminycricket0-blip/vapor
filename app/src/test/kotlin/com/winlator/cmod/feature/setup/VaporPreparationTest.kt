@@ -2,6 +2,7 @@ package com.winlator.cmod.feature.setup
 
 import android.app.Application
 import com.winlator.cmod.runtime.container.Container
+import com.winlator.cmod.runtime.container.Shortcut
 import com.winlator.cmod.runtime.container.ContainerManager
 import com.winlator.cmod.runtime.content.ContentProfile
 import com.winlator.cmod.runtime.content.ContentsManager
@@ -45,9 +46,15 @@ class VaporPreparationTest {
         it.type == ContentProfile.ContentType.CONTENT_TYPE_FEXCORE
     }
 
-    private val dxvk get() = VaporPreparation.packages.single {
+    private val dxvk get() = VaporPreparation.packages.first {
         it.type == ContentProfile.ContentType.CONTENT_TYPE_DXVK
     }
+
+    private val modernDxvk get() = VaporPreparation.packages.last {
+        it.type == ContentProfile.ContentType.CONTENT_TYPE_DXVK
+    }
+
+    private fun installModernDxvk() = installDxvk(modernDxvk.entryName.substringAfter('-'))
 
     private fun installDxvk(version: String = dxvk.entryName.substringAfter('-')): ContentProfile {
         val profile = ContentProfile().apply {
@@ -62,6 +69,27 @@ class VaporPreparationTest {
         }""")
         dxvk.requiredFiles.forEach { path ->
             File(root, path).apply { parentFile!!.mkdirs(); writeText("DXVK fixture") }
+        }
+        return profile
+    }
+
+    private val vkd3d get() = VaporPreparation.packages.single {
+        it.type == ContentProfile.ContentType.CONTENT_TYPE_VKD3D
+    }
+
+    private fun installVkd3d(version: String = vkd3d.entryName.substringAfter('-')): ContentProfile {
+        val profile = ContentProfile().apply {
+            type = ContentProfile.ContentType.CONTENT_TYPE_VKD3D
+            verName = version.substringBeforeLast('-')
+            verCode = version.substringAfterLast('-').toInt()
+        }
+        val root = ContentsManager.getInstallDir(context, profile).apply { mkdirs() }
+        File(root, "profile.json").writeText("""{
+            "type":"VKD3D", "versionName":"${profile.verName}", "versionCode":${profile.verCode},
+            "description":"Non-executable test fixture", "files":[]
+        }""")
+        vkd3d.requiredFiles.forEach { path ->
+            File(root, path).apply { parentFile!!.mkdirs(); writeText("VKD3D fixture") }
         }
         return profile
     }
@@ -95,6 +123,8 @@ class VaporPreparationTest {
 
     @Test fun freshGuidedContainerUsesPinnedFexEvenWhenANewerComponentIsInstalled() {
         val runtime = installProfile()
+        installVkd3d()
+        installModernDxvk()
         installFex()
         installDxvk()
         installFex("9999-unrelated-99")
@@ -107,6 +137,8 @@ class VaporPreparationTest {
 
     @Test fun freshGuidedContainerRequiresBothFexDllAndUnixLibraryPairs() {
         val runtime = installProfile()
+        installVkd3d()
+        installModernDxvk()
         installDxvk()
         for (required in fex.requiredFiles) {
             val profile = installFex()
@@ -118,6 +150,8 @@ class VaporPreparationTest {
 
     @Test fun freshGuidedContainerUsesPinnedDxvkEvenWhenANewerComponentIsInstalled() {
         val runtime = installProfile()
+        installVkd3d()
+        installModernDxvk()
         installFex()
         installDxvk()
         installDxvk("3.1.1-arm64ec-experiment-99")
@@ -130,6 +164,8 @@ class VaporPreparationTest {
 
     @Test fun freshGuidedContainerRequiresBothDxvkGuestArchitectures() {
         val runtime = installProfile()
+        installVkd3d()
+        installModernDxvk()
         installFex()
         for (required in dxvk.requiredFiles) {
             val profile = installDxvk()
@@ -137,6 +173,159 @@ class VaporPreparationTest {
             assertNull(required, VaporPreparation.ensureContainer(context, fixtureContainerManager(), contents(), runtime))
             assertFalse(File(context.filesDir, "imagefs/home/xuser-7").exists())
         }
+    }
+
+    @Test fun freshGuidedContainerKeepsLegacyGraphicsUntilD3d12IsDetected() {
+        val runtime = installProfile()
+        installFex(); installDxvk(); installModernDxvk(); installVkd3d(); installVkd3d("9999-arm64ec-experiment-99")
+        val created = VaporPreparation.ensureContainer(context, fixtureContainerManager(), contents(), runtime)!!
+        val saved = JSONObject(created.configFile.readText()).getString("dxwrapperConfig")
+        assertEquals("None", KeyValueSet(saved).get("vkd3dVersion"))
+    }
+
+    @Test fun freshGuidedContainerRequiresBothD3d12DllsInBothGuestArchitectures() {
+        val runtime = installProfile()
+        installFex(); installDxvk(); installModernDxvk()
+        for (required in vkd3d.requiredFiles) {
+            val profile = installVkd3d()
+            File(ContentsManager.getInstallDir(context, profile), required).writeText("")
+            assertNull(required, VaporPreparation.ensureContainer(context, fixtureContainerManager(), contents(), runtime))
+            assertFalse(File(context.filesDir, "imagefs/home/xuser-7").exists())
+        }
+    }
+
+    @Test fun freshGuidedContainerRequiresTheModernDxgiPairToBeReady() {
+        val runtime = installProfile()
+        installFex(); installDxvk(); installVkd3d()
+        for (required in modernDxvk.requiredFiles) {
+            val profile = installModernDxvk()
+            File(ContentsManager.getInstallDir(context, profile), required).writeText("")
+            assertNull(required, VaporPreparation.ensureContainer(context, fixtureContainerManager(), contents(), runtime))
+            assertFalse(File(context.filesDir, "imagefs/home/xuser-7").exists())
+        }
+    }
+
+    private fun launchShortcut(): Shortcut {
+        val container = Container(9, ContainerManager(context)).apply {
+            rootDir = File(context.filesDir, "imagefs/home/xuser-9").apply { mkdirs() }
+            loadData(JSONObject().apply {
+                put("wineVersion", this@VaporPreparationTest.runtime.entryName)
+                put("dxwrapper", Container.DEFAULT_DXWRAPPER)
+                put("dxwrapperConfig", "version=${dxvk.entryName.substringAfter('-')},vkd3dVersion=None,async=0")
+            })
+            saveData()
+        }
+        val file = File(container.rootDir, "Game.desktop").apply {
+            writeText("[Desktop Entry]\nName=Game\nExec=wine Game.exe\n")
+        }
+        return Shortcut(container, file)
+    }
+
+    /** Minimal PE with one normal import; no Wine or game code is executed. */
+    private fun game(import: String = "d3d12.dll", machine: Int = 0x8664): File {
+        val root = File(context.filesDir, "game").apply { mkdirs() }
+        val bytes = ByteArray(1536)
+        fun dword(at: Int, n: Int) { repeat(4) { bytes[at + it] = (n ushr (8 * it)).toByte() } }
+        val pe64 = machine != 0x14c
+        val section = if (pe64) 328 else 312
+        val directory = if (pe64) 200 else 184
+        bytes[0] = 77; bytes[1] = 90; dword(60, 64)
+        bytes[64] = 80; bytes[65] = 69
+        bytes[68] = machine.toByte(); bytes[69] = (machine ushr 8).toByte(); bytes[70] = 1
+        bytes[84] = (if (pe64) 240 else 224).toByte()
+        bytes[88] = 11; bytes[89] = (if (pe64) 2 else 1).toByte()
+        dword(148, 512); dword(directory - 4, 16)
+        dword(directory + 8, 0x1000); dword(directory + 12, 40)
+        dword(section + 8, 1024); dword(section + 12, 0x1000)
+        dword(section + 16, 1024); dword(section + 20, 512)
+        dword(524, 0x1100)
+        import.toByteArray().copyInto(bytes, 768)
+        File(root, "Game.exe").writeBytes(bytes)
+        return root
+    }
+
+    @Test fun d3d12ImportsSelectOnePreparedPairWithoutChangingSavedSettings() {
+        installModernDxvk(); installVkd3d(); installVkd3d("9999-arm64ec-experiment-99")
+        val shortcut = launchShortcut()
+        val configBefore = shortcut.container.configFile.readBytes()
+        val shortcutBefore = shortcut.file.readBytes()
+        val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
+        assertTrue(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, game(), "Game.exe", graphics))
+        assertEquals(modernDxvk.entryName.substringAfter('-'), graphics.get("version"))
+        assertEquals(vkd3d.entryName.substringAfter('-'), graphics.get("vkd3dVersion"))
+        assertEquals("0", graphics.get("async"))
+        assertArrayEquals(configBefore, shortcut.container.configFile.readBytes())
+        assertArrayEquals(shortcutBefore, shortcut.file.readBytes())
+    }
+
+    @Test fun olderUnknownAndEscapedExecutablesKeepTheExistingGraphicsChoice() {
+        val shortcut = launchShortcut()
+        val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
+        for (root in listOf(game("d3d11.dll"), null)) {
+            assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics))
+        }
+        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, game(), "../Game.exe", graphics))
+        assertEquals(dxvk.entryName.substringAfter('-'), graphics.get("version"))
+        assertEquals("None", graphics.get("vkd3dVersion"))
+    }
+
+    @Test fun explicitGameGraphicsRemainAuthoritativeButIgnoredOverridesDoNotDisableDefaults() {
+        installModernDxvk(); installVkd3d()
+        val shortcut = launchShortcut()
+        val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
+        shortcut.putExtra("dxwrapperConfig", shortcut.container.dxWrapperConfig)
+        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, game(), "Game.exe", graphics))
+        shortcut.putExtra("use_container_defaults", "1")
+        assertTrue(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, game(), "Game.exe", graphics))
+    }
+
+    @Test fun customRuntimeWrapperAndContainerGraphicsAreNotReplaced() {
+        val shortcut = launchShortcut()
+        val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
+        val root = game()
+        shortcut.container.wineVersion = "custom-arm64ec-0"
+        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics))
+        shortcut.container.wineVersion = runtime.entryName
+        shortcut.putExtra("wineVersion", "custom-arm64ec-0")
+        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics))
+        shortcut.putExtra("wineVersion", "")
+        shortcut.putExtra("dxwrapper", "wined3d")
+        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics))
+        shortcut.putExtra("dxwrapper", "")
+        graphics.put("version", "custom-kept-0")
+        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics))
+    }
+
+    @Test fun aMissingModernComponentFailsBeforeChangingEitherHalfOfThePair() {
+        val shortcut = launchShortcut()
+        val root = game()
+        for (spec in listOf(modernDxvk, vkd3d)) {
+            for (required in spec.requiredFiles) {
+                installModernDxvk(); installVkd3d()
+                val profile = contents().getProfileByEntryName(spec.entryName)!!
+                File(ContentsManager.getInstallDir(context, profile), required).writeText("")
+                val graphics = KeyValueSet(shortcut.container.dxWrapperConfig)
+                try {
+                    VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut, root, "Game.exe", graphics)
+                    fail("Missing $required was accepted")
+                } catch (error: IllegalStateException) {
+                    assertTrue(error.message!!.contains("Prepare Vapor"))
+                }
+                assertEquals(dxvk.entryName.substringAfter('-'), graphics.get("version"))
+                assertEquals("None", graphics.get("vkd3dVersion"))
+            }
+        }
+    }
+
+    @Test fun x86AndX64D3d12ImportsAreEligibleButUnknownNativeArmIsNot() {
+        installModernDxvk(); installVkd3d()
+        val shortcut = launchShortcut()
+        for (machine in listOf(0x14c, 0x8664)) {
+            assertTrue(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut,
+                game(machine = machine), "Game.exe", KeyValueSet(shortcut.container.dxWrapperConfig)))
+        }
+        assertFalse(VaporPreparation.applyDirect3D12Defaults(context, contents(), shortcut,
+            game(machine = 0xaa64), "Game.exe", KeyValueSet(shortcut.container.dxWrapperConfig)))
     }
 
     @Test fun downloadMustMatchBothSizeAndHashBeforeInstallation() {
