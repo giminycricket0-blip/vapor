@@ -29,7 +29,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - name: Install native toolchains
         run: |
-          sdkmanager 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
+          vapor_sdkmanager="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' -print -quit)"
+          test -x "$vapor_sdkmanager"
+          "$vapor_sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
           rustup show
           sudo apt-get update
           sudo apt-get install -y make perl g++-mingw-w64-x86-64-posix g++-mingw-w64-i686-posix
