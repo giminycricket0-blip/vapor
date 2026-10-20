@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-19",
+  "base_commit": "4ce96ca06501d261565f257e7982b93acf24bf78",
+  "source_state": "Local changes; not committed or pushed",
+  "scope": "Per-game editor layout with the existing Friends/Chat regression batch; not runtime, game, account or release qualification.",
+  "source_sha256": {
+    ".github/workflows/pr-ci.yml": "be32d2267caf3e9eb05dd9872d0bce92caa94c328e8a5735186c44a0667f460a",
+    "app/build.gradle": "e7972a2a457252dcd352122a1865c95db69a328850b33759b8dc16acb830ef6e",
+    "app/src/androidTest/kotlin/com/winlator/cmod/feature/stores/steam/friends/SteamChatUiTest.kt": "53f93497343ab7d5026bf42ec0665fbfcc04fa885383f2750cac98f9c3082f7c",
+    "app/src/main/app/shell/UnifiedActivityHub.kt": "5a92946520c24d04cfa409b673cf56eed55e97846316689d0bcbdf78a9d57271",
+    "app/src/main/feature/library/GameSettings.kt": "830654a95facfbfbc34d9fab8a0b3b0863fdcc5571298fbb5d2a6247ccb581f5",
+    "app/src/main/feature/stores/steam/friends/FriendsDrawerContent.kt": "1cfed838bb1a8cf5aff16a9394013f15e4f647f338a8ad1cc2193f736c6adc50",
+    "app/src/main/feature/stores/steam/friends/SteamChatScreen.kt": "a14c2304739007fad936f3dfba356f76e769fe74e50e3885eb49f03af4077122",
+    "app/src/main/res/values/strings.xml": "9a50184a4bd04e1989579623cf8ba3633b6d4acafe14ec2821e6b3bffbbd9f63",
+    "app/src/test/kotlin/com/winlator/cmod/feature/library/GameSettingsLayoutTest.kt": "ba734cd34eb3fc6e200d5c93f5e97466db96038f3f7f42980322779eaa582ed5",
+    "app/src/test/kotlin/com/winlator/cmod/feature/stores/steam/friends/SteamSocialLayoutTest.kt": "5e9700abfb3abd6e92977adb62c4cfbfab4a88672f7d0dab556936ae4b7cce33"
+  },
+  "baseline": {
+    "tests": 1,
+    "failures": 1,
+    "cause": "520 dp editor in a landscape Activity incorrectly used the 220 dp sidebar instead of compact navigation."
+  },
+  "verification": {
+    "command": "JAVA_HOME=/Users/cheng/.local/share/mise/installs/java/17 ./gradlew :app:testStandardDebugUnitTest --tests '*GameSettingsLayoutTest' --tests '*SteamSocialLayoutTest' --tests '*SteamConversationTest' --tests '*SteamChatServiceTest' :app:compileStandardDebugAndroidTestKotlin --max-workers=2 --console=plain",
+    "result": "passed",
+    "suites": [
+      {
+        "name": "com.winlator.cmod.feature.library.GameSettingsLayoutTest",
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.friends.SteamSocialLayoutTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.friends.SteamConversationTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.service.SteamChatServiceTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "total": 31,
+    "android_ui_test_sources": "compiled, not executed",
+    "log_sha256": "091bc17e80c0ac9723b840e193e3c0655d5a1a5e7d6ac09b8222b85a53afc69f",
+    "diff_check": "passed"
+  },
+  "renders": {
+    "method": "Production Compose views drawn into native Android Canvas/Bitmap under Robolectric SDK 35, clipped to the test panel bounds. Sample state with empty device/profile lists; not emulator or physical-phone captures.",
+    "graphics_fixture": "Preloaded missing-shader state avoids native shader discovery; no mocked claim of successful shader loading.",
+    "retained": {
+      "docs/images/game-settings-compact.png": "258fb89bcb45670a22a80c36929fa099629d04b29bce82adbc2c784322e93097",
+      "docs/images/game-settings-wide.png": "e07c246d7a32e1ff80ab582ecce0530f46b027313622babf1d1eb7914582c2c8",
+      "docs/images/game-settings-large-text.png": "166b2c08aaebaec286b819e096519745a508a9239a90c44c58ebd5fd7375721f"
+    }
+  },
+  "not_run": [
+    "APK assembly or installation",
+    "Device instrumentation tests",
+    "Native shader discovery or runtime tests",
+    "Physical-controller navigation",
+    "Phone keyboard or TalkBack checks",
+    "Live Steam actions or game qualification"
+  ]
+}

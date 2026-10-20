@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-20",
+  "scope": "passive Friends receiver cancellation and outcome correctness",
+  "source_sha256": {
+    "app/src/main/cpp/wn-steam-launcher/steam_friends_receive.h": "f655bb38f394af25173123d4ffe7a141d6539f875ee38871a4880f83c0866c47",
+    "app/src/main/cpp/wn-steam-launcher/tests/steam_friends_receive_test.cpp": "a14be444eec8d3cae3679f7d94b7556457301bb3d7dda74ea2f7f5e85e4094ab",
+    "app/src/main/cpp/wn-steam-launcher/src/iface_probe.cpp": "a5599d9b0343925ff40043fd54309b63c333d748d67cdc2687f251dd1ef45963"
+  },
+  "tests": {
+    "receiver_scenarios": 33,
+    "capability_scenarios": 15,
+    "sanitizers": [
+      "address",
+      "undefined"
+    ],
+    "receiver_log_sha256": "8af2cfb300f718ea30a75dadff7f6c2550ae1e0af3d97e26d2e7d05f74389589"
+  },
+  "builds": [
+    {
+      "architecture": "i686",
+      "sha256": "afc3630d6c9a67c8c65b1a05423d0e9a9592639907d37d7749214c3dd2b8696e",
+      "format": "PE32 executable (console) Intel 80386, for MS Windows",
+      "executed": false,
+      "flags": "-std=c++17 -O2 -Wall -Wextra -Werror -Wno-unused-parameter -static"
+    },
+    {
+      "architecture": "x86_64",
+      "sha256": "b60a5dd5064de5ac84e69191d315aae42b393a75f5b2f3ff8dcaa77ea06431ab",
+      "format": "PE32+ executable (console) x86-64, for MS Windows",
+      "executed": false,
+      "flags": "-std=c++17 -O2 -Wall -Wextra -Werror -Wno-unused-parameter -static"
+    }
+  ],
+  "not_verified": [
+    "console control event delivery on Windows/Wine",
+    "genuine API DLL execution",
+    "live message delivery",
+    "Android conversation bridge"
+  ],
+  "apk_built": false,
+  "packaged_assets_changed": false,
+  "remote_ci_run": false
+}

@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-20",
+  "scope": "existing genuine host diagnostic runner integration",
+  "source_sha256": {
+    "app/src/main/cpp/wn-steam-launcher/src/main.cpp": "23e22513a4ad8b5e1c2e7ed39156fa15064f996f5cf2cce870c46cf21ba927b0",
+    "app/src/main/cpp/wn-steam-launcher/steam_probe_mode.h": "1baca344119f626e85cfb089951b7b77eb6cad8e2b248a550b2f9aaa38bf4d76",
+    "app/src/main/cpp/wn-steam-launcher/tests/steam_probe_mode_test.cpp": "7cfb92632b53732a63e106b76de957d26631592316343959f07f1a3c9f5ec52b",
+    ".github/workflows/pr-ci.yml": "5165e79c2b7c50bf269d77245ea1f730d08ed246c06227700ffad991857f337b"
+  },
+  "tests": [
+    {
+      "suite": "steam_probe_mode",
+      "scenarios": 13,
+      "result": "Steam probe mode: 13 scenarios passed",
+      "log_sha256": "3ec283b73865906219ef9965de32d2dddb03a9d08fb30477e6c2ca72dba7a363",
+      "sanitizers": [
+        "address",
+        "undefined"
+      ]
+    },
+    {
+      "suite": "steam_friends_receive",
+      "scenarios": 33,
+      "result": "Steam Friends receive: 33 scenarios passed; outgoing API resolutions=0",
+      "log_sha256": "8af2cfb300f718ea30a75dadff7f6c2550ae1e0af3d97e26d2e7d05f74389589",
+      "sanitizers": [
+        "address",
+        "undefined"
+      ]
+    },
+    {
+      "suite": "steam_friends_probe",
+      "scenarios": 15,
+      "result": "Steam Friends probe: 15 scenarios passed; mutating calls=0",
+      "log_sha256": "6e3d05e4faa08d18ca6a4f5147e663eb86792a3d2f712f218bdc8942efc8f546",
+      "sanitizers": [
+        "address",
+        "undefined"
+      ]
+    }
+  ],
+  "builds": [
+    {
+      "architecture": "x86_64",
+      "sha256": "ff73a1b6963f4a76375cd4128b66dd741bc3a708c7866d735a54de64adbe3a00",
+      "format": "PE32+ executable (GUI) x86-64, for MS Windows",
+      "executed": false,
+      "warnings": [
+        "unused installPath",
+        "unused kVtUser_BLoggedOn",
+        "unused marker_has_path"
+      ],
+      "flags": "-std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter -static -Wl,--subsystem,windows -I."
+    },
+    {
+      "architecture": "i686",
+      "sha256": "1436a5ef79c82aa685088f8b1f056f6a6bdf3dbf02b496df0987bf64123135ce",
+      "format": "PE32 executable (GUI) Intel 80386, for MS Windows",
+      "executed": false,
+      "warnings": [
+        "unused installPath",
+        "unused kVtUser_BLoggedOn",
+        "unused marker_has_path"
+      ],
+      "flags": "-std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter -static -Wl,--subsystem,windows -I."
+    }
+  ],
+  "apk_built": false,
+  "bundled_assets_changed": false,
+  "remote_ci_run": false,
+  "live_steam_operations": false,
+  "pending": [
+    "Windows/Wine/FEX process creation and exit",
+    "host callback progress during child observation",
+    "timeout termination and failure handling",
+    "live incoming message",
+    "Android chat event integration"
+  ]
+}

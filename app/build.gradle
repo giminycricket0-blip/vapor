@@ -348,6 +348,9 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.16.1'
     testImplementation 'org.mockito:mockito-core:5.18.0'
+    // Reuse the existing Compose test tools for account-free JVM layout checks.
+    testImplementation platform(libs.composeBom)
+    testImplementation 'androidx.compose.ui:ui-test-junit4'
 
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'

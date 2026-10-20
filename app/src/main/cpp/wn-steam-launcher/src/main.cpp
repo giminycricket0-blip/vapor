@@ -2,6 +2,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "clean_shutdown.h"
+#include "steam_probe_mode.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -849,14 +850,25 @@ static bool clear_other_session(void* user, Steam_BGetCallback_fn bGetCallback,
 }
 
 static bool run_probe_exe(const char* probeExe, const char* logPath,
-                          const char* gameRootDir, uint32_t appId) {
+                          const char* gameRootDir, uint32_t appId, const char* mode,
+                          Steam_BGetCallback_fn bGetCallback,
+                          Steam_FreeLastCallback_fn freeLastCallback, int pipe) {
     if (GetFileAttributesA(probeExe) == INVALID_FILE_ATTRIBUTES) {
         log_line("[wn-launcher] iface-probe: %s not present", probeExe);
         return false;
     }
     char cmd[2048];
-    snprintf(cmd, sizeof(cmd), "\"%s\" \"%s\" %u \"%s\"",
-             probeExe, gameRootDir ? gameRootDir : "", (unsigned) appId, logPath);
+    int length = snprintf(cmd, sizeof(cmd), "\"%s\" \"%s\" %u \"%s\" %s",
+             probeExe, gameRootDir ? gameRootDir : "", (unsigned) appId, logPath, mode);
+    if (length < 0 || length >= (int) sizeof(cmd)) {
+        log_line("[wn-launcher] iface-probe: command exceeds path limit");
+        return false;
+    }
+    if (!DeleteFileA(logPath) && GetLastError() != ERROR_FILE_NOT_FOUND) {
+        log_line("[wn-launcher] iface-probe: cannot remove previous log GLE=%lu",
+                 (unsigned long) GetLastError());
+        return false;
+    }
     STARTUPINFOA si;
     PROCESS_INFORMATION pi;
     memset(&si, 0, sizeof(si));
@@ -868,9 +880,30 @@ static bool run_probe_exe(const char* probeExe, const char* logPath,
                  (unsigned long) GetLastError());
         return false;
     }
-    WaitForSingleObject(pi.hProcess, 25000);
+    DWORD waitResult = WAIT_TIMEOUT;
+    const ULONGLONG deadline = GetTickCount64() + 25000;
+    do {
+        waitResult = WaitForSingleObject(pi.hProcess, 100);
+        if (bGetCallback && freeLastCallback) {
+            char callback[64];
+            for (int n = 0; n < 64 && bGetCallback(pipe, callback); ++n)
+                freeLastCallback(pipe);
+        }
+    } while (waitResult == WAIT_TIMEOUT && GetTickCount64() < deadline);
+    if (waitResult != WAIT_OBJECT_0) {
+        log_line("[wn-launcher] iface-probe: %s wait=%lu; forced diagnostic termination; cleanup unconfirmed",
+                 probeExe, (unsigned long) waitResult);
+        if (!TerminateProcess(pi.hProcess, 124))
+            log_line("[wn-launcher] iface-probe: termination failed GLE=%lu",
+                     (unsigned long) GetLastError());
+        if (WaitForSingleObject(pi.hProcess, 2000) != WAIT_OBJECT_0)
+            log_line("[wn-launcher] iface-probe: process exit NOT confirmed");
+        CloseHandle(pi.hThread);
+        CloseHandle(pi.hProcess);
+        return true; // diagnostic was attempted; never fall through to gameplay
+    }
     DWORD rc = 0;
-    GetExitCodeProcess(pi.hProcess, &rc);
+    if (!GetExitCodeProcess(pi.hProcess, &rc)) rc = 125;
     CloseHandle(pi.hThread);
     CloseHandle(pi.hProcess);
     log_line("[wn-launcher] iface-probe: %s exited rc=%lu", probeExe, (unsigned long) rc);
@@ -889,15 +922,34 @@ static bool run_probe_exe(const char* probeExe, const char* logPath,
     return true;
 }
 
-static bool run_iface_probe(const char* gameRootDir, uint32_t appId) {
-    if (GetFileAttributesA("C:\\wn-iface-probe.on") == INVALID_FILE_ATTRIBUTES) return false;
-    bool ran = run_probe_exe("C:\\Program Files (x86)\\Steam\\wn-iface-probe.exe",
-                             "C:\\wn-iface-probe.log", gameRootDir, appId);
-    if (run_probe_exe("C:\\Program Files (x86)\\Steam\\wn-iface-probe32.exe",
-                      "C:\\wn-iface-probe32.log", gameRootDir, appId)) {
-        ran = true;
+static bool run_iface_probe(const char* gameRootDir, uint32_t appId,
+                            Steam_BGetCallback_fn bGetCallback,
+                            Steam_FreeLastCallback_fn freeLastCallback, int pipe) {
+    const char* marker = "C:\\wn-iface-probe.on";
+    if (GetFileAttributesA(marker) == INVALID_FILE_ATTRIBUTES) return false;
+    char text[32] = {};
+    FILE* file = fopen(marker, "rb");
+    if (!file) {
+        log_line("[wn-launcher] iface-probe: marker unreadable; game launch skipped");
+        return true;
     }
-    return ran;
+    const size_t size = fread(text, 1, sizeof(text), file);
+    const bool readError = ferror(file) != 0;
+    fclose(file);
+    const char* mode = size < sizeof(text) && !readError &&
+                       !memchr(text, '\0', size)
+                       ? wn_social::probe_mode_argument(text) : nullptr;
+    if (!mode) {
+        log_line("[wn-launcher] iface-probe: invalid marker; use empty, social, or social-listen; game launch skipped");
+        return true;
+    }
+    run_probe_exe("C:\\Program Files (x86)\\Steam\\wn-iface-probe.exe",
+                  "C:\\wn-iface-probe.log", gameRootDir, appId, mode,
+                  bGetCallback, freeLastCallback, pipe);
+    run_probe_exe("C:\\Program Files (x86)\\Steam\\wn-iface-probe32.exe",
+                  "C:\\wn-iface-probe32.log", gameRootDir, appId, mode,
+                  bGetCallback, freeLastCallback, pipe);
+    return true; // explicit diagnostic mode never starts a game, even on failure
 }
 
 static void sync_app_ownership(void* engine, int hUser, int pipe, uint32_t appId,
@@ -3167,13 +3219,11 @@ int main(int argc, char** argv) {
             const int kEAppUpdateErrorLaunchOptionMissing = 22;
             int launchOptions[8];
             int launchOptionCount = 0;
-            probeOnly = run_iface_probe(gameRootDir, appId);
+            probeOnly = run_iface_probe(gameRootDir, appId, bGetCallback, freeLastCallback, pipe);
             if (probeOnly) {
-                log_line("[wn-launcher] iface-probe ran and is now registered with Steam as "
-                         "appId %u, so LaunchApp would be refused with \"Application running\" — "
-                         "skipping the launch entirely. Delete C:\\wn-iface-probe.on for a normal "
-                         "launch.", appId);
-                launchFailureReason = "iface-probe mode (probe holds the app registration)";
+                log_line("[wn-launcher] iface-probe mode selected for appId %u; "
+                         "game launch skipped. Delete C:\\wn-iface-probe.on for a normal launch.", appId);
+                launchFailureReason = "explicit iface-probe diagnostic mode";
             }
 
             void* blockUser = ((GetIfaceFn2) engine_vt[kVtEngine_GetIClientUser])

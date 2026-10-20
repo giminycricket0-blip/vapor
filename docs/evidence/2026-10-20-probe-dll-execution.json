@@ -1,0 +1,319 @@
+{
+  "runs": [
+    {
+      "arch": "x86_64",
+      "text": "case=read-only result=PASS exit=0 timeout=0 cancel_event_signal=0\ncase=receive result=PASS exit=0 timeout=0 cancel_event_signal=0\ncase=quiet result=PASS exit=9 timeout=0 cancel_event_signal=0\ncase=reject result=PASS exit=10 timeout=0 cancel_event_signal=0\ncase=listen-reject result=PASS exit=8 timeout=0 cancel_event_signal=0\ncase=disable-fail result=PASS exit=8 timeout=0 cancel_event_signal=0\ncase=cancel result=PASS exit=11 timeout=0 cancel_event_signal=1\ncase=missing-dll result=PASS exit=2 timeout=0 cancel_event_signal=0\ncase=hang result=PASS exit=124 timeout=1 cancel_event_signal=0\ncases_passed=9 summary_ready=1\nresult=PASS",
+      "passed": true,
+      "summary_captured": true,
+      "observed_seconds": 88.042
+    },
+    {
+      "arch": "i686",
+      "text": "case=read-only result=PASS exit=0 timeout=0 cancel_event_signal=0\ncase=receive result=PASS exit=0 timeout=0 cancel_event_signal=0\ncase=quiet result=PASS exit=9 timeout=0 cancel_event_signal=0\ncase=reject result=PASS exit=10 timeout=0 cancel_event_signal=0\ncase=listen-reject result=PASS exit=8 timeout=0 cancel_event_signal=0\ncase=disable-fail result=PASS exit=8 timeout=0 cancel_event_signal=0\ncase=cancel result=PASS exit=11 timeout=0 cancel_event_signal=1\ncase=missing-dll result=PASS exit=2 timeout=0 cancel_event_signal=0\ncase=hang result=PASS exit=124 timeout=1 cancel_event_signal=0\ncases_passed=9 summary_ready=1\nresult=PASS",
+      "passed": true,
+      "summary_captured": true,
+      "observed_seconds": 82.574
+    }
+  ],
+  "container_unchanged": true,
+  "runtime_hashes_unchanged": true,
+  "runtime_hashes": [
+    "d98106abbe3d1a7179bf615010b2151279f1acdaecafaa25f47570c522adf21c  files/imagefs/home/xuser/.wine/drive_c/windows/system32/libarm64ecfex.dll",
+    "e6fe5db82c51d29a0f44e76d41ac3771787f7b9afc5aa68b658944646050be4c  files/imagefs/home/xuser/.wine/drive_c/windows/system32/libwow64fex.dll",
+    "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26  files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libarm64ecfex.so",
+    "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26  files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libwow64fex.so"
+  ],
+  "config": {
+    "wineVersion": "Proton-11.0-2-arm64ec-steam-unixlib-3",
+    "fexcoreVersion": "2607-84e127a63-unix-0",
+    "launchBionicSteam": false
+  },
+  "note": "Production probe LoadLibrary/GetProcAddress against controlled DLL. Timeout is test-driver-enforced; genuine Steam host not launched.",
+  "date": "2026-10-20",
+  "scope": "production interface probe against controlled fixture DLLs under Android Wine/FEX; nine cases per architecture",
+  "source_sha256": {
+    "app/src/main/cpp/wn-steam-launcher/src/iface_probe.cpp": "951ec2cbca76e2bf79f52bac0b43672621a0eb2eb9d37c8b2b84665e92d99788",
+    "app/src/main/cpp/wn-steam-launcher/steam_friends_receive.h": "f655bb38f394af25173123d4ffe7a141d6539f875ee38871a4880f83c0866c47",
+    "tools/tests/steam-social-fixture.cpp": "a6f95e469acc5f04cba630e43d119f97e2595117bbcee5a9f5f544d48a719476",
+    "tools/tests/steam-social-probe-runtime.cpp": "6589ecbdf9dc47a39fc7551903dda8a66dca841524cc9237aa4faa367251ab21",
+    ".github/workflows/pr-ci.yml": "22a3812ac344bac9ab4c53fd845a3490493df6fe0459f0d72562d8986fc86f15"
+  },
+  "artifacts": [
+    {
+      "architecture": "x86_64",
+      "file": "integration.exe",
+      "bytes": 747008,
+      "sha256": "5a5a33c79082bd5ac12c260dc8999ef3d4025c3cd637991424455fb6eb053e27",
+      "format": "PE32+ executable (GUI) x86-64, for MS Windows"
+    },
+    {
+      "architecture": "x86_64",
+      "file": "probe.exe",
+      "bytes": 86016,
+      "sha256": "dd1b7dabccd9eefcc7fcd327c5d41f276d27cec2ee9ceecc30cef9b1060e94ee",
+      "format": "PE32+ executable (console) x86-64, for MS Windows"
+    },
+    {
+      "architecture": "x86_64",
+      "file": "steam_api64.dll",
+      "bytes": 46592,
+      "sha256": "66d8aa0bbf097b8b3e769db397a11e8452fe64ef9755ea7ab90a68c94c1a2eb7",
+      "format": "PE32+ executable (DLL) (GUI) x86-64, for MS Windows"
+    },
+    {
+      "file": "docs/images/emulator-probe-dll-x86_64.png",
+      "sha256": "548667c836ea95f0973d69935cf305b272178297474a1ab18696f428762273a2",
+      "capture": "adb exec-out screencap -p; actual emulator summary"
+    },
+    {
+      "architecture": "i686",
+      "file": "integration.exe",
+      "bytes": 749056,
+      "sha256": "c7dc07c6b26fb27b52cc3641b4cde90ce8dd050269de581b0b17b76137e1839d",
+      "format": "PE32 executable (GUI) Intel 80386, for MS Windows"
+    },
+    {
+      "architecture": "i686",
+      "file": "probe.exe",
+      "bytes": 79872,
+      "sha256": "ef6265746c32f734f3564b24982c90175a023af7dac83cdcbd347d4cba147c23",
+      "format": "PE32 executable (console) Intel 80386, for MS Windows"
+    },
+    {
+      "architecture": "i686",
+      "file": "steam_api.dll",
+      "bytes": 40960,
+      "sha256": "226b6578a0e328fcec4744f9b872e2ec47a013781c71d3ab03e76a3b33e47330",
+      "format": "PE32 executable (DLL) (GUI) Intel 80386, for MS Windows"
+    },
+    {
+      "file": "docs/images/emulator-probe-dll-i686.png",
+      "sha256": "d72e1b7dc99230653ba6fa6ab3051673c8e29617e12d83500eb3907cf2d44185",
+      "capture": "adb exec-out screencap -p; actual emulator summary"
+    }
+  ],
+  "case_evidence": {
+    "x86_64": {
+      "read-only": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\x86_64\" appId=1\n[wn-probe] social: mode=read-only\n[wn-probe] arch=64-bit steam_api64.dll loaded at 0000006FFC110000\n[wn-probe] exports: SteamAPI_Init=0000006FFC1113A0 SteamInternal_SteamAPI_Init=0000000000000000 GetHSteamUser=0000006FFC111510 FindOrCreateUserInterface=0000000000000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: accessor=SteamFriends018 count=1 listen=1 message=1 reply=1 callbacks=1\n[wn-probe] social: status=exports_present_delivery_unverified; no messages sent or read; delivery unverified\n",
+          "sha256": "08dd2dd3dc7a5aac95ad4f6cb013298e01156b791c734e102f59379d6bb6b6d8"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nshutdown enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\n",
+          "sha256": "11d6283b9a4e2486559cf9c4d1aa375d6387a527d596f8ca32467f2619634799"
+        }
+      },
+      "receive": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\x86_64\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=64-bit steam_api64.dll loaded at 0000006FFC110000\n[wn-probe] exports: SteamAPI_Init=0000006FFC1113A0 SteamInternal_SteamAPI_Init=0000000000000000 GetHSteamUser=0000006FFC111510 FindOrCreateUserInterface=0000000000000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: status=receive_observed received=1 rejected=0 ignored=0; no messages sent or contents logged\n",
+          "sha256": "cfe1ae6101b7c0cb88de18be80e1237e22699d4379f4185006fa977b5232d718"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=1 released=1 reads=1 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=1 released=1 reads=1 sends=0 manual=1 held=0\n",
+          "sha256": "0bfe8e9290ca10d604cff638deea3cf91732e943374aa86dfd8339e67323ccd4"
+        }
+      },
+      "quiet": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\x86_64\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=64-bit steam_api64.dll loaded at 0000006FFC110000\n[wn-probe] exports: SteamAPI_Init=0000006FFC1113A0 SteamInternal_SteamAPI_Init=0000000000000000 GetHSteamUser=0000006FFC111510 FindOrCreateUserInterface=0000000000000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: status=receive_window_no_message received=0 rejected=0 ignored=0; no messages sent or contents logged\n",
+          "sha256": "33b1dbe778e662c57f820b4562acbf543356d7407a3df0048e8d5a742aa5640e"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\n",
+          "sha256": "2a406e6d37e1781223b170af1bf8230e9e5f5135e31fff367e74e6cf54df225e"
+        }
+      },
+      "reject": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\x86_64\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=64-bit steam_api64.dll loaded at 0000006FFC110000\n[wn-probe] exports: SteamAPI_Init=0000006FFC1113A0 SteamInternal_SteamAPI_Init=0000000000000000 GetHSteamUser=0000006FFC111510 FindOrCreateUserInterface=0000000000000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: status=receive_callbacks_rejected received=0 rejected=1 ignored=0; no messages sent or contents logged\n",
+          "sha256": "09d70cc5e44f57b958f5997060085f5a0bf62820806606ab4fa404655477088e"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=1 released=1 reads=0 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=1 released=1 reads=0 sends=0 manual=1 held=0\n",
+          "sha256": "dcd84732a8e7d44d262015b6c3e78ca6f2bfb321b86aba107dea5d1bdb715d2a"
+        }
+      },
+      "listen-reject": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\x86_64\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=64-bit steam_api64.dll loaded at 0000006FFC110000\n[wn-probe] exports: SteamAPI_Init=0000006FFC1113A0 SteamInternal_SteamAPI_Init=0000000000000000 GetHSteamUser=0000006FFC111510 FindOrCreateUserInterface=0000000000000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: status=receive_listen_rejected received=0 rejected=0 ignored=0; no messages sent or contents logged\n",
+          "sha256": "1566a70210268050f31eef4a49c2ebe382722f66219d6d981e1e1c4a02953e3c"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\n",
+          "sha256": "2a406e6d37e1781223b170af1bf8230e9e5f5135e31fff367e74e6cf54df225e"
+        }
+      },
+      "disable-fail": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\x86_64\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=64-bit steam_api64.dll loaded at 0000007FE9C70000\n[wn-probe] exports: SteamAPI_Init=0000007FE9C713A0 SteamInternal_SteamAPI_Init=0000000000000000 GetHSteamUser=0000007FE9C71510 FindOrCreateUserInterface=0000000000000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: status=receive_disable_failed received=1 rejected=0 ignored=0; no messages sent or contents logged\n",
+          "sha256": "62a52b87770cd49094c007056a0f0d3e33cf862088085b352971ca430d5b0394"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=1 released=1 reads=1 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=1 released=1 reads=1 sends=0 manual=1 held=0\n",
+          "sha256": "0bfe8e9290ca10d604cff638deea3cf91732e943374aa86dfd8339e67323ccd4"
+        }
+      },
+      "cancel": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\x86_64\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=64-bit steam_api64.dll loaded at 0000006FFC110000\n[wn-probe] exports: SteamAPI_Init=0000006FFC1113A0 SteamInternal_SteamAPI_Init=0000000000000000 GetHSteamUser=0000006FFC111510 FindOrCreateUserInterface=0000000000000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: status=receive_window_no_message received=0 rejected=0 ignored=0; no messages sent or contents logged\n",
+          "sha256": "33b1dbe778e662c57f820b4562acbf543356d7407a3df0048e8d5a742aa5640e"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\n",
+          "sha256": "2a406e6d37e1781223b170af1bf8230e9e5f5135e31fff367e74e6cf54df225e"
+        }
+      },
+      "missing-dll": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\x86_64\\missing\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] FATAL: steam_api64.dll not loadable GLE=126\n",
+          "sha256": "2f76f971a7d842a0da57c795c3d4eecb997a528fee815be8c1069e552d1288dd"
+        }
+      },
+      "hang": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\x86_64\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=64-bit steam_api64.dll loaded at 0000006FFC110000\n[wn-probe] exports: SteamAPI_Init=0000006FFC1113A0 SteamInternal_SteamAPI_Init=0000000000000000 GetHSteamUser=0000006FFC111510 FindOrCreateUserInterface=0000000000000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n",
+          "sha256": "bb6693f4b5dea979696735e558681abc68fb36a15ad1ac24f426eaf06d9e07fb"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\n",
+          "sha256": "f074d7170526e70e5a2248bbb3e5401b2c5c907c5ee842e316881f096760d58d"
+        }
+      }
+    },
+    "i686": {
+      "read-only": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\i686\" appId=1\n[wn-probe] social: mode=read-only\n[wn-probe] arch=32-bit steam_api.dll loaded at 7B7E0000\n[wn-probe] exports: SteamAPI_Init=7B7E1350 SteamInternal_SteamAPI_Init=00000000 GetHSteamUser=7B7E1450 FindOrCreateUserInterface=00000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: accessor=SteamFriends018 count=1 listen=1 message=1 reply=1 callbacks=1\n[wn-probe] social: status=exports_present_delivery_unverified; no messages sent or read; delivery unverified\n",
+          "sha256": "60ad6c9acfecc41bbb86ddcb4996bef1acbb96bcdcce40b040939def234df7cd"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nshutdown enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\n",
+          "sha256": "11d6283b9a4e2486559cf9c4d1aa375d6387a527d596f8ca32467f2619634799"
+        }
+      },
+      "receive": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\i686\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=32-bit steam_api.dll loaded at 7B7E0000\n[wn-probe] exports: SteamAPI_Init=7B7E1350 SteamInternal_SteamAPI_Init=00000000 GetHSteamUser=7B7E1450 FindOrCreateUserInterface=00000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: cancel_event=Local\\VaporSocialProbeCancel-348 console_handler=1\n[wn-probe] social: status=receive_observed received=1 rejected=0 ignored=0; no messages sent or contents logged\n",
+          "sha256": "61c1cd42cec245338d486e7adcdfbb28c0f62a5d12dc3beadbfb3814290414e0"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=1 released=1 reads=1 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=1 released=1 reads=1 sends=0 manual=1 held=0\n",
+          "sha256": "0bfe8e9290ca10d604cff638deea3cf91732e943374aa86dfd8339e67323ccd4"
+        }
+      },
+      "quiet": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\i686\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=32-bit steam_api.dll loaded at 7B7E0000\n[wn-probe] exports: SteamAPI_Init=7B7E1350 SteamInternal_SteamAPI_Init=00000000 GetHSteamUser=7B7E1450 FindOrCreateUserInterface=00000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: cancel_event=Local\\VaporSocialProbeCancel-392 console_handler=1\n[wn-probe] social: status=receive_window_no_message received=0 rejected=0 ignored=0; no messages sent or contents logged\n",
+          "sha256": "e7560da0ec806e041d79fb80b86f17b2dc05f3b2d9202055af04115d5fcfbfd5"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\n",
+          "sha256": "2a406e6d37e1781223b170af1bf8230e9e5f5135e31fff367e74e6cf54df225e"
+        }
+      },
+      "reject": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\i686\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=32-bit steam_api.dll loaded at 7B7E0000\n[wn-probe] exports: SteamAPI_Init=7B7E1350 SteamInternal_SteamAPI_Init=00000000 GetHSteamUser=7B7E1450 FindOrCreateUserInterface=00000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: cancel_event=Local\\VaporSocialProbeCancel-428 console_handler=1\n[wn-probe] social: status=receive_callbacks_rejected received=0 rejected=1 ignored=0; no messages sent or contents logged\n",
+          "sha256": "aef3ca55f3e2192c9ca043321500449ccb1ad147df7947d77e2fd28077871081"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=1 released=1 reads=0 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=1 released=1 reads=0 sends=0 manual=1 held=0\n",
+          "sha256": "dcd84732a8e7d44d262015b6c3e78ca6f2bfb321b86aba107dea5d1bdb715d2a"
+        }
+      },
+      "listen-reject": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\i686\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=32-bit steam_api.dll loaded at 7B7E0000\n[wn-probe] exports: SteamAPI_Init=7B7E1350 SteamInternal_SteamAPI_Init=00000000 GetHSteamUser=7B7E1450 FindOrCreateUserInterface=00000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: cancel_event=Local\\VaporSocialProbeCancel-464 console_handler=1\n[wn-probe] social: status=receive_listen_rejected received=0 rejected=0 ignored=0; no messages sent or contents logged\n",
+          "sha256": "e87f663404e78636640613f31d82a593bcb3bf037b90f3fd7be8488790a4f0ee"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\n",
+          "sha256": "2a406e6d37e1781223b170af1bf8230e9e5f5135e31fff367e74e6cf54df225e"
+        }
+      },
+      "disable-fail": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\i686\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=32-bit steam_api.dll loaded at 7B7E0000\n[wn-probe] exports: SteamAPI_Init=7B7E1350 SteamInternal_SteamAPI_Init=00000000 GetHSteamUser=7B7E1450 FindOrCreateUserInterface=00000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: cancel_event=Local\\VaporSocialProbeCancel-484 console_handler=1\n[wn-probe] social: status=receive_disable_failed received=1 rejected=0 ignored=0; no messages sent or contents logged\n",
+          "sha256": "8e55b8a51a12d613d4ea0f3682df1615f370c9ab6ece7b1515ec6bcb0318609e"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=1 released=1 reads=1 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=1 released=1 reads=1 sends=0 manual=1 held=0\n",
+          "sha256": "0bfe8e9290ca10d604cff638deea3cf91732e943374aa86dfd8339e67323ccd4"
+        }
+      },
+      "cancel": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\i686\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=32-bit steam_api.dll loaded at 7B7E0000\n[wn-probe] exports: SteamAPI_Init=7B7E1350 SteamInternal_SteamAPI_Init=00000000 GetHSteamUser=7B7E1450 FindOrCreateUserInterface=00000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: cancel_event=Local\\VaporSocialProbeCancel-528 console_handler=1\n[wn-probe] social: status=receive_cancelled received=0 rejected=0 ignored=0; no messages sent or contents logged\n",
+          "sha256": "8799ffc4eec2909cb594f98fcaf25b08d1640dc89fdd60d4acc0a2ebdb8d2ec9"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\n",
+          "sha256": "2a406e6d37e1781223b170af1bf8230e9e5f5135e31fff367e74e6cf54df225e"
+        }
+      },
+      "missing-dll": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\i686\\missing\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] FATAL: steam_api.dll not loadable GLE=126\n",
+          "sha256": "18965e8996979a422f69497239ca9bda9b2fb5f4ad3f254acb5ee135ed092089"
+        }
+      },
+      "hang": {
+        "log": {
+          "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\i686\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=32-bit steam_api.dll loaded at 7B7E0000\n[wn-probe] exports: SteamAPI_Init=7B7E1350 SteamInternal_SteamAPI_Init=00000000 GetHSteamUser=7B7E1450 FindOrCreateUserInterface=00000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: cancel_event=Local\\VaporSocialProbeCancel-576 console_handler=1\n",
+          "sha256": "241f8a0755291af362332d617646922a5f1816bc54e85943f4782a7a2a65dd1e"
+        },
+        "trace": {
+          "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\n",
+          "sha256": "f074d7170526e70e5a2248bbb3e5401b2c5c907c5ee842e316881f096760d58d"
+        }
+      }
+    }
+  },
+  "steam_account_used": false,
+  "genuine_steam_libraries_used": false,
+  "game_files_modified": false,
+  "apk_built_for_this_step": false,
+  "remote_ci_run": false,
+  "workflow_yaml": "parsed successfully; integration compile step present",
+  "host_native_regression": {
+    "scenarios": 33,
+    "sanitizers": [
+      "address",
+      "undefined"
+    ],
+    "log_sha256": "8af2cfb300f718ea30a75dadff7f6c2550ae1e0af3d97e26d2e7d05f74389589"
+  },
+  "console_control_baseline": {
+    "architecture": "x86_64",
+    "outcome": "GenerateConsoleCtrlEvent reported success, but probe exited 9 after quiet window instead of cancellation 11. Targeted, broadcast, and production-matching creation flags did not establish delivery. Root cause unisolated.",
+    "artifacts": {
+      "cancel.log": {
+        "text": "[wn-probe] start gameDir=\"D:\\VaporProbeDLL20261020\\x86_64\" appId=1\n[wn-probe] social: mode=receive-only\n[wn-probe] arch=64-bit steam_api64.dll loaded at 0000006FFC110000\n[wn-probe] exports: SteamAPI_Init=0000006FFC1113A0 SteamInternal_SteamAPI_Init=0000000000000000 GetHSteamUser=0000006FFC111510 FindOrCreateUserInterface=0000000000000000\n[wn-probe] SteamAPI_Init -> true\n[wn-probe] HSteamUser=1\n[wn-probe] social: status=receive_window_no_message received=0 rejected=0 ignored=0; no messages sent or contents logged\n",
+        "sha256": "33b1dbe778e662c57f820b4562acbf543356d7407a3df0048e8d5a742aa5640e"
+      },
+      "cancel.trace": {
+        "text": "initialized enabled=0 acquired=0 released=0 reads=0 sends=0 manual=0 held=0\nlisten_on enabled=1 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nlisten_off enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\nshutdown enabled=0 acquired=0 released=0 reads=0 sends=0 manual=1 held=0\n",
+        "sha256": "2a406e6d37e1781223b170af1bf8230e9e5f5135e31fff367e74e6cf54df225e"
+      },
+      "emulator-driver.result": {
+        "text": "case=read-only result=PASS exit=0 timeout=0 console_signal=0\ncase=receive result=PASS exit=0 timeout=0 console_signal=0\ncase=quiet result=PASS exit=9 timeout=0 console_signal=0\ncase=reject result=PASS exit=10 timeout=0 console_signal=0\ncase=listen-reject result=PASS exit=8 timeout=0 console_signal=0\ncase=disable-fail result=PASS exit=8 timeout=0 console_signal=0\ncase=cancel result=FAIL exit=9 timeout=0 console_signal=1\ncase=missing-dll result=PASS exit=2 timeout=0 console_signal=0\ncase=hang result=PASS exit=124 timeout=1 console_signal=0\ncases_passed=8 summary_ready=1\nresult=FAIL\n",
+        "sha256": "3e0213ffcef81609366c51c146fd5417af4415991358d56b2dcda33dd368953b"
+      }
+    },
+    "baseline_binary_retained": false,
+    "screenshot": {
+      "file": "docs/images/emulator-probe-console-baseline.png",
+      "sha256": "1f4a4ab148f550794cc6eb7c916b74970f9a4c30ab1fa04f8cd31c699d741018"
+    }
+  },
+  "pending": [
+    "genuine Steam API/session and live incoming message",
+    "SteamInternal_SteamAPI_Init path (fixture uses SteamAPI_Init fallback)",
+    "genuine host parent wait-loop execution",
+    "console control delivery (failed attempts retained)",
+    "Android conversation event bridge"
+  ],
+  "runner_sha256": "4638addbfe0695b34572fb2479989872cdeeb136da28f13e0870e9a8bbb2f76b",
+  "post_run_state": "Fixture session force-stopped; no integration/probe/wineserver process remained; ordinary Vapor Home reopened afterward."
+}

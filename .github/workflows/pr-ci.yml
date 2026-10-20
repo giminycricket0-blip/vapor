@@ -41,6 +41,23 @@ jobs:
         run: |
           c++ -std=c++17 -Wall -Wextra app/src/main/cpp/wn-steam-launcher/tests/cloud_conflict_answer_test.cpp -o "$RUNNER_TEMP/cloud-conflict-answer-test"
           "$RUNNER_TEMP/cloud-conflict-answer-test"
+      - name: Check Steam social probe
+        run: |
+          c++ -std=c++17 -Wall -Wextra app/src/main/cpp/wn-steam-launcher/tests/steam_friends_probe_test.cpp -o "$RUNNER_TEMP/steam-friends-probe-test"
+          "$RUNNER_TEMP/steam-friends-probe-test"
+          c++ -std=c++17 -Wall -Wextra -Werror app/src/main/cpp/wn-steam-launcher/tests/steam_friends_receive_test.cpp -o "$RUNNER_TEMP/steam-friends-receive-test"
+          "$RUNNER_TEMP/steam-friends-receive-test"
+          c++ -std=c++17 -Wall -Wextra -Werror app/src/main/cpp/wn-steam-launcher/tests/steam_probe_mode_test.cpp -o "$RUNNER_TEMP/steam-probe-mode-test"
+          "$RUNNER_TEMP/steam-probe-mode-test"
+          x86_64-w64-mingw32-g++-posix -std=c++17 -O2 -Wall -Wextra -Werror -static -mwindows tools/tests/steam-friends-receive-runtime.cpp -luser32 -o "$RUNNER_TEMP/steam-receiver-contracts-x86_64.exe"
+          i686-w64-mingw32-g++-posix -std=c++17 -O2 -Wall -Wextra -Werror -static -mwindows tools/tests/steam-friends-receive-runtime.cpp -luser32 -o "$RUNNER_TEMP/steam-receiver-contracts-i686.exe"
+      - name: Compile isolated Steam DLL integration fixtures
+        run: |
+          for vapor_arch in x86_64 i686; do
+            "${vapor_arch}-w64-mingw32-g++-posix" -std=c++17 -O2 -Wall -Wextra -Werror -static -shared tools/tests/steam-social-fixture.cpp -o "$RUNNER_TEMP/steam-social-fixture-$vapor_arch.dll"
+            "${vapor_arch}-w64-mingw32-g++-posix" -std=c++17 -O2 -Wall -Wextra -Werror -static -mwindows tools/tests/steam-social-probe-runtime.cpp -luser32 -o "$RUNNER_TEMP/steam-social-integration-$vapor_arch.exe"
+            "${vapor_arch}-w64-mingw32-g++-posix" -std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter -static -mwindows -Iapp/src/main/cpp/wn-steam-launcher tools/tests/steam-probe-parent-runtime.cpp app/src/main/cpp/wn-steam-launcher/clean_shutdown.cpp -ladvapi32 -lkernel32 -luser32 -o "$RUNNER_TEMP/steam-probe-parent-$vapor_arch.exe"
+          done
       - name: Build and test
         run: >-
           ./gradlew :app:assembleStandardDebug :app:testStandardDebugUnitTest
@@ -65,6 +82,11 @@ jobs:
           --tests '*GameDisplaySettingsTest'
           --tests '*GameSessionFailureTest'
           --tests '*SteamLoginStateTest'
+          --tests '*SteamSocialLayoutTest'
+          --tests '*GameSettingsLayoutTest'
+          --tests '*GameSettingsNavTest'
+          --tests '*SteamConversationTest'
+          --tests '*SteamChatServiceTest'
           --tests '*ArtworkMemoryTest'
           --tests '*StoreArtworkCacheTest'
           --max-workers=4 --console=plain

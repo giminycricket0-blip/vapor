@@ -1,0 +1,98 @@
+{
+  "runs": [
+    {
+      "arch": "x86_64",
+      "result": "Vapor receiver contracts: 64-bit Windows guest; synthetic exports only\nSteam Friends receive: 33 scenarios passed; outgoing API resolutions=0\ncontracts=PASS summary_ready=1\nresult=PASS",
+      "completed": true,
+      "summary_captured": true,
+      "observed_seconds": 38.411
+    },
+    {
+      "arch": "i686",
+      "result": "Vapor receiver contracts: 32-bit Windows guest; synthetic exports only\nSteam Friends receive: 33 scenarios passed; outgoing API resolutions=0\ncontracts=PASS summary_ready=1\nresult=PASS",
+      "completed": true,
+      "summary_captured": true,
+      "observed_seconds": 45.948
+    }
+  ],
+  "runtime_before": [
+    "d98106abbe3d1a7179bf615010b2151279f1acdaecafaa25f47570c522adf21c  files/imagefs/home/xuser/.wine/drive_c/windows/system32/libarm64ecfex.dll",
+    "e6fe5db82c51d29a0f44e76d41ac3771787f7b9afc5aa68b658944646050be4c  files/imagefs/home/xuser/.wine/drive_c/windows/system32/libwow64fex.dll",
+    "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26  files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libarm64ecfex.so",
+    "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26  files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libwow64fex.so"
+  ],
+  "runtime_after": [
+    "d98106abbe3d1a7179bf615010b2151279f1acdaecafaa25f47570c522adf21c  files/imagefs/home/xuser/.wine/drive_c/windows/system32/libarm64ecfex.dll",
+    "e6fe5db82c51d29a0f44e76d41ac3771787f7b9afc5aa68b658944646050be4c  files/imagefs/home/xuser/.wine/drive_c/windows/system32/libwow64fex.dll",
+    "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26  files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libarm64ecfex.so",
+    "5454b9f585ecfbaa27a25be78ae97cae66713acece1e36f8c9284aa028fbef26  files/contents/Proton/11.0-2-arm64ec-steam-unixlib-3/lib/wine/aarch64-unix/libwow64fex.so"
+  ],
+  "runtime_hashes_unchanged": true,
+  "container_bytes_unchanged": true,
+  "config_written_by_test": false,
+  "settings": {
+    "wine": "Proton-11.0-2-arm64ec-steam-unixlib-3",
+    "fex": "2607-84e127a63-unix-0",
+    "steam_launch": false
+  },
+  "note": "Synthetic resolver/callback contracts executed as PE guests; no genuine Steam API DLL loaded or host/process-runner test.",
+  "date": "2026-10-20",
+  "scope": "33 synthetic receiver contracts executed as x86_64/i686 PE guests through Android Wine/FEX",
+  "avd": "Vapor_UI_API36",
+  "android_sdk": 36,
+  "android_memory_page_bytes": 4096,
+  "steam_account_used": false,
+  "genuine_steam_dll_loaded": false,
+  "apk_built_for_this_step": false,
+  "runtime_payload_replaced": false,
+  "source_sha256": {
+    "tools/tests/steam-friends-receive-runtime.cpp": "9c1ce2a44ccc086b91e02c8841e412bc019b7ebfe3c3a1853341b7884617202e",
+    "app/src/main/cpp/wn-steam-launcher/tests/steam_friends_receive_test.cpp": "b62243b3228c1dd2bd5c7a18f9951df7123b2149e7dc2ed9f3728fed8d50a5a4",
+    "app/src/main/cpp/wn-steam-launcher/steam_friends_receive.h": "f655bb38f394af25173123d4ffe7a141d6539f875ee38871a4880f83c0866c47",
+    ".github/workflows/pr-ci.yml": "855a1c3d890e91752b72fffe2924eb625c6242c6c8aab76852f382c3535e6d34"
+  },
+  "artifacts": [
+    {
+      "arch": "x86_64",
+      "exe_sha256": "bcf9c29059236859be613071bc173b06ff3a0a80593c44ab5d9801cb2e2bdb62",
+      "exe_bytes": 548864,
+      "exe_format": "PE32+ executable (GUI) x86-64, for MS Windows",
+      "result_text": "Vapor receiver contracts: 64-bit Windows guest; synthetic exports only\nSteam Friends receive: 33 scenarios passed; outgoing API resolutions=0\ncontracts=PASS summary_ready=1\nresult=PASS\n",
+      "result_sha256": "a459a3ad4562e7ca8d571c9728b7ca3c344ea4c027ad6e8a04fd0bf888d1be61",
+      "screenshot": "docs/images/emulator-receiver-x86_64.png",
+      "screenshot_sha256": "4a45459ad7024e771e527c2d6659bb940381ee20a312adc28e75cf1356d3df7e",
+      "screenshot_method": "adb exec-out screencap -p; actual Android display host"
+    },
+    {
+      "arch": "i686",
+      "exe_sha256": "dee0ed3065fe5430e9b82355df5da5ba6de0351471dffb730d7edb14b41ebe7d",
+      "exe_bytes": 568320,
+      "exe_format": "PE32 executable (GUI) Intel 80386, for MS Windows",
+      "result_text": "Vapor receiver contracts: 32-bit Windows guest; synthetic exports only\nSteam Friends receive: 33 scenarios passed; outgoing API resolutions=0\ncontracts=PASS summary_ready=1\nresult=PASS\n",
+      "result_sha256": "b28871a3e57a869ae88616298af3635fb84bd659f2d987172e41dd15fc9a70e5",
+      "screenshot": "docs/images/emulator-receiver-i686.png",
+      "screenshot_sha256": "be74dbfa5e7f9fc446e4f0f709a28826e4c3799168abd4c29e015a5e88f791db",
+      "screenshot_method": "adb exec-out screencap -p; actual Android display host"
+    }
+  ],
+  "host_native_regression": {
+    "sanitizers": [
+      "address",
+      "undefined"
+    ],
+    "tests": 33,
+    "result": "Steam Friends receive: 33 scenarios passed; outgoing API resolutions=0",
+    "log_sha256": "8af2cfb300f718ea30a75dadff7f6c2550ae1e0af3d97e26d2e7d05f74389589"
+  },
+  "remote_ci_run": false,
+  "ci_note": "Existing MinGW CI toolchains now cross-compile the runtime fixture; remote execution has not run.",
+  "pending": [
+    "production GetProcAddress binding against a fixture DLL",
+    "genuine Valve DLL and live callback",
+    "parent-runner forced timeout",
+    "Windows console-control event delivery",
+    "Android in-game chat bridge"
+  ],
+  "runner_sha256": "fe1a5564c341fc847b9bc626b9aa883cbf6ae028517b5f91303e6a6f876e94ee",
+  "post_run_state": "Fixture session force-stopped; no receiver/wineserver remained; ordinary Vapor Home reopened afterward."
+}

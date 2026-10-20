@@ -3259,4 +3259,5 @@ In your hands.</string>
     <string name="vapor_login_verify">Confirm code</string>
     <string name="vapor_login_verifying">Checking code…</string>
     <string name="vapor_login_another_method">Use another sign-in method</string>
+    <string name="vapor_chat_change_presence">Change Steam status</string>
 </resources>

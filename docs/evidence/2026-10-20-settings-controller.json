@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-20",
+  "base_commit": "4ce96ca06501d261565f257e7982b93acf24bf78",
+  "source_state": "Local changes; not committed or pushed. Earlier 19 October UI work is preserved.",
+  "scope": "Game settings directional navigation through its existing owner, plus previous UI/social regressions. Not physical-controller, game, runtime or release qualification.",
+  "source_sha256": {
+    ".github/workflows/pr-ci.yml": "ed8fe577dc267eec48157af3542b846c19b4688198c5dd07e2e749b0be7e2a71",
+    "app/build.gradle": "e7972a2a457252dcd352122a1865c95db69a328850b33759b8dc16acb830ef6e",
+    "app/src/androidTest/kotlin/com/winlator/cmod/feature/stores/steam/friends/SteamChatUiTest.kt": "53f93497343ab7d5026bf42ec0665fbfcc04fa885383f2750cac98f9c3082f7c",
+    "app/src/main/app/shell/UnifiedActivityHub.kt": "5a92946520c24d04cfa409b673cf56eed55e97846316689d0bcbdf78a9d57271",
+    "app/src/main/feature/library/GameSettings.kt": "d85e3938c4df843b1d0b6c9d970af3b8447df8c0d5f574f710a90812159146cb",
+    "app/src/main/feature/stores/steam/friends/FriendsDrawerContent.kt": "1cfed838bb1a8cf5aff16a9394013f15e4f647f338a8ad1cc2193f736c6adc50",
+    "app/src/main/feature/stores/steam/friends/SteamChatScreen.kt": "a14c2304739007fad936f3dfba356f76e769fe74e50e3885eb49f03af4077122",
+    "app/src/main/res/values/strings.xml": "9a50184a4bd04e1989579623cf8ba3633b6d4acafe14ec2821e6b3bffbbd9f63",
+    "app/src/test/kotlin/com/winlator/cmod/feature/library/GameSettingsLayoutTest.kt": "ad1f4cd0f98efc31268db2b93f0b1fb89dd37b4c5e3fd59cbcccd86f138ca2f8",
+    "app/src/test/kotlin/com/winlator/cmod/feature/library/GameSettingsNavTest.kt": "1b85be9e18c9587c36a81cb26a9c0547fe53d590271c34277801ea40a67e1b3f",
+    "app/src/test/kotlin/com/winlator/cmod/feature/stores/steam/friends/SteamSocialLayoutTest.kt": "5e9700abfb3abd6e92977adb62c4cfbfab4a88672f7d0dab556936ae4b7cce33"
+  },
+  "baseline": {
+    "tests": 2,
+    "failures": 2,
+    "cases": [
+      "compactControllerRightAndLeftFollowTheVisibleSectionStrip",
+      "compactControllerReachesActionsAboveTheStripAndReturnsToTheSelectedSection"
+    ],
+    "log_sha256": "241e6e10021c7f116c1d97d57e1eef4a3cf71cc3cf85fe76fd2ea21f3354f7e9"
+  },
+  "verification": {
+    "command": "JAVA_HOME=/Users/cheng/.local/share/mise/installs/java/17 ./gradlew :app:testStandardDebugUnitTest --tests '*GameSettingsLayoutTest' --tests '*GameSettingsNavTest' --tests '*SteamSocialLayoutTest' --tests '*SteamConversationTest' --tests '*SteamChatServiceTest' :app:compileStandardDebugAndroidTestKotlin --max-workers=2 --console=plain",
+    "result": "passed",
+    "suites": [
+      {
+        "name": "com.winlator.cmod.feature.library.GameSettingsLayoutTest",
+        "tests": 15,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.library.GameSettingsNavTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.friends.SteamSocialLayoutTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.friends.SteamConversationTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.service.SteamChatServiceTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "total": 40,
+    "new_cases": {
+      "compose": 6,
+      "navigation": 3
+    },
+    "android_ui_test_sources": "compiled, not executed",
+    "log_sha256": "b8f3bfb748d5417974cc39ac3f5a1d4f184430bdd1b7a4fc71710819b936c531",
+    "diff_check": "passed"
+  },
+  "renders": {
+    "method": "Production Android Compose views rendered by native Canvas/Bitmap under Robolectric SDK 35. Directions injected into GameSettingsNav, the navigator bound to dialog window input handlers. Sample state with empty device/profile lists and preloaded missing-shader state; not device or runtime evidence.",
+    "retained": {
+      "docs/images/controller-game-settings-compact.png": "9d81718f1a1ec3e086a8dbad7dff57fdf3f8161cf034936e9023d6354f9b1c8f",
+      "docs/images/controller-game-settings-save.png": "7b1d8e812074040cda149e4073ac398db7a2ddd82961be0996414ff276724074"
+    }
+  },
+  "not_run": [
+    "APK assembly or installation",
+    "Device instrumentation tests",
+    "Physical controller key delivery or key-repeat",
+    "Phone keyboard or TalkBack checks",
+    "Native shader discovery or runtime qualification",
+    "Live Steam, game or Cloud tests"
+  ]
+}

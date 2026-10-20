@@ -8,6 +8,254 @@ screenshot. On 15 October the owner confirmed that **all tested games had sound*
 reported EU3, TF2, You Have to Win the Game and Helltaker sessions. Audio is owner-confirmed;
 persistence and repeat-launch checks remain separate.
 
+## Production parent-runner execution — 20 October 2026
+
+A test-only entry point includes the actual launcher source and directly exercises
+`run_probe_exe`, without starting its genuine Steam entry point or replacing the
+APK runtime. The x86_64 run passes **7/7 cases**: normal log import, missing/invalid
+executable, blocked log path, oversized command, continuously busy callback pump,
+and actual parent timeout. The hot callback case acquired/released 7,104 callbacks
+and returned normally. The hung-child case acquired/released 15,616 callbacks,
+returned in 25.211 seconds, and logged forced termination with cleanup unconfirmed.
+No matching fixture child remained. Those timings check timeout correctness only.
+
+The first i686 attempt produced no test result before the external observation
+limit; Wine startup processes were observed and the test program had not appeared
+in the process listing. It is not counted as a pass or a demonstrated parent-runner
+defect. A single unchanged-input retry then passed **7/7 cases**. Its busy callback
+case acquired/released 7,552 callbacks; the real timeout returned in 25.711 seconds
+with 15,104 acquisitions/releases. The first startup timeout remains recorded
+separately; this retry does not establish repeatable startup reliability.
+[Initial 32-bit startup capture](images/emulator-probe-parent-i686-startup.png).
+
+Both attempts retained unchanged container bytes and recorded FEX DLL/SO hashes.
+No account, game files, APK or runtime payload was modified. The fixture session
+was stopped after execution. [Execution receipt](evidence/2026-10-20-probe-parent-execution.json).
+
+![Actual emulator: x64 production parent-runner fixture passed seven cases](images/emulator-probe-parent-x86_64.png)
+
+![Actual emulator: x86 production parent-runner retry passed seven cases](images/emulator-probe-parent-i686.png)
+
+This fixture does not test real Valve callback data, marker-driven authenticated
+startup or real messages. Callback pumping uses a synthetic always-ready source;
+child execution uses the isolated DLL fixture. CI cross-compiles both architectures
+and the YAML parses locally; no remote CI run is claimed. Build warnings are the
+two existing unused declarations included from launcher source (`installPath` and
+`marker_has_path`). No production source changed for this parent-runner test.
+
+## Production probe controlled-DLL execution — 20 October 2026
+
+**9/9 integration cases pass in each architecture**, x86_64 and i686, under the
+existing ARM64 Android 16 Wine/FEX emulator. The actual production `iface_probe.cpp`
+loads an isolated test DLL through `LoadLibraryA`/`GetProcAddress`; a Windows test
+driver checks child exit codes, diagnostic text and fixture shutdown traces.
+These are nine scenarios exercised twice, not eighteen different features.
+
+| Case | Expected exit | Result on x64 / x86 |
+| --- | --- | --- |
+| Read-only capabilities | 0 | Pass / Pass; no listening or message reads |
+| Receive one synthetic entry | 0 | Pass / Pass; acquired callback released, one read |
+| Quiet observation window | 9 | Pass / Pass; not represented as delivered chat |
+| Malformed callback payload | 10 | Pass / Pass; callback released without reading |
+| Listener enable rejected | 8 | Pass / Pass; disable attempted, shutdown called |
+| Listener disable reports failure | 8 | Pass / Pass; failure retained rather than success |
+| Named-event cancellation | 11 | Pass / Pass; listener off before shutdown |
+| Selected DLL missing | 2 | Pass / Pass; no fallback to the nearby fixture DLL |
+| Callback frame deliberately hangs | 124 from test driver | Pass / Pass; killed child exit confirmed, no shutdown completion claimed |
+
+The audits require no outstanding callback on normal exit and no sending-function
+call. The fixture's private message text must not appear in diagnostic logs. The
+fixture exports the legacy `SteamAPI_Init` path; the internal-init path and Valve
+session remain separate gates.
+
+### Cancellation defect and correction
+
+The original x64 console-control test failed: `GenerateConsoleCtrlEvent` returned
+success but the probe exited 9 after its quiet window, rather than cancellation
+11. Additional targeted/broadcast attempts, including production-matching process
+creation flags, did not establish console delivery. The underlying cause was not
+isolated. [Original failed summary](images/emulator-probe-console-baseline.png).
+
+The receive diagnostic now offers a per-process named Windows event, polled by its
+existing dispatch wait. The targeted event test passes, followed by all nine
+cases on both architectures. The cancellation trace records `listen_off` before
+`shutdown enabled=0`, and exit 11. Console handling remains best-effort and is not
+claimed fixed or qualified. [Targeted cancellation capture](images/emulator-probe-dll-cancel-x86_64.png).
+Event creation/collision/wait failures have explicit
+failure paths; those error injections were not executed in this matrix.
+
+### Actual emulator screenshots
+
+![64-bit production probe: nine controlled-DLL cases passed](images/emulator-probe-dll-x86_64.png)
+
+![32-bit production probe: nine controlled-DLL cases passed](images/emulator-probe-dll-i686.png)
+
+The [execution receipt](evidence/2026-10-20-probe-dll-execution.json) retains all
+case logs/audits, current source and binary hashes, screenshot hashes and the
+original console failure. The baseline binary itself was not retained. Runtime:
+`Proton-11.0-2-arm64ec-steam-unixlib-3` / `2607-84e127a63-unix-0`, Steam launching
+disabled in the test container. Container bytes and the four recorded FEX DLL/SO
+hashes match before/after. No game DLL, APK or runtime payload was replaced.
+The fixture session was stopped after testing; no integration/probe/wineserver
+remained. Vapor was then reopened to its ordinary Home screen.
+
+This step uses no Steam account or genuine Steam library. The timeout belongs to
+the controlled test driver, **not the genuine host's parent wait loop**. The
+subsequent parent-runner execution above tests that loop with controlled fixtures;
+real Valve callbacks, authenticated startup, actual message delivery, Android chat
+integration and physical phone behavior remain unqualified. The native 33-case ASan/UBSan regression passes;
+CI compilation steps are added in source and YAML parses, but no remote CI run,
+commit or publication occurred.
+
+## Receiver contracts on Android Wine/FEX — 20 October 2026
+
+**33/33 receiver scenarios passed in each Windows architecture**: x86_64 and i686,
+executed via Vapor's installed `XServerDisplayActivity` on `Vapor_UI_API36` (ARM64
+Android 16, 4 KB pages). Each executable wrote its final `result=PASS` and rendered
+a Win32 summary captured through ADB. The same suite still passes host-native
+ASan/UBSan after the test-only MinGW name-collision fix.
+
+Runtime: `Proton-11.0-2-arm64ec-steam-unixlib-3` and
+`2607-84e127a63-unix-0` FEX, existing `PERFORMANCE_TSO` container. No Steam login,
+genuine Steam API DLL, real friend/message or graphics workload was used. Both
+PE guests use the injected resolver and callback fixture, including cancellation,
+callback release, rejected reads, unavailable sessions and disabled outgoing APIs.
+This is 33 scenarios exercised in two environments, not 66 distinct scenarios.
+
+![Actual emulator capture: 64-bit Windows receiver contracts passed](images/emulator-receiver-x86_64.png)
+
+![Actual emulator capture: 32-bit Windows receiver contracts passed](images/emulator-receiver-i686.png)
+
+The result files, PE and screenshot hashes are recorded in the
+[execution receipt](evidence/2026-10-20-receiver-wine-execution.json).
+The container's bytes and four recorded FEX DLL/SO hashes match before/after; no
+runtime, driver or configuration payload was replaced. Only the test executables
+and result files were placed in the emulator's Downloads test directory. The fixture session
+was stopped afterward, and no receiver or wineserver process remained in the
+post-run process listing. Vapor was then reopened to its ordinary Home screen. No new APK was built for these fixtures.
+
+The screenshot proves the fixture summary rendered; result files and assertions
+carry the contract verdict. The production `GetProcAddress` binding, real Valve
+callbacks, parent-runner forced timeout, Windows console cancellation and Android
+chat bridge remain pending. Prior local/build-only receipts remain historical.
+
+## Current UI on Android emulator — 20 October 2026
+
+The existing `Vapor_UI_API36` was booted after the earlier empty-device check.
+The current UI and instrumentation APKs build and install successfully. The
+installed app's SHA-256 matches the built APK. No app data was wiped. Environment:
+ARM64 Android 16/API 36, 4 KB pages; app target SDK remains 28.
+
+**8/8 `SteamChatUiTest` instrumentation cases passed** in 46.128 seconds with fixture
+message handlers. This verifies native Android UI interactions rather than only
+JVM rendering; it does not verify Steam authentication or delivery. Manual
+signed-out navigation verified Home, Friends, Chat Settings and Store. A `Portal`
+search showed 130 results including Portal and Portal 2 and retained its query when
+the keyboard closed. No purchase, license acquisition or game launch was attempted.
+
+[Five actual emulator screenshots](UI-UX.md#actual-emulator-review--20-october-2026)
+and the [receipt](evidence/2026-10-20-emulator-social.json) distinguish this run from
+the preceding Robolectric captures. Current social host/probe source remains
+separate from the bundled APK runtime assets; native genuine-session execution,
+live chat, Cloud and physical-phone performance are still unqualified. No account
+login or real message was performed. The emulator remains running.
+
+## Screenshot documentation and execution availability — 20 October 2026
+
+The [UI screenshot review](UI-UX.md#screenshot-review--20-october-2026) collects
+eight local production-Compose renders covering Friends, conversation, short
+landscape Chat Settings, compact/wide/large-text game settings and two controller
+focus states. Each is labelled as sample/signed-out Robolectric evidence, not a
+phone screenshot or live Steam result. The source/build social receipts remain
+linked separately from visual layout evidence.
+
+Execution availability check: `adb devices -l` returned an empty device list;
+`command -v wine` and `command -v wine64` returned no executable. The genuine-host
+receive test could not be run in this environment. No emulator was booted, account
+operation performed, or APK rebuilt/installed. This is a pending device gate,
+not a failed Steam delivery test. The documentation receipt records the fresh
+local UI test result and screenshot hashes.
+
+## Genuine-host social diagnostic integration — 20 October 2026
+
+The existing marker-file diagnostic runner now selects `social` or `social-listen`
+without enabling a second Steam login. Invalid content is rejected, explicit
+diagnostic mode never falls through to gameplay, stale per-probe logs are removed,
+and the host continues pumping its own callback pipe while waiting. A 25-second
+wait expiry requests termination and reports unconfirmed cleanup.
+
+- **61 local contract scenarios pass** with ASan/UBSan: 13 marker-mode, 33 receive,
+  15 capability. The 13 new scenarios verify accepted modes, whitespace, invalid
+  names and appended argument rejection; they do not simulate Windows processes.
+- **x86 and x86_64 hosts compile**, with three existing unused-code warnings in
+  each build. No warnings originate in the changed runner. Builds are staged
+  outside APK assets; no bundled host or APK was replaced.
+- Process creation, callback-pipe progress during a child run, timeout termination,
+  file operations, console cancellation and live incoming messages remain
+  **unexecuted on Windows/Wine/FEX**. These are compilation/source checks, not a
+  qualified device integration or Android chat feature.
+
+[Integration receipt](evidence/2026-10-20-steam-social-host.json).
+
+## Friends receiver cleanup follow-up — 20 October 2026
+
+The local receiver suite now passes **33 scenarios** under ASan/UBSan (the prior
+27-case result below remains its earlier snapshot). Added coverage includes
+unavailable interface/pipe, negative callback size, non-terminated one-byte data,
+cancellation cleanup, and listener-disable failure after cancellation. Rejected
+reads now produce `receive_callbacks_rejected`, distinct from a quiet window;
+interruption produces `receive_cancelled` unless cleanup fails. The console probe
+routes Ctrl+C/Ctrl+Break through this path and requires `SteamAPI_Shutdown` before
+social initialization. Console event delivery itself has not been exercised on
+Windows/Wine; the injected cancellation path is what the local suite verifies.
+
+The earlier 15 capability tests pass again, and both Windows architectures build
+with warnings treated as errors. No APK, live account, Android bridge or packaged
+runtime was changed. [Follow-up receipt](evidence/2026-10-20-steam-social-receive-cleanup.json).
+
+## Passive Friends receive diagnostic — 20 October 2026
+
+**Local component result:** 27 fake-export/callback scenarios pass under ASan and
+UBSan. Tests cover missing exports, wrong user, short/null payloads, invalid message
+identity, failed/oversized/empty reads, non-chat entries, a quiet observation,
+listener failures, older accessor fallback, and a saturated callback queue.
+Every acquired callback is released, cleanup disables listening, and outgoing API
+resolution is forbidden by the fixture. The previous 15 capability scenarios also
+pass. Both x86 and x86_64 Windows probes compile with warnings treated as errors.
+
+The explicit `--social-listen` mode reads and counts messages only in response to
+manual Friends callbacks. It records neither message text nor friend IDs. It is
+not automatically launched by Vapor. Source tests are added to existing CI; no
+remote workflow, APK build, packaged-asset replacement, Wine/FEX execution, live
+message delivery or Android conversation integration was performed for this step.
+A quiet diagnostic cannot qualify delivery. [Receipt](evidence/2026-10-20-steam-social-receive.json).
+
+## Native Steam social probe — 20 October 2026
+
+The existing interface probe now has a read-only `--social` mode for the selected
+game's original Steam API DLL. This is source/build preparation for the genuine
+host's social path, not delivered in-game Friends/Chat support.
+
+- **15 native contract scenarios passed**, using injected DLL exports under
+  AddressSanitizer and UndefinedBehaviorSanitizer. They cover v018/v017 accessors,
+  preference for the current accessor, unavailable interfaces, missing read/chat/
+  callback exports, disconnected queries and an empty Friends list. Tests assert
+  no listener, callback-pump, message-read or send function is invoked.
+- **Both Windows architectures compile:** PE32 x86 and PE32+ x86_64, using the
+  retained LLVM-MinGW toolchain and `-Wall -Wextra -Werror`. These binaries were
+  built into the task's `steam-social-proof` directory, outside APK assets.
+- The diagnostic reports `exports_present_delivery_unverified`, rather than
+  claiming successful chat from API symbol availability. Its social mode does
+  not use the legacy authentication-ticket/certificate/hardware probe paths.
+- The existing CI workflow now includes the account-free contract test in source.
+  No workflow was pushed or run remotely for this step.
+
+No genuine Valve API DLL was loaded in these local tests. No Windows/Wine/FEX
+execution, live account, incoming callback, message delivery, Android bridge or
+Cloud behavior is qualified. No device was connected to ADB. No APK, packaged
+probe or game file was replaced. Earlier UI and runtime evidence remains separate.
+[Source/build receipt](evidence/2026-10-20-steam-social-probe.json).
+
 ## Runtime components — 19 October 2026
 
 This continuation builds and checks **components**, using the existing prepared

@@ -11,6 +11,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include "../steam_friends_probe.h"
+#include "../steam_friends_receive.h"
 
 typedef bool (*SteamAPI_Init_t)();
 typedef int (*SteamInternal_SteamAPI_Init_t)(const char*, char*);
@@ -125,7 +127,6 @@ static void probe_auth_ticket(HMODULE api, void* user, void* apps) {
         typedef const char* (*S_t)(void*);
         typedef bool (*B_t)(void*);
         typedef unsigned int (*U_t)(void*);
-        typedef unsigned int (*UA_t)(void*, unsigned int);
         typedef int (*I_t)(void*);
         struct { const char* nm; const char* sym; int kind; } q[] = {
             {"ISteamUtils::GetIPCountry",          "SteamAPI_ISteamUtils_GetIPCountry", 0},
@@ -377,15 +378,28 @@ static void probe_ane_dlls(const char* gameDir) {
     }
 }
 
+// Console cancellation keeps the receive diagnostic on its normal cleanup path.
+static volatile LONG g_social_cancelled = 0;
+static BOOL WINAPI social_console_control(DWORD event) {
+    if (event != CTRL_C_EVENT && event != CTRL_BREAK_EVENT) return FALSE;
+    InterlockedExchange(&g_social_cancelled, 1);
+    return TRUE;
+}
+
 int main(int argc, char** argv) {
     const char* gameDir = (argc > 1) ? argv[1] : "";
     const char* appId = (argc > 2) ? argv[2] : "";
     const char* logPath = (argc > 3) ? argv[3] : "C:\\wn-iface-probe.log";
 
+    const bool socialListen = argc > 4 && strcmp(argv[4], "--social-listen") == 0;
+    const bool socialOnly = socialListen || (argc > 4 && strcmp(argv[4], "--social") == 0);
+    if (argc > 4 && !socialOnly) return 64;
     g_log = fopen(logPath, "w");
-    import_debug_ca();
+    if (socialOnly && !g_log) return 1;
+    if (!socialOnly) import_debug_ca();
     plog("[wn-probe] start gameDir=\"%s\" appId=%s", gameDir, appId);
-    probe_ane_dlls(gameDir);
+    if (socialOnly) plog("[wn-probe] social: mode=%s", socialListen ? "receive-only" : "read-only");
+    else probe_ane_dlls(gameDir);
 
     if (appId && appId[0]) {
         SetEnvironmentVariableA("SteamAppId", appId);
@@ -393,9 +407,15 @@ int main(int argc, char** argv) {
     }
 
     char dllPath[MAX_PATH];
-    snprintf(dllPath, sizeof(dllPath), "%s\\" WN_STEAM_API_DLL, gameDir);
+    int dllPathLength = snprintf(dllPath, sizeof(dllPath), "%s\\" WN_STEAM_API_DLL, gameDir);
+    if (socialOnly && (dllPathLength < 0 || dllPathLength >= (int)sizeof(dllPath))) {
+        plog("[wn-probe] social: game API path exceeds the probe path limit");
+        return 2;
+    }
     HMODULE api = LoadLibraryA(dllPath);
-    if (!api) {
+    // Social results must describe the selected game's DLL, not a different API
+    // library found through the process search path. Preserve legacy diagnostics.
+    if (!api && !socialOnly) {
         plog("[wn-probe] LoadLibrary(\"%s\") failed GLE=%lu; trying bare name",
              dllPath, (unsigned long) GetLastError());
         api = LoadLibraryA(WN_STEAM_API_DLL);
@@ -423,6 +443,12 @@ int main(int argc, char** argv) {
          "GetHSteamUser=%p FindOrCreateUserInterface=%p",
          (void*) initLegacy, (void*) initInternal, (void*) getUser, (void*) findIface);
 
+    if (socialOnly && !shutdown) {
+        plog("[wn-probe] social: missing_shutdown_export");
+        fclose(g_log);
+        return 3;
+    }
+
     bool ok = false;
     if (initInternal) {
         char err[1024];
@@ -446,6 +472,59 @@ int main(int argc, char** argv) {
 
     int hUser = getUser ? getUser() : 0;
     plog("[wn-probe] HSteamUser=%d", hUser);
+
+    if (socialListen) {
+        // Wine/FEX may accept console-control delivery without invoking our
+        // handler. A per-process kernel event gives the diagnostic's parent an
+        // explicit cancellation path without credentials or persistent files.
+        char cancelName[96];
+        snprintf(cancelName, sizeof(cancelName), "Local\\VaporSocialProbeCancel-%lu",
+                 (unsigned long) GetCurrentProcessId());
+        HANDLE cancelEvent = CreateEventA(nullptr, TRUE, FALSE, cancelName);
+        if (!cancelEvent || GetLastError() == ERROR_ALREADY_EXISTS) {
+            if (cancelEvent) CloseHandle(cancelEvent);
+            plog("[wn-probe] social: cancellation_event_unavailable");
+            shutdown();
+            fclose(g_log);
+            return 8;
+        }
+        const bool consoleHandler = SetConsoleCtrlHandler(social_console_control, TRUE) != FALSE;
+        plog("[wn-probe] social: cancel_event=%s console_handler=%d", cancelName, consoleHandler);
+        bool cancelWaitFailed = false;
+        auto result = wn_social::receive_friends([&](const char* name) -> wn_social::Symbol {
+            return reinterpret_cast<wn_social::Symbol>(GetProcAddress(api, name));
+        }, hUser, [&] {
+            if (InterlockedCompareExchange(&g_social_cancelled, 0, 0)) return false;
+            const DWORD wait = WaitForSingleObject(cancelEvent, 100);
+            if (wait == WAIT_FAILED) cancelWaitFailed = true;
+            return wait == WAIT_TIMEOUT && InterlockedCompareExchange(&g_social_cancelled, 0, 0) == 0;
+        });
+        if (cancelWaitFailed) {
+            result.status = "receive_cancel_wait_failed";
+            result.exit_code = 8;
+        }
+        plog("[wn-probe] social: status=%s received=%d rejected=%d ignored=%d; no messages sent or contents logged",
+             result.status, result.received, result.rejected, result.ignored);
+        shutdown();
+        CloseHandle(cancelEvent);
+        if (consoleHandler) SetConsoleCtrlHandler(social_console_control, FALSE);
+        fclose(g_log);
+        return result.exit_code;
+    }
+
+    if (socialOnly) {
+        const auto result = wn_social::probe_friends([&](const char* name) -> wn_social::Symbol {
+            return reinterpret_cast<wn_social::Symbol>(GetProcAddress(api, name));
+        });
+        plog("[wn-probe] social: accessor=%s count=%d listen=%d message=%d reply=%d callbacks=%d",
+             result.accessor, result.friend_count, result.listen_export, result.message_export,
+             result.reply_export, result.callback_exports);
+        plog("[wn-probe] social: status=%s; no messages sent or read; delivery unverified",
+             result.status);
+        if (shutdown) shutdown();
+        fclose(g_log);
+        return result.exit_code;
+    }
 
     if (!findIface) {
         plog("[wn-probe] FATAL: SteamInternal_FindOrCreateUserInterface missing");

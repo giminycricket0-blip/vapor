@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-20",
+  "scope": "current Android UI build installed and tested on an ARM64 emulator; no genuine Steam session test",
+  "avd": "Vapor_UI_API36",
+  "device": "emulator-5554",
+  "android": {
+    "release": "16",
+    "sdk": "36",
+    "page_size": "4096"
+  },
+  "apk": {
+    "file": "app/build/outputs/apk/standard/debug/standard.apk",
+    "bytes": 680787996,
+    "sha256": "b618e9e9bd1095c1c5afdf5ce97f918c9811a556216c0fe3868a12d749f6d121",
+    "installed_hash_matches": true,
+    "target_sdk": 28,
+    "source_state": "local uncommitted UI source; bundled host probe assets predate new diagnostic source"
+  },
+  "verification": {
+    "build": "passed",
+    "build_log_sha256": "f56719020dac4c08442d4b7307490df5741443795a565abf25a2d78cf43a18b2",
+    "instrumentation": "SteamChatUiTest",
+    "tests": 8,
+    "passed": 8,
+    "seconds": 46.128,
+    "log_sha256": "cc6491114eef3b512c109e09c2abccdef4e9b5c4c4991593102cdd146f0fcafc",
+    "transport": "fixtures only, no real Steam sends",
+    "manual_smoke": [
+      "signed-out Home",
+      "Friends drawer",
+      "Chat Settings modal open/close",
+      "Store populated",
+      "Portal search: 130 results including Portal and Portal 2; query preserved after keyboard dismissal"
+    ]
+  },
+  "screenshots": {
+    "docs/images/emulator-20261020-home.png": {
+      "sha256": "ea5f8e528a3d2dc8972d68a67c02d2ed56bf61991ce5eaa868a78d61db8c0900",
+      "method": "adb exec-out screencap -p",
+      "environment": "actual Android emulator; not Robolectric"
+    },
+    "docs/images/emulator-20261020-friends.png": {
+      "sha256": "853ec2b65db77b5de94e1606c8e9ffea2c399a0ad704686fc7000f3b1eecb6e0",
+      "method": "adb exec-out screencap -p",
+      "environment": "actual Android emulator; not Robolectric"
+    },
+    "docs/images/emulator-20261020-chat-settings.png": {
+      "sha256": "9ca4ce606ee43eb1efa1d747ca0c26644a033c0aafbd4819ce35e03070ddcfe6",
+      "method": "adb exec-out screencap -p",
+      "environment": "actual Android emulator; not Robolectric"
+    },
+    "docs/images/emulator-20261020-store.png": {
+      "sha256": "368a3e56df9d68597521b7550035ed485b6d1f996a065f245cd819c28c8a0e80",
+      "method": "adb exec-out screencap -p",
+      "environment": "actual Android emulator; not Robolectric"
+    },
+    "docs/images/emulator-20261020-search.png": {
+      "sha256": "e487954bafba42b326acd6b7bfdde4ac0edc7bbc3e16a442c5b50cf41a2b93b5",
+      "method": "adb exec-out screencap -p",
+      "environment": "actual Android emulator; not Robolectric"
+    }
+  },
+  "not_verified": [
+    "live Steam Friends delivery",
+    "new diagnostic host execution under Wine/FEX",
+    "physical Snapdragon gameplay/performance",
+    "actual Steam login or Cloud sync",
+    "physical gamepad"
+  ],
+  "account_login_performed": false,
+  "steam_message_sent": false,
+  "runtime_assets_replaced": false,
+  "emulator_left_running": true
+}

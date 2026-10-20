@@ -20,6 +20,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -48,7 +49,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.PaddingValues
 import com.winlator.cmod.runtime.display.environment.components.NetworkingSettings
-import com.winlator.cmod.shared.ui.layout.isPortraitLayout
+import com.winlator.cmod.shared.ui.branding.VaporBrandMark
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -222,6 +223,9 @@ class GameSettingsNav {
     var inContent by mutableStateOf(false)
     var sidebarIndex by mutableStateOf(0)
     var sidebarCount by mutableStateOf(0)
+    // Layout and selected page are supplied by the editor; sidebarIndex is controller focus.
+    var horizontalSections by mutableStateOf(false)
+    var selectedSectionIndex by mutableIntStateOf(0)
     var actionCol by mutableStateOf(0)
     var contentSignal by mutableStateOf(0)
         private set
@@ -251,12 +255,23 @@ class GameSettingsNav {
             return
         }
         when (dir) {
-            PANE_DIR_UP -> moveSidebar(-1)
-            PANE_DIR_DOWN -> moveSidebar(1)
-            PANE_DIR_LEFT -> if (onActionRow && actionCol == 1) actionCol = 0
+            PANE_DIR_UP ->
+                if (horizontalSections) {
+                    if (!onActionRow) sidebarIndex = sidebarCount
+                } else moveSidebar(-1)
+            PANE_DIR_DOWN ->
+                if (!horizontalSections) moveSidebar(1)
+                else if (onActionRow) sidebarIndex = selectedSectionIndex.coerceIn(0, (sidebarCount - 1).coerceAtLeast(0))
+                else enterContent()
+            PANE_DIR_LEFT ->
+                if (onActionRow) {
+                    if (actionCol == 1) actionCol = 0
+                } else if (horizontalSections && sidebarIndex > 0) moveSidebar(-1)
             PANE_DIR_RIGHT ->
                 if (onActionRow) {
                     if (actionCol == 0) actionCol = 1
+                } else if (horizontalSections) {
+                    if (sidebarIndex + 1 < sidebarCount) moveSidebar(1)
                 } else {
                     enterContent()
                 }
@@ -832,17 +847,6 @@ fun GameSettingsContent(
     SideEffect { openSectionId = currentSectionId }
     val saveEnabled by state.isLoaded
 
-    if (nav != null) {
-        SideEffect {
-            nav.sidebarCount = sections.size
-            nav.onSelectSection = { state.currentSection.intValue = it }
-            nav.onSave = { if (saveEnabled) callbacks.onConfirm() }
-            nav.onCancel = { callbacks.onDismiss() }
-        }
-    }
-
-    val portrait = isPortraitLayout()
-
     val contentPane: @Composable (Modifier) -> Unit = { contentModifier ->
         Box(
             modifier = contentModifier
@@ -866,13 +870,26 @@ fun GameSettingsContent(
         }
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .clip(RoundedCornerShape(16.dp))
             .background(BgDeep)
     ) {
-        if (portrait) {
+        // A dialog can be narrower than its Activity; leave room for larger text too.
+        val compact = maxWidth / LocalDensity.current.fontScale < 700.dp
+        if (nav != null) {
+            SideEffect {
+                nav.horizontalSections = compact
+                nav.selectedSectionIndex = selectedIdx
+                nav.sidebarCount = sections.size
+                nav.onSelectSection = { state.currentSection.intValue = it }
+                nav.onSave = { if (saveEnabled) callbacks.onConfirm() }
+                nav.onCancel = { callbacks.onDismiss() }
+            }
+        }
+
+        if (compact) {
             Column(modifier = Modifier.fillMaxSize()) {
                 PortraitSettingsHeader(
                     title = state.name.value,
@@ -921,13 +938,15 @@ private fun SettingPairRow(
     modifier: Modifier = Modifier,
     content: @Composable FlowRowScope.() -> Unit,
 ) {
-    FlowRow(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(SettingItemGap),
-        verticalArrangement = Arrangement.spacedBy(SettingItemGap),
-        maxItemsInEachRow = if (isPortraitLayout()) 1 else Int.MAX_VALUE,
-        content = content,
-    )
+    BoxWithConstraints(modifier) {
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(SettingItemGap),
+            verticalArrangement = Arrangement.spacedBy(SettingItemGap),
+            maxItemsInEachRow = if (maxWidth / LocalDensity.current.fontScale < 480.dp) 1 else Int.MAX_VALUE,
+            content = content,
+        )
+    }
 }
 
 @Composable
@@ -956,38 +975,43 @@ private fun PortraitSettingsHeader(
             .padding(top = 12.dp, bottom = 8.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            VaporBrandMark(Modifier.size(24.dp))
             Text(
                 text = title,
                 color = TextPrimary,
-                fontSize = SettingLabelSize,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                letterSpacing = 0.2.sp,
-                lineHeight = 15.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             Box(
                 modifier = Modifier
+                    .weight(1f)
                     .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
                     .background(CardSurface)
                     .paneHighlight(cancelHighlighted, cornerRadius = 8.dp, highlightColor = NavHighlight)
                     .clickable { nav?.tapAction(0); onCancel() }
-                    .padding(horizontal = 14.dp),
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     stringResource(R.string.common_ui_cancel),
                     color = TextSecondary,
-                    fontSize = SettingLabelSize,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -996,8 +1020,9 @@ private fun PortraitSettingsHeader(
                 onClick = { nav?.tapAction(1); onSave() },
                 height = 48.dp,
                 corner = 8.dp,
-                fontSize = SettingLabelSize,
+                fontSize = 14.sp,
                 navHighlighted = saveHighlighted,
+                modifier = Modifier.weight(1f),
             )
         }
 
@@ -1038,7 +1063,7 @@ private fun PortraitSettingsHeader(
                     Text(
                         text = stringResource(section.labelResId),
                         color = if (isSelected) TextPrimary else TextSecondary,
-                        fontSize = SettingLabelSize,
+                        fontSize = SettingValueSize,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                         maxLines = 1,
                         modifier = Modifier.padding(start = 7.dp)
@@ -1088,6 +1113,7 @@ private fun SectionContent(
         if (nav != null && contentNav != null) {
             contentNav.controllerActive = nav.active && nav.inContent && isCurrent
             contentNav.onEdgeLeft = { nav.exitToSidebar() }
+            contentNav.onEdgeUp = { if (nav.horizontalSections) nav.exitToSidebar() }
             if (isCurrent) {
                 nav.onContentBack = {
                     if (contentNav.overlay != null) {
@@ -1187,20 +1213,22 @@ private fun Sidebar(
             .padding(top = 14.dp, bottom = 12.dp)
     ) {
         if (title.isNotBlank()) {
-            Text(
-                text = title,
-                color = TextPrimary,
-                fontSize = SettingLabelSize,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 0.2.sp,
-                lineHeight = 15.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 10.dp)
-            )
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                VaporBrandMark(Modifier.size(24.dp))
+                Text(
+                    text = title,
+                    color = TextPrimary,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+            }
             Box(
                 modifier = Modifier
                     .padding(horizontal = 12.dp)
@@ -1289,7 +1317,7 @@ private fun SaveButton(
 ) {
     Box(
         modifier = modifier
-            .height(height)
+            .heightIn(min = height)
             .clip(RoundedCornerShape(corner))
             .border(
                 1.dp,
@@ -1301,7 +1329,7 @@ private fun SaveButton(
             )
             .paneHighlight(navHighlighted, cornerRadius = corner, highlightColor = NavHighlight)
             .clickable(enabled = enabled) { onClick() }
-            .padding(horizontal = 14.dp),
+            .padding(horizontal = 14.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -1387,12 +1415,14 @@ private fun GeneralSection(
         ) {
             Box(
                 modifier = Modifier
+                    .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(9.dp))
                     .background(tint.copy(alpha = 0.08f))
                     .border(1.dp, tint.copy(alpha = 0.2f), RoundedCornerShape(9.dp))
                     .paneNavItem(cornerRadius = 9.dp, onActivate = { onClick() }, highlightColor = NavHighlight)
                     .clickable { onClick() }
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = text,
@@ -1532,12 +1562,14 @@ private fun GeneralSection(
             Spacer(Modifier.height(SettingItemGap))
             Box(
                 modifier = Modifier
+                    .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(AccentBlue.copy(alpha = 0.08f))
                     .border(1.dp, AccentBlue.copy(alpha = 0.2f), RoundedCornerShape(10.dp))
                     .paneNavItem(cornerRadius = 10.dp, onActivate = { callbacks.onAddToHomeScreen() }, highlightColor = NavHighlight)
                     .clickable { callbacks.onAddToHomeScreen() }
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -1562,8 +1594,6 @@ private fun GeneralSection(
         Spacer(Modifier.height(SettingSectionGap))
 
         SettingGroup {
-            val artworkPortrait = isPortraitLayout()
-
             val artworkLabel: @Composable () -> Unit = {
                 Text(
                     text = stringResource(R.string.shortcuts_library_artwork_title),
@@ -1577,12 +1607,14 @@ private fun GeneralSection(
             val scrapeButton: @Composable () -> Unit = {
                 Box(
                     modifier = Modifier
+                        .heightIn(min = 48.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(AccentBlue.copy(alpha = 0.08f))
                         .border(1.dp, AccentBlue.copy(alpha = 0.2f), RoundedCornerShape(10.dp))
                         .paneNavItem(cornerRadius = 10.dp, onActivate = { callbacks.onScrapeGameArtwork(state.name.value) }, highlightColor = NavHighlight)
                         .clickable { callbacks.onScrapeGameArtwork(state.name.value) }
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
@@ -1599,12 +1631,14 @@ private fun GeneralSection(
             val openSourceButton: @Composable () -> Unit = {
                 Box(
                     modifier = Modifier
+                        .heightIn(min = 48.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(AccentBlue.copy(alpha = 0.08f))
                         .border(1.dp, AccentBlue.copy(alpha = 0.2f), RoundedCornerShape(10.dp))
                         .paneNavItem(cornerRadius = 10.dp, onActivate = { callbacks.onOpenArtworkSource(state.name.value) }, highlightColor = NavHighlight)
                         .clickable { callbacks.onOpenArtworkSource(state.name.value) }
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -1625,24 +1659,12 @@ private fun GeneralSection(
                 }
             }
 
-            if (artworkPortrait) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    artworkLabel()
-                    Spacer(Modifier.height(8.dp))
-                    SettingPairRow(modifier = Modifier.fillMaxWidth()) {
-                        Box(Modifier.weight(1f)) { scrapeButton() }
-                        Box(Modifier.weight(1f)) { openSourceButton() }
-                    }
-                }
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    artworkLabel()
-                    scrapeButton()
-                    openSourceButton()
+            Column(modifier = Modifier.fillMaxWidth()) {
+                artworkLabel()
+                Spacer(Modifier.height(8.dp))
+                SettingPairRow(modifier = Modifier.fillMaxWidth()) {
+                    Box(Modifier.weight(1f)) { scrapeButton() }
+                    Box(Modifier.weight(1f)) { openSourceButton() }
                 }
             }
 

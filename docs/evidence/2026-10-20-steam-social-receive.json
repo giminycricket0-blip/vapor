@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-20",
+  "scope": "receive-only Steam Friends diagnostic; local component checks",
+  "source_sha256": {
+    "app/src/main/cpp/wn-steam-launcher/steam_friends_receive.h": "854d8d989efe076eeb6aae01f7303108876e635a3696f1f8bf0b94bcc313f464",
+    "app/src/main/cpp/wn-steam-launcher/tests/steam_friends_receive_test.cpp": "4cd0fe8389d72d05ebe8b0e7666b8ce20fd18fe6c852d14576899629c2d47dc3",
+    "app/src/main/cpp/wn-steam-launcher/src/iface_probe.cpp": "11fa03fe388ff51cf72aa027f3060e243a43df8cafd45189678a64f2d96adb4f",
+    ".github/workflows/pr-ci.yml": "138af95d9243593242cbb671d18ce786d4194641630d19615f72b46c3a8fbf8b"
+  },
+  "native_tests": {
+    "receiver_scenarios": 27,
+    "capability_scenarios": 15,
+    "sanitizers": [
+      "address",
+      "undefined"
+    ],
+    "receiver_log_sha256": "a6b2990848a40b877ab3bf45434aa051368860f71c747af9888a7f97882dbb82"
+  },
+  "cross_builds": [
+    {
+      "architecture": "x86_64",
+      "sha256": "65c6d03e4832a965cfffb69158c0e0a6d8f5d14c15c35f32e71169b5abda5dea",
+      "bytes": 84480,
+      "format": "PE32+ executable (console) x86-64, for MS Windows",
+      "executed": false
+    },
+    {
+      "architecture": "i686",
+      "sha256": "b104a86838daca74560b114bf019f49a5a51e81869f0edf8f88ffb229f3480ac",
+      "bytes": 78848,
+      "format": "PE32 executable (console) Intel 80386, for MS Windows",
+      "executed": false
+    }
+  ],
+  "packaged_assets_changed": false,
+  "apk_built": false,
+  "live_steam_tested": false,
+  "android_chat_integrated": false,
+  "pending": [
+    "Windows/Wine/FEX execution",
+    "authorized incoming live callback",
+    "Android event bridge and conversation identity contract"
+  ],
+  "primary_source": "https://github.com/ValveSoftware/Proton/tree/bc896217ffcd67f892f952b010f898fe7bd0f0a1/lsteamclient/steamworks_sdk_164"
+}

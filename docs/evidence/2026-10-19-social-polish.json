@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-19",
+  "base_commit": "4ce96ca06501d261565f257e7982b93acf24bf78",
+  "source_state": "Local changes; not committed or pushed",
+  "scope": "Native Friends and Chat presentation only; not live delivery, hardware qualification or release.",
+  "source_sha256": {
+    ".github/workflows/pr-ci.yml": "feced1832a46330cab7e06660ae5ea7a44f4f7fc737089e98568d0305f70967b",
+    "app/build.gradle": "e7972a2a457252dcd352122a1865c95db69a328850b33759b8dc16acb830ef6e",
+    "app/src/androidTest/kotlin/com/winlator/cmod/feature/stores/steam/friends/SteamChatUiTest.kt": "53f93497343ab7d5026bf42ec0665fbfcc04fa885383f2750cac98f9c3082f7c",
+    "app/src/main/app/shell/UnifiedActivityHub.kt": "5a92946520c24d04cfa409b673cf56eed55e97846316689d0bcbdf78a9d57271",
+    "app/src/main/feature/stores/steam/friends/FriendsDrawerContent.kt": "1cfed838bb1a8cf5aff16a9394013f15e4f647f338a8ad1cc2193f736c6adc50",
+    "app/src/main/feature/stores/steam/friends/SteamChatScreen.kt": "a14c2304739007fad936f3dfba356f76e769fe74e50e3885eb49f03af4077122",
+    "app/src/main/res/values/strings.xml": "9a50184a4bd04e1989579623cf8ba3633b6d4acafe14ec2821e6b3bffbbd9f63",
+    "app/src/test/kotlin/com/winlator/cmod/feature/stores/steam/friends/SteamSocialLayoutTest.kt": "5e9700abfb3abd6e92977adb62c4cfbfab4a88672f7d0dab556936ae4b7cce33"
+  },
+  "baseline": {
+    "layout_tests": 2,
+    "failures": 2,
+    "causes": [
+      "Account settings target smaller than 48 dp",
+      "Chat Settings had no scrolling parent"
+    ]
+  },
+  "verification": {
+    "command": "JAVA_HOME=/Users/cheng/.local/share/mise/installs/java/17 ./gradlew :app:testStandardDebugUnitTest --tests '*SteamSocialLayoutTest' --tests '*SteamConversationTest' --tests '*SteamChatServiceTest' :app:compileStandardDebugAndroidTestKotlin --max-workers=2 --console=plain",
+    "result": "passed",
+    "suites": [
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.friends.SteamSocialLayoutTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.friends.SteamConversationTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.service.SteamChatServiceTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "total": 22,
+    "android_ui_test_sources": "compiled, not executed",
+    "log_sha256": "1272e9cf24849cd02e4042c7d1be19b0be33a1394c7fdbd060b7cc4b7a5677e0",
+    "diff_check": "passed"
+  },
+  "renders": {
+    "method": "Production Android Compose views drawn into native Bitmap/Canvas under Robolectric SDK 35; sample or signed-out data only. Not APK, emulator or physical-phone captures.",
+    "checked": [
+      "Friends drawer",
+      "150% text settings before/after scroll",
+      "Short landscape settings after scroll",
+      "Wide/narrow message bubbles",
+      "Signed-out conversation with long name and 150% text"
+    ],
+    "retained": {
+      "docs/images/social-friends-portrait.png": "40b5d306d8bbb225f895822c69aab563f04507f785b531150511e3298c475f96",
+      "docs/images/social-settings-landscape.png": "17c59e0d8dcdefe9dbc588ffa582e5773cf76c388dd2270888331f77542fdbb9",
+      "docs/images/social-conversation-portrait.png": "2bcfa6d29371a196a0a4dfcea3284699bbca28f60231abb564f49ce06152f2ae"
+    }
+  },
+  "not_run": [
+    "APK assembly or installation",
+    "Device instrumentation tests",
+    "Live Steam authentication or messages",
+    "Physical-controller or TalkBack checks",
+    "Phone keyboard and surface lifecycle",
+    "Game performance or Cloud qualification"
+  ]
+}

@@ -34,7 +34,7 @@ class SteamChatUiTest {
         var signIns = 0
         compose.setContent { WinNativeTheme {
             FriendsDrawerContent(true, SteamFriend(), listOf(friend), emptySet(),
-                SteamChatAvailability.SIGNED_OUT, { signIns++ }, {}, {}, {}, {})
+                SteamChatAvailability.SIGNED_OUT, { signIns++ }, {}, {}, {}, {}, {})
         } }
         compose.onNodeWithText(label(R.string.vapor_friends_chat)).assertIsDisplayed()
         compose.onNodeWithText(friend.name).assertDoesNotExist()
@@ -48,7 +48,7 @@ class SteamChatUiTest {
         var opened = 0; var joined = 0
         compose.setContent { WinNativeTheme {
             FriendsDrawerContent(true, SteamFriend(), listOf(playing), setOf(440),
-                SteamChatAvailability.IN_GAME, {}, {}, { opened++ }, { joined++ }, { joined++ })
+                SteamChatAvailability.IN_GAME, {}, {}, { opened++ }, { joined++ }, { joined++ }, {})
         } }
         compose.onNodeWithText(label(R.string.vapor_chat_game_session)).assertIsDisplayed()
         compose.onNodeWithText(label(R.string.vapor_chat_last_known)).assertIsDisplayed()
@@ -62,7 +62,7 @@ class SteamChatUiTest {
         var opened = 0
         compose.setContent { WinNativeTheme {
             FriendsDrawerContent(true, SteamFriend(), listOf(friend), emptySet(),
-                SteamChatAvailability.READY, {}, {}, { opened++ }, {}, {})
+                SteamChatAvailability.READY, {}, {}, { opened++ }, {}, {}, {})
         } }
         compose.onNodeWithText(friend.name).performClick()
         compose.runOnIdle { assertEquals(1, opened) }

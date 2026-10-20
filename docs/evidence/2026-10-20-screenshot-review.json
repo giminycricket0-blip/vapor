@@ -1,0 +1,122 @@
+{
+  "date": "2026-10-20",
+  "base_commit": "4ce96ca06501d261565f257e7982b93acf24bf78",
+  "scope": "local UI screenshot documentation and genuine-session test availability",
+  "render_method": "Production Compose views rendered under Robolectric SDK35 native Canvas/Bitmap; sample or signed-out fixtures; not device captures",
+  "screenshots": [
+    {
+      "file": "docs/images/social-friends-portrait.png",
+      "sha256": "40b5d306d8bbb225f895822c69aab563f04507f785b531150511e3298c475f96",
+      "changed_from_previous_render": false,
+      "source_render": "app/build/reports/tests/social-polish/friends-portrait.png"
+    },
+    {
+      "file": "docs/images/social-conversation-portrait.png",
+      "sha256": "2bcfa6d29371a196a0a4dfcea3284699bbca28f60231abb564f49ce06152f2ae",
+      "changed_from_previous_render": false,
+      "source_render": "app/build/reports/tests/social-polish/conversation-portrait.png"
+    },
+    {
+      "file": "docs/images/social-settings-landscape.png",
+      "sha256": "17c59e0d8dcdefe9dbc588ffa582e5773cf76c388dd2270888331f77542fdbb9",
+      "changed_from_previous_render": false,
+      "source_render": "app/build/reports/tests/social-polish/settings-landscape.png"
+    },
+    {
+      "file": "docs/images/game-settings-compact.png",
+      "sha256": "258fb89bcb45670a22a80c36929fa099629d04b29bce82adbc2c784322e93097",
+      "changed_from_previous_render": false,
+      "source_render": "app/build/reports/tests/game-settings-polish/narrow-panel.png"
+    },
+    {
+      "file": "docs/images/game-settings-wide.png",
+      "sha256": "e07c246d7a32e1ff80ab582ecce0530f46b027313622babf1d1eb7914582c2c8",
+      "changed_from_previous_render": false,
+      "source_render": "app/build/reports/tests/game-settings-polish/wide-panel.png"
+    },
+    {
+      "file": "docs/images/game-settings-large-text.png",
+      "sha256": "166b2c08aaebaec286b819e096519745a508a9239a90c44c58ebd5fd7375721f",
+      "changed_from_previous_render": false,
+      "source_render": "app/build/reports/tests/game-settings-polish/portrait-large-text.png"
+    },
+    {
+      "file": "docs/images/controller-game-settings-compact.png",
+      "sha256": "9d81718f1a1ec3e086a8dbad7dff57fdf3f8161cf034936e9023d6354f9b1c8f",
+      "changed_from_previous_render": false,
+      "source_render": "app/build/reports/tests/game-settings-polish/controller-compact-strip.png"
+    },
+    {
+      "file": "docs/images/controller-game-settings-save.png",
+      "sha256": "7b1d8e812074040cda149e4073ac398db7a2ddd82961be0996414ff276724074",
+      "changed_from_previous_render": false,
+      "source_render": "app/build/reports/tests/game-settings-polish/controller-compact-save.png"
+    }
+  ],
+  "source_sha256": {
+    "app/src/main/feature/library/GameSettings.kt": "d85e3938c4df843b1d0b6c9d970af3b8447df8c0d5f574f710a90812159146cb",
+    "app/src/main/feature/stores/steam/friends/FriendsDrawerContent.kt": "1cfed838bb1a8cf5aff16a9394013f15e4f647f338a8ad1cc2193f736c6adc50",
+    "app/src/main/feature/stores/steam/friends/SteamChatScreen.kt": "a14c2304739007fad936f3dfba356f76e769fe74e50e3885eb49f03af4077122",
+    "app/src/test/kotlin/com/winlator/cmod/feature/library/GameSettingsLayoutTest.kt": "ad1f4cd0f98efc31268db2b93f0b1fb89dd37b4c5e3fd59cbcccd86f138ca2f8",
+    "app/src/test/kotlin/com/winlator/cmod/feature/stores/steam/friends/SteamSocialLayoutTest.kt": "5e9700abfb3abd6e92977adb62c4cfbfab4a88672f7d0dab556936ae4b7cce33"
+  },
+  "fresh_ui_verification": {
+    "command": "JAVA_HOME=<JDK17> ./gradlew :app:cleanTestStandardDebugUnitTest :app:testStandardDebugUnitTest --tests *GameSettingsLayoutTest --tests *GameSettingsNavTest --tests *SteamSocialLayoutTest --tests *SteamConversationTest --tests *SteamChatServiceTest :app:compileStandardDebugAndroidTestKotlin --max-workers=2 --console=plain",
+    "result": "passed",
+    "suites": [
+      {
+        "name": "com.winlator.cmod.feature.library.GameSettingsLayoutTest",
+        "tests": "15",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.winlator.cmod.feature.library.GameSettingsNavTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.friends.SteamSocialLayoutTest",
+        "tests": "8",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.friends.SteamConversationTest",
+        "tests": "8",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.winlator.cmod.feature.stores.steam.service.SteamChatServiceTest",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      }
+    ],
+    "total": 40,
+    "log_sha256": "f1e7fdeb043acec084d0392deb8bc9cad9a7da72ccafc3b18fbce0342886c66e",
+    "android_instrumentation": "sources compiled; not executed"
+  },
+  "environment": {
+    "adb_devices": "List of devices attached",
+    "wine_on_path": null,
+    "wine64_on_path": null
+  },
+  "genuine_session_executed": false,
+  "apk_assembled_or_installed": false,
+  "live_message_sent_or_received": false,
+  "pending": [
+    "live Friends callback through Wine/FEX",
+    "phone screenshots",
+    "physical gamepad",
+    "TalkBack",
+    "Android in-game event bridge"
+  ]
+}

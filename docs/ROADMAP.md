@@ -22,6 +22,311 @@ flowchart TD
     Wine --> Android[Android display, audio and controls]
 ```
 
+## Production parent-runner execution — 20 October 2026
+
+`tools/tests/steam-probe-parent-runtime.cpp` includes the existing launcher source
+with its entry point renamed, then directly calls its local `run_probe_exe` function.
+It does not invoke the genuine Steam startup entry point and does not duplicate or
+extract the process runner into another production abstraction. Logs go to files
+inside the isolated test directory rather than the prefix's ordinary launcher log.
+
+Seven cases exercise that exact function: normal result import with a seeded stale
+log, missing executable, invalid executable, a directory blocking the log path,
+command-length overflow, a continuously busy callback source, and a hung child
+with the actual 25-second deadline. The hot callback source never returns idle,
+so an unbounded drain would prevent the wait loop from completing. Its acquisitions
+and releases must match in batches of 64. Process enumeration checks no matching
+fixture child remains after each call.
+
+The timeout must log forced diagnostic termination and unconfirmed cleanup, confirm
+child exit, omit a shutdown completion audit, and return within the test's broad
+25–35 second correctness window. These intervals are timeout checks, not game
+loading, CPU, graphics or battery benchmarks. The marker-file selection and the
+whole authenticated Steam handoff remain separate from this direct function test.
+
+Build next to the already-built matching `probe.exe` and controlled API DLL:
+
+```sh
+x86_64-w64-mingw32-clang++ -std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter -static -mwindows -Iapp/src/main/cpp/wn-steam-launcher tools/tests/steam-probe-parent-runtime.cpp app/src/main/cpp/wn-steam-launcher/clean_shutdown.cpp -ladvapi32 -lkernel32 -luser32 -o parent.exe
+```
+
+Repeat with i686, then launch `parent.exe` through the prepared account-free
+container as with `integration.exe`. Require all seven case verdicts and final
+`result=PASS` in `parent.exe.result`. Actual emulator screenshots and the exact
+input/log hashes are recorded in the qualification evidence. CI cross-compiles
+this fixture with its existing MinGW installations; no Wine run is added to CI.
+
+## Production probe DLL boundary — 20 October 2026
+
+The next execution gate uses the **actual `iface_probe.cpp` executable**, not a
+second receiver implementation. `tools/tests/steam-social-fixture.cpp` builds a
+controlled public-API DLL, and `tools/tests/steam-social-probe-runtime.cpp` starts
+the production probe as a Windows child and checks its exit code, diagnostic log
+and fixture shutdown audit. These files are test-only; they must remain in an
+isolated Downloads test directory and must never replace a game's Steam DLL.
+
+The nine cases cover capability-only reads, a received entry, a quiet window,
+malformed callback rejection, listener-enable rejection, listener-disable failure,
+explicit event cancellation, a missing selected DLL, and forced termination of a
+stuck callback frame. Each acquired callback must be released, no sending export
+may be called, and the fixture's private message text must stay out of probe logs.
+This exercises the `SteamAPI_Init` fallback; the fixture does not export the
+internal initialization function and does not open a Valve session.
+
+### Cancellation found during execution
+
+Console-control attempts reported success from `GenerateConsoleCtrlEvent`, but
+the probe returned the ordinary quiet-window result. This reproduced with both
+targeted/broadcast event delivery and production-matching creation flags. The
+underlying Wine/FEX/console mechanism is not diagnosed. Console cancellation stays
+unqualified; the earlier failed trace and screenshot are preserved.
+
+The receive-only probe now creates a per-process named Windows event:
+`Local\VaporSocialProbeCancel-<Windows PID>`. A diagnostic parent can open it with
+`EVENT_MODIFY_STATE` and call `SetEvent`. The receiver's existing wait callback
+waits on it for 100 ms between dispatch ticks. Cancellation still flows through
+listener disable and Steam API shutdown. The event handle closes after shutdown;
+creation/collision/wait errors report failure. Console handling remains best-effort.
+This is a kernel object for diagnostic control, not a new Steam connection,
+persistent setting, background service, or Android chat bridge.
+
+The fixture driver requests this event after the DLL audit reports listening. Its
+hang case separately kills a child that cannot return from `RunFrame`, checks that
+the process exits with 124, and requires that no shutdown completion was recorded.
+**This does not execute the genuine host's parent wait loop**; that loop and its
+25-second deadline remain an independent integration gate.
+
+To reproduce, place these three matching-architecture outputs together in a
+new isolated directory (`steam_api.dll` for i686, `steam_api64.dll` for x86_64):
+
+```sh
+x86_64-w64-mingw32-clang++ -std=c++17 -O2 -Wall -Wextra -Werror -static -shared tools/tests/steam-social-fixture.cpp -o steam_api64.dll
+x86_64-w64-mingw32-clang++ -std=c++17 -O2 -Wall -Wextra -Werror -Wno-unused-parameter -static app/src/main/cpp/wn-steam-launcher/src/iface_probe.cpp -lkernel32 -lcrypt32 -liphlpapi -o probe.exe
+x86_64-w64-mingw32-clang++ -std=c++17 -O2 -Wall -Wextra -Werror -static -mwindows tools/tests/steam-social-probe-runtime.cpp -luser32 -o integration.exe
+```
+
+Copy the isolated directory to Downloads and launch `integration.exe` through the
+prepared container's `boot_exe` entry as in the receiver-contract instructions.
+The driver writes `integration.exe.result` and a `.log`/`.trace` per case beside
+it. Require all nine case verdicts plus final `result=PASS`; the GUI is only a
+summary. Its optional single argument selects one named case for diagnosis.
+The runtime files are test artifacts, not APK or game-library payloads.
+
+CI uses the already-installed MinGW toolchains to compile both test sources; it
+does not execute Wine or Steam. Results and exact input hashes belong in the
+[qualification record](QUALIFICATION.md#production-probe-controlled-dll-execution--20-october-2026).
+
+## Receiver contracts executed under Wine/FEX — 20 October 2026
+
+The receiver's existing 33 injected-export scenarios now execute as both x86 and
+x86_64 Windows PE programs through the emulator's normal display/runtime Activity.
+Both pass. This moves those contracts beyond host-native tests and cross-compilation;
+it does not test the genuine Steam API DLL or incoming network delivery.
+
+The small test-only entry point in `tools/tests/steam-friends-receive-runtime.cpp`
+reuses the same receiver test source. It redirects test output to `<exe>.result`
+and shows a 12-second Win32 summary window for an actual Android screenshot.
+Assertions remain enabled. Missing completion, an assertion abort or summary-window
+failure is not a pass. The fake reader was renamed to avoid MinGW's `read` overload;
+the receiver implementation did not change. CI now also cross-compiles this entry
+point using its existing MinGW toolchains; CI does not run it under Wine.
+
+Reproduce in an account-free prepared test container, using toolchains on PATH:
+
+```sh
+x86_64-w64-mingw32-clang++ -std=c++17 -O2 -Wall -Wextra -Werror -static -mwindows tools/tests/steam-friends-receive-runtime.cpp -luser32 -o steam-receiver-contracts-x86_64.exe
+i686-w64-mingw32-clang++ -std=c++17 -O2 -Wall -Wextra -Werror -static -mwindows tools/tests/steam-friends-receive-runtime.cpp -luser32 -o steam-receiver-contracts-i686.exe
+adb -s emulator-5554 shell mkdir -p /sdcard/Download/VaporSteamSocial20261020
+adb -s emulator-5554 push steam-receiver-contracts-x86_64.exe /sdcard/Download/VaporSteamSocial20261020/
+adb -s emulator-5554 push steam-receiver-contracts-i686.exe /sdcard/Download/VaporSteamSocial20261020/
+adb -s emulator-5554 shell am start -n app.vapor.android/com.winlator.cmod.runtime.display.XServerDisplayActivity --ei container_id 1 --es boot_exe 'D:\VaporSteamSocial20261020\steam-receiver-contracts-x86_64.exe'
+```
+
+Wait for the window to close and inspect the matching `.exe.result` for both the
+33-scenario line and `result=PASS`. Stop the fixture session, then repeat with the
+i686 executable. This requires the prepared container's D: drive to map Downloads
+and Steam launch to be disabled; do not run it in an active game session. Timings
+include boot and the summary timer and are not game-performance measurements.
+No runtime/driver configuration was written; the container bytes and four recorded
+FEX DLL/SO hashes were unchanged after both runs. The fixture session was stopped
+and Vapor was reopened to Home afterward.
+[Results and screenshots](QUALIFICATION.md#receiver-contracts-on-android-winefex--20-october-2026).
+
+The next boundary is loading a fixture DLL through the production probe, then a
+genuine Steam session. Windows process-runner timeout and console-control delivery
+are still separate checks; synthetic callback cancellation is already covered here.
+
+## Genuine-host diagnostic integration — 20 October 2026
+
+Plan and scope: extend the existing `C:\wn-iface-probe.on` diagnostic switch,
+reuse its child-process runner and host log, then test mode parsing and compile
+both host architectures. This prepares local instrumentation; it does not enable
+live chat or replace the Android conversation owner.
+
+The marker's text now selects the probe:
+
+| Marker content | Behavior |
+| --- | --- |
+| Empty or whitespace | Existing legacy interface diagnostic, including its original auth-ticket probes |
+| `social` | Read-only Friends capability mode |
+| `social-listen` | Receive-only observation window |
+| Anything else / unreadable / oversized | Report invalid marker and skip gameplay; never substitute legacy mode |
+
+This uses the existing marker, not another settings store. Remove it to restore
+normal launches. An opt-in diagnostic run skips gameplay even if its binary is
+missing or fails to start. Both existing architecture probes are attempted in
+sequence; the game API DLL for a missing architecture may report a load failure.
+The per-probe result is copied into the existing host log after normal exit.
+Previous per-probe logs are removed before execution, so a failed run cannot be
+mistaken for an earlier result.
+
+The host pumps its own callback pipe between 100 ms process waits. Each iteration
+is capped at 64 callbacks and the process wait deadline is 25 seconds per probe.
+An expired/failed wait requests termination, waits up to two more seconds, and
+reports cleanup as unconfirmed; a failed termination/exit confirmation is logged
+explicitly. This is not a claim of a graceful Steam shutdown. Child-process and
+console behavior still require Windows/Wine/FEX execution testing.
+
+Local gates: 13 mode-parser scenarios, 33 receiver scenarios and 15 capability
+scenarios under ASan/UBSan; cross-build x86/x86_64 host components outside APK
+assets. No APK packaging or live Steam operation is part of this step.
+
+## Passive Friends receive diagnostic — 20 October 2026
+
+The same interface probe now accepts `--social-listen` in place of `--social`:
+
+```text
+wn-iface-probe.exe "C:\path\to\game" <AppID> "C:\social-receive.log" --social-listen
+```
+
+This is a diagnostic for a matching game API DLL and an already-running genuine
+Steam host, not an Android chat feature. It opens no separate Steam protocol login.
+It exclusively uses manual callback dispatch in its own process; it must not be
+merged into a process using `SteamAPI_RunCallbacks` without revisiting ownership.
+The observation has 100 ticks with 100 ms sleeps (nominally ten seconds, plus API
+work), draining at most 64 callbacks per tick. Each acquired callback is released.
+The receiver reads only valid Friends-message callbacks for its user, counts
+ordinary chat reads, and disables interception before the caller shuts down Steam.
+It never resolves reply/send exports and never logs message contents or friend IDs.
+
+The callback envelope and event layout follow the Windows pack(8) ABI in Valve's
+[pinned SDK internal declarations](https://github.com/ValveSoftware/Proton/blob/bc896217ffcd67f892f952b010f898fe7bd0f0a1/lsteamclient/steamworks_sdk_164/steam_api_internal.h)
+and [Friends declarations](https://github.com/ValveSoftware/Proton/blob/bc896217ffcd67f892f952b010f898fe7bd0f0a1/lsteamclient/steamworks_sdk_164/isteamfriends.h).
+A callback message index remains local to this API; it is not a CM timestamp or
+ordinal, and successful reading does not establish outgoing acknowledgement.
+
+- Exit 0 / `receive_observed`: at least one ordinary message was read.
+- Exit 9 / `receive_window_no_message`: none was read during this window; this is
+  inconclusive, not proof that the account cannot receive messages.
+- Exit 10 / `receive_callbacks_rejected`: callbacks arrived but no ordinary
+  message could be read successfully; inspect the rejected count.
+- Exit 11 / `receive_cancelled`: the explicit cancellation event or console
+  handler interrupted observation; listener disable still ran. Cleanup failure
+  takes precedence. Console delivery is not qualified on this Wine/FEX setup.
+- Exit 8: missing receive exports, unavailable session, rejected listener,
+  failed listener disable, or unavailable/failed cancellation event. Shared
+  file/init/argument failures retain their codes. Social modes require a shutdown
+  export before API initialization, so normal cleanup is available.
+
+The next gate remains running this probe under Wine/FEX against a genuine session
+and an authorized incoming test message. Only then should the existing Android
+conversation owner receive a native event bridge. No second connection, persistent
+chat queue or outgoing transport has been added. The opt-in existing-marker
+launch integration is described above; normal game launches do not enable it.
+
+## Native Steam social capability step — 20 October 2026
+
+This starts the in-game social lane through the existing genuine-session path.
+`wn-libsteamclient`'s Friends chat methods are stubs; their names do not establish
+working message transport. The resident genuine host has a callback pump, but no
+current native Friends-message command/event bridge to the Android conversation.
+
+### Prior Art and decision
+
+**Extend the existing `wn-iface-probe`, rather than add another Steam connection.**
+The selected game already supplies its original Steam API DLL, and the probe
+already initializes that API against a running client. Valve documents
+[Friends-message callbacks](https://partner.steamgames.com/doc/api/ISteamFriends#SetListenForFriendsMessages),
+with message reads in response to those callbacks and a separate reply method.
+The [SDK flat API declarations](https://github.com/ValveSoftware/Proton/blob/bc896217ffcd67f892f952b010f898fe7bd0f0a1/lsteamclient/steamworks_sdk_164/steam_api_flat.h)
+provide a public binding route without adding client-build-specific vtable offsets.
+No new dependency, background service, account, chat database or transport is added.
+
+### Implemented first step
+
+The probe has an explicit `--social` mode after its existing game-directory,
+AppID and log arguments. Use the directory containing that game's original
+`steam_api64.dll` or `steam_api.dll`, and the matching probe architecture. The
+mode refuses to substitute an API DLL from the general DLL search path if the
+selected file cannot load. A too-long selected DLL path is reported as a failure.
+The usual host launch does not enable this mode automatically.
+
+This mode resolves the public Friends accessor (v018, or v017 when absent), reads
+the ordinary-Friends count, and reports the availability of listener, message,
+reply and manual-dispatch exports. It neither enables listening nor reads/sends
+messages. It omits the legacy probe's certificate import, other DLL probes,
+auth-ticket requests and ticket/hardware logging. The original diagnostic mode
+retains its existing behavior. No Android Steam reconnect or login is requested.
+
+| Probe result | Meaning |
+| --- | --- |
+| Exit 0: `exports_present_delivery_unverified` | A Friends count query succeeded and candidate exports exist; no chat delivery is established. |
+| Exit 6 | A required accessor/read export is missing, the interface is unavailable, or the Friends query reports no connected session. |
+| Exit 7 | Friends are readable, but candidate chat/manual-callback exports are incomplete. |
+| Exit 1/2/3/4/64 | Log/file/init/argument failure; inspect the diagnostic instead of treating it as a supported transport. |
+
+Missing flat exports identify a limitation of this probe/API-DLL combination,
+not proof that the phone or Steam itself cannot support chat. A zero count is a
+valid read result, not a fully populated Friends-list or message-delivery proof.
+
+### Local result and next proof
+
+Fifteen injected-export scenarios pass with AddressSanitizer and UndefinedBehaviorSanitizer.
+The x86 and x86_64 Windows probes compile with warnings treated as errors. The
+binaries are staged outside APK assets; no APK or bundled runtime was changed.
+No ADB device is currently connected, and no live Steam session was used.
+See [native evidence](QUALIFICATION.md#native-steam-social-probe--20-october-2026).
+
+The next bounded proof is receiving one genuine Friends callback through a
+single selected callback-dispatch mechanism, without reconnecting Android's CM
+client or logging message contents. Valve's
+[manual-dispatch contract](https://github.com/ValveSoftware/Proton/blob/bc896217ffcd67f892f952b010f898fe7bd0f0a1/lsteamclient/steamworks_sdk_164/steam_api.h)
+prohibits mixing it with the regular Steam API callback dispatcher. The existing
+host callback loop must not be replaced speculatively.
+
+Before native chat is enabled, handle the identity mismatch explicitly: the
+public game callback provides a friend/message index, while Vapor's CM chat
+history uses server timestamp/ordinal identities. Do not manufacture server
+identities or clear a draft merely because a local reply call returned. Native
+UI events, acknowledgement/history reconciliation, exit cleanup and a deliberate
+live send/reply remain separate implementation and qualification steps.
+
+## Settings controller continuation — 20 October 2026
+
+The compact editor's section strip now uses Left/Right, with Up to its action row
+and Down/A into the form. Wide sidebar directions remain unchanged. Resizing,
+selected-page return, first-input focus and loaded-state Save protection are checked
+through the existing navigator. The combined local batch passes 40 focused JVM
+tests; Android UI test sources compile. Physical gamepads/key-repeat, phone UX and
+APK checks remain separate. See [input evidence](UI-UX.md#game-settings-controller-navigation--20-october-2026).
+
+## Game settings UI continuation — 19 October 2026
+
+The existing editor now adapts to its own width and text scale: compact navigation,
+a separate game heading, paired-field reflow and readable artwork actions extend
+the current state and persistence owners. Wide windows retain the sidebar. Nine new
+layout checks and 22 social regressions pass locally; Android UI test sources compile.
+APK/device and physical-controller checks remain deferred. See [UI evidence](UI-UX.md#game-settings-layout--19-october-2026).
+
+## Friends and Chat UI continuation — 19 October 2026
+
+The social panels now share the Steam-focused shell palette, readable scrolling
+settings, 48 dp account/close targets and responsive conversation widths. Eight
+account-free production-layout checks and 14 existing conversation/service checks
+pass locally; Android UI test sources compile. No APK/device run or live Steam
+message was used. Physical controllers, phone keyboard lifecycle, TalkBack and
+live delivery remain qualification work. See [UI evidence](UI-UX.md#friends-and-chat-presentation--19-october-2026).
+
 ## Setup and sign-in continuation — 18 October 2026
 
 The native first-run screens now share Vapor's shell branding and measured layout.

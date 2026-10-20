@@ -1,12 +1,261 @@
 # Vapor: UI and app work first
 
-Updated 18 October 2026. Home and the Library carousel now share a native cover shelf,
+Updated 20 October 2026. Home and the Library carousel now share a native cover shelf,
 with selection and game actions in place. Store search suppresses repeated spelling prompts
 and preserves the current results during connection recovery. Branding uses the same artwork in the standard
 APK and native shell. The preceding passes improve page navigation, Home,
 Downloads and Quick Access with consistent spacing and reachable large-text actions. Steam remains
 the main experience; optional storefronts remain in Settings → More stores. Gameplay reports and
 account qualification remain separately recorded in [QUALIFICATION.md](QUALIFICATION.md).
+
+## Parent-runner fixture capture — 20 October 2026
+
+The [parent-runner qualification](QUALIFICATION.md#production-parent-runner-execution--20-october-2026)
+adds actual emulator captures of the launcher runner's seven-case x64 verdict
+and passing i686 retry.
+It is a diagnostic summary, not a user-facing chat or gameplay screen. The initial i686
+startup timeout is recorded separately from both passing executions.
+
+## Production DLL probe screenshots — 20 October 2026
+
+The production interface probe now passes nine controlled-DLL process cases in
+both Windows architectures under the Android runtime. Its actual emulator summary
+screens, original console-cancellation failure and exact evidence are linked from
+[qualification](QUALIFICATION.md#production-probe-controlled-dll-execution--20-october-2026).
+These are diagnostic fixture windows, not a Steam conversation or shipped UI.
+
+## Windows receiver fixture screenshots — 20 October 2026
+
+Both Windows receiver-contract executables ran inside the actual Android Wine/FEX
+display host and displayed their results. These are synthetic callback fixtures,
+not Steam conversations or a new product screen. See the
+[execution results and both screenshots](QUALIFICATION.md#receiver-contracts-on-android-winefex--20-october-2026).
+The earlier UI captures below remain a separate Android presentation check.
+
+## Actual emulator review — 20 October 2026
+
+The existing **Vapor_UI_API36 ARM64 Android 16 emulator** was booted after the
+earlier availability check. The current local UI APK and test APK were built and
+installed without wiping app data. The installed APK SHA-256 matches the assembled
+APK. This supersedes the earlier “no device connected” limitation for Android UI
+checks; it does not establish a genuine Steam session.
+
+**Eight Android instrumentation tests passed** in `SteamChatUiTest` (46.128 s):
+signed-out drawer, cached in-game status, ready-Friends conversation callback,
+offline draft editing/send blocking, failed-send draft retention and explicit retry,
+no automatic send across handoff/reconnect, keyboard action, and narrow/large-text
+composer. Message handlers are fixtures: no real Steam message was sent.
+
+Manual navigation covered Home → Friends → Chat Settings → close → Store → search.
+The Store populated and `Portal` returned 130 results including Portal and Portal 2;
+the query survived keyboard dismissal. This is an observed search result, not a
+network latency, cache recovery or full-catalog qualification test.
+
+These five images are **actual ADB screenshots of the installed application**, at
+1080 × 2400. The account is signed out. They are separate from the sample renders
+in the following section.
+
+<img src="images/emulator-20261020-home.png" width="300" alt="Actual Android emulator screenshot: signed-out Vapor Home" />
+<img src="images/emulator-20261020-friends.png" width="300" alt="Actual Android emulator screenshot: signed-out Friends drawer" />
+
+<img src="images/emulator-20261020-chat-settings.png" width="300" alt="Actual Android emulator screenshot: Chat Settings modal over the Friends drawer" />
+<img src="images/emulator-20261020-store.png" width="300" alt="Actual Android emulator screenshot: populated native Steam Store" />
+
+<img src="images/emulator-20261020-search.png" width="300" alt="Actual Android emulator screenshot: Portal search returns Portal and Portal 2" />
+
+The build still targets SDK 28 and this emulator uses 4 KB pages. The new social
+host/probe source has not replaced the APK's bundled runtime assets. These tests
+therefore qualify the current UI, not the new native diagnostic under Wine/FEX.
+Live Friends receipt, genuine-session handoff, Cloud transfers, physical controls
+and Snapdragon performance remain separate. The emulator is left running.
+[Build, installation, test and screenshot receipt](evidence/2026-10-20-emulator-social.json).
+
+## Screenshot review — 20 October 2026
+
+These eight images show **production Android Compose views rendered locally with
+Robolectric native Canvas/Bitmap**, using sample or signed-out state. They are not
+phone/emulator screenshots, live Steam sessions, or evidence of message delivery.
+Empty driver/profile selectors belong to the fixtures; they do not describe an
+installed device. Earlier phone gameplay evidence remains in
+[QUALIFICATION.md](QUALIFICATION.md), separate from this layout review.
+
+| View | What this documents | Remaining device check |
+| --- | --- | --- |
+| Friends drawer | Shared Vapor mark, account card, close action, sample friend row | Live personas, avatar loading and message arrival |
+| Conversation | Long-name truncation, empty state and disconnected composer | Keyboard/insets, real conversation and delivery |
+| Chat settings | Scrollable settings in short landscape; explanation that chat pauses during genuine-host gameplay | Phone scrolling, TalkBack and actual session transitions |
+| Compact game settings | Full-width heading/actions and horizontal section rail | Phone sizing and touch acceptance |
+| Wide game settings | Sidebar with form/artwork actions | Tablet/handheld sizing |
+| Large-text game settings | 150% text, wrapping actions and scrolling content | Device font scale and TalkBack |
+| Controller section focus | Highlight on compact Graphics section | Physical D-pad/key-repeat delivery |
+| Controller Save focus | Highlight on Save above selected Input Controls section | Physical gamepad activation and persistence |
+
+### Friends and conversation
+
+<img src="images/social-friends-portrait.png" width="300" alt="Local Compose render: Friends drawer with one sample online friend and signed-out account" />
+<img src="images/social-conversation-portrait.png" width="300" alt="Local Compose render: signed-out empty conversation with a long friend name" />
+
+### Chat settings in short landscape
+
+![Local Compose render: scrolled Chat Settings showing gameplay suspension explanation](images/social-settings-landscape.png)
+
+### Compact and wide game settings
+
+![Local Compose render: compact game settings with horizontal sections](images/game-settings-compact.png)
+
+![Local Compose render: wide game settings with vertical sidebar](images/game-settings-wide.png)
+
+### Large text and controller focus
+
+<img src="images/game-settings-large-text.png" width="300" alt="Local Compose render: compact settings at 150 percent text scale" />
+
+![Local Compose render: controller focus on Graphics in the compact section strip](images/controller-game-settings-compact.png)
+
+![Local Compose render: controller focus on Save above the selected Input Controls section](images/controller-game-settings-save.png)
+
+A fresh 20 October run executed all **40 selected JVM/Compose tests**, with zero
+failures, errors or skips, and compiled Android instrumentation sources. All eight
+regenerated PNG hashes match the earlier retained renders. Device instrumentation
+was not executed.
+
+The corresponding layout/interaction records are
+[Friends and Chat](evidence/2026-10-19-social-polish.json),
+[game settings](evidence/2026-10-19-game-settings-polish.json), and
+[controller navigation](evidence/2026-10-20-settings-controller.json).
+The [documentation receipt](evidence/2026-10-20-screenshot-review.json) records
+this review's images and source hashes. Screenshots demonstrate the rendered
+state; assertions and test receipts carry the interaction checks.
+
+### Steam social implementation behind these screens
+
+The Android conversation still uses its existing native Steam service. While the
+genuine game host owns Steam, that service's chat connection remains suspended.
+The new receive-only probe is diagnostic instrumentation, **not a live overlay
+chat bridge**. The implementation is documented in the
+[host integration](ROADMAP.md#genuine-host-diagnostic-integration--20-october-2026),
+[capability receipt](evidence/2026-10-20-steam-social-probe.json),
+[receive receipt](evidence/2026-10-20-steam-social-receive.json),
+[cleanup receipt](evidence/2026-10-20-steam-social-receive-cleanup.json), and
+[host receipt](evidence/2026-10-20-steam-social-host.json).
+
+At the earlier 20 October availability snapshot, ADB reported no connected device and neither `wine` nor `wine64`
+was available on this Mac's command path. No device session, Steam login, outgoing
+message, APK assembly/install or runtime replacement was performed for this
+review. The later emulator review above adds Android UI captures; no genuine-session
+screenshot is available yet.
+
+## Game settings controller navigation — 20 October 2026
+
+Directional input now follows the existing editor's measured layout. The compact
+horizontal section strip previously used the vertical sidebar's rules: Right
+entered the form instead of selecting the next section, and Up could not reach
+the action row above it. Both failures were reproduced with production Compose
+views before changing the existing `GameSettingsNav` owner.
+
+| Focus | Compact editor controls |
+| --- | --- |
+| Section strip | Left/Right changes section and stops at either end; Down or A enters the form; Up reaches Save/Cancel. |
+| Save/Cancel | Left/Right changes action; A activates it; Down returns to the selected section. |
+| Form | Existing field navigation remains active; Up at its first navigation row returns to the section strip. |
+
+Wide editors retain Down/Up through the sidebar and Right into the form. The
+renderer supplies layout and selected-page bindings to the same navigator; no new
+controller service, preference or persistence owner was added. First controller
+input still reveals focus without activating an action. The existing loaded-state
+guard blocks Save through both touch and controller input. The separate retro
+editor retains the navigator's default vertical behavior.
+
+Local verification covers six new Compose cases and three navigation cases,
+alongside the previous 31 checks: **40 focused JVM tests passed**, with no
+failures/errors/skips. It includes returning from the first form control, retaining
+the selected section after action-row navigation, refusing Save before loading,
+and changing directional behavior after resizing. Android UI test sources compile.
+The CI selection includes the new navigation suite locally.
+
+These checks inject directional events into the same navigator used by the dialog's
+window input handlers. They do not establish physical gamepad delivery, Android
+key-repeat behavior, TalkBack or phone acceptance. No APK was assembled or installed.
+The renders use production Compose views with account-free sample/preloaded state.
+[Verification receipt](evidence/2026-10-20-settings-controller.json).
+
+![Controller focus on Save above the compact section strip](images/controller-game-settings-save.png)
+
+[Controller focus on the Graphics section](images/controller-game-settings-compact.png).
+
+## Game settings layout — 19 October 2026
+
+The existing per-game editor now chooses its compact navigation from the editor's
+available width and text scale, rather than the Activity's orientation. A narrow
+landscape dialog no longer spends 220 dp on a sidebar. Wide editors retain their
+sidebar, while compact editors have a full-width game heading, the shared Vapor
+mark, equal-width Save/Cancel actions and the existing scrolling section rail.
+Save waits for the existing loaded state and keeps its existing callback.
+
+Paired fields also use the width available inside their own group, so controls
+stack when sidebar, padding or larger text leave insufficient room. The artwork
+heading stays above its actions. General-page home/artwork actions have centered
+content and at least 48 dp targets. The Save button can grow with its label instead
+of enforcing an exact height. This pass does not change graphics defaults,
+automatic routing, runtime components, stored profiles or persistence ownership.
+
+**Local verification:** nine new production Compose layout checks passed, alongside
+the previous 22 Friends/Chat checks (**31 total**, no failures/errors/skips). They
+cover narrow panels inside wide windows, the wide sidebar, 150% text, Save/Cancel
+callbacks and loaded-state gating, Graphics/Input navigation, paired-field reflow,
+resizing with an unsaved draft, and General artwork action sizes. Android UI test
+sources compile; device instrumentation was not run. The original narrow-panel
+check failed against the orientation-based layout before the fix.
+
+These are account-free Robolectric/Canvas renders of production views using sample
+state, including empty device/profile lists. The Graphics navigation fixture uses
+a preloaded missing-shader state; native shader discovery is not exercised by the
+JVM test. Phone keyboard behavior, physical gamepads, TalkBack and owner acceptance
+remain separate checks. No APK was assembled or installed.
+[Verification receipt](evidence/2026-10-19-game-settings-polish.json).
+
+![Compact game settings panel with sample data](images/game-settings-compact.png)
+
+[Wide editor](images/game-settings-wide.png) ·
+[300 dp editor with 150% text](images/game-settings-large-text.png)
+
+## Friends and Chat presentation — 19 October 2026
+
+The native Friends drawer and conversation now use Vapor's shared shell colors.
+Friends keeps a branded header and explicit 48 dp close action above one scrolling
+account/contact area. Account settings and presence controls use 48 dp buttons;
+missing avatars have a person placeholder and a presence ring. Existing cached-status,
+sign-in and game-session availability rules remain in force.
+
+Chat Settings uses one readable column, capped at 640 dp, with a fixed header and
+scrolling options. The full setting row toggles its existing preference. Settings
+remain reachable with 150% text and in a short landscape window. Controller row
+coordinates follow the new single-column order through the existing pane navigator.
+
+The conversation panel respects safe drawing and keyboard insets, caps its width
+at 800 dp and keeps a 48 dp close action. Long names truncate after two lines;
+message bubbles adapt to 85% of available width, capped at 480 dp. The empty-state
+message has centered text and internal padding. Sending, history, authentication,
+Steam session ownership and Cloud synchronization retain their existing owners.
+
+**Local verification:** 22 focused JVM checks passed: eight production Compose layout
+checks under Robolectric, eight conversation tests and six service tests. The Android
+UI test sources compile; they were not run on a device. Two baseline layout checks
+failed before the fix (undersized account settings target and no settings scroll parent).
+The existing CI test selection now includes these three suites and retains renders
+inside its existing test-report artifact. No new app-runtime dependency was added;
+the JVM checks reuse the Compose UI test library already used by Android tests.
+
+The images below are native Canvas renders of production Compose views under
+Robolectric using sample/offline data. They are not Xiaomi or emulator captures.
+The conversation stress case deliberately uses a long name and 150% text.
+Live messaging, physical-controller and TalkBack behavior, keyboard lifecycle on a
+phone, and owner acceptance remain pending. No APK was assembled or installed for
+this pass. [Source and test receipt](evidence/2026-10-19-social-polish.json).
+
+![Friends drawer with sample offline account and sample contact](images/social-friends-portrait.png)
+
+[Large-text conversation](images/social-conversation-portrait.png) ·
+[Short landscape settings after scrolling](images/social-settings-landscape.png)
 
 ## Downloads and completed installs — 18 October 2026
 

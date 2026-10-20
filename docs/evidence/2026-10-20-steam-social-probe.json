@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-20",
+  "base_commit": "4ce96ca06501d261565f257e7982b93acf24bf78",
+  "source_state": "Local uncommitted changes; previous UI work preserved; no push or remote CI run.",
+  "scope": "Read-only native Steam Friends export/interface probe. No Android chat transport, live Steam delivery, host lifetime change or runtime qualification.",
+  "source_sha256": {
+    "app/src/main/cpp/wn-steam-launcher/src/iface_probe.cpp": "e01e60cb6f913c220ef509e4d99e49517d8e0504ba67daf4214e95aceaea0d41",
+    "app/src/main/cpp/wn-steam-launcher/steam_friends_probe.h": "837dcfccfdbfaf8d0605f0754d23e97c8e25820376be63652c72f6345c7ba165",
+    "app/src/main/cpp/wn-steam-launcher/tests/steam_friends_probe_test.cpp": "faf47ead3b393638eef205e57efb2eb6a34c87f78088631c735488f44e635650",
+    ".github/workflows/pr-ci.yml": "e323efaf9e5f507ca0055ba1738126b7750dd846eea158ca416d01965f24d236"
+  },
+  "prior_art": {
+    "decision": "Extend the existing wn-iface-probe through public Steam API exports. Do not use legacy Friends stubs as a working transport or introduce another CM login.",
+    "valve_proton_commit": "bc896217ffcd67f892f952b010f898fe7bd0f0a1",
+    "sdk_folder": "lsteamclient/steamworks_sdk_164",
+    "sources": [
+      "https://partner.steamgames.com/doc/api/ISteamFriends",
+      "https://github.com/ValveSoftware/Proton/blob/bc896217ffcd67f892f952b010f898fe7bd0f0a1/lsteamclient/steamworks_sdk_164/steam_api_flat.h",
+      "https://github.com/ValveSoftware/Proton/blob/bc896217ffcd67f892f952b010f898fe7bd0f0a1/lsteamclient/steamworks_sdk_164/steam_api.h"
+    ]
+  },
+  "native_test": {
+    "command": "c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g app/src/main/cpp/wn-steam-launcher/tests/steam_friends_probe_test.cpp -o ../steam-social-proof/steam-friends-probe-test; ../steam-social-proof/steam-friends-probe-test",
+    "result": "passed",
+    "scenarios": 15,
+    "log_sha256": "6e3d05e4faa08d18ca6a4f5147e663eb86792a3d2f712f218bdc8942efc8f546",
+    "symbols": "Injected fixture exports; no genuine Valve library loaded.",
+    "no_mutating_calls": true,
+    "note": "Assertions verify that listener, callback-pump, message-read and reply exports are never invoked. Only accessor/count fixture functions run."
+  },
+  "cross_compile": {
+    "toolchain": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/tools/llvm-mingw-20261006-ucrt-macos-universal",
+    "compiler": "clang version 23.1.3 (https://github.com/llvm/llvm-project.git 0d261d1ca552c95a8f007e061c787ac7132fbcbc)",
+    "command_template": "<toolchain>/<arch>-w64-mingw32-clang++ -std=c++17 -O2 -Wall -Wextra -Werror -Wno-unused-parameter -static -o <stage>/wn-iface-probe-<arch>.exe src/iface_probe.cpp -lkernel32 -lcrypt32 -liphlpapi",
+    "working_directory": "app/src/main/cpp/wn-steam-launcher",
+    "staged_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/steam-social-proof",
+    "artifacts": {
+      "wn-iface-probe-x86_64.exe": {
+        "bytes": 82432,
+        "sha256": "dbdb10a57fbf2821ca19f68a5f1e48c6678cc55b36aad13231845a833e264546",
+        "format": "PE32+ executable (console) x86-64, for MS Windows",
+        "build_result": "passed, warnings treated as errors",
+        "executed": false
+      },
+      "wn-iface-probe-i686.exe": {
+        "bytes": 77312,
+        "sha256": "42fbc00d8edafb16783c2efae0883e9579acd964a2398668199280c0d091893f",
+        "format": "PE32 executable (console) Intel 80386, for MS Windows",
+        "build_result": "passed, warnings treated as errors",
+        "executed": false
+      }
+    }
+  },
+  "packaging": "Staged outside app assets. No bundled probe, runtime, APK or game file replaced.",
+  "diff_check": "passed",
+  "not_run": [
+    "Windows/Wine/FEX execution of PE outputs",
+    "Genuine Steam API initialization or Friends query",
+    "Active game and CM-session coexistence",
+    "Incoming-message callbacks or outgoing delivery",
+    "Android native social bridge",
+    "Live Steam Cloud or achievement checks",
+    "APK build/install or device qualification"
+  ],
+  "next_gate": "Read-only capability proof on an existing genuine-host session, then a passive callback proof using a single dispatcher. Resolve callback message-index vs CM server timestamp/ordinal identities before enabling native chat."
+}

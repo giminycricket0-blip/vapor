@@ -58,6 +58,39 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 
 </details>
 
+## Latest development work
+
+The latest UI pass makes Friends, Chat and per-game settings more consistent with
+Vapor’s handheld interface: shared branding, reachable close actions, larger touch
+targets, scrollable chat settings, and layouts that adapt to narrow screens and
+larger text. Compact game settings use a horizontal section rail with controller
+navigation; wide layouts retain their sidebar.
+
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/images/emulator-20261020-friends.png" alt="Signed-out Friends drawer in the installed Android app" width="240"></td>
+    <td align="center" width="33%"><img src="docs/images/emulator-20261020-chat-settings.png" alt="Chat settings modal in the installed Android app" width="240"></td>
+    <td align="center" width="33%"><img src="docs/images/emulator-20261020-search.png" alt="Native Steam Store search showing Portal results" width="240"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Friends drawer</sub></td>
+    <td align="center"><sub>Chat settings</sub></td>
+    <td align="center"><sub>Steam catalog search</sub></td>
+  </tr>
+</table>
+
+*Actual signed-out Android emulator captures, 20 October 2026. The UI build passes
+8 selected Android instrumentation tests and 40 selected JVM/Compose tests.
+[Layouts, controller-focus previews and screenshot gallery](docs/UI-UX.md#actual-emulator-review--20-october-2026). Physical-controller and live-account checks remain pending.*
+
+Native Steam social diagnostics now also have controlled Windows DLL and process
+execution checks inside Android Wine/FEX, in both 32-bit and 64-bit guests. These
+exercise callback handling, cancellation, cleanup and timeouts without sending
+messages or loading Valve libraries. **They are groundwork for genuine-host
+social integration, not proof of live in-game chat.** The diagnostic source has
+not replaced the runtime bundled in the tested UI APK.
+[Native execution evidence and limits](docs/QUALIFICATION.md#production-parent-runner-execution--20-october-2026).
+
 ## Games running on the Xiaomi
 
 ![Ghostrunner Demo gameplay on the Xiaomi 17 Pro, extracted from the supplied phone video](docs/images/ghostrunner-demo-xiaomi.jpg)
@@ -95,7 +128,7 @@ on the phone. [Investigation](docs/QUALIFICATION.md#onimusha-way-of-the-sword-de
 | **Local gameplay** | Xiaomi 17 Pro / Snapdragon 8 Elite Gen 5 reports cover Europa Universalis III, Team Fortress 2 training, You Have to Win the Game, Helltaker, and Ghostrunner Demo. Sound is reported; Ghostrunner Demo has visible hitching. | Repeatable game/device settings, longer sessions, measured comparisons, and the full reference-device matrix. |
 | **Steam session** | Account-connected TF2 training works through the genuine-client launch path. Original game Steam API libraries are retained. | Inventory / Game Coordinator traces, counted playtime, and online multiplayer. |
 | **Steam Cloud** | One confirmed Ghostrunner Demo upload contains two files. Exit-sync guards and recovery have local regression coverage. | Remote restore/reopen and reliable repeated uploads; intermittent phone exit timeouts remain open. |
-| **Friends, Chat, Achievements** | Native screens, request states, refresh, message acknowledgements, and session-ownership handling have local coverage. | Live message delivery and newly earned achievements reaching Steam. |
+| **Friends, Chat, Achievements** | Native screens, request states, refresh, message acknowledgements, and session-ownership handling have local coverage; the latest UI has emulator checks. Controlled native receiver diagnostics run under Wine/FEX. | Live message delivery, in-game Android chat integration, and newly earned achievements reaching Steam. |
 | **Store and controls** | Public Store recovery, native UI layouts, and injected controller navigation pass local checks. | Authenticated free/demo and paid flows, live web sign-in, physical controllers, and phone UX acceptance. |
 | **Android platform** | ARM64 development APK; minimum Android 10. **39/39** APK native libraries and ZIP packaging pass 16 KB alignment. Native TLS/probe checks and startup pass on 4 KB / 16 KB emulators. | Modern target SDK 36 and complete Wine/FEX gameplay on 16 KB kernels. The current build targets SDK **28** and compiles against **35**. |
 
@@ -104,7 +137,17 @@ on the phone. [Investigation](docs/QUALIFICATION.md#onimusha-way-of-the-sword-de
 
 <br>
 
-The latest automatic-graphics development build passes **79 selected JVM tests**
+The 20 October UI pass passes **8 selected Android instrumentation tests** and
+**40 selected JVM/Compose tests**. These cover Friends/Chat states, responsive
+settings and injected controller navigation. Native contract suites pass **61
+cases** (15 capability, 33 receiver and 13 mode-parser cases). Under emulator
+Wine/FEX, each Windows architecture passes the 33 receiver scenarios, 9
+controlled-DLL scenarios and 7 production parent-runner scenarios. The first
+32-bit parent-fixture startup timed out before producing a result; an unchanged
+retry passed. These are bounded fixture checks, not real Steam delivery or a
+whole-project test total. [Latest qualification](docs/QUALIFICATION.md#production-parent-runner-execution--20-october-2026).
+
+The earlier automatic-graphics development build passes **79 selected JVM tests**
 and **39 emulator checks** (34 Compose and 5 native GPU-probe cases). Guided Steam
 launches can try eligible installed graphics combinations after specific Vulkan
 startup failures, with clean Steam/Cloud teardown, visible cancellation and at most
@@ -167,6 +210,11 @@ flowchart LR
 1. **Browse and download.** Compose talks to the Android Steam service and native `wn-steam-client` through JNI. Authentication, library metadata, manifests, and depot downloads work without a Wine/FEX game session.
 2. **Play.** The service hands account ownership to the genuine host derived from WinNative’s `steamlite-handoff`. Valve client libraries provide the game’s Steam session and Steamworks IPC alongside Bionic Wine/FEX, without starting the desktop Steam browser UI in this path.
 3. **Exit.** The host attempts Cloud synchronization, logs off, and returns ownership to the Android service. Reserved close-time work blocks removal. A timeout or offline exit is never reported as a successful upload.
+
+During genuine-host gameplay, the Android Steam connection is intentionally
+suspended. Friends status can be cached and the native chat interface does not
+yet provide a qualified live in-game connection. Native receive diagnostics are
+being tested separately before integration into that session lifecycle.
 
 Depot chunk decoding is native Rust; the Android UI/service and JNI bridges also use managed memory. Comparative speed, RAM, and garbage-collection gains have **not** been benchmarked. FEX translates PC instructions, including applicable host code; the whole runtime is not native ARM code.
 

@@ -711,6 +711,7 @@ internal fun UnifiedActivity.UnifiedHub() {
             ) {
                 com.winlator.cmod.feature.stores.steam.friends.FriendsDrawerContent(
                     isOpen = rightDrawerState.isOpen,
+                    onDismiss = { scope.launch { rightDrawerState.close() } },
                     self = persona ?: com.winlator.cmod.feature.stores.steam.data.SteamFriend(),
                     friends = friends,
                     installedGameIds = installedFriendGameIds,
