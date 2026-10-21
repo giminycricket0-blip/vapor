@@ -241,6 +241,10 @@ host-CPU fallback (encoded) runs, and the host-CPU path corrupts partial edge
 blocks for out-of-spec non-block-aligned copy extents. Neither is an app defect and
 neither is claimed as a conformance failure.
 [Extended receipt](evidence/2026-10-21-vulkan-wrapper-reference-extended.json).
+The same extended families also pass on the Android 17/API 37 16 KB emulator
+(43/43 default matrix plus 66 extended passes and 28 recorded robustness cases,
+`page_size=16384`), and both suspected defects reproduce there.
+[16 KB extended receipt](evidence/2026-10-21-vulkan-wrapper-reference-16k-extended.json).
 
 These are software-Vulkan, synthetic-data results: no Adreno/KGSL driver, physical
 GPU, sampling/rendering pipeline, mip/array/sRGB variants, validation layers or

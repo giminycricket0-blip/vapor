@@ -202,6 +202,9 @@ host-CPU path corrupts partial edge blocks for out-of-spec non-block-aligned cop
 extents. The extended tool also fixes a missing `re` import in the first-pass
 revision while keeping the default matrix/format names.
 [Extended receipt](../../docs/evidence/2026-10-21-vulkan-wrapper-reference-extended.json).
+The same extended families also pass on the 16 KB Android 17/API 37 emulator
+(page_size=16384), where both suspected defects reproduce.
+[16 KB extended receipt](../../docs/evidence/2026-10-21-vulkan-wrapper-reference-16k-extended.json).
 
 ## Android build and limits
 
