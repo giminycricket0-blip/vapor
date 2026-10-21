@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-21",
+  "scope": "Same-machine clean-rebuild reproducibility check of the fully native standard debug APK; entry-set/content/ordering/alignment/signing comparison of the build committed at 95ecbf62 versus one clean rebuild of the same source state.",
+  "base_commit": "95ecbf62ace30988411f6f65de4f513632a395fc",
+  "method": {
+    "source_apk": {
+      "path": "app/build/outputs/apk/standard/debug/standard.apk",
+      "sha256": "889bc3bce50446fa412a1d8eb54389af81f74b0d947fe26b4b52e128a6918fe1",
+      "bytes": 684926636,
+      "built_by": "native-rebuild task-5 (2026-10-21T19:12:42+01:00), fully native rebuild after cargo clean"
+    },
+    "rebuild_steps": [
+      "export PATH=\"$HOME/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin:$PATH\"",
+      "(cd app/src/main/cpp/wn-steam-client/rust && cargo clean)",
+      "rm -rf app/.cxx/Debug/3j72j675 app/build/intermediates/cxx/Debug/3j72j675",
+      "./gradlew :app:assembleStandardDebug --max-workers=4 --console=plain --no-configuration-cache"
+    ],
+    "rebuild_apk": {
+      "path": "/tmp/apk-repro/rebuild1.apk",
+      "sha256": "7a6b7384f45dbf3288a638400d67e3b13edce03212258436dcd402abf1840b9c",
+      "bytes": 689801608,
+      "built_at_local": "2026-10-21T20:19:06+01:00",
+      "gradle_result": "BUILD SUCCESSFUL in 6m 43s (13 executed, 97 up-to-date)",
+      "log": "/tmp/apk-repro/build1.log",
+      "log_sha256": "8c171f1f9987f1d75f1bbc2f3bf0555f9d96ac58529043931bc051a6f76eaf9a"
+    },
+    "source_apk_preserved_copy": {
+      "path": "/tmp/apk-repro/source/standard.apk",
+      "sha256": "889bc3bce50446fa412a1d8eb54389af81f74b0d947fe26b4b52e128a6918fe1"
+    }
+  },
+  "result": {
+    "byte_identical": false,
+    "apk_size_delta_bytes": 4874972,
+    "entry_count_source": 1638,
+    "entry_count_rebuild": 1638,
+    "entry_names_identical": true,
+    "entry_uncompressed_sizes_identical": true,
+    "entries_with_differing_crc": [
+      "classes16.dex",
+      "classes23.dex",
+      "classes30.dex",
+      "lib/arm64-v8a/libcrypto.so"
+    ],
+    "local_entry_order_identical": false,
+    "first_local_order_difference_index": 8,
+    "padding_source": {
+      "file_bytes": 684926636,
+      "entries": 1638,
+      "inter_entry_padding_total": 8694220,
+      "nonzero_padding_gaps": 11,
+      "signing_block_gap": 4096,
+      "central_directory_bytes": 151046,
+      "cd_offset": 684775568
+    },
+    "padding_rebuild": {
+      "file_bytes": 689801608,
+      "entries": 1638,
+      "inter_entry_padding_total": 13569179,
+      "nonzero_padding_gaps": 15,
+      "signing_block_gap": 4096,
+      "central_directory_bytes": 151046,
+      "cd_offset": 689650540
+    },
+    "signing": {
+      "scheme": "APK Signature Scheme v2 (debug certificate)",
+      "certificate_sha256": "7e122c925e37a47696abc9b111ec747872061cb1d686eb7be9880cfafa4a93f1",
+      "same_cert": true,
+      "apksigner_verify": "both APKs verify",
+      "zipalign_check_16k": "both APKs pass zipalign -c -P 16 -v 4"
+    }
+  },
+  "content_differences": [
+    {
+      "entry": "classes16.dex",
+      "bytes": 4874928,
+      "source_crc": "0x8900e679",
+      "rebuild_crc": "0x32499686",
+      "observation": "same uncompressed size, different content hash/CRC; consistent with non-deterministic dex merging/ordering",
+      "source_sha256": "1337fd2c94a6ddc2585b75c268c93b0fd18c5e0c8612243f1b602de8102fd9bd",
+      "rebuild_sha256": "95938537286ba42b5375e3f72d6aa6e552ec83c718f1fc7913c5f542165698d4"
+    },
+    {
+      "entry": "classes23.dex",
+      "bytes": 522248,
+      "observation": "same uncompressed size, different content hash/CRC",
+      "source_crc": "0x5159fa1",
+      "rebuild_crc": "0xbae9ea59",
+      "source_sha256": "7708822f075308a1ce792c511bc121ebb093b8a0693c4b6116d31c7d6b1a315a",
+      "rebuild_sha256": "58d02a306b06dd028763fd8e92ebfa8c9c90189714d99dedcb4e41675fb11725"
+    },
+    {
+      "entry": "classes30.dex",
+      "bytes": 555012,
+      "observation": "same uncompressed size, different content hash/CRC",
+      "source_crc": "0xbf6fb0ea",
+      "rebuild_crc": "0x50a6df62",
+      "source_sha256": "553471d7a88e209f49587eab889250de417665fc21c86d4999411e91c0bf9402",
+      "rebuild_sha256": "e175b0bd99d7630ef2dea69b8b144f3c5a74588f2621d9e251240d63844b4f3e"
+    },
+    {
+      "entry": "lib/arm64-v8a/libcrypto.so",
+      "bytes": 2647040,
+      "observation": "same uncompressed size, 53,645 differing bytes between the two builds (source-vs-rebuild), consistent with non-deterministic native build metadata/build-id; root cause not isolated",
+      "source_crc": "0xaa5dea57",
+      "rebuild_crc": "0x4433bfd5",
+      "source_sha256": "ef86863230ad7eec92e948c5abcddf0694b0470eb9650952f0e2f45063295693",
+      "rebuild_sha256": "63f5a7a39e9119ba163bc4532c5ee40f46e39bd0817428431817c093ec87feb9"
+    }
+  ],
+  "conclusion": "A clean rebuild of the identical source state on the same machine is NOT byte-for-byte reproducible: the APK differs in size, in four entry contents (three dex files and libcrypto.so) and in ZIP local-entry ordering/alignment padding, while the entry set, uncompressed sizes, signing scheme/certificate and 16 KB alignment validity are unchanged. Byte-for-byte APK reproducibility across machines is therefore not established; the differences are localized to non-deterministic dex/native-build content plus packaging order/padding.",
+  "limitations": [
+    "Two builds on one machine only; no cross-machine/cross-JDK comparison.",
+    "libcrypto.so byte differences were not root-caused (build-id/timestamps/compiler nondeterminism candidates); no file-level investigation beyond byte-count.",
+    "The APK is debug-signed; release signing and distribution reproducibility are not covered.",
+    "No functional equivalence claim beyond identical entry set and identical uncompressed sizes.",
+    "The rebuild used the same source tree and did not change app/Gradle inputs; only caches were cleared."
+  ],
+  "raw_artifacts": {
+    "directory": "/tmp/apk-repro",
+    "files": [
+      "source/standard.apk",
+      "source/androidTest.apk",
+      "rebuild1.apk",
+      "build1.log",
+      "cargo-clean.log"
+    ],
+    "note": "local scratch outside the repository"
+  },
+  "no_overclaims": "This receipt records build-output non-determinism only. It does not claim a functional defect, a release-signing result, or reproducibility on another machine."
+}

@@ -1,0 +1,1463 @@
+{
+  "date": "2026-10-21",
+  "scope": "Live end-to-end EmuReady app journey on an Android emulator plus live error/edge-shape validation of the reader's endpoints. Signed-out Steam only; no settings applied, no game launched, no purchase, no Steam sign-in, no repo source changes.",
+  "base_commit": "95ecbf62ace30988411f6f65de4f513632a395fc",
+  "branch": "Vapor",
+  "worktree_state": {
+    "at_start": "clean per the task brief (HEAD 95ecbf62); this agent had no local modifications",
+    "this_task_added": [
+      "docs/evidence/2026-10-21-emuready-live-app-journey.json (this receipt)",
+      "docs/images/emuready-live-app-2026-10-21-catalog-action.png",
+      "docs/images/emuready-live-app-2026-10-21-reports.png",
+      "docs/images/emuready-live-app-2026-10-21-settings.png",
+      "docs/images/emuready-live-app-2026-10-21-no-entry.png"
+    ],
+    "concurrent_activity_note": "Other teammates were editing the same shared worktree during this pass (git status showed modified docs/BUILDING.md, docs/QUALIFICATION.md, docs/ROADMAP.md, tools/tests/vulkan-wrapper-reference.c/.py, tools/vulkan-wrapper/README.md and new evidence JSONs from concurrent work). None of those files were created or modified by this task.",
+    "committed": false
+  },
+  "apk_under_test": {
+    "stable_copy": "/tmp/apk-repro/source/standard.apk",
+    "sha256": "889bc3bce50446fa412a1d8eb54389af81f74b0d947fe26b4b52e128a6918fe1",
+    "bytes": 684926636,
+    "local_copy_installed_from": "/tmp/live-app/standard.apk (byte copy, same sha256)",
+    "device_base_apk": "/data/app/~~WvIQFs-SNBpWBbHd4Hr9Og==/app.vapor.android-tBNHo_k4QP-rxrGASxkDmg==/base.apk",
+    "device_base_apk_sha256": "889bc3bce50446fa412a1d8eb54389af81f74b0d947fe26b4b52e128a6918fe1",
+    "package": "app.vapor.android",
+    "versionName": "0.1.0-dev",
+    "versionCode": 1,
+    "minSdk": 29,
+    "targetSdk": 28,
+    "note": "Installed bytes match the stable APK copy exactly (device sha256sum of base.apk)."
+  },
+  "emulator": {
+    "assigned_avd_and_port": "Vapor_API_36 on port 5562",
+    "actual_avd_used": "Vapor_API_36_live (authorized one-off clone; same system image and device profile, distinct AVD name so the concurrent instance did not conflict)",
+    "clone_creation": "/Users/cheng/Library/Android/sdk/cmdline-tools/latest/bin/avdmanager create avd -n Vapor_API_36_live -k \"system-images;android-36;google_apis;arm64-v8a\" -d pixel_7 --force",
+    "clone_config_patches": [
+      "hw.ramSize=3072 (config)",
+      "disk.dataPartition.size=10G",
+      "hw.gpu.enabled=no",
+      "hw.gpu.mode=auto",
+      "hw.keyboard=yes"
+    ],
+    "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_API_36_live -port 5562 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 4 -partition-size 12000",
+    "memory_flag_note": "The briefed -memory 3072 was lowered to 2048 on the Lead's instruction because three emulators were sharing a 16 GB host.",
+    "serial": "emulator-5562",
+    "android_release": "16",
+    "api_level": 36,
+    "model": "sdk_gphone64_arm64",
+    "build_fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+    "abi": "arm64-v8a",
+    "display": "1080x2400 @ 420 dpi physical; the app ran in landscape (display rotation ROTATION_90 => 2400x1080 screenshots)",
+    "guest_mem_total": "2,531,868 kB (~2.4 GiB)",
+    "data_partition": "~11 GiB free after install",
+    "boot_time": "43.8 s to sys.boot_completed",
+    "other_emulators": "ports 5558/5560 were used by concurrent teammates; not touched. adb devices showed only emulator-5562 for this task.",
+    "blocker_and_resolution": {
+      "problem": "AVD Vapor_API_36 was already running non-read-only on port 5560 by a concurrent teammate; the emulator refused a second instance of that AVD on 5562 (plain and -read-only attempts: 'Another emulator instance is running...'). The assignment reserved 5562 but forbade touching 5558/5560.",
+      "resolution": "Lead authorized a one-off clone AVD from the same system image on port 5562; documented in the emulator-5562-first-attempt.log and emulator-5562.log.",
+      "logs": [
+        {
+          "path": "/Users/cheng/emuready-live-app-journey/emulator-5562-first-attempt.log",
+          "sha256": "52841817561546944864cd9cd595bd1fc78207feeae00cf447f8270872d3f359",
+          "bytes": 1021,
+          "role": "first attempt refused (same-AVD conflict)"
+        },
+        {
+          "path": "/Users/cheng/emuready-live-app-journey/emulator-5562.log",
+          "sha256": "62c5a631bce7879f0538358e6c160b9317d059854a1eadd8b4b7525eeff71c4c",
+          "bytes": 8426,
+          "role": "successful clone boot log"
+        }
+      ]
+    },
+    "teardown": "adb -s emulator-5562 emu kill -> 'OK: killing emulator, bye bye'; adb devices then showed no attached device for this task.",
+    "clone_cleanup": "The one-off clone AVD (5.3 GB) was removed after the pass to reclaim disk; the creation and boot commands above remain sufficient to recreate it."
+  },
+  "part_a_live_error_and_edge_shapes": {
+    "method": "curl against the app's exact mobile endpoints, using the app's effective OkHttp default User-Agent (okhttp/5.3.2) and a browser UA control; raw bodies saved outside the repo.",
+    "environment": {
+      "user_agents": {
+        "okhttp": "okhttp/5.3.2",
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+      },
+      "accept_header": "*/*",
+      "http": "HTTP/2 via Cloudflare edge (-LIS)"
+    },
+    "rate_limit_observations": {
+      "headers": "x-ratelimit-limit: 100 and x-ratelimit-window: 180000 on app-shaped and 400-error responses",
+      "x_ratelimit_remaining": "not present in any response",
+      "429_seen": false,
+      "request_volume": "11 Part A probes + 3 cross-check requests; the app itself made about 7 EmuReady requests during the journey (2 per reports modal open: batch + listings.get or title-search fallback; 1 per settings tap: listings.byId; 2 for the Team Fortress 2 no-entry lookup)"
+    },
+    "probes": [
+      {
+        "id": "okhttp_batch220",
+        "procedure": "games.batchBySteamAppIds",
+        "input": {
+          "steamAppIds": [
+            "220"
+          ],
+          "maxListingsPerGame": 1,
+          "minimal": false
+        },
+        "user_agent": "okhttp/5.3.2",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%22220%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+        "http_status": 200,
+        "content_type": "application/json",
+        "bytes": 11503,
+        "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/okhttp_batch220.json",
+        "response_headers_of_interest": {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-window": "180000",
+          "server": "cloudflare",
+          "cf-ray": "a4e27700f94b8e38-LIS",
+          "content-type": "application/json"
+        },
+        "observed_shape": {
+          "envelope": "result.data.json",
+          "success": true,
+          "results_count": 1,
+          "row": {
+            "steamAppId": "220 (JSON string)",
+            "matchStrategy": "exact",
+            "game": {
+              "title": "Half-Life 2",
+              "system.key": "microsoft_windows",
+              "status": "APPROVED",
+              "id": "89cf7540-e0b9-4fc0-ab7a-8b7edcd35a8a (UUID)",
+              "metadata": null
+            }
+          }
+        },
+        "parser_classification": {
+          "exception": null,
+          "reader_path": "request() succeeds; envelope()/success/results parse; selectGame(matchedBySteamAppId=true) accepts the Windows row",
+          "ui_state": "live reports path (no error state)"
+        },
+        "note": "Byte-identical (same sha256) to the browser-UA control below; OkHttp 5.3.2's default User-Agent is accepted by the mobile path."
+      },
+      {
+        "id": "browser_batch220",
+        "procedure": "games.batchBySteamAppIds",
+        "input": {
+          "steamAppIds": [
+            "220"
+          ],
+          "maxListingsPerGame": 1,
+          "minimal": false
+        },
+        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%22220%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+        "http_status": 200,
+        "content_type": "application/json",
+        "bytes": 11503,
+        "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/browser_batch220.json",
+        "response_headers_of_interest": {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-window": "180000",
+          "server": "cloudflare",
+          "cf-ray": "a4e27712393d3b29-LIS",
+          "content-type": "application/json"
+        },
+        "observed_shape": {
+          "envelope": "result.data.json",
+          "success": true,
+          "results_count": 1
+        },
+        "parser_classification": {
+          "exception": null,
+          "reader_path": "same as okhttp_batch220",
+          "ui_state": "live reports path"
+        },
+        "note": "Control: browser UA returns the identical payload."
+      },
+      {
+        "id": "okhttp_gamesget_portal",
+        "procedure": "games.get",
+        "input": {
+          "search": "Portal",
+          "page": 1,
+          "limit": 20
+        },
+        "user_agent": "okhttp/5.3.2",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Portal%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+        "http_status": 200,
+        "content_type": "application/json",
+        "bytes": 6030,
+        "sha256": "96c6d71961daf7ba4b5d436204288b1b83f647d53b6cf9902e9b7f7434b4278e",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/okhttp_gamesget_portal.json",
+        "response_headers_of_interest": {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-window": "180000",
+          "server": "cloudflare",
+          "cf-ray": "a4e2771a69024610-LIS",
+          "content-type": "application/json"
+        },
+        "observed_shape": {
+          "envelope": "result.data.json",
+          "games_count": 9,
+          "pagination": {
+            "total": 9,
+            "page": 1,
+            "limit": 20,
+            "hasNextPage": false
+          }
+        },
+        "parser_classification": {
+          "exception": null,
+          "reader_path": "games array + pagination parse; selectGame filters platforms",
+          "ui_state": "title-fallback path usable"
+        },
+        "note": "Exercises the fallback procedure with the OkHttp UA."
+      },
+      {
+        "id": "edge_missing_input",
+        "procedure": "games.batchBySteamAppIds",
+        "input": "<absent>",
+        "user_agent": "okhttp/5.3.2",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds",
+        "http_status": 400,
+        "content_type": "application/json",
+        "bytes": 362,
+        "sha256": "26c50ec80d595f99ac4e1400a444e79146c957497bd3b85f2d42cda1b4b522fd",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_missing_input.json",
+        "response_headers_of_interest": {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-window": "180000",
+          "server": "cloudflare",
+          "cf-ray": "a4e2773f2a9251bd-LIS",
+          "content-type": "application/json"
+        },
+        "observed_shape": {
+          "body": {
+            "error": {
+              "json": {
+                "code": -32600,
+                "message": "[{...code: invalid_type, expected: object, received: undefined...}]",
+                "data_code": "BAD_REQUEST",
+                "httpStatus": 400
+              }
+            }
+          }
+        },
+        "parser_classification": {
+          "exception": "IOException",
+          "reader_path": "request() line 153: !isSuccessful -> IOException(\"EmuReady request failed with HTTP 400\")",
+          "ui_state": "failed=true -> string vapor_community_unavailable (\"Could not reach EmuReady…\")"
+        },
+        "note": "No ?input parameter at all. The service answered with a trpc BAD_REQUEST JSON body; the reader treats any non-2xx as a network-level failure by design."
+      },
+      {
+        "id": "edge_unknown_procedure",
+        "procedure": "games.doesNotExist",
+        "input": {
+          "steamAppIds": [
+            "220"
+          ],
+          "maxListingsPerGame": 1,
+          "minimal": false
+        },
+        "user_agent": "okhttp/5.3.2",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/games.doesNotExist?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%22220%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+        "http_status": 404,
+        "content_type": "application/json",
+        "bytes": 201,
+        "sha256": "d4a80705f2b0a9f587357cb134f1118362c19638f73db2f3b3e1c61f66c3407b",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_unknown_procedure.json",
+        "response_headers_of_interest": {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-window": "180000",
+          "server": "cloudflare",
+          "cf-ray": "a4e27758cdbae6de-LIS",
+          "content-type": "application/json"
+        },
+        "observed_shape": {
+          "body": {
+            "error": {
+              "json": {
+                "code": -32004,
+                "message": "No procedure found on path \"games.doesNotExist\"",
+                "data_code": "NOT_FOUND",
+                "httpStatus": 404
+              }
+            }
+          }
+        },
+        "parser_classification": {
+          "exception": "IOException",
+          "reader_path": "request() line 153: HTTP 404 -> IOException",
+          "ui_state": "failed=true -> \"Could not reach EmuReady…\""
+        },
+        "note": "Unknown trpc procedure; HTTP 404 with a JSON error envelope (not result.data.json)."
+      },
+      {
+        "id": "edge_malformed_input",
+        "procedure": "games.batchBySteamAppIds",
+        "input": "not-json{",
+        "user_agent": "okhttp/5.3.2",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=not-json%7B",
+        "http_status": 400,
+        "content_type": "application/json",
+        "bytes": 213,
+        "sha256": "8ba61bf3b74aef3ccda4590afae8b0b613af6885a0fa00030012edc9bbde934e",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_malformed_input.json",
+        "response_headers_of_interest": {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-window": "180000",
+          "server": "cloudflare",
+          "cf-ray": "a4e27768acfdcef8-LIS",
+          "content-type": "application/json"
+        },
+        "observed_shape": {
+          "body": {
+            "error": {
+              "json": {
+                "code": -32600,
+                "message": "Unexpected token 'o', \"not-json{\" is not valid JSON",
+                "data_code": "BAD_REQUEST",
+                "httpStatus": 400
+              }
+            }
+          }
+        },
+        "parser_classification": {
+          "exception": "IOException",
+          "reader_path": "request() line 153: HTTP 400 -> IOException",
+          "ui_state": "failed=true -> \"Could not reach EmuReady…\""
+        },
+        "note": "Malformed `input` JSON (sent raw, not JSON-encoded)."
+      },
+      {
+        "id": "edge_wrong_types",
+        "procedure": "games.batchBySteamAppIds",
+        "input": {
+          "steamAppIds": "220",
+          "maxListingsPerGame": 1,
+          "minimal": false
+        },
+        "user_agent": "okhttp/5.3.2",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%22220%22%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+        "http_status": 400,
+        "content_type": "application/json",
+        "bytes": 449,
+        "sha256": "ec6dc7b95c39cee18173791857c89e758cf0ce9bf2e24b70e7ce3e9fbe986919",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_wrong_types.json",
+        "response_headers_of_interest": {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-window": "180000",
+          "server": "cloudflare",
+          "cf-ray": "a4e27770cd3294ad-LIS",
+          "content-type": "application/json"
+        },
+        "observed_shape": {
+          "body": {
+            "error": {
+              "json": {
+                "code": -32600,
+                "message": "[...invalid_type, expected: array, received: string, path: [steamAppIds]...]",
+                "data_code": "BAD_REQUEST",
+                "httpStatus": 400
+              }
+            }
+          }
+        },
+        "parser_classification": {
+          "exception": "IOException",
+          "reader_path": "HTTP 400 -> IOException",
+          "ui_state": "failed=true"
+        },
+        "note": "Valid JSON but wrong inner types; server-side zod validation rejects with 400."
+      },
+      {
+        "id": "edge_empty_json",
+        "procedure": "games.batchBySteamAppIds",
+        "input": {},
+        "user_agent": "okhttp/5.3.2",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%7D%7D",
+        "http_status": 400,
+        "content_type": "application/json",
+        "bytes": 406,
+        "sha256": "4c3050d6da0dbf2f865987deebc16e07223d9d9cc79c48953135c87187adc40a",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_empty_json.json",
+        "response_headers_of_interest": {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-window": "180000",
+          "server": "cloudflare",
+          "cf-ray": "a4e27778bfcf5816-LIS",
+          "content-type": "application/json"
+        },
+        "observed_shape": {
+          "body": {
+            "error": {
+              "json": {
+                "code": -32600,
+                "message": "[...invalid_type, expected: array, received: undefined, path: [steamAppIds]...]",
+                "data_code": "BAD_REQUEST",
+                "httpStatus": 400
+              }
+            }
+          }
+        },
+        "parser_classification": {
+          "exception": "IOException",
+          "reader_path": "HTTP 400 -> IOException",
+          "ui_state": "failed=true"
+        },
+        "note": "Empty json object; required steamAppIds missing."
+      },
+      {
+        "id": "edge_unknown_gameid",
+        "procedure": "listings.get",
+        "input": {
+          "gameIds": [
+            "00000000-0000-4000-8000-000000000000"
+          ],
+          "page": 1,
+          "limit": 20
+        },
+        "user_agent": "okhttp/5.3.2",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/listings.get?input=%7B%22json%22%3A%7B%22gameIds%22%3A%5B%2200000000-0000-4000-8000-000000000000%22%5D%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+        "http_status": 200,
+        "content_type": "application/json",
+        "bytes": 154,
+        "sha256": "1a13a56c58b007e9a6a471db1a04cf74a48b550bfde780bec902be429ac6a165",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_unknown_gameid.json",
+        "response_headers_of_interest": {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-window": "180000",
+          "server": "cloudflare",
+          "cf-ray": "a4e277815c628672-LIS",
+          "content-type": "application/json"
+        },
+        "observed_shape": {
+          "envelope": "result.data.json",
+          "listings": [],
+          "pagination": {
+            "total": 0,
+            "page": 1,
+            "limit": 20,
+            "pages": 0,
+            "hasNextPage": false,
+            "hasPreviousPage": false
+          }
+        },
+        "parser_classification": {
+          "exception": null,
+          "reader_path": "valid envelope; empty listings array parses to a page with no reports",
+          "ui_state": "no exception; empty page handled"
+        },
+        "note": "Valid-shaped but unknown gameId UUID: HTTP 200 with an empty page, not an error. Only the shape matters to the reader, not id existence."
+      },
+      {
+        "id": "oversized_12k",
+        "procedure": "games.get",
+        "input": {
+          "search": "<12,000 x 'A'>",
+          "page": 1,
+          "limit": 20
+        },
+        "user_agent": "okhttp/5.3.2",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+        "http_status": 400,
+        "content_type": "application/json",
+        "bytes": 483,
+        "sha256": "697523e6d1a27ebb66f0084058142aaeae033a648f90f5444618400163bfd550",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/oversized_12k.json",
+        "response_headers_of_interest": {
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-window": "180000",
+          "server": "cloudflare",
+          "cf-ray": "a4e277a43f480da4-LIS",
+          "content-type": "application/json"
+        },
+        "observed_shape": {
+          "body": {
+            "error": {
+              "json": {
+                "code": -32600,
+                "message": "[...too_big, maximum: 100, path: [search]...]",
+                "data_code": "BAD_REQUEST",
+                "httpStatus": 400
+              }
+            }
+          }
+        },
+        "parser_classification": {
+          "exception": "IOException",
+          "reader_path": "HTTP 400 -> IOException",
+          "ui_state": "failed=true"
+        },
+        "note": "URL accepted (~12.1 KB) but the server validates search max length 100 and returns 400. The reader itself caps the title at 100 chars before the fallback search, so this input cannot come from the app's title path."
+      },
+      {
+        "id": "oversized_40k",
+        "procedure": "games.get",
+        "input": {
+          "search": "<40,000 x 'A'>",
+          "page": 1,
+          "limit": 20
+        },
+        "user_agent": "okhttp/5.3.2",
+        "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+        "http_status": 431,
+        "content_type": null,
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/oversized_40k.json",
+        "response_headers_of_interest": {
+          "server": "cloudflare",
+          "cf-ray": "a4e277ac4cd09817-LIS"
+        },
+        "observed_shape": {
+          "body": "<empty>"
+        },
+        "parser_classification": {
+          "exception": "IOException",
+          "reader_path": "request() line 153: HTTP 431 -> IOException",
+          "ui_state": "failed=true"
+        },
+        "note": "~40.1 KB URL is rejected by the Cloudflare edge with 431 Request Header Fields Too Large and an empty body, before the trpc validation layer."
+      }
+    ],
+    "parser_classification_map": {
+      "non_2xx_http_status": {
+        "reader_path": "EmuReady.request() line 153: if (!response.isSuccessful) throw IOException(\"EmuReady request failed with HTTP <code>\")",
+        "ui_effect": "CommunityReportsButton catches Exception -> failed=true -> string vapor_community_unavailable: 'Could not reach EmuReady. You can still play your game…'",
+        "live_examples": [
+          "missing input -> 400",
+          "unknown procedure -> 404",
+          "malformed JSON -> 400",
+          "wrong types -> 400",
+          "empty json -> 400",
+          "oversized search 12k -> 400",
+          "oversized URL 40k -> 431"
+        ],
+        "nuance": "These are HTTP-level failures by design even when the body is a structured trpc error; the UI wording is the network-failure wording, and no unexpected-response wording appears."
+      },
+      "200_with_envelope_result_data_json": {
+        "reader_path": "EmuReady.envelope() lines 132-134: payload.result.data.json",
+        "ui_effect": "normal data rendering (or an empty page / empty reports state)",
+        "live_examples": [
+          "batch/listings/listings.byId probes",
+          "unknown-but-valid gameId -> empty listings page (no exception)"
+        ]
+      },
+      "200_with_broken_or_missing_envelope": {
+        "reader_path": "envelope() throws UnexpectedResponseException; also >2 MiB body -> UnexpectedResponseException",
+        "ui_effect": "unexpected=true -> string vapor_community_unexpected: 'EmuReady returned a response this app does not understand…'",
+        "observed_live": false,
+        "grounding": "Not producible with the public procedures: every 200 response was valid result.data.json. Branch grounded in code lines 132-134 and committed tests (CommunityReportsUiTest.anUnexpectedResponseHasItsOwnWordingSeparateFromAConnectionError)."
+      }
+    },
+    "conclusions": [
+      "The mobile path accepts OkHttp 5.3.2's default UA exactly as the app sends it (200, payload byte-identical to the browser-UA control).",
+      "No header/UA workaround is needed by the app; the earlier 403 in docs/QUALIFICATION.md was the desktop path /api/trpc (origin/session gate), not the mobile path (see the earlier re-check receipt).",
+      "Every malformed/oversized input the server rejects is an HTTP non-2xx status, so the reader reports it as the connection-error state; only a 200 body that breaks the envelope reaches the unexpected-response state, and that state was not observable live."
+    ],
+    "counts": {
+      "probes_total": 11,
+      "http_200": 4,
+      "http_400": 5,
+      "http_404": 1,
+      "http_431": 1
+    }
+  },
+  "part_b_live_app_journey": {
+    "summary": "SUCCESS. Signed-out app journey reached live EmuReady data: Store -> Half-Life 2 catalog details -> Community reports (live Windows report rendered) -> View reported settings (live reported settings rendered, nothing applied); Browse on EmuReady and Read original report both opened Chrome with the correct live URLs; Team Fortress 2 showed the honest 'No matching Windows entry found' state.",
+    "setup_required_first_run": true,
+    "signed_out": true,
+    "steam_sign_in_performed": false,
+    "journey_steps": [
+      {
+        "step": 1,
+        "utc": "2026-10-21T18:58:26Z",
+        "action": "Boot clone AVD Vapor_API_36_live on port 5562 (API 36 google_apis arm64, 1080x2400@420, -memory 2048)",
+        "result": "boot_completed=1; emulator log: 'Boot completed in 43841 ms'",
+        "evidence": [
+          "emulator-5562.log"
+        ]
+      },
+      {
+        "step": 2,
+        "utc": "2026-10-21T18:58:51Z-18:59:26Z",
+        "action": "Install /tmp/apk-repro/source/standard.apk (sha256 889bc3bc…) with adb install -r",
+        "result": "Success; package installed; device base.apk sha256 889bc3bc… (identical to stable copy)",
+        "evidence": [
+          "install-start.txt",
+          "install-end.txt",
+          "device_apk_sha.txt"
+        ]
+      },
+      {
+        "step": 3,
+        "utc": "2026-10-21T18:59:31Z",
+        "action": "Launch app (am start com.winlator.cmod.app.shell.UnifiedActivity)",
+        "result": "First-run SetupWizardActivity: 'Prepare Vapor' (file access + game support)",
+        "evidence": [
+          "initial_screen.xml"
+        ]
+      },
+      {
+        "step": 4,
+        "utc": "2026-10-21T19:00Z",
+        "action": "Grant 'Allow access to manage all files' via the system settings screen the wizard opens",
+        "result": "checkable row checked=true; returned to wizard",
+        "evidence": [
+          "step_after_file_access.xml",
+          "step_file_access_toggled.xml"
+        ]
+      },
+      {
+        "step": 5,
+        "utc": "2026-10-21T19:01:11Z-19:03:09Z",
+        "action": "Tap 'Prepare Vapor' (guided setup: ~127 MB game support, 5 packages, play environment)",
+        "result": "'Vapor is prepared'; 'Continue to library'",
+        "evidence": [
+          "prepare-start.txt",
+          "prepare_poll_1.xml",
+          "prepare_poll_6.xml"
+        ]
+      },
+      {
+        "step": 6,
+        "utc": "2026-10-21T19:03Z",
+        "action": "Continue to library -> Steam account welcome -> tap 'Set up later' (do NOT sign in)",
+        "result": "Signed-out Home with 'Welcome to Vapor.' and Home/Library/Store/Downloads tabs",
+        "evidence": [
+          "app_home.xml",
+          "app_library.xml"
+        ]
+      },
+      {
+        "step": 7,
+        "utc": "2026-10-21T19:06Z",
+        "action": "Open Store tab",
+        "result": "Live Steam catalog loaded: 'Hot games: 88', live cards (Battlefield REDSEC, Fallout 76, ...)",
+        "evidence": [
+          "scratch_store.png"
+        ]
+      },
+      {
+        "step": 8,
+        "utc": "2026-10-21T19:11Z",
+        "action": "Search 'Half-Life 2' -> open the Half-Life 2 catalog card",
+        "result": "'4 store results'; details: Valve, $9.99, Buy on Steam / Install demo; scrolled to 'Community reports' action",
+        "evidence": [
+          "scratch_results_hl2b.png",
+          "catalog_details_hl2_scrolled.xml",
+          "scratch_catalog_scrolled.png"
+        ]
+      },
+      {
+        "step": 9,
+        "utc": "2026-10-21T19:12Z",
+        "action": "Tap 'Community reports'",
+        "result": "LIVE reports rendered: AYN Thor Pro / Snapdragon 8 Gen 2 / Reported Playable · GameNative / 2026-08-23 / 0 positive · 0 negative votes / FLASH WARNING notes",
+        "evidence": [
+          "reports_modal.xml",
+          "scratch_reports_scrolled2.png"
+        ]
+      },
+      {
+        "step": 10,
+        "utc": "2026-10-21T19:13Z-19:16Z",
+        "action": "Tap 'View reported settings'",
+        "result": "LIVE settings rendered from listings.byId: Emulator Version 1.1.1, Container Variant bionic, Wine Version proton-9.0-arm64ec, Resolution 1280x720 (16:9); nothing applied",
+        "evidence": [
+          "settings_modal.xml",
+          "settings_final.xml",
+          "scratch_settings_final.png"
+        ]
+      },
+      {
+        "step": 11,
+        "utc": "2026-10-21T19:16:27Z",
+        "action": "Tap 'Browse on EmuReady'",
+        "result": "Chrome opened with capturedLink https://www.emuready.com/listings?search=Half-Life%202; Chrome first-run page shown",
+        "evidence": [
+          "scratch_browse_tap.png",
+          "logcat_app_excerpt.txt"
+        ]
+      },
+      {
+        "step": 12,
+        "utc": "2026-10-21T19:19:49Z",
+        "action": "Reopen reports and tap 'Read original report'",
+        "result": "Chrome opened with capturedLink https://www.emuready.com/listings/d925bc70-248b-4638-b7f3-8abc876f8572",
+        "evidence": [
+          "scratch_read_original.png",
+          "logcat_app_excerpt.txt"
+        ]
+      },
+      {
+        "step": 13,
+        "utc": "2026-10-21T19:21Z",
+        "action": "Search 'Team Fortress 2' -> details -> 'Community reports'",
+        "result": "Modal shows 'No matching Windows entry found. This does not mean the game is incompatible.' (live batch not_found + empty title search)",
+        "evidence": [
+          "scratch_tf2_noentry.png"
+        ]
+      },
+      {
+        "step": 14,
+        "utc": "2026-10-21T19:23Z",
+        "action": "Emulator teardown",
+        "result": "adb -s emulator-5562 emu kill (OK)",
+        "evidence": [
+          "emulator-5562.log"
+        ]
+      }
+    ],
+    "observed_live_data": {
+      "catalog": {
+        "store_source": "live Steam public catalog API (search/browse) from the app",
+        "store_header_observed": "Hot games: 88",
+        "search_Half-Life_2_result_count": "4 store results",
+        "catalog_card_Half-Life_2": {
+          "title": "Half-Life 2",
+          "publisher_shown": "Valve",
+          "price_shown": "$9.99"
+        }
+      },
+      "half_life_2_reports_modal": {
+        "title_line": "Community reports",
+        "subtitle": "Half-Life 2",
+        "note_line": "From EmuReady · Reported on other setups, not verified in Vapor. Settings are shown for reference and are not applied.",
+        "first_report_card": {
+          "device": "AYN Thor Pro",
+          "soc": "Snapdragon 8 Gen 2",
+          "performance_and_emulator": "Reported Playable · GameNative",
+          "date": "2026-08-23",
+          "votes": "0 positive · 0 negative votes",
+          "notes_prefix": "FLASH WARNING — Has a problem with the lighting in certain areas of chapter 1, mostly any area that's lit up with sunlight."
+        },
+        "title_match_banner": "absent (batch row keyed by Steam AppID, appIdMatch=true)",
+        "browse_button": "Browse on EmuReady",
+        "reports_loaded_from_live_api": true
+      },
+      "half_life_2_report_settings": {
+        "trigger": "View reported settings on the first report card",
+        "fields_observed": [
+          {
+            "label": "Emulator Version",
+            "value": "1.1.1"
+          },
+          {
+            "label": "Container Variant",
+            "value": "bionic"
+          },
+          {
+            "label": "Wine Version",
+            "value": "proton-9.0-arm64ec"
+          },
+          {
+            "label": "Resolution (Screen Size)",
+            "value": "1280x720 (16:9)"
+          }
+        ],
+        "settings_applied": false,
+        "note": "The modal is read-only: it renders reported settings as text. No apply/import action exists on this screen and none was performed."
+      },
+      "team_fortress_2_no_entry": {
+        "catalog_search_result_count": "1 store results",
+        "modal_message": "No matching Windows entry found. This does not mean the game is incompatible.",
+        "reports_rendered": 0,
+        "community_reports_action_shown": true,
+        "note": "TF2 is a Windows app in the Steam catalog, so the Community reports action is shown; the live EmuReady lookups return no Windows batch row and no title-search result (consistent with the earlier API re-check's AppID 440 not_found)."
+      },
+      "browse_on_emuready": {
+        "result": "Intent opened Google Chrome (com.android.chrome first-run activity)",
+        "captured_intent_timestamp_utc": "2026-10-21T19:16:27Z",
+        "captured_link": "https://www.emuready.com/listings?search=Half-Life%202",
+        "note": "Matches EmuReady.browseUrl for the matched title 'Half-Life 2'. Chrome showed its first-run page, so the page itself was not rendered in this pass."
+      },
+      "read_original_report": {
+        "result": "Intent opened Google Chrome",
+        "captured_intent_timestamp_utc": "2026-10-21T19:19:49Z",
+        "captured_link": "https://www.emuready.com/listings/d925bc70-248b-4638-b7f3-8abc876f8572",
+        "note": "Matches EmuReady.Report.sourceUrl for the report id shown in the card; same id validated through listings.byId."
+      }
+    },
+    "live_payload_cross_check": {
+      "purpose": "Prove the values rendered by the app are the live EmuReady payload values, not injected samples.",
+      "part_a_payloads_used": [
+        {
+          "file": "cross_batch220.json",
+          "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
+          "fields": "results[0].game: Half-Life 2, microsoft_windows, APPROVED, 89cf7540-…"
+        },
+        {
+          "file": "cross_listings_hl2.json",
+          "sha256": "665a9f8fd2c835e1daa8f5e8516ac642b79885e1955abdb0a3e7a9be5f7d176e",
+          "fields": "8 listings; first row device AYN Thor Pro / Snapdragon 8 Gen 2 / Playable / GameNative / 2026-08-23 / votes 0-0"
+        },
+        {
+          "file": "cross_byid_hl2.json",
+          "sha256": "5dab92d91f49f3db4a2960d24830e70c09805488426e221b05a59962366e34cf",
+          "fields": "customFieldValues: Emulator Version=1.1.1, Container Variant=bionic, Wine Version=proton-9.0-arm64ec, Resolution (Screen Size)=1280x720 (16:9)"
+        }
+      ],
+      "match": "Every app-rendered value listed in observed_live_data matches the live payload exactly."
+    },
+    "gating_checks": {
+      "windows_app_positive_case": {
+        "apps": [
+          "Half-Life 2 (AppID 220)",
+          "Team Fortress 2 (AppID 440)"
+        ],
+        "observed": "Community reports button present on both catalog details pages",
+        "matches_source_rule": "SteamCatalogScreen.kt:782 renders when game.windows != false"
+      },
+      "non_windows_negative_case": {
+        "attempted": true,
+        "found_live_sample": false,
+        "attempts": [
+          "Scanned all 348 appids embedded in Steam's SteamOS+Linux store page via IStoreBrowseService/GetItems; every item reported platforms.windows=true (no Windows-less entry).",
+          "Steam store search 'os=mac' filtering is ineffective on the public search endpoint (Windows-only titles such as Cyberpunk 2077 still returned), so a Mac-less-Windows list could not be enumerated.",
+          "SteamDB is Cloudflare-protected and its FAQ forbids API/scraping use; not used."
+        ],
+        "result": "No live catalog entry with platforms.windows=false was located during this pass, so the hidden-action branch was not exercised live.",
+        "existing_evidence": "The negative branch is covered by committed tests: SteamCatalogInstallUiTest.knownNonWindowsCatalogAppsDoNotOfferCommunityReports (JVM) and its device counterpart, both reported passing in docs/evidence/2026-10-21-emuready-followup.json."
+      }
+    },
+    "logcat": {
+      "app_process_logcat_full": {
+        "path": "/Users/cheng/emuready-live-app-journey/logcat_app_full.txt",
+        "sha256": "5448ef63d4cd270e5c41359d6f5c2b5691c2dffd47bbbdb6d0876377d6c5ca0e",
+        "bytes": 15464,
+        "role": "logcat of app process 7393 after it restarted under host memory pressure"
+      },
+      "app_related_excerpt": {
+        "path": "/Users/cheng/emuready-live-app-journey/logcat_app_excerpt.txt",
+        "sha256": "1197b7749b6cfeb158121288e8efbefa17b380bf335b93c9e32a13ed7dc86774",
+        "bytes": 18791,
+        "role": "filtered logcat excerpt for app.vapor.android / SteamCatalog / activity transitions"
+      },
+      "exceptions_or_fatal_in_app_process": "none found in the captured app-process logcat (grep FATAL/AndroidRuntime Exception/ANR in app.vapor = 0 hits); the only error dialog observed was the platform 'System UI isn't responding' ANR under host memory pressure, not an app ANR",
+      "browser_intents": [
+        {
+          "utc": "2026-10-21T19:16:27Z",
+          "captured_link": "https://www.emuready.com/listings?search=Half-Life%202",
+          "target": "com.android.chrome/...FirstRunActivity"
+        },
+        {
+          "utc": "2026-10-21T19:19:49Z",
+          "captured_link": "https://www.emuready.com/listings/d925bc70-248b-4638-b7f3-8abc876f8572",
+          "target": "com.android.chrome/...FirstRunActivity"
+        }
+      ]
+    },
+    "uiautomator_dumps": [
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/initial_screen.xml",
+        "sha256": "e1b511b7279ca06e7c4d67739f7963d5874b3502a714bdc7d278ff95acf5b3fb",
+        "bytes": 8905,
+        "role": "first-run setup screen"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/step_after_file_access.xml",
+        "sha256": "6b80277afd6a315003165ad8dd77210e9e4f53292c20dcc2db3b1f49ba2e4827",
+        "bytes": 7407,
+        "role": "All files access system screen"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/step_file_access_toggled.xml",
+        "sha256": "705edb2992652e4b5b5053250bf1ec77d2c3c4ee65fe7776e1f8e8c1e0314342",
+        "bytes": 7406,
+        "role": "file access granted (checked=true)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/prepare_poll_6.xml",
+        "sha256": "8034db3d24cdba462a3c7cec82398504c5c161b12305a7d34be87a7e105cdc1b",
+        "bytes": 8475,
+        "role": "Vapor is prepared / Continue to library"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/app_home.xml",
+        "sha256": "ac118efcc7d139738a23dde51fbdc7fbb71b026a1cca55f4e42646834d72ceee",
+        "bytes": 9520,
+        "role": "Steam account welcome before Set up later"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/app_library.xml",
+        "sha256": "9c1614241b5497dfe66a6af01a71ecc24e3594677de439bca406c3c146d23998",
+        "bytes": 21570,
+        "role": "signed-out Home after Set up later"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/state3.xml",
+        "sha256": "b202bf1bc5ce75130d1e5a704001a0af9eaf98d6356942fead5ac016119a7e85",
+        "bytes": 26083,
+        "role": "Store loaded (Hot games: 88)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/store_results_hl2b.xml",
+        "sha256": "14ee513c97c2593dc45eec92da7e725c2ea4e2ed247db2c9e22d20c33c1f4232",
+        "bytes": 29397,
+        "role": "Half-Life 2 search results"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/catalog_details_hl2.xml",
+        "sha256": "c4c7689a7c6b25373a1d54cb70a7fad3c9ef57f5752dd17374f98ba959a14f84",
+        "bytes": 8458,
+        "role": "Half-Life 2 catalog details"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/catalog_details_hl2_scrolled.xml",
+        "sha256": "2acc61a65eeab77457890f422cec50dfd2b88545c2583135bb3e8201ee5b2430",
+        "bytes": 7117,
+        "role": "Community reports action visible"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/reports_modal.xml",
+        "sha256": "d3164ab09f2fd0b70869fab09121053133bd7eafd2193b71a32571ad8abb303a",
+        "bytes": 8048,
+        "role": "live reports modal, first report"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/reports_modal_scrolled2.xml",
+        "sha256": "af8daf235c98c405c5808a3f2d4fab8f950127e51516ee66a0461bf048543333",
+        "bytes": 8705,
+        "role": "live report votes/notes visible"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/reports_modal_scrolled4.xml",
+        "sha256": "0d6f91f56ce706d2e5c578cfe398705cb5cb656add971a7835e9e7a2162a178c",
+        "bytes": 8984,
+        "role": "View reported settings / Read original visible"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/settings_modal.xml",
+        "sha256": "77140732dfc42fd309a6858313c1ae305f7ee8a8c27795cb6e3508738cf8ca67",
+        "bytes": 8660,
+        "role": "reported settings loaded (Emulator Version/Container)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/settings_final.xml",
+        "sha256": "ffff63b7f227e20e43d3fad1076e3b43e8a1829adf57da34aa56f5a8961b4b1a",
+        "bytes": 9026,
+        "role": "reported settings: Emulator Version 1.1.1, bionic, proton-9.0-arm64ec"
+      }
+    ],
+    "screenshots_in_repo": [
+      {
+        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-catalog-action.png",
+        "sha256": "1db95c0f55c6de4f5eb88fb65142a814c840cc5ae50581c2ceed94b147dfea73",
+        "bytes": 1561502,
+        "role": "live catalog details with Community reports action (Windows gating positive branch)"
+      },
+      {
+        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-reports.png",
+        "sha256": "6edd91b57a574f077b337908ae8a7589aaa217e7b6fbbf463844ca95473722df",
+        "bytes": 472289,
+        "role": "live Community reports modal for Half-Life 2 (report card with votes and notes)"
+      },
+      {
+        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-settings.png",
+        "sha256": "9b32d6d5495c76be0bf2488f5d3a5f35ffbc9e946afa54643c4cc76919d4fd96",
+        "bytes": 466704,
+        "role": "live reported settings for the same report (read-only, nothing applied)"
+      },
+      {
+        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-no-entry.png",
+        "sha256": "ac3b48087afde29fc00f5cfd4deef67bdd0d333ff1041323d93076b41a2c96c8",
+        "bytes": 420651,
+        "role": "live no-entry state for Team Fortress 2"
+      }
+    ],
+    "environment_events": [
+      {
+        "event": "System UI ANR dialog ('System UI isn't responding') while the Store was loading",
+        "cause": "host memory pressure with three emulators on a 16 GB host",
+        "mitigation": "settings put global hide_error_dialogs 1; restarted SystemUI (adb root + pkill) so the dialog cleared; app process unaffected",
+        "app_impact": "none observed on the app's own UI"
+      },
+      {
+        "event": "App process id changed between journey phases (4191 -> 7393) after the app was backgrounded behind Chrome",
+        "cause": "consistent with the system reclaiming the backgrounded app under memory pressure",
+        "effect": "the second launch resumed at Home instead of the previous modal; later steps (Team Fortress 2 check) were re-driven from the Store",
+        "app_crash": false
+      },
+      {
+        "event": "The app rendered in landscape (display ROTATION_90)",
+        "cause": "emulator display rotation state; screenOrientation fullUser follows it",
+        "effect": "screenshots are 2400x1080; the reports dialog rendered correctly at its 760 dp max width"
+      }
+    ]
+  },
+  "findings": {
+    "confirmed": [
+      {
+        "id": "journey-success",
+        "statement": "The signed-out app reached live EmuReady Windows reports for Half-Life 2 and loaded one report's live settings; values on screen match the live API payloads exactly. No injected fixtures or simulated data were used.",
+        "evidence": [
+          "journey steps 7-10",
+          "reports.png",
+          "settings.png",
+          "live_payload_cross_check"
+        ]
+      },
+      {
+        "id": "error-shape-classification",
+        "statement": "Live malformed/missing/unknown/oversized inputs return HTTP 400/404/431 JSON errors; the reader classifies all of these as IOException (connection-failure wording), not UnexpectedResponseException. A valid 200 envelope with an unknown gameId is an empty page, not an error.",
+        "evidence": [
+          "part_a probes",
+          "parser_classification_map"
+        ]
+      },
+      {
+        "id": "okhttp-ua",
+        "statement": "The app's effective default UA (OkHttp 5.3.2) is accepted by the mobile EmuReady path; browser and OkHttp UA responses are byte-identical.",
+        "evidence": [
+          "okhttp_batch220",
+          "browser_batch220",
+          "okhttp_gamesget_portal"
+        ]
+      },
+      {
+        "id": "no-entry-state",
+        "statement": "Team Fortress 2 in the real catalog shows Community reports, and the modal reports 'No matching Windows entry found. This does not mean the game is incompatible.' after live batch not_found + empty title search.",
+        "evidence": [
+          "no-entry.png",
+          "journey step 13"
+        ]
+      },
+      {
+        "id": "source-links",
+        "statement": "Browse on EmuReady and Read original report resolve to Chrome with the reader-generated URLs (listings?search=Half-Life%202 and listings/d925bc70-…), not to invented URLs.",
+        "evidence": [
+          "browse_on_emuready",
+          "read_original_report",
+          "journey steps 11-12"
+        ]
+      },
+      {
+        "id": "gating-positive",
+        "statement": "For Windows catalog apps the Community reports action is present (Half-Life 2 and Team Fortress 2), consistent with the windows != false rule.",
+        "evidence": [
+          "catalog-action.png",
+          "gating_checks.windows_app_positive_case"
+        ]
+      },
+      {
+        "id": "read-only",
+        "statement": "The settings view is text-only; no apply/import control exists and nothing was applied. No game was launched.",
+        "evidence": [
+          "settings.png",
+          "observed_live_data.half_life_2_report_settings"
+        ]
+      }
+    ],
+    "gaps": [],
+    "gap_note": "No reader gap was observed in the live journeys: live payloads rendered as expected, error states matched the code's classification, and no unexpected/unavailable state appeared for valid data.",
+    "not_validated_live": [
+      "The hidden-action branch for a known Windows-less catalog entry: no live Steam catalog app with platforms.windows=false was located (see gating_checks.non_windows_negative_case). The branch is covered by committed JVM/device tests but was not exercised live here.",
+      "The 200-with-broken-envelope UnexpectedResponseException path: not producible from the public live service in this pass.",
+      "Scroll-through of all 8 Half-Life 2 report cards and paging beyond the first page (the first card was inspected and one settings payload loaded).",
+      "Signed-in Steam flows, settings application, game launch, purchase/licensing, physical-hardware and TalkBack checks are all out of scope and were not performed."
+    ]
+  },
+  "failures_and_mitigations": [
+    {
+      "failure": "AVD Vapor_API_36 already in use on port 5560 by a concurrent teammate; second instance on 5562 refused (including -read-only because the other instance was not read-only).",
+      "mitigation": "Lead authorized a one-off clone AVD (Vapor_API_36_live) from the same system image on port 5562; no existing emulator was touched.",
+      "impact": "none on results"
+    },
+    {
+      "failure": "SystemUI ANR dialog under host memory pressure.",
+      "mitigation": "hid error dialogs and restarted SystemUI; continued the journey.",
+      "impact": "a few extra UI steps; no app failure"
+    },
+    {
+      "failure": "uiautomator dump intermittently returned an empty/partial XML under load.",
+      "mitigation": "retried via 'uiautomator dump /sdcard/ui.xml' + pull, and cross-checked with screenshots.",
+      "impact": "none on the recorded evidence"
+    },
+    {
+      "failure": "No live Windows-less catalog entry found for the gating negative branch.",
+      "mitigation": "documented the search attempts and cited the committed tests for that branch.",
+      "impact": "one validation branch not exercised live"
+    }
+  ],
+  "limitations": [
+    "Single observation window (2026-10-21, ~18:57-19:23 UTC) and a single emulated environment; upstream Steam/EmuReady data drifts.",
+    "Emulator only: no physical phone, no TalkBack/accessibility pass, no physical gamepad.",
+    "The emulator ran with -memory 2048 (host pressure) rather than the briefed 3072, and in landscape orientation; performance of the UI under memory pressure was slow at times.",
+    "The custom clone AVD (Vapor_API_36_live) is not the exact Vapor_API_36 AVD instance, though it uses the same system image, pixel_7 profile, API 36 and a 2 GB guest.",
+    "First-run setup (file access + ~127 MB game support) was performed on this fresh emulator; that is unrelated to the EmuReady feature but was required before Store access.",
+    "Only one live report card and one settings payload were inspected in the UI; the underlying payload has 8 Windows reports for Half-Life 2, all validated by the earlier API re-check.",
+    "Chrome showed its first-run screen for both browser handoffs, so the EmuReady web pages themselves were not rendered in this pass (the intent URLs were confirmed from the WindowManager capturedLink).",
+    "The Windows-less gating branch and the 200-broken-envelope branch were not observable live (see not_validated_live).",
+    "No Steam sign-in, purchase, license grant, download, game launch or settings application was attempted."
+  ],
+  "follow_up_needs": [
+    "If the gating negative branch must be proven live, find a real Steam catalog app whose store item has platforms.windows=false (e.g. via an official Steam data source) and repeat the catalog-details step on it.",
+    "For a physical-device confirmation, repeat steps 7-10 on hardware with TalkBack to cover accessibility and real network conditions.",
+    "Re-run the journey on a later date to detect upstream drift in reports/settings values.",
+    "Consider capturing the EmuReady web pages after Chrome's first-run setup is completed, so the browser handoff is visually confirmed (this pass only proved the Intent URL)."
+  ],
+  "artifact_manifest": {
+    "scratch_directory": {
+      "path": "/Users/cheng/emuready-live-app-journey",
+      "outside_repo": true,
+      "note": "Part A bodies, cross-check payloads, logcat, logs and uiautomator dumps are kept here; only the four screenshots and this receipt are in the repo."
+    },
+    "part_a": [
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/part_a_probe.sh",
+        "sha256": "0f6ba29903a14cf4e318e451dd92071f12fcf7647a51b1c21ef19a95b6c2115b",
+        "bytes": 970,
+        "role": "Part A request wrapper used for the probes"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/mkurl.py",
+        "sha256": "b1bf12d32a28800fb5016a0a6f52545cb03da87d67d1eef5fac60920a7bba0d8",
+        "bytes": 347,
+        "role": "URL encoder used to reproduce the app's ?input= encoding"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/okhttp_batch220.json",
+        "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
+        "bytes": 11503,
+        "role": "Part A response body (games.batchBySteamAppIds)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/browser_batch220.json",
+        "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
+        "bytes": 11503,
+        "role": "Part A response body (games.batchBySteamAppIds)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/okhttp_gamesget_portal.json",
+        "sha256": "96c6d71961daf7ba4b5d436204288b1b83f647d53b6cf9902e9b7f7434b4278e",
+        "bytes": 6030,
+        "role": "Part A response body (games.get)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/edge_missing_input.json",
+        "sha256": "26c50ec80d595f99ac4e1400a444e79146c957497bd3b85f2d42cda1b4b522fd",
+        "bytes": 362,
+        "role": "Part A response body (games.batchBySteamAppIds)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/edge_unknown_procedure.json",
+        "sha256": "d4a80705f2b0a9f587357cb134f1118362c19638f73db2f3b3e1c61f66c3407b",
+        "bytes": 201,
+        "role": "Part A response body (games.doesNotExist)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/edge_malformed_input.json",
+        "sha256": "8ba61bf3b74aef3ccda4590afae8b0b613af6885a0fa00030012edc9bbde934e",
+        "bytes": 213,
+        "role": "Part A response body (games.batchBySteamAppIds)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/edge_wrong_types.json",
+        "sha256": "ec6dc7b95c39cee18173791857c89e758cf0ce9bf2e24b70e7ce3e9fbe986919",
+        "bytes": 449,
+        "role": "Part A response body (games.batchBySteamAppIds)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/edge_empty_json.json",
+        "sha256": "4c3050d6da0dbf2f865987deebc16e07223d9d9cc79c48953135c87187adc40a",
+        "bytes": 406,
+        "role": "Part A response body (games.batchBySteamAppIds)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/edge_unknown_gameid.json",
+        "sha256": "1a13a56c58b007e9a6a471db1a04cf74a48b550bfde780bec902be429ac6a165",
+        "bytes": 154,
+        "role": "Part A response body (listings.get)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/oversized_12k.json",
+        "sha256": "697523e6d1a27ebb66f0084058142aaeae033a648f90f5444618400163bfd550",
+        "bytes": 483,
+        "role": "Part A response body (games.get)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/oversized_40k.json",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "role": "Part A response body (games.get)"
+      }
+    ],
+    "cross_check_payloads": [
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/cross_batch220.json",
+        "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
+        "bytes": 11503,
+        "role": "live batch payload used for the on-screen cross-check"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/cross_listings_hl2.json",
+        "sha256": "665a9f8fd2c835e1daa8f5e8516ac642b79885e1955abdb0a3e7a9be5f7d176e",
+        "bytes": 23683,
+        "role": "live listings payload used for the on-screen cross-check"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/cross_byid_hl2.json",
+        "sha256": "5dab92d91f49f3db4a2960d24830e70c09805488426e221b05a59962366e34cf",
+        "bytes": 49001,
+        "role": "live listings.byId payload used for the settings cross-check"
+      }
+    ],
+    "journey_logs": [
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/logcat_app_full.txt",
+        "sha256": "5448ef63d4cd270e5c41359d6f5c2b5691c2dffd47bbbdb6d0876377d6c5ca0e",
+        "bytes": 15464,
+        "role": "app-process logcat"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/logcat_app_excerpt.txt",
+        "sha256": "1197b7749b6cfeb158121288e8efbefa17b380bf335b93c9e32a13ed7dc86774",
+        "bytes": 18791,
+        "role": "app/EmuReady/Chrome excerpt"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/emulator-5562.log",
+        "sha256": "62c5a631bce7879f0538358e6c160b9317d059854a1eadd8b4b7525eeff71c4c",
+        "bytes": 8426,
+        "role": "emulator boot log"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/emulator-5562-first-attempt.log",
+        "sha256": "52841817561546944864cd9cd595bd1fc78207feeae00cf447f8270872d3f359",
+        "bytes": 1021,
+        "role": "same-AVD conflict log"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/install-start.txt",
+        "sha256": "8f6975257cf76e373bad575545c5dbdf76855a33030ab453bb00e581b8599c85",
+        "bytes": 21,
+        "role": "install start timestamp"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/install-end.txt",
+        "sha256": "2008ec0e10589a0251a1328ea7fe16c0d6b08fe9f5372ee26e4b179284ba5925",
+        "bytes": 21,
+        "role": "install end timestamp"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/install-result.txt",
+        "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7",
+        "bytes": 36,
+        "role": "install result"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/launch-time.txt",
+        "sha256": "462178eedbe0ad9ab674deaba9673af7bda7a2abd48a5ed34620d9d0ed53bcd2",
+        "bytes": 21,
+        "role": "first launch timestamp"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/prepare-start.txt",
+        "sha256": "8f1731f740298269b25f63e795bb02a6d5367f8cd7a990860aae2029a5635501",
+        "bytes": 21,
+        "role": "guided setup start timestamp"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/device_apk_sha.txt",
+        "sha256": "3705ad722d45e37b4b70381edfe78361fed662637f3a9ee0e2705350b651894d",
+        "bytes": 155,
+        "role": "device-side base.apk sha256"
+      }
+    ],
+    "screenshots_repo": [
+      {
+        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-catalog-action.png",
+        "sha256": "1db95c0f55c6de4f5eb88fb65142a814c840cc5ae50581c2ceed94b147dfea73",
+        "bytes": 1561502,
+        "role": "live catalog details with Community reports action (Windows gating positive branch)"
+      },
+      {
+        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-reports.png",
+        "sha256": "6edd91b57a574f077b337908ae8a7589aaa217e7b6fbbf463844ca95473722df",
+        "bytes": 472289,
+        "role": "live Community reports modal for Half-Life 2 (report card with votes and notes)"
+      },
+      {
+        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-settings.png",
+        "sha256": "9b32d6d5495c76be0bf2488f5d3a5f35ffbc9e946afa54643c4cc76919d4fd96",
+        "bytes": 466704,
+        "role": "live reported settings for the same report (read-only, nothing applied)"
+      },
+      {
+        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-no-entry.png",
+        "sha256": "ac3b48087afde29fc00f5cfd4deef67bdd0d333ff1041323d93076b41a2c96c8",
+        "bytes": 420651,
+        "role": "live no-entry state for Team Fortress 2"
+      }
+    ],
+    "intermediate_screenshots": [
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_store.png",
+        "sha256": "469f55a3c3291de412697edff5751baf4044d8d70c245e35cadbfca5c5f36850",
+        "bytes": 2033692,
+        "role": "live Store with Hot games"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_results_hl2b.png",
+        "sha256": "83edf293c99b6d990099cfdcc85d12a8bee7b71877964eb4db1b2bf32e678c36",
+        "bytes": 1108844,
+        "role": "Half-Life 2 search results"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_catalog_details.png",
+        "sha256": "f226bf7dadb20448c3d1ee0ad9d9fbeff270e62bc6af20ca09b07eadb94e99bb",
+        "bytes": 540589,
+        "role": "Half-Life 2 details top"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_catalog_scrolled.png",
+        "sha256": "1db95c0f55c6de4f5eb88fb65142a814c840cc5ae50581c2ceed94b147dfea73",
+        "bytes": 1561502,
+        "role": "Community reports action (repo copy)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_reports_modal.png",
+        "sha256": "27faae97efbd71a2e1c47f5d9c1ef815b65cfca650727c85098b35fbe05c12eb",
+        "bytes": 474754,
+        "role": "first live report card"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_reports_scrolled2.png",
+        "sha256": "6edd91b57a574f077b337908ae8a7589aaa217e7b6fbbf463844ca95473722df",
+        "bytes": 472289,
+        "role": "report with votes/notes (repo copy)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_settings_modal.png",
+        "sha256": "8d3a1a211584bb2939c232b64429ceea091b1114e951535ba16a338a86813428",
+        "bytes": 476380,
+        "role": "settings load start"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_settings_final.png",
+        "sha256": "9b32d6d5495c76be0bf2488f5d3a5f35ffbc9e946afa54643c4cc76919d4fd96",
+        "bytes": 466704,
+        "role": "settings (repo copy)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_browse_tap.png",
+        "sha256": "81aaa9a063c2a549259c0d4c50e71d2df5b587752237df496d146ecd5907f0e8",
+        "bytes": 12872,
+        "role": "Chrome first run after Browse on EmuReady"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_read_original.png",
+        "sha256": "16e727cc6da9dbf3be88f6d1c0a5167ccf8e520c7605fc530a2f2aa03f750e53",
+        "bytes": 77524,
+        "role": "Chrome first run after Read original report"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/scratch_tf2_noentry.png",
+        "sha256": "ac3b48087afde29fc00f5cfd4deef67bdd0d333ff1041323d93076b41a2c96c8",
+        "bytes": 420651,
+        "role": "TF2 no-entry modal (repo copy)"
+      }
+    ],
+    "uiautomator_dumps": [
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/initial_screen.xml",
+        "sha256": "e1b511b7279ca06e7c4d67739f7963d5874b3502a714bdc7d278ff95acf5b3fb",
+        "bytes": 8905,
+        "role": "first-run setup screen"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/step_after_file_access.xml",
+        "sha256": "6b80277afd6a315003165ad8dd77210e9e4f53292c20dcc2db3b1f49ba2e4827",
+        "bytes": 7407,
+        "role": "All files access system screen"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/step_file_access_toggled.xml",
+        "sha256": "705edb2992652e4b5b5053250bf1ec77d2c3c4ee65fe7776e1f8e8c1e0314342",
+        "bytes": 7406,
+        "role": "file access granted (checked=true)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/prepare_poll_6.xml",
+        "sha256": "8034db3d24cdba462a3c7cec82398504c5c161b12305a7d34be87a7e105cdc1b",
+        "bytes": 8475,
+        "role": "Vapor is prepared / Continue to library"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/app_home.xml",
+        "sha256": "ac118efcc7d139738a23dde51fbdc7fbb71b026a1cca55f4e42646834d72ceee",
+        "bytes": 9520,
+        "role": "Steam account welcome before Set up later"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/app_library.xml",
+        "sha256": "9c1614241b5497dfe66a6af01a71ecc24e3594677de439bca406c3c146d23998",
+        "bytes": 21570,
+        "role": "signed-out Home after Set up later"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/state3.xml",
+        "sha256": "b202bf1bc5ce75130d1e5a704001a0af9eaf98d6356942fead5ac016119a7e85",
+        "bytes": 26083,
+        "role": "Store loaded (Hot games: 88)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/store_results_hl2b.xml",
+        "sha256": "14ee513c97c2593dc45eec92da7e725c2ea4e2ed247db2c9e22d20c33c1f4232",
+        "bytes": 29397,
+        "role": "Half-Life 2 search results"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/catalog_details_hl2.xml",
+        "sha256": "c4c7689a7c6b25373a1d54cb70a7fad3c9ef57f5752dd17374f98ba959a14f84",
+        "bytes": 8458,
+        "role": "Half-Life 2 catalog details"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/catalog_details_hl2_scrolled.xml",
+        "sha256": "2acc61a65eeab77457890f422cec50dfd2b88545c2583135bb3e8201ee5b2430",
+        "bytes": 7117,
+        "role": "Community reports action visible"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/reports_modal.xml",
+        "sha256": "d3164ab09f2fd0b70869fab09121053133bd7eafd2193b71a32571ad8abb303a",
+        "bytes": 8048,
+        "role": "live reports modal, first report"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/reports_modal_scrolled2.xml",
+        "sha256": "af8daf235c98c405c5808a3f2d4fab8f950127e51516ee66a0461bf048543333",
+        "bytes": 8705,
+        "role": "live report votes/notes visible"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/reports_modal_scrolled4.xml",
+        "sha256": "0d6f91f56ce706d2e5c578cfe398705cb5cb656add971a7835e9e7a2162a178c",
+        "bytes": 8984,
+        "role": "View reported settings / Read original visible"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/settings_modal.xml",
+        "sha256": "77140732dfc42fd309a6858313c1ae305f7ee8a8c27795cb6e3508738cf8ca67",
+        "bytes": 8660,
+        "role": "reported settings loaded (Emulator Version/Container)"
+      },
+      {
+        "path": "/Users/cheng/emuready-live-app-journey/settings_final.xml",
+        "sha256": "ffff63b7f227e20e43d3fad1076e3b43e8a1829adf57da34aa56f5a8961b4b1a",
+        "bytes": 9026,
+        "role": "reported settings: Emulator Version 1.1.1, bionic, proton-9.0-arm64ec"
+      }
+    ]
+  },
+  "reproduction": {
+    "part_a": "See part_a_probe.sh + mkurl.py in the scratch directory; request format is GET https://www.emuready.com/api/mobile/trpc/<procedure>?input=<percent-encoded {\"json\": <input>}> with UA okhttp/5.3.2.",
+    "part_b": "Boot the clone AVD on 5562 with the documented command, verify APK sha256, adb install -r, complete first-run setup, then Store -> search Half-Life 2 -> details -> Community reports -> View reported settings.",
+    "evidence_verification": "sha256sum of every listed artifact is in artifact_manifest; screenshot dimensions are 2400x1080."
+  },
+  "no_overclaims": "This receipt records one emulator session and live public HTTP sampling on 2026-10-21. It does not claim a physical-device run, Steam sign-in, settings application, game launch, purchase/licensing, accessibility sign-off, or live validation of the Windows-less gating branch. It does not claim the app is free of other defects beyond what these journeys and probes exercised."
+}
