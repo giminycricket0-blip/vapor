@@ -91,8 +91,24 @@ abstract class FetchLibretroDroidTask extends DefaultTask {
         target.parentFile.mkdirs()
         def source = "https://github.com/WinNative-Emu/LibretroDroid/releases/download/${tag}/libretrodroid.aar"
         def staging = new File(target.parentFile, target.name + ".part")
-        new URL(source).withInputStream { input ->
-            staging.withOutputStream { output -> output << input }
+        // URL.withInputStream sends a JDK default Accept header that GitHub's release
+        // CDN rejects with HTTP 406 on some JDK 17 builds. Set explicit headers instead.
+        def connection = (java.net.HttpURLConnection) new URL(source).openConnection()
+        try {
+            connection.instanceFollowRedirects = true
+            connection.connectTimeout = 30000
+            connection.readTimeout = 120000
+            connection.setRequestProperty("Accept", "*/*")
+            connection.setRequestProperty("User-Agent", "Vapor-Gradle")
+            def status = connection.responseCode
+            if (status < 200 || status >= 300) {
+                throw new GradleException("libretrodroid.aar from ${tag} failed with HTTP ${status}")
+            }
+            connection.inputStream.withCloseable { input ->
+                staging.withOutputStream { output -> output << input }
+            }
+        } finally {
+            connection.disconnect()
         }
 
         def actual = digestOf(staging)
