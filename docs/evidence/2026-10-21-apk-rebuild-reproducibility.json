@@ -127,5 +127,16 @@
     ],
     "note": "local scratch outside the repository"
   },
-  "no_overclaims": "This receipt records build-output non-determinism only. It does not claim a functional defect, a release-signing result, or reproducibility on another machine."
+  "no_overclaims": "This receipt records build-output non-determinism only. It does not claim a functional defect, a release-signing result, or reproducibility on another machine.",
+  "correction_2026-10-22": {
+    "reason": "The earlier comparison described the two APKs as built from the \"identical source state\"; that is true for app/ source content but not for the git revision/BUILD_ID. Root-cause analysis (2026-10-22) separated build-input differences from build nondeterminism.",
+    "root_cause_receipt": "docs/evidence/2026-10-22-apk-reproducibility-rootcause.json",
+    "findings": [
+      "libcrypto.so: genuine same-input build nondeterminism but semantically benign \u2014 only .rodata/.text/.rela.dyn differ, caused solely by OpenSSL util/mkbuildinf.pl embedding the build timestamp; .comment/.note.android.ident/dynsym/dynstr/.gnu.*/headers are identical; differing instructions are same-address/same-mnemonic with only immediates shifted by the moved .rodata string (address fix-ups).",
+      "classes16/23/30.dex: NOT nondeterminism. The source APK was built at commit 63a2bbb3 and the rebuild at 95ecbf62 (embedded BUILD_ID differs); app/ source is identical between the commits, and only BuildConfig plus two classes that inline BUILD_ID change, with D8 per-dex checksum-map churn shifting later DEX data by one byte.",
+      "ZIP layout / 4,874,972-byte size delta: benign incremental-packaging history (holes/padding reuse); 1,634/1,638 entries keep identical local offsets and only the four changed entries moved into prior holes."
+    ],
+    "mitigations": "SOURCE_DATE_EPOCH for the OpenSSL ExternalProject; pin BUILD_ID (or build both from the same commit); clean app/build + packaging intermediates before compared builds; keep the toolchain pinned. A follow-up experiment builds twice with those inputs to demonstrate (or bound) byte reproducibility.",
+    "conclusion_update": "The observed APK difference was not proof of general build nondeterminism: one component is a benign timestamp string, one is a build-input (BUILD_ID) difference, and one is packaging history. Cross-machine/release-signing reproducibility remains out of scope."
+  }
 }

@@ -1,0 +1,792 @@
+{
+  "date": "2026-10-22",
+  "scope": "Root-cause analysis of the byte differences between two Vapor standard debug APKs (one saved before, one after a clean rebuild) previously reported as non-reproducible: per-section/per-instruction analysis of lib/arm64-v8a/libcrypto.so, structural and disassembly analysis of classes16/23/30.dex, and local-entry/padding analysis of the ZIP container. Deliverable tools/tests/apk-repro-diff.py reproduces the whole comparison from the two APK paths.",
+  "base_commit": "34d20b489ee3acf63662613fd912150880f69d72",
+  "branch": "Vapor",
+  "analysis_context": "Analysis performed at 34d20b48 on the two preserved APKs. The source APK was built during the full native rebuild task from git 63a2bbb3d2154c2a79a9a7b57feccf38b41f4565; the rebuild APK was produced by the later 'clean same-source rebuild' check from git 95ecbf62ace30988411f6f65de4f513632a395fc. The earlier receipt referred to that rebuild commit as base_commit, which is one source of confusion corrected below.",
+  "predecessor_evidence": "docs/evidence/2026-10-21-apk-rebuild-reproducibility.json (sha256 6003056cf96d5172f4b8fd8e610808b2543887c9947b3f0de564584956bb4215)",
+  "inputs": {
+    "source_apk": {
+      "path": "/tmp/apk-repro/source/standard.apk",
+      "sha256": "889bc3bce50446fa412a1d8eb54389af81f74b0d947fe26b4b52e128a6918fe1",
+      "bytes": 684926636,
+      "built_at_local": "2026-10-21T19:12:42+01:00",
+      "built_by": "task-5 full native rebuild (cargo clean + deleted app/.cxx + no excluded native tasks)",
+      "source_git_head": "63a2bbb3d2154c2a79a9a7b57feccf38b41f4565",
+      "embedded_build_id": "63a2bbb3",
+      "build_log": "/tmp/native-rebuild-assemble-20261021.log",
+      "build_log_sha256": "c78b1e7c0cb82bf279e30c693183ff00a40a723ab6eef50b645e084558b5727c"
+    },
+    "rebuild_apk": {
+      "path": "/tmp/apk-repro/rebuild1.apk",
+      "sha256": "7a6b7384f45dbf3288a638400d67e3b13edce03212258436dcd402abf1840b9c",
+      "bytes": 689801608,
+      "built_at_local": "2026-10-21T20:19:06+01:00",
+      "built_by": "clean rebuild after cargo clean + native-network/.cxx removal (see predecessor receipt)",
+      "source_git_head": "95ecbf62ace30988411f6f65de4f513632a395fc",
+      "embedded_build_id": "95ecbf62",
+      "build_log": "/tmp/apk-repro/build1.log",
+      "build_log_sha256": "8c171f1f9987f1d75f1bbc2f3bf0555f9d96ac58529043931bc051a6f76eaf9a"
+    }
+  },
+  "method": {
+    "script": "tools/tests/apk-repro-diff.py",
+    "script_sha256": "e649d6af2893a101b14b319c72f271c22da6b2492b6b27df16f792bd02630119",
+    "script_language": "Python 3.14.4, stdlib only",
+    "repeatability": "The script was run twice on the same two APKs; the two JSON reports are identical after removing the generated_at_utc field (report sha256 e408cc1e531f1a017736402e7612e5605cbb98ab20de87b6fcc5f29aa7fb2117 for the recorded run).",
+    "external_tools": {
+      "llvm_objdump": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-objdump (LLVM 18.0.4)",
+      "llvm_strip": "same NDK bin dir, llvm-strip (used only to prove the APK-entry provenance chain)",
+      "dexdump": "/Users/cheng/Library/Android/sdk/build-tools/36.0.0/dexdump"
+    },
+    "commands": [
+      "python3 tools/tests/apk-repro-diff.py --source /tmp/apk-repro/source/standard.apk --rebuild /tmp/apk-repro/rebuild1.apk --workdir /Users/cheng/apk-repro-rootcause --json-out /Users/cheng/apk-repro-rootcause/out/apk-repro-diff.json --llvm-bin /Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin --dexdump /Users/cheng/Library/Android/sdk/build-tools/36.0.0/dexdump",
+      "python3 tools/tests/apk-repro-diff.py (same arguments) --json-out /Users/cheng/apk-repro-rootcause/out/apk-repro-diff-run2.json",
+      "llvm-strip --strip-unneeded -o /tmp/lc-strip-check.so app/.cxx/Debug/3j72j675/arm64-v8a/native-network/install/lib/libcrypto.so",
+      "llvm-objdump -d --no-show-raw-insn libcrypto.source.so > out/libcrypto.source.dis.txt (and the rebuild equivalent)",
+      "dexdump -d classes16|23|30.{source,rebuild}.dex (and dexdump -f for header/class order)"
+    ],
+    "scratch_directory": "/Users/cheng/apk-repro-rootcause (extracted entries, disassembly/dexdump logs, experiment, reports; all outside the repository)",
+    "tool_autodiscovery_smoke_test": "python3 tools/tests/apk-repro-diff.py --source ... --rebuild ... --workdir /tmp/apkdiff-smoke --json-out /tmp/apkdiff-smoke/report.json --quiet -> exit 0 in 27.6s; auto-selected NDK 27.3 llvm and build-tools 37.0.0 dexdump; same four differing entries and same verdict classes."
+  },
+  "apk_layout": {
+    "entry_count": [
+      1638,
+      1638
+    ],
+    "entry_name_sets_identical": true,
+    "uncompressed_sizes_identical": true,
+    "compression_methods_identical": true,
+    "entries_with_different_crc32": [
+      "classes16.dex",
+      "classes23.dex",
+      "classes30.dex",
+      "lib/arm64-v8a/libcrypto.so"
+    ],
+    "source_bytes": 684926636,
+    "rebuild_bytes": 689801608,
+    "size_delta_bytes": 4874972,
+    "inter_entry_padding_bytes": [
+      8694220,
+      13569179
+    ],
+    "padding_delta_bytes": 4874959,
+    "size_delta_is_padding": true,
+    "local_entry_order_identical": false,
+    "first_local_order_difference": {
+      "index": 8,
+      "source": "classes23.dex",
+      "rebuild": "classes24.dex"
+    },
+    "local_order_difference_indices": 34,
+    "central_directory_bytes": [
+      151068,
+      151068
+    ],
+    "apk_signing_block_present_both": true,
+    "apk_signing_block_bytes": [
+      4088,
+      4088
+    ],
+    "entries_changed_offsets_or_sizes": [
+      {
+        "name": "classes16.dex",
+        "source_header_offset": 676074122,
+        "rebuild_header_offset": 684771472,
+        "compressed_size": [
+          4874928,
+          4874928
+        ],
+        "content_changed": true
+      },
+      {
+        "name": "classes23.dex",
+        "source_header_offset": 42834196,
+        "rebuild_header_offset": 45921504,
+        "compressed_size": [
+          522248,
+          522248
+        ],
+        "content_changed": true
+      },
+      {
+        "name": "classes30.dex",
+        "source_header_offset": 45921504,
+        "rebuild_header_offset": 56127512,
+        "compressed_size": [
+          555012,
+          555012
+        ],
+        "content_changed": true
+      },
+      {
+        "name": "lib/arm64-v8a/libcrypto.so",
+        "source_header_offset": 56127512,
+        "rebuild_header_offset": 63302447,
+        "compressed_size": [
+          1243574,
+          1243589
+        ],
+        "content_changed": true
+      }
+    ],
+    "hole_analysis": {
+      "rebuild_largest_hole": {
+        "bytes": 4874974,
+        "start": 676074122,
+        "end": 680949096,
+        "before_entry": "classes29.dex",
+        "after_entry": "play-services-tasks.properties"
+      },
+      "rebuild_largest_hole_is_exact_source_classes16_dex_slot": true,
+      "explanation": "The rebuild's 4,874,974-byte hole starts exactly at the source APK's classes16.dex local-header offset (676,074,122) and ends exactly at its data end (676,074,168 + 4,874,928 = 680,949,096). classes16.dex was rewritten in the rebuild at offset 684,771,472, which is exactly where the source APK's 4,088-byte APK Signature Scheme block began (source: classes29.dex ends at 684,771,472; signing block occupies 684,771,472..684,775,560; central directory at 684,775,568).",
+      "hole_reuse_evidence": [
+        "the rebuilt libcrypto.so local header is at 63,302,447, exactly the start of the source APK's 1,587,497-byte hole after lib/arm64-v8a/libwnsteam.so; the rebuilt libcrypto consumed 1,243,589 bytes of that hole and left 343,852 bytes before the next entry (classes3.dex) unchanged at 64,889,944",
+        "the rebuilt classes23.dex local header is at 45,921,504, exactly the source APK's classes30.dex slot",
+        "the rebuilt classes30.dex local header is at 56,127,512, exactly the source APK's libcrypto.so slot"
+      ],
+      "holes_identical_in_both_apks": [
+        {
+          "bytes": 3171820,
+          "after": "lib/arm64-v8a/libwayland-server.so",
+          "before": "lib/arm64-v8a/libzstd-jni-1.5.7-9.so"
+        },
+        {
+          "bytes": 1548142,
+          "after": "lib/arm64-v8a/libc++_shared.so",
+          "before": "lib/arm64-v8a/libffi.so"
+        },
+        {
+          "bytes": 197208,
+          "after": "lib/arm64-v8a/libssl.so",
+          "before": "lib/arm64-v8a/libwayland-server.so"
+        },
+        {
+          "bytes": 152016,
+          "after": "lib/arm64-v8a/libltdl.so",
+          "before": "lib/arm64-v8a/libproot-loader.so"
+        },
+        {
+          "bytes": 116437,
+          "after": "lib/arm64-v8a/libproot-loader.so",
+          "before": "lib/arm64-v8a/libpulse.so"
+        },
+        {
+          "bytes": 23322,
+          "after": "lib/arm64-v8a/libffi.so",
+          "before": "lib/arm64-v8a/liblibrashader_capi.so"
+        }
+      ],
+      "classification": "benign-packaging-layout: only the four content-changed entries moved; 1,634 of 1,638 entries kept byte-identical local offsets; the +4,874,972-byte APK size delta equals the +4,874,959-byte inter-entry padding delta plus 13 bytes of central-directory/header bookkeeping. No entry set, uncompressed size or compression-method difference exists.",
+      "inference": "The measured placements show the packaging step wrote the changed entries into byte ranges that were holes (or the signing block) in the previously existing APK instead of repacking the whole ZIP from scratch, i.e. the APK packaging was incremental/history-dependent. That mechanism is inferred from the byte placement; it was not read out of AGP source code or Gradle logs."
+    }
+  },
+  "native_libraries": {
+    "lib/arm64-v8a/libcrypto.so": {
+      "apk_entry": {
+        "source_sha256": "ef86863230ad7eec92e948c5abcddf0694b0470eb9650952f0e2f45063295693",
+        "rebuild_sha256": "63f5a7a39e9119ba163bc4532c5ee40f46e39bd0817428431817c093ec87feb9",
+        "bytes": [
+          2647040,
+          2647040
+        ],
+        "crc32": [
+          "aa5dea57",
+          "4433bfd5"
+        ]
+      },
+      "elf_structure": {
+        "section_count": 26,
+        "section_names_identical": true,
+        "elf_header_identical": true,
+        "program_header_table_identical": true,
+        "section_headers_identical": true,
+        "identical_sections": [
+          "",
+          ".note.android.ident",
+          ".dynsym",
+          ".gnu.version",
+          ".gnu.version_d",
+          ".gnu.version_r",
+          ".gnu.hash",
+          ".dynstr",
+          ".rela.plt",
+          ".eh_frame_hdr",
+          ".eh_frame",
+          ".plt",
+          ".data.rel.ro",
+          ".fini_array",
+          ".init_array",
+          ".dynamic",
+          ".got",
+          ".got.plt",
+          ".relro_padding",
+          ".data",
+          ".bss",
+          ".comment",
+          ".shstrtab"
+        ],
+        "differing_sections": [
+          ".rela.dyn",
+          ".rodata",
+          ".text"
+        ],
+        "absent_sections": [
+          ".note.gnu.build-id",
+          ".symtab",
+          ".strtab",
+          ".debug_* (the library is stripped; the only build-identifying metadata present is .comment and .note.android.ident, both byte-identical)"
+        ]
+      },
+      "differing_sections_detail": [
+        {
+          "name": ".rela.dyn",
+          "bytes": 239928,
+          "source_sha256": "6ab7f5819c995b684ad28c1a1afd6f36545ddeba360d3ec75036cd721c0d3a14",
+          "rebuild_sha256": "668d433b85bee358f2c44a64b7bb4a0151cd780055d7ef60c2c7ef5ebf2bada4",
+          "differing_bytes": 2730,
+          "differing_range_count": 2344,
+          "relocation_entries": [
+            9997,
+            9997
+          ],
+          "differing_relocation_entries": 2344,
+          "fields_differing": {
+            "r_addend": 2344
+          },
+          "addend_deltas": {
+            "-39": 2344
+          },
+          "differing_addends_pointing_into_rodata": 2344,
+          "conclusion": "all differing relocations are R_AARCH64_RELATIVE-style entries whose only changed field is the addend; every one is exactly 39 bytes smaller and points into .rodata. No relocation type/symbol/offset change."
+        },
+        {
+          "name": ".rodata",
+          "bytes": 289216,
+          "source_sha256": "b7acec61a9a0fcd0e82d9b57980eb105919cc17645ca2630c233df749874c5b7",
+          "rebuild_sha256": "dff92f5a3519909d73e539d0d3b115591a9ca616ad59d8ad60dbd93b852899c7",
+          "differing_bytes": 46535,
+          "differing_range_count": 1673,
+          "identical_prefix_bytes": 70579,
+          "identical_suffix_bytes": 219,
+          "identical_byte_ratio": 0.839099,
+          "content": "merged SHF_MERGE|SHF_STRINGS string table (assembly-built AES/SHA/BN tables and the OpenSSL error/version strings are interleaved in this section)",
+          "layout_model_confirmed": {
+            "source_DATE_string_offset_in_rodata": 70579,
+            "rebuild_DATE_string_offset_in_rodata": 118881,
+            "DATE_string_bytes": 39,
+            "verified_equal_shifted_block": "rebuild .rodata[70579:118881] == source .rodata[70618:118920] (48,302 bytes, exact)",
+            "measurement": "the block containing the DATE string was moved and 48,302 bytes that follow its old position are shifted by exactly -39 bytes; the identical-prefix and identical-suffix measurements bound the re-layout to the merged string table"
+          },
+          "printable_string_multiset": {
+            "source_count": 16514,
+            "rebuild_count": 16514,
+            "removed": [
+              "built on: Wed Oct 21 18:10:36 2026 UTC"
+            ],
+            "added": [
+              "built on: Wed Oct 21 19:14:24 2026 UTC"
+            ],
+            "conclusion": "the ONLY differing printable string content in the whole library is the OpenSSL build timestamp; the string multiset is otherwise identical"
+          }
+        },
+        {
+          "name": ".text",
+          "bytes": 1381144,
+          "source_sha256": "a635dc3ab0ddf18304a7190e9393fae2dafecda7cc85cc38fd217e2fe9a4954b",
+          "rebuild_sha256": "58313cc183b8edc59fe387999932d2f868aeba30260ae540ec0bc5e61a7e3260",
+          "differing_bytes": 4380,
+          "differing_range_count": 2772,
+          "identical_prefix_bytes": 4529,
+          "identical_suffix_bytes": 2302,
+          "identical_byte_ratio": 0.996829,
+          "disassembly": {
+            "source_instruction_count": 344841,
+            "rebuild_instruction_count": 344841,
+            "instruction_counts_equal": true,
+            "differing_instructions": 2337,
+            "same_address": 2337,
+            "same_mnemonic": 2337,
+            "numeric_immediate_only": 2337,
+            "non_numeric_difference": 0,
+            "different_mnemonic_pairs": {},
+            "mnemonic_histogram": {
+              "add": 1889,
+              "adr": 428,
+              "adrp": 20
+            },
+            "immediate_deltas": {
+              "-39": 2297,
+              "-4096": 20,
+              "4057": 20
+            },
+            "conclusion": "every one of the 2,337 differing instructions is at the same address with the same mnemonic; only numeric operands differ. 2,297 are adr/add fixups shifted by -39 bytes; the 20 adrp instructions differ by -4096 (one 4 KiB page) and their 20 paired add instructions by +4057, i.e. net -39. This is exactly the address fix-up pattern for .rodata references after the string-table re-layout; no instruction was inserted, deleted, replaced or re-encoded in behaviour."
+          }
+        }
+      ],
+      "provenance_chain": {
+        "current_build_tree_libcrypto": "app/.cxx/Debug/3j72j675/arm64-v8a/native-network/install/lib/libcrypto.so, sha256 9a97000a3e0fbef898243e63af719012751be4c8807432363527fa7799190cc7, 3,069,712 bytes, built 2026-10-21 20:16",
+        "current_build_tree_buildinf": "app/.cxx/Debug/3j72j675/arm64-v8a/native-network/openssl/src/vapor_openssl_build-build/crypto/buildinf.h line 14: #define DATE \"built on: Wed Oct 21 19:14:24 2026 UTC\"",
+        "strip_reproduction": "llvm-strip --strip-unneeded of the build-tree libcrypto.so produces exactly sha256 63f5a7a39e9119ba163bc4532c5ee40f46e39bd0817428431817c093ec87feb9, 2,647,040 bytes -- the exact rebuild1.apk entry, confirming the APK entry is the build-tree binary after AGP's strip step",
+        "source_side": "the source APK's library contains only one different buildinf string, 'built on: Wed Oct 21 18:10:36 2026 UTC', which falls inside the source build window 19:09:36-19:12:44 local (18:09:36-18:12:44 UTC)"
+      },
+      "verdict": {
+        "class": "benign-build-metadata + downstream address-layout fix-ups",
+        "content_difference": false,
+        "reason": "the only differing input content is OpenSSL's generated build timestamp; all other byte differences are the merged-string-table re-layout it triggers and the resulting address immediates/relocation addends. Symbols, section headers, headers, compiler/NDK/OpenSSL version strings, and instruction semantics are unchanged."
+      }
+    }
+  },
+  "openSSL_build_timestamp": {
+    "component": "OpenSSL 1.1.1q ExternalProject vapor_openssl_build in app/src/main/cpp/NativeNetwork.cmake lines 21-42",
+    "generator": "util/mkbuildinf.pl, line 15: my $date = gmtime($ENV{'SOURCE_DATE_EPOCH'} || time()) . \" UTC\";",
+    "makefile_rule": "crypto/buildinf.h: ../vapor_openssl_build/util/mkbuildinf.pl configdata.pm (line 2366 of the generated Makefile in the build tree); per line 2367 the DATE macro is written from the current wall clock when SOURCE_DATE_EPOCH is not set",
+    "effect": "each time the OpenSSL ExternalProject is configured/built, the DATE string embeds the build time. The two APKs were built 1h 4m apart, so the DATE strings differ: 18:10:36 UTC vs 19:14:24 UTC. The string is 38 characters + NUL = 39 bytes in both builds.",
+    "why_only_libcrypto": "of the 39 arm64-v8a .so entries in the APK, only libcrypto.so differed: the OpenSSL build is the only native component in this build that embeds a build timestamp. All other rebuilt native libraries (curl, zstd wrapper libs, proot, winlator, wayland/client libraries, etc.) are byte-identical across the two builds, which also shows the NDK compiler/linker and the CMake build graph are otherwise reproducible on this machine."
+  },
+  "lld_merged_string_experiment": {
+    "purpose": "Independently test whether the merged .rodata layout difference is a consequence of changing a single same-length string (libcrypto has exactly one string-content difference), rather than nondeterministic linking.",
+    "location": "/Users/cheng/apk-repro-rootcause/lld-experiment",
+    "setup": "three translation units with 300 distinct string literals plus the OpenSSL-style 'built on: ... UTC' string; compiled with NDK 27.3 aarch64-linux-android29-clang -O2 -fPIC and linked as a shared library with -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 (the same toolchain/flags family as the OpenSSL build). Three variants: base and same use byte-identical inputs and are built in two separate directories; var changes only the timestamp digits (same string length).",
+    "results": {
+      "base_vs_same": {
+        "shared_library_sha256": [
+          "7114de2243328b3aa832c70eea31b8a11b44567e200f4af5101f0bb76a97dd04",
+          "7114de2243328b3aa832c70eea31b8a11b44567e200f4af5101f0bb76a97dd04"
+        ],
+        "byte_identical": true,
+        "rodata_sha256": "674ee1cd6a6505e29c735396364b5cd25ffe9963ffda4a99006aa89602297066",
+        "rodata_bytes": 18608,
+        "date_string_offset": 9551,
+        "shared_library_bytes": 43384
+      },
+      "base_vs_var": {
+        "base_sha256": "7114de2243328b3aa832c70eea31b8a11b44567e200f4af5101f0bb76a97dd04",
+        "var_sha256": "770732fb99862305f3398cafd6418da11c63707df45df1336b8504376e215767",
+        "byte_identical": false,
+        "rodata_sha256": [
+          "674ee1cd6a6505e29c735396364b5cd25ffe9963ffda4a99006aa89602297066",
+          "a883f68027c26d69dd49e4827f4b0754af9f1df718ffa59528af1210c0a5bcce"
+        ],
+        "rodata_bytes": [
+          18608,
+          18608
+        ],
+        "shared_library_bytes": [
+          43384,
+          43384
+        ],
+        "date_string_offset": [
+          9551,
+          17635
+        ]
+      }
+    },
+    "conclusion": {
+      "proven": [
+        "identical input bytes produce a byte-identical shared library and byte-identical merged .rodata with this NDK 27.3 lld, so linking is deterministic when inputs are identical",
+        "changing the bytes of exactly one string (same length) can re-lay out the merged SHF_MERGE|SHF_STRINGS .rodata and move that string to a different offset while the total .rodata and .so sizes stay identical"
+      ],
+      "relevance": "this reproduces the exact mechanism observed in libcrypto: the only input difference is OpenSSL's DATE string, and the measured libcrypto difference is a re-layout of the merged string table plus matching address fix-ups, not a code-generation change"
+    }
+  },
+  "dex_files": {
+    "common": {
+      "header_numeric_fields_identical": true,
+      "type_id_tables_identical": true,
+      "method_id_tables_identical": true,
+      "field_id_tables_identical": true,
+      "class_def_order_identical": true,
+      "class_descriptor_order_identical": true,
+      "checksum_and_signature_differ": true,
+      "build_id_mechanism": "BuildConfig.BUILD_ID is generated at build time from git: app/build.gradle lines 170-182 use `git rev-parse --short=8 HEAD` unless the BUILD_ID Gradle property/environment variable is set. The source APK therefore embeds '63a2bbb3' and the rebuild APK '95ecbf62'.",
+      "git_fact": "git rev-parse --short=8 63a2bbb3d2154c2a79a9a7b57feccf38b41f4565 = 63a2bbb3 and git rev-parse --short=8 95ecbf62ace30988411f6f65de4f513632a395fc = 95ecbf62. `git diff --stat 63a2bbb3 95ecbf62 -- app/` is empty (0 files): the app source tree was identical between those commits; the three intervening commits (a5e44c20, c3577042, 95ecbf62) touched only docs/tools.",
+      "withdrawn_premise": "the earlier receipt called this comparison a rebuild of the same source state, but the two builds were made from different git HEADs, which changes BUILD_ID by design (see earlier_receipt_correction)"
+    },
+    "classes16.dex": {
+      "apk_entry": {
+        "bytes": [
+          4874928,
+          4874928
+        ],
+        "source_sha256": "1337fd2c94a6ddc2585b75c268c93b0fd18c5e0c8612243f1b602de8102fd9bd",
+        "rebuild_sha256": "95938537286ba42b5375e3f72d6aa6e552ec83c718f1fc7913c5f542165698d4"
+      },
+      "structural_counts_identical": {
+        "strings": [
+          26015,
+          26015
+        ],
+        "types": [
+          3437,
+          3437
+        ],
+        "methods": [
+          15675,
+          15675
+        ],
+        "fields": [
+          7566,
+          7566
+        ],
+        "classes": [
+          2249,
+          2249
+        ]
+      },
+      "byte_differences": {
+        "range_count": 12519,
+        "total_bytes": 325475,
+        "by_map_region": {
+          "header_item": 23,
+          "string_id_item": 46,
+          "class_def_item": 2292,
+          "code_item": 44,
+          "string_data_item": 83434,
+          "annotation_item": 130845,
+          "class_data_item": 102309,
+          "encoded_array_item": 466,
+          "hiddenapi_class_data_item": 6013,
+          "type_list": 3
+        }
+      },
+      "string_table": {
+        "positional_difference_count": 45,
+        "changed_strings": {
+          "removed": [
+            "63a2bbb3"
+          ],
+          "added": [
+            "95ecbf62"
+          ]
+        }
+      },
+      "class_hash_map_string": {
+        "dexer_metadata": true,
+        "string_index": 26012,
+        "length": [
+          227016,
+          227017
+        ],
+        "entry_count": [
+          2249,
+          2249
+        ],
+        "differing_entries": [
+          {
+            "class": "Lcom/winlator/cmod/feature/settings/about/AboutScreenKt;",
+            "source_checksum": "7d43d10",
+            "rebuild_checksum": "58a78d48"
+          }
+        ]
+      },
+      "dex_map_offset_shift": {
+        "annotation_item": [
+          4555696,
+          4555697
+        ],
+        "class_data_item": [
+          4687216,
+          4687217
+        ],
+        "encoded_array_item": [
+          4792861,
+          4792862
+        ],
+        "cause": "the class-hash map string grew by 1 character because AboutScreenKt's new checksum string is one character longer (7d43d10 -> 58a78d48); every data item after the map string shifts by +1 byte, which is the dominant source of the 325,475 differing bytes"
+      },
+      "dexdump_disassembly_diff": {
+        "line_counts": [
+          777320,
+          777320
+        ],
+        "differing_line_pairs": 46,
+        "categories": {
+          "dexdump-banner": 2,
+          "const-string: same text, renumbered index": 43,
+          "const-string: different text": 1
+        },
+        "different_text": "63a2bbb3 -> 95ecbf62",
+        "containing_class": "Lcom/winlator/cmod/feature/settings/about/AboutScreenKt;"
+      },
+      "verdict": "real content difference limited to one inlined build-id constant (AboutScreenKt), plus the resulting dexer-checksum-map update and string-index/data-offset renumbering. No class/method/field addition, removal or reordering; resolved code text is identical apart from the build id."
+    },
+    "classes23.dex": {
+      "apk_entry": {
+        "bytes": [
+          522248,
+          522248
+        ],
+        "source_sha256": "7708822f075308a1ce792c511bc121ebb093b8a0693c4b6116d31c7d6b1a315a",
+        "rebuild_sha256": "58d02a306b06dd028763fd8e92ebfa8c9c90189714d99dedcb4e41675fb11725"
+      },
+      "structural_counts_identical": {
+        "strings": [
+          5315,
+          5315
+        ],
+        "types": [
+          685,
+          685
+        ],
+        "methods": [
+          2420,
+          2420
+        ],
+        "fields": [
+          810,
+          810
+        ],
+        "classes": [
+          215,
+          215
+        ]
+      },
+      "byte_differences": {
+        "range_count": 19,
+        "total_bytes": 76,
+        "by_map_region": {
+          "header_item": 24,
+          "string_id_item": 5,
+          "code_item": 5,
+          "string_data_item": 41,
+          "encoded_array_item": 1
+        }
+      },
+      "string_table": {
+        "positional_difference_count": 7,
+        "changed_strings": {
+          "removed": [
+            "63a2bbb3"
+          ],
+          "added": [
+            "95ecbf62"
+          ]
+        }
+      },
+      "class_hash_map_string": {
+        "dexer_metadata": true,
+        "length": [
+          18701,
+          18701
+        ],
+        "entry_count": [
+          215,
+          215
+        ],
+        "differing_entries": [
+          {
+            "class": "Lcom/winlator/cmod/BuildConfig;",
+            "source_checksum": "ec9342a6",
+            "rebuild_checksum": "3c2de309"
+          }
+        ]
+      },
+      "dexdump_disassembly_diff": {
+        "line_counts": [
+          82437,
+          82437
+        ],
+        "differing_line_pairs": 8,
+        "categories": {
+          "dexdump-banner": 2,
+          "static value: different content": 1,
+          "const-string: same text, renumbered index": 5
+        },
+        "different_text": "63a2bbb3 -> 95ecbf62",
+        "containing_class": "Lcom/winlator/cmod/BuildConfig;"
+      },
+      "verdict": "real content difference limited to the BuildConfig.BUILD_ID static value, plus the resulting dexer-checksum-map update and string-index renumbering; no structural or code change."
+    },
+    "classes30.dex": {
+      "apk_entry": {
+        "bytes": [
+          555012,
+          555012
+        ],
+        "source_sha256": "553471d7a88e209f49587eab889250de417665fc21c86d4999411e91c0bf9402",
+        "rebuild_sha256": "e175b0bd99d7630ef2dea69b8b144f3c5a74588f2621d9e251240d63844b4f3e"
+      },
+      "structural_counts_identical": {
+        "strings": [
+          5205,
+          5205
+        ],
+        "types": [
+          678,
+          678
+        ],
+        "methods": [
+          2539,
+          2539
+        ],
+        "fields": [
+          1292,
+          1292
+        ],
+        "classes": [
+          197,
+          197
+        ]
+      },
+      "byte_differences": {
+        "range_count": 4,
+        "total_bytes": 39,
+        "by_map_region": {
+          "header_item": 24,
+          "string_data_item": 15
+        }
+      },
+      "string_table": {
+        "positional_difference_count": 2,
+        "changed_strings": {
+          "removed": [
+            "63a2bbb3"
+          ],
+          "added": [
+            "95ecbf62"
+          ]
+        }
+      },
+      "class_hash_map_string": {
+        "dexer_metadata": true,
+        "length": [
+          16745,
+          16745
+        ],
+        "entry_count": [
+          197,
+          197
+        ],
+        "differing_entries": [
+          {
+            "class": "Lcom/winlator/cmod/app/update/UpdateRelease$Companion;",
+            "source_checksum": "81911304",
+            "rebuild_checksum": "355d6722"
+          }
+        ]
+      },
+      "dexdump_disassembly_diff": {
+        "line_counts": [
+          96963,
+          96963
+        ],
+        "differing_line_pairs": 3,
+        "categories": {
+          "dexdump-banner": 2,
+          "const-string: different text": 1
+        },
+        "different_text": "63a2bbb3 -> 95ecbf62",
+        "containing_class": "Lcom/winlator/cmod/app/update/UpdateRelease$Companion;"
+      },
+      "verdict": "real content difference limited to one inlined build-id constant (UpdateRelease$Companion), plus the dexer-checksum-map update and string-index renumbering; no structural or code change."
+    },
+    "dexer_metadata_provenance": {
+      "markers": [
+        "~~D8{\"backend\":\"dex\",\"compilation-mode\":\"debug\",\"has-checksums\":true,\"min-api\":29,\"version\":\"8.8.18\"}",
+        "~~~{\"<class descriptor>\":\"<checksum>\",...}"
+      ],
+      "evidence": "each final classesN.dex string table contains exactly one ~~D8 options-echo string (identical in both builds) and one ~~~{...} class-to-checksum map. The same pair appears in the per-class DEX outputs of the AGP 8.8 dexing pipeline under app/build/intermediates/project_dex_archive/... (e.g. .../standardDebugAndroidTest/dexBuilderStandardDebugAndroidTest/out/com/winlator/cmod/test/BuildConfig.dex contains ~~D8{...\"version\":\"8.8.18\"} followed by ~~~{\"Lcom/winlator/cmod/test/BuildConfig;\":\"32fdaf78\"}).",
+      "meaning": "the ~~~ map is D8/R8 8.8.18 dexer metadata (version taken from the embedded options echo), not application data; dexdump does not print it (unreferenced string in the string table). The single per-dex checksum that changes is exactly the class whose class-file content changed when BUILD_ID changed (BuildConfig, AboutScreenKt that inlines BUILD_ID, UpdateRelease$Companion that inlines it)."
+    }
+  },
+  "root_cause_summary": [
+    {
+      "artifact": "lib/arm64-v8a/libcrypto.so",
+      "failure_class": "genuine build non-determinism, but benign: embedded build metadata",
+      "cause": "OpenSSL 1.1.1q's util/mkbuildinf.pl embeds the OpenSSL build time into the DATE string ('built on: <gmtime>' = 38 chars + NUL). The ExternalProject is rebuilt per clean native build, so the DATE bytes differ (18:10:36 vs 19:14:24 UTC). That one string content change re-lays out lld's merged SHF_MERGE|SHF_STRINGS .rodata (proven by the controlled lld experiment), shifting a 48,302-byte window by -39 bytes and forcing address fix-ups. All downstream .text (2,337 instructions) and .rela.dyn (2,344 entries) changes are exactly those fix-ups; symbols, headers, .comment, .note.android.ident, .dynsym/.dynstr and instruction semantics are unchanged.",
+      "benign_vs_content": "benign metadata; no code-content or ABI difference"
+    },
+    {
+      "artifact": "classes16.dex, classes23.dex, classes30.dex",
+      "failure_class": "not build non-determinism: different build input (git revision)",
+      "cause": "the two APKs were built at different git HEADs (63a2bbb3 vs 95ecbf62). BuildConfig.BUILD_ID defaults to `git rev-parse --short=8 HEAD`, and Kotlin inlines that Java static final String into two other classes. Only those 3 classes' code/static data differ; D8's per-dex class-checksum map records the changed checksum for exactly those classes, and the changed 8-character build id changes its sort position in the DEX string tables, renumbering string indices and shifting DEX data items (in classes16 the checksum-map string grew by one character, adding +1 to the offsets of every following data item). Class/method/field tables, class order and all resolved code text are identical apart from the build id.",
+      "benign_vs_content": "real but expected build-revision content difference (build id), plus benign layout/metadata churn; the app source was identical between the two commits"
+    },
+    {
+      "artifact": "ZIP container (entry order/padding, 4.87 MB size delta)",
+      "failure_class": "packaging history/layout, not content",
+      "cause": "the rebuild's packaging wrote the four changed entries into byte ranges that were holes (or the signing block) in the previously existing APK: rebuilt libcrypto starts exactly at the source cut-off after libwnsteam.so's old hole, rebuilt classes23/classes30 take the old classes30/libcrypto slots, and rebuilt classes16 was appended where the source signing block used to be, leaving its old 4,874,974-byte slot as a hole. 1,634 of 1,638 entries keep byte-identical local offsets. The APK size delta is entirely this padding/orphan-slot growth. This behaviour is history-dependent incremental packaging (mechanism inferred from byte placement); it is not a content difference.",
+      "benign_vs_content": "benign packaging layout"
+    }
+  ],
+  "earlier_receipt_correction": {
+    "earlier_claim": "docs/evidence/2026-10-21-apk-rebuild-reproducibility.json compared the two APKs as the same source state (its base_commit field was the rebuild commit 95ecbf62).",
+    "correction": "the source APK was built from 63a2bbb3d2154c2a79a9a7b57feccf38b41f4565 and the rebuild from 95ecbf62ace30988411f6f65de4f513632a395fc, proven by their embedded BUILD_ID strings (63a2bbb3 / 95ecbf62) and by git history. The app/ tree is identical between the commits (`git diff --stat 63a2bbb3 95ecbf62 -- app/` is empty; only .gitignore, docs/evidence/**, tools/** and tools/vulkan-wrapper/README.md changed), so the dex differences are a build-id input difference, not dex non-determinism.",
+    "what_remains_true": "libcrypto.so does show genuine same-input build nondeterminism (the OpenSSL build timestamp), and the ZIP layout/order/padding is history-dependent. The predecessor's 'not byte-for-byte reproducible' conclusion is correct for those two reasons, but the three differing dex files are fully explained by the different revision and are reproducible given a pinned BUILD_ID."
+  },
+  "confirmed": [
+    "Both APK SHA-256s, entry counts (1638/1638), identical entry names/uncompressed sizes/compression methods, and the four differing entries with their CRC32/SHA-256 values.",
+    "APK size delta 4,874,972 bytes equals inter-entry padding delta 4,874,959 bytes + 13 bytes of ZIP bookkeeping; 1,634 of 1,638 entries kept byte-identical local offsets; only the four content-changed entries moved.",
+    "Rebuilt classes16.dex's old slot is the rebuild's 4,874,974-byte hole; rebuilt libcrypto was placed at the source APK's libwnsteam-hole start; rebuilt classes23/classes30 occupy the source classes30/libcrypto slots; rebuilt classes16 was written where the source signing block was.",
+    "libcrypto section tables/headers are identical; exactly .rodata, .text and .rela.dyn differ; .comment, .note.android.ident, .dynsym, .dynstr, .gnu.*, .rela.plt, .data.rel.ro, .eh_frame*, .got*, .data, .shstrtab and the ELF/program headers are byte-identical.",
+    "The only differing printable string content in libcrypto is the OpenSSL 'built on: ... UTC' build timestamp (18:10:36 vs 19:14:24 UTC); the printable-string multiset is otherwise identical (16,514 strings each).",
+    "All 2,337 differing libcrypto .text instructions are at the same address with the same mnemonic; differences are numeric immediates only (deltas -39 x2297, -4096 x20, +4057 x20; mnemonics add/adr/adrp), i.e. .rodata address fix-ups.",
+    "All 2,344 differing .rela.dyn entries differ only in r_addend, all by exactly -39 bytes, and all target .rodata; .rela.plt is identical.",
+    "The rebuilt libcrypto entry is exactly `llvm-strip --strip-unneeded` of the current build-tree libcrypto.so (sha256 63f5a7a3...), and the build-tree crypto/buildinf.h contains DATE \"built on: Wed Oct 21 19:14:24 2026 UTC\"; util/mkbuildinf.pl honours SOURCE_DATE_EPOCH.",
+    "The controlled NDK-27.3 lld experiment: identical inputs -> byte-identical .so and .rodata (base vs same); changing one same-length timestamp string -> .rodata re-laid out, timestamp offset 9,551 -> 17,635, .so/.rodata sizes unchanged.",
+    "The only differing dex content is the 8-character BUILD_ID (63a2bbb3 vs 95ecbf62) and one D8 class-checksum-map entry per dex; DEX header numeric fields, type/proto/field/method tables, class counts and class order are identical; all other dexdump -d differences are same-text const-string index renumbering (classes16: 43; classes23: 5; classes30: 0) with resolved text unchanged.",
+    "The two builds come from different commits: embedded BUILD_IDs match `git rev-parse --short=8` of 63a2bbb3 and 95ecbf62, and `git diff --stat 63a2bbb3 95ecbf62 -- app/` is empty."
+  ],
+  "inferred": [
+    "The ZIP layout difference is caused by AGP's packaging step incrementally updating the pre-existing APK and reusing its holes/signing-block space rather than repacking from scratch (inferred from the measured placements; not read out of AGP source or logs).",
+    "The D8 ~~~{...} class-to-checksum values are checksums of class-file content, so they change exactly for classes whose class file changed (BuildConfig/BuildConfig.BUILD_ID inlining). The correlation is confirmed; the hash/checksum algorithm itself was not reverse-engineered.",
+    "With BUILD_ID pinned and SOURCE_DATE_EPOCH set, and with a clean packaging pass, the APK should become byte-identical across rebuilds on this machine. This is a testable prediction, not demonstrated here (no such build was run in this analysis). The supporting evidence: (a) the only same-input nondeterminism found is the OpenSSL timestamp, (b) identical lld input is byte-reproducible in the controlled experiment, and (c) all 38 other native libraries are byte-identical across the two builds.",
+    "Cross-machine reproducibility remains unproven; a different JDK/NDK/lld or filesystem could introduce further differences."
+  ],
+  "mitigations": [
+    {
+      "priority": 1,
+      "target": "libcrypto.so build timestamp",
+      "action": "Set SOURCE_DATE_EPOCH for the OpenSSL ExternalProject (or export it before Gradle). The vendored OpenSSL 1.1.1q util/mkbuildinf.pl explicitly reads SOURCE_DATE_EPOCH, so adding e.g. \"SOURCE_DATE_EPOCH=<commit timestamp>\" to the `cmake -E env` argument lists of vapor_openssl_build in app/src/main/cpp/NativeNetwork.cmake, or exporting it for the build, makes DATE fixed. A clean rebuild of the native-network ExternalProject is needed so crypto/buildinf.h is regenerated.",
+      "expected_effect": "removes the only libcrypto content difference; the lld experiment shows identical inputs then produce byte-identical .rodata/.text/.rela.dyn and a byte-identical .so",
+      "status": "supported by the build scripts and experiment; not yet tested end-to-end"
+    },
+    {
+      "priority": 2,
+      "target": "classes16/23/30.dex",
+      "action": "Build the two compared APKs from the same commit and/or pin BUILD_ID explicitly: `./gradlew :app:assembleStandardDebug -PBUILD_ID=<value>` or env BUILD_ID=<value>. app/build.gradle already supports both overrides (lines 179-182) and falls back to `git rev-parse --short=8 HEAD`.",
+      "expected_effect": "identical build-id input removes the BuildConfig/inlined-constant content changes and the resulting D8 checksum-map and string-index churn",
+      "status": "supported by build.gradle; not yet tested end-to-end"
+    },
+    {
+      "priority": 3,
+      "target": "APK ZIP layout/padding (4.87 MB delta)",
+      "action": "Compare clean-packaged builds, not incrementally updated ones: remove app/build/outputs/apk and the packaging intermediates (or run a clean build) before each of the two builds so the APK is written from scratch. Then verify entry order/offsets. If strict byte-identity is required, add a canonicalization step that writes ZIP entries in a fixed order with fixed alignment and re-signs deterministically.",
+      "expected_effect": "removes history-dependent holes/ordering; the current 4.87 MB delta is purely that padding/orphan-slot growth",
+      "status": "inferred from measured hole reuse; not yet tested"
+    },
+    {
+      "priority": 4,
+      "target": "environment/toolchain",
+      "action": "Keep the toolchain pinned (same JDK 17.0.2, Gradle 8.10.2, AGP 8.8.0, NDK 27.3.13750724, Rust 1.99.0) as both builds did. Evidence that this part is already reproducible: all 38 other native libraries were byte-identical between the two builds.",
+      "expected_effect": "avoids new compiler/linker differences",
+      "status": "confirmed by the current data"
+    }
+  ],
+  "limitations": [
+    "Two builds on one machine only; no cross-machine or cross-JDK/NDK comparison.",
+    "Both APKs are debug-signed (same debug certificate); release signing and its own reproducibility are not covered.",
+    "The source APK's build tree was not archived, so the source-side libcrypto chain is proven via its embedded DATE string and build window rather than an llvm-strip reproduction (the rebuild side is fully reproduced).",
+    "The exact OpenSSL/AGP rebuild policy that left the holes was not inspected in source; the incremental-packaging mechanism is inferred from measured placements.",
+    "The D8 class-checksum algorithm was not reverse-engineered; the checksum-to-class-content relationship is a confirmed correlation.",
+    "No APK with SOURCE_DATE_EPOCH set, pinned BUILD_ID and clean packaging was built in this analysis, so the mitigation is supported but not yet demonstrated end-to-end.",
+    "Byte-for-byte reproducibility for the whole apksigner/APK Signing Block output under a real release key is out of scope."
+  ],
+  "raw_artifacts": {
+    "scratch_directory": "/Users/cheng/apk-repro-rootcause",
+    "files": [
+      "out/apk-repro-diff.json (full machine-readable report, sha256 e408cc1e531f1a017736402e7612e5605cbb98ab20de87b6fcc5f29aa7fb2117)",
+      "out/apk-repro-diff-run2.json (second deterministic run; identical except generated_at_utc)",
+      "apk-repro-diff/libcrypto.so.source / libcrypto.so.rebuild (extracted entries)",
+      "apk-repro-diff/classes16.dex.source|rebuild, classes23.dex.source|rebuild, classes30.dex.source|rebuild",
+      "apk-repro-diff/libcrypto.so.source.dis.txt / libcrypto.so.rebuild.dis.txt (llvm-objdump -d)",
+      "apk-repro-diff/*.dexdump-d.txt (dexdump -d logs for the three dex pairs)",
+      "lld-experiment/{base,same,var}/libexp.so (controlled merged-string experiment)",
+      "apk/source.apk and apk/rebuild1.apk (verified copies of the two inputs)"
+    ],
+    "note": "everything above is local scratch outside the repository; the tool reproduces it from the two APK paths. The two APKs and their build logs are at /tmp/apk-repro (build1.log sha256 8c171f1f..., source build log /tmp/native-rebuild-assemble-20261021.log sha256 c78b1e7c...).",
+    "delivery_note": "tools/tests/apk-repro-diff.py exists in the working tree (58,135 bytes, mode 644) and runs with build-tools/NDK tool auto-discovery (verified by a third run with no --llvm-bin/--dexdump flags; it then picks NDK 27.3.13750724 llvm-objdump and build-tools 37.0.0 dexdump and produces the same classifications). The file is matched by the repository's `*.py` ignore rule (.gitignore line 40); like the existing whitelisted tools/tests/*.py scripts it will need an explicit `!tools/tests/apk-repro-diff.py` negation when committed. .gitignore was not modified because it is outside this task's write scope, and no commit was made."
+  },
+  "no_overclaims": "This receipt classifies the observed byte differences. It does not claim that the APK is now byte-for-byte reproducible (that requires the mitigation build), does not claim cross-machine reproducibility, does not claim a functional or performance effect of any difference (libcrypto code semantics are unchanged; the dex differences are build-id constants), and does not claim that the inferred incremental-packaging mechanism or D8 checksum semantics were read from AGP/D8 source. Both APKs are debug-signed."
+}
