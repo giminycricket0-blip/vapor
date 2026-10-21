@@ -1,0 +1,2378 @@
+{
+  "date": "2026-10-21",
+  "scope": "Live public EmuReady API re-validation of the committed read-only reader contract (games.batchBySteamAppIds, games.get, listings.get, listings.byId) against real remote payloads; no app/emulator run, no settings import or application, no game launch, no repo source changes.",
+  "base_commit": "63a2bbb3d2154c2a79a9a7b57feccf38b41f4565",
+  "branch": "Vapor",
+  "worktree_state": {
+    "at_start": "clean (git status --porcelain produced no output; HEAD 63a2bbb3)",
+    "at_end": "this task added only docs/evidence/2026-10-21-emuready-live-recheck.json and committed nothing; during the session an unrelated untracked file tools/tests/vulkan-wrapper-reference.c (mtime 19:12:25, 29836 bytes) appeared in the shared worktree from concurrent work and was not created or modified by this task",
+    "files_modified_outside_this_receipt": "none by this task; no app sources, docs or other repo files were edited and nothing was committed",
+    "note": "The Lead should exclude/account for tools/tests/vulkan-wrapper-reference.c when reviewing the final diff; it is outside this task's write scope."
+  },
+  "reader_under_test": {
+    "path": "app/src/main/feature/library/EmuReady.kt",
+    "sha256": "8ff49b7a7f97ee19c286fe788bd57c6d3c1bb39a81728262b04c8b99b2120c4e",
+    "matches_followup_receipt_hash": true,
+    "key_lines": {
+      "origin_and_limits": "lines 21-24 (ORIGIN, MAX_BYTES 2 MiB, LIMIT 20, UUID regex)",
+      "request_format": "lines 136-137: ORIGIN + /api/mobile/trpc/<procedure> + ?input=JSON({\"json\": input})",
+      "envelope": "lines 132-134: payload.result.data.json, else UnexpectedResponseException",
+      "reports_flow": "lines 45-81: batch rules, title fallback rules, ambiguity, listings.get, hasNextPage",
+      "selectGame": "lines 106-116: APPROVED + microsoft_windows + UUID + optional metadata.steamAppId + title equality only for fallback",
+      "parseReport": "lines 118-130: id/gameId/game.id/status/system/device/soc/emulator/performance/notes/votes/createdAt",
+      "parseDetails": "lines 88-104: listings.byId re-validation + customFieldValues label/value rules",
+      "http": "lines 139-167: GET, no auth headers, 10 s timeout, <= 2 MiB body"
+    }
+  },
+  "environment": {
+    "host": "macOS arm64 workstation; outbound HTTPS from this machine's network egress",
+    "curl": "curl 8.7.1 (x86_64-apple-darwin26.0) libcurl/8.7.1 (SecureTransport) LibreSSL/3.3.6 zlib/1.2.12 nghttp2/1.69.0",
+    "browser_like_user_agent_used_for_app-shaped_requests": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+    "additional_accept_header": "Accept: */*",
+    "probe_user_agents": {
+      "default_curl": "curl/8.7.1",
+      "empty": "(User-Agent header omitted)"
+    },
+    "date_window_utc": "2026-10-21T18:07Z-2026-10-21T18:11Z",
+    "http_transport": "HTTP/2 to Cloudflare anycast edge (cf-ray suffixes observed: -MRS/-LIS); every app-shaped request returned 200 application/json",
+    "rate_limit_headers_observed": {
+      "x-ratelimit-limit": "100",
+      "x-ratelimit-window": "180000"
+    },
+    "requests_issued": 27,
+    "http_429_or_403_on_mobile_path": "none",
+    "privacy": "Raw payloads contain public listing text and author identifiers; they are kept outside the repo under the scratch directory and only their hashes are committed.",
+    "repo_dependency_versions_used": "none added; validation used curl + python3 only"
+  },
+  "prior_claims_and_reconciliation": {
+    "docs/QUALIFICATION.md_190_192": "states fresh public EmuReady Ghostrunner/Onimusha lookups returned HTTP 403 from this machine",
+    "docs/evidence/2026-10-21-emuready-followup.json_157_326_334": "records that no live EmuReady request was made in the follow-up pass and lists live service availability and payload-shape re-validation as remaining",
+    "docs/evidence/2026-10-21-emuready.json_live_public_api": "earlier manual app journey succeeded; batch_observations recorded 440 not_found, 400 batch returned Switch, and a Windows+Switch title search for Portal",
+    "reconciliation": [
+      "The app's /api/mobile/trpc/ path is publicly reachable from this machine now: 27 requests, all 200 on that path, with or without a browser UA.",
+      "The earlier 403 is not reproducible on the mobile path. A same-procedure probe on the desktop web path /api/trpc/games.get returned 403 {'error':'Access denied. Invalid origin.'} with Clerk signed-out headers, which is the most plausible earlier failure mode (wrong path/origin gate), not headers/UA.",
+      "All predecessor batch observations reproduced: AppID 440 and 380 are batch not_found; AppID 400 batch-matches the Nintendo Switch Portal entry while the title search exposes both Windows and Switch entries."
+    ]
+  },
+  "requests": [
+    {
+      "id": "batch_220",
+      "sequence": 1,
+      "role": "app-shaped request",
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "220"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%22220%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 11503,
+      "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
+      "time_total_s": 2.818828,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_220.json",
+      "observed_shape": {
+        "envelope": [
+          "result",
+          "data",
+          "json"
+        ],
+        "json_keys": [
+          "success",
+          "results",
+          "totalRequested",
+          "totalFound",
+          "totalNotFound"
+        ],
+        "success_type": "boolean true",
+        "totalRequested": 1,
+        "totalFound": 1,
+        "totalNotFound": 0,
+        "rows": [
+          {
+            "steamAppId": "220 (JSON string, not number)",
+            "matchStrategy": "exact",
+            "game": {
+              "id": "89cf7540-e0b9-4fc0-ab7a-8b7edcd35a8a (UUID)",
+              "title": "Half-Life 2",
+              "system.key": "microsoft_windows",
+              "status": "APPROVED",
+              "metadata": null,
+              "_count.listings": 8,
+              "embedded_listings_count": 1
+            }
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "Envelope result.data.json; success is boolean true; single row keyed by steamAppId string. game.status APPROVED, game.system.key microsoft_windows, UUID id, metadata null (so no steamAppId conflict check). selectGame(matchedBySteamAppId=true) accepts the row without a title re-match, as intended by the follow-up fix. End-to-end simulation selects this game and parses 8 reports."
+      }
+    },
+    {
+      "id": "batch_400",
+      "sequence": 2,
+      "role": "app-shaped request",
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "400"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%22400%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 8259,
+      "sha256": "fb4043064db41a50efc58c884a1783b65a09f84e9af4c1092cd95891e80afa4a",
+      "time_total_s": 0.590264,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_400.json",
+      "observed_shape": {
+        "success_type": "boolean true",
+        "totalFound": 1,
+        "rows": [
+          {
+            "steamAppId": "400 (string)",
+            "matchStrategy": "exact",
+            "game": {
+              "id": "54ae289e-b52d-48a4-bda1-c20d544f313f (UUID)",
+              "title": "Portal",
+              "system.key": "nintendo_switch",
+              "status": "APPROVED",
+              "metadata": null
+            }
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible-via-platform-guard",
+        "detail": "The real batch match for Steam AppID 400 is the Nintendo Switch 'Portal' entry. selectGame rejects it because game.system.key != microsoft_windows and returns null; reports() then falls back to games.get. Simulation shows the fallback selects the unique Windows 'Portal' (da805799-...) and parses 11 reports. Confirms the platform guard is load-bearing on live data."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "public, max-age=0, s-maxage=900, stale-while-revalidate=300",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e2349898d3e3cc-LIS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "batch_440",
+      "sequence": 3,
+      "role": "app-shaped request",
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "440"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%22440%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 170,
+      "sha256": "b41abd2434541db9c6246f51d4698c61c8f587c4fc4a9aabc1bab919cf764a47",
+      "time_total_s": 0.874047,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_440.json",
+      "observed_shape": {
+        "success_type": "boolean true",
+        "totalFound": 0,
+        "totalNotFound": 1,
+        "rows": [
+          {
+            "steamAppId": "440 (string)",
+            "matchStrategy": "not_found",
+            "game": null
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible-no-data",
+        "detail": "A result row exists but game is null (matchStrategy not_found). The parser's row?.let { (it[\"game\"] as? JsonObject)?.let { ... } } yields null and falls back to the games.get title search; no exception and no fabricated data."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "public, max-age=0, s-maxage=900, stale-while-revalidate=300",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e234a3ad8ea631-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "batch_380",
+      "sequence": 4,
+      "role": "app-shaped request",
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "380"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%22380%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 170,
+      "sha256": "2f46564a7daf9282636e1059a0cb9bd37b3171dc3ca5555c72df2bf7f1b68362",
+      "time_total_s": 0.597264,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_380.json",
+      "observed_shape": {
+        "success_type": "boolean true",
+        "totalFound": 0,
+        "totalNotFound": 1,
+        "rows": [
+          {
+            "steamAppId": "380 (string)",
+            "matchStrategy": "not_found",
+            "game": null
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible-no-data",
+        "detail": "A result row exists but game is null (matchStrategy not_found). The parser's row?.let { (it[\"game\"] as? JsonObject)?.let { ... } } yields null and falls back to the games.get title search; no exception and no fabricated data."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "public, max-age=0, s-maxage=900, stale-while-revalidate=300",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e234af0f288ada-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "batch_1245620",
+      "sequence": 5,
+      "role": "app-shaped request",
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "1245620"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%221245620%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 174,
+      "sha256": "2b0c7a5390dec370adffdf342187275b420270d0d900af30e94920c74ece128b",
+      "time_total_s": 0.615526,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_1245620.json",
+      "observed_shape": {
+        "success_type": "boolean true",
+        "totalFound": 0,
+        "totalNotFound": 1,
+        "rows": [
+          {
+            "steamAppId": "1245620 (string)",
+            "matchStrategy": "not_found",
+            "game": null
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible-no-data",
+        "detail": "A result row exists but game is null (matchStrategy not_found). The parser's row?.let { (it[\"game\"] as? JsonObject)?.let { ... } } yields null and falls back to the games.get title search; no exception and no fabricated data."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "public, max-age=0, s-maxage=900, stale-while-revalidate=300",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e236cfe8dc58eb-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "batch_620",
+      "sequence": 6,
+      "role": "app-shaped request",
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "620"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%22620%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 11746,
+      "sha256": "8f2ef96c778ed1627bc6b3de77e75d3e5792be4c3ab9e7cc82ce062968e7fd07",
+      "time_total_s": 0.606075,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_620.json",
+      "observed_shape": {
+        "success_type": "boolean true",
+        "totalFound": 1,
+        "rows": [
+          {
+            "steamAppId": "620 (string)",
+            "matchStrategy": "exact",
+            "game": {
+              "id": "33fb8d5f-2e15-4ec7-a7ad-85d457dfc26e (UUID)",
+              "title": "Portal 2",
+              "system.key": "microsoft_windows",
+              "status": "APPROVED",
+              "metadata": null,
+              "_count.listings": 19
+            }
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "Windows approved UUID game, metadata null; selected directly from the batch row. listings.get for this id was not captured (19 listings upstream < LIMIT 20)."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "public, max-age=0, s-maxage=900, stale-while-revalidate=300",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e234b96d50225f-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "batch_1091500",
+      "sequence": 7,
+      "role": "app-shaped request",
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "1091500"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%221091500%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 11592,
+      "sha256": "ea2ace4bd6968798fcea093974acd30ab7ccffe0d193964032773970a5daacd8",
+      "time_total_s": 0.670462,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_1091500.json",
+      "observed_shape": {
+        "success_type": "boolean true",
+        "totalFound": 1,
+        "rows": [
+          {
+            "steamAppId": "1091500 (string)",
+            "matchStrategy": "exact",
+            "game": {
+              "id": "520c4854-c386-4dbd-8585-de03841aa0dd (UUID)",
+              "title": "Cyberpunk 2077",
+              "system.key": "microsoft_windows",
+              "status": "APPROVED",
+              "metadata": null,
+              "_count.listings": 11
+            }
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "Supplementary single-AppID sample (app-shaped): Windows batch match selected by parser rules."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "public, max-age=0, s-maxage=900, stale-while-revalidate=300",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e236c569e1cc66-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      },
+      "supplementary": true
+    },
+    {
+      "id": "batch_multi",
+      "sequence": 8,
+      "role": "supplementary probe (not an app-shaped call: the app sends one AppID per request)",
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "271590",
+          "292030",
+          "1174180",
+          "413150",
+          "1145360"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%22271590%22%2C%22292030%22%2C%221174180%22%2C%22413150%22%2C%221145360%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 25119,
+      "sha256": "2978c36cade3e1357e817a50a19a9c0cfdf10c7ba55a15fb65074e5ef3322efe",
+      "time_total_s": 0.628954,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_multi.json",
+      "observed_shape": {
+        "success_type": "boolean true",
+        "totalRequested": 5,
+        "totalFound": 3,
+        "totalNotFound": 2,
+        "rows": [
+          {
+            "steamAppId": "271590",
+            "matchStrategy": "not_found",
+            "game": null
+          },
+          {
+            "steamAppId": "292030",
+            "matchStrategy": "not_found",
+            "game": null
+          },
+          {
+            "steamAppId": "1174180",
+            "matchStrategy": "exact",
+            "game": {
+              "title": "Red Dead Redemption 2",
+              "system.key": "sony_playstation_4",
+              "status": "APPROVED",
+              "id": "a40a2d01-22a7-49ad-bec6-2ebe89187aac (UUID)"
+            }
+          },
+          {
+            "steamAppId": "413150",
+            "matchStrategy": "exact",
+            "game": {
+              "title": "Stardew Valley",
+              "system.key": "nintendo_switch",
+              "status": "APPROVED",
+              "id": "9d5e4eb3-1a90-49a6-95dc-c428d07cb0e3 (UUID)"
+            }
+          },
+          {
+            "steamAppId": "1145360",
+            "matchStrategy": "exact",
+            "game": {
+              "title": "Hades",
+              "system.key": "nintendo_switch",
+              "status": "APPROVED",
+              "id": "8f356d85-4eee-4fbd-9bc1-36c136e749ba (UUID)"
+            }
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible-via-platform-guard (supplementary)",
+        "detail": "Confirms the platform guard across more real Steam AppIDs: console entries are batch-matched by Steam AppID and must be rejected or console data would leak into a Windows reader. not_found rows fall back to title search. Not an app-exact request shape; used only for coverage."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "public, max-age=0, s-maxage=900, stale-while-revalidate=300",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e2370929a28e31-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      },
+      "supplementary": true
+    },
+    {
+      "id": "probe_default_ua",
+      "sequence": 9,
+      "role": "root-cause probe: identical request with curl's default User-Agent, no browser UA",
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "220"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.batchBySteamAppIds?input=%7B%22json%22%3A%7B%22steamAppIds%22%3A%5B%22220%22%5D%2C%22maxListingsPerGame%22%3A1%2C%22minimal%22%3Afalse%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 11503,
+      "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
+      "time_total_s": null,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/probe_default_ua.json",
+      "observed_shape": {
+        "payload": "byte-identical to batch_220 (same sha256)"
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "User-Agent is not required to reach the /api/mobile/trpc/ path from this egress; default curl UA returns the same 200 JSON. Therefore the earlier 403s were not a UA gate on this path (see /api/trpc probe below)."
+      },
+      "note": "Default curl UA (curl/8.7.1) was used; header dump not captured for this probe (status/bytes from the capture command output).",
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "public, max-age=0, s-maxage=900, stale-while-revalidate=300",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e236865b1ce197-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "search_portal",
+      "sequence": 10,
+      "role": "app-shaped request",
+      "procedure": "games.get",
+      "input": {
+        "search": "Portal",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Portal%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 6030,
+      "sha256": "96c6d71961daf7ba4b5d436204288b1b83f647d53b6cf9902e9b7f7434b4278e",
+      "time_total_s": 3.728111,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_portal.json",
+      "observed_shape": {
+        "json_keys": [
+          "games",
+          "pagination"
+        ],
+        "pagination": {
+          "total": 9,
+          "page": 1,
+          "limit": 20,
+          "pages": 1,
+          "offset": 0,
+          "hasNextPage": false,
+          "hasPreviousPage": false
+        },
+        "games_count": 9,
+        "game_rows": [
+          {
+            "title": "Portal 2",
+            "system.key": "microsoft_windows",
+            "id": "33fb8d5f-..."
+          },
+          {
+            "title": "Portal",
+            "system.key": "microsoft_windows",
+            "id": "da805799-..."
+          },
+          {
+            "title": "Portal 2",
+            "system.key": "nintendo_switch",
+            "id": "34768c5a-..."
+          },
+          {
+            "title": "Portal",
+            "system.key": "nintendo_switch",
+            "id": "54ae289e-..."
+          },
+          {
+            "title": "Bridge Constructor Portal",
+            "system.key": "nintendo_switch",
+            "id": "71a5e1f1-..."
+          },
+          {
+            "title": "Portal Knights",
+            "system.key": "nintendo_switch",
+            "metadata": {
+              "igdbId": 20392
+            }
+          },
+          {
+            "title": "Portal: The Companion Collection",
+            "system.key": "nintendo_switch"
+          },
+          {
+            "title": "Portal: Companion Collection",
+            "system.key": "nintendo_switch",
+            "metadata": {
+              "igdbId": 191406
+            }
+          },
+          {
+            "title": "Bridge Constructor Portal",
+            "system.key": "microsoft_windows",
+            "id": "51af348d-..."
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "games array and pagination object both present. Title fallback for Steam AppID 400: selectGame keeps APPROVED microsoft_windows games with UUID ids; only 'Portal' (da805799-...) matches the exact title, while 'Portal 2'/'Portal Knights'/'Bridge Constructor Portal'/'Companion Collection' do not. Exactly one candidate -> selected; Switch entries rejected before title comparison. End-to-end simulation parses 11 Windows reports."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e23502b878989e-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "search_hl2",
+      "sequence": 11,
+      "role": "app-shaped request",
+      "procedure": "games.get",
+      "input": {
+        "search": "Half-Life 2",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Half-Life%202%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 730,
+      "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
+      "time_total_s": 0.690342,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_hl2.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 1,
+          "hasNextPage": false
+        },
+        "games_count": 1,
+        "game_rows": [
+          {
+            "title": "Half-Life 2",
+            "system.key": "microsoft_windows",
+            "status": "APPROVED",
+            "id": "89cf7540-e0b9-4fc0-ab7a-8b7edcd35a8a",
+            "metadata": null
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "If the batch row were absent this search would yield exactly one Windows exact-title candidate. Punctuation/hyphen in the query is handled by the live search."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e2356999ed2e37-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "search_hl2ep1",
+      "sequence": 12,
+      "role": "app-shaped request",
+      "procedure": "games.get",
+      "input": {
+        "search": "Half-Life 2: Episode One",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Half-Life%202%3A%20Episode%20One%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 151,
+      "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
+      "time_total_s": 0.537347,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_hl2ep1.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 0,
+          "hasNextPage": false
+        },
+        "games_count": 0
+      },
+      "parser_compatibility": {
+        "verdict": "compatible-no-data",
+        "detail": "games [] -> zero candidates -> reports() returns Page(null, emptyList, ambiguous=false). The title simply has no EmuReady catalog entry for this query; the reader shows no data instead of failing. Same class as the predecessor receipt's not_found observation for AppID 380."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e2350dbf58b0fd-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "search_tf2",
+      "sequence": 13,
+      "role": "app-shaped request",
+      "procedure": "games.get",
+      "input": {
+        "search": "Team Fortress 2",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Team%20Fortress%202%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 151,
+      "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
+      "time_total_s": 0.704912,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_tf2.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 0,
+          "hasNextPage": false
+        },
+        "games_count": 0
+      },
+      "parser_compatibility": {
+        "verdict": "compatible-no-data",
+        "detail": "Empty candidates after the batch not_found result, so the reader shows no community data for AppID 440. This reproduces the predecessor receipt's 440 batch observation."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e2351908dae195-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "search_ghostrunner",
+      "sequence": 14,
+      "role": "app-shaped request",
+      "procedure": "games.get",
+      "input": {
+        "search": "Ghostrunner Demo",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Ghostrunner%20Demo%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 151,
+      "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
+      "time_total_s": 0.449729,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_ghostrunner.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 0,
+          "hasNextPage": false
+        },
+        "games_count": 0
+      },
+      "parser_compatibility": {
+        "verdict": "compatible-no-data",
+        "detail": "No demo-titled entry. The committed reader intentionally treats demo titles as separate titles (covered by its own tests); this is honest no-data, not a rejection. The broad 'Ghostrunner' query below shows the full game does exist, which a demo title must not silently inherit."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e23522be6df9b5-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "search_ghostrunner_broad",
+      "sequence": 15,
+      "role": "supplementary probe (broad title, to characterise the demo-title case)",
+      "procedure": "games.get",
+      "input": {
+        "search": "Ghostrunner",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Ghostrunner%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 1548,
+      "sha256": "37d752a7a9491cb72facb45bab826faf154373a3da25390a9a96bdbcdb390e8a",
+      "time_total_s": 0.345291,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_ghostrunner_broad.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 2,
+          "hasNextPage": false
+        },
+        "games_count": 2,
+        "game_rows": [
+          {
+            "title": "Ghostrunner",
+            "system.key": "nintendo_switch",
+            "id": "5516f1f1-..."
+          },
+          {
+            "title": "Ghostrunner",
+            "system.key": "microsoft_windows",
+            "id": "035dfab3-..."
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "Windows + Switch entries share the exact title; the parser would keep only the Windows one. For the queried title 'Ghostrunner Demo' the correct behavior is no-data."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e23574588d5ee7-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      },
+      "supplementary": true
+    },
+    {
+      "id": "search_episode_one",
+      "sequence": 16,
+      "role": "supplementary probe (is the subtitle absent or is search punctuation-sensitive?)",
+      "procedure": "games.get",
+      "input": {
+        "search": "Episode One",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Episode%20One%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 151,
+      "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
+      "time_total_s": 0.767817,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_episode_one.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 0
+        },
+        "games_count": 0
+      },
+      "parser_compatibility": {
+        "verdict": "compatible-no-data",
+        "detail": "Also empty, so AppID 380's empty title fallback reflects absent catalog data rather than a colon-only search limitation."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e2366219f3a9cc-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      },
+      "supplementary": true
+    },
+    {
+      "id": "search_hl2ep1_nopunct",
+      "sequence": 17,
+      "role": "supplementary probe (punctuation-free variant)",
+      "procedure": "games.get",
+      "input": {
+        "search": "Half Life 2 Episode One",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Half%20Life%202%20Episode%20One%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 151,
+      "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
+      "time_total_s": 0.437516,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_hl2ep1_nopunct.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 0
+        },
+        "games_count": 0
+      },
+      "parser_compatibility": {
+        "verdict": "compatible-no-data",
+        "detail": "Punctuation-free variant also empty; consistent with no EmuReady entry for Episode One."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e2366bffc3e232-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      },
+      "supplementary": true
+    },
+    {
+      "id": "search_gtav",
+      "sequence": 18,
+      "role": "app-shaped request",
+      "procedure": "games.get",
+      "input": {
+        "search": "Grand Theft Auto V",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Grand%20Theft%20Auto%20V%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 14562,
+      "sha256": "6461862be4c3d895bafff7c3092e96013b8dc8d128417e8db283b738059f275a",
+      "time_total_s": 0.568518,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_gtav.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 24,
+          "hasNextPage": false
+        },
+        "games_count": 20,
+        "windows_exact_title_candidates": [
+          {
+            "title": "Grand Theft Auto V",
+            "id": "6e06c087-b5ee-4ce2-bc2f-23f2f9487546",
+            "metadata": null
+          }
+        ],
+        "other_platform_titles": [
+          "Grand Theft Auto V (sony_playstation_3/4/5, microsoft_xbox_360)",
+          "Grand Theft Auto V: Premium Online Edition (microsoft_windows)",
+          "Grand Theft Auto V: Special Edition (sony_playstation_3)"
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible (third-party fallback selected)",
+        "detail": "Real fallback case: games.batchBySteamAppIds for AppID 271590 returns not_found, yet a Windows 'Grand Theft Auto V' entry exists with 230 listings. The exact-title filter keeps only the single Windows 'Grand Theft Auto V'; edition-suffixed and console rows are rejected by title or platform. Simulation selects 6e06c087-... and parses all 20 rows of page 1 with hasNextPage=true."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e23773082473af-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "search_the",
+      "sequence": 19,
+      "role": "supplementary probe (broad query used to locate a >20-listing Windows game for the pagination check)",
+      "procedure": "games.get",
+      "input": {
+        "search": "The",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22The%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 14214,
+      "sha256": "f0e5f7ce6ed3b48c6e281637b40c1bb2f22e1070eab54c5aeeed89e43e4f636a",
+      "time_total_s": null,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_the.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 1036,
+          "page": 1,
+          "limit": 20,
+          "pages": 52,
+          "hasNextPage": true
+        },
+        "games_count": 20,
+        "notable_rows": [
+          {
+            "title": "Grand Theft Auto V",
+            "system.key": "microsoft_windows",
+            "id": "6e06c087-b5ee-4ce2-bc2f-23f2f9487546",
+            "_count.listings": 230
+          },
+          {
+            "title": "The Witcher 3: Wild Hunt",
+            "system.key": "microsoft_windows",
+            "id": "36787a0c-091d-455c-abc8-2cb065384103",
+            "_count.listings": 29
+          }
+        ]
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "games.get pagination object is complete and typed as expected. Not an app-equivalent query; used to find a Windows game whose first listings page has hasNextPage=true. Note AppID 292030 (Witcher 3) also returned batch not_found while a Windows entry exists - same upstream batch-coverage gap as GTA V."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e23729ff6de9ea-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      },
+      "supplementary": true
+    },
+    {
+      "id": "listings_hl2",
+      "sequence": 20,
+      "role": "app-shaped request",
+      "procedure": "listings.get",
+      "input": {
+        "gameIds": [
+          "89cf7540-e0b9-4fc0-ab7a-8b7edcd35a8a"
+        ],
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/listings.get?input=%7B%22json%22%3A%7B%22gameIds%22%3A%5B%2289cf7540-e0b9-4fc0-ab7a-8b7edcd35a8a%22%5D%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 23683,
+      "sha256": "665a9f8fd2c835e1daa8f5e8516ac642b79885e1955abdb0a3e7a9be5f7d176e",
+      "time_total_s": 0.392425,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/listings_hl2.json",
+      "observed_shape": {
+        "json_keys": [
+          "listings",
+          "pagination"
+        ],
+        "pagination": {
+          "total": 8,
+          "page": 1,
+          "limit": 20,
+          "pages": 1,
+          "offset": 0,
+          "hasNextPage": false,
+          "hasPreviousPage": false
+        },
+        "listings_count": 8,
+        "rows_all_APPROVED": true,
+        "fields_present_on_every_row": [
+          "id (UUID)",
+          "gameId",
+          "status",
+          "createdAt (ISO)",
+          "notes",
+          "upvoteCount (int)",
+          "downvoteCount (int)",
+          "game.id",
+          "game.system.key",
+          "device.brand.name",
+          "device.modelName",
+          "device.soc.name",
+          "emulator.name",
+          "performance.label"
+        ],
+        "variety_observed": {
+          "emulators": [
+            "GameNative",
+            "GameHub",
+            "Winlator"
+          ],
+          "performances": [
+            "Playable",
+            "Perfect",
+            "Great",
+            "Nothing"
+          ],
+          "soc_examples": [
+            "Snapdragon 8 Gen 2",
+            "Snapdragon 8 Elite",
+            "Snapdragon 685"
+          ]
+        }
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "All 8 rows satisfy parseReport: UUID ids; data.gameId == data.game.id == requested game id; listing status APPROVED; nested game.system.key microsoft_windows; non-empty device label parts, soc, emulator, performance; string notes; non-negative int up/down votes; createdAt with valid YYYY-MM-DD prefix. Pagination is a boolean hasNextPage=false. Simulation parses 8 distinct reports."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e235b1bd617662-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "listings_portal",
+      "sequence": 21,
+      "role": "app-shaped request",
+      "procedure": "listings.get",
+      "input": {
+        "gameIds": [
+          "da805799-604c-4edc-86dd-ee8d33c8102e"
+        ],
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/listings.get?input=%7B%22json%22%3A%7B%22gameIds%22%3A%5B%22da805799-604c-4edc-86dd-ee8d33c8102e%22%5D%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 33797,
+      "sha256": "6e584bd7389719251d45509e178b31007e28bfeba4c424b1dd3b9901c948966f",
+      "time_total_s": 0.412961,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/listings_portal.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 11,
+          "hasNextPage": false
+        },
+        "listings_count": 11,
+        "rows_all_APPROVED": true
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "All 11 rows satisfy the same parseReport guards (see listings_hl2 field list). Simulation parses 11 distinct reports for the Windows 'Portal' selected through title fallback."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e235bb0f442c77-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "listings_gtav",
+      "sequence": 22,
+      "role": "app-shaped request",
+      "procedure": "listings.get",
+      "input": {
+        "gameIds": [
+          "6e06c087-b5ee-4ce2-bc2f-23f2f9487546"
+        ],
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/listings.get?input=%7B%22json%22%3A%7B%22gameIds%22%3A%5B%226e06c087-b5ee-4ce2-bc2f-23f2f9487546%22%5D%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 58259,
+      "sha256": "9544694a53628340b6e2696965fbdf01b8100dd3e2ccce949e7ba357db1657fc",
+      "time_total_s": 0.3818,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/listings_gtav.json",
+      "observed_shape": {
+        "pagination": {
+          "total": 230,
+          "page": 1,
+          "limit": 20,
+          "pages": 12,
+          "offset": 0,
+          "hasNextPage": true,
+          "hasPreviousPage": false
+        },
+        "listings_count": 20,
+        "rows_all_APPROVED": true
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "Boundary check: the server returns exactly limit=20 rows with hasNextPage=true (not limit+1), so the parser's `if (reports.size > LIMIT) unavailable()` is not tripped. All 20 rows satisfy parseReport; simulation yields 20 distinct reports and hasMore=true."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e2374bcea7e1ae-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "listingbyid_hl2",
+      "sequence": 23,
+      "role": "app-shaped request",
+      "procedure": "listings.byId",
+      "input": {
+        "id": "d925bc70-248b-4638-b7f3-8abc876f8572"
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/listings.byId?input=%7B%22json%22%3A%7B%22id%22%3A%22d925bc70-248b-4638-b7f3-8abc876f8572%22%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 49001,
+      "sha256": "5dab92d91f49f3db4a2960d24830e70c09805488426e221b05a59962366e34cf",
+      "time_total_s": 0.672422,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/listingbyid_hl2.json",
+      "observed_shape": {
+        "envelope_json_is": "single listing object",
+        "id": "d925bc70-248b-4638-b7f3-8abc876f8572 (UUID)",
+        "gameId": "89cf7540-e0b9-4fc0-ab7a-8b7edcd35a8a",
+        "status": "APPROVED",
+        "game.system.key": "microsoft_windows",
+        "customFieldValues": {
+          "count": 30,
+          "max_allowed_by_parser": 100,
+          "item_fields": [
+            "id",
+            "listingId",
+            "customFieldDefinitionId",
+            "value",
+            "createdAt",
+            "updatedAt",
+            "customFieldDefinition"
+          ],
+          "definition_fields_include": [
+            "id",
+            "type",
+            "label",
+            "name",
+            "options",
+            "defaultValue",
+            "rangeDecimals",
+            "rangeUnit",
+            "categoryId",
+            "categoryOrder",
+            "category"
+          ],
+          "value_types_observed": {
+            "string": 26,
+            "boolean": 4,
+            "array": 0,
+            "null": 0
+          },
+          "example_labels": [
+            "Emulator Version",
+            "Container Variant",
+            "Wine Version",
+            "Resolution (Screen Size)",
+            "Audio Driver",
+            "DXVK Version"
+          ]
+        }
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "parseDetails re-checks data.id == report.id and re-runs parseReport (all pass). Every customFieldValues item has customFieldDefinition.label as a string and value as a primitive (string or boolean). Boolean primitives render as lowercase 'true'/'false' via JsonPrimitive.content, which the UI shows literally - cosmetic only, not a rejection. Blank values are filtered by the reader; simulation yields 23 non-blank settings."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e235fde91ee197-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "listingbyid_gtav",
+      "sequence": 24,
+      "role": "app-shaped request",
+      "procedure": "listings.byId",
+      "input": {
+        "id": "894e3a2c-6e00-45d1-8f11-74d94f68bc54"
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/listings.byId?input=%7B%22json%22%3A%7B%22id%22%3A%22894e3a2c-6e00-45d1-8f11-74d94f68bc54%22%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 49001,
+      "sha256": "c3559621f3ca70b040a0031bbec6cc9b8cb68e6bba56bad00d881db474b22b01",
+      "time_total_s": 0.59132,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/listingbyid_gtav.json",
+      "observed_shape": {
+        "id": "894e3a2c-6e00-45d1-8f11-74d94f68bc54 (UUID)",
+        "gameId": "6e06c087-b5ee-4ce2-bc2f-23f2f9487546",
+        "status": "APPROVED",
+        "game.system.key": "microsoft_windows",
+        "customFieldValues": {
+          "count": 31,
+          "value_types_observed": {
+            "string": 25,
+            "boolean": 6,
+            "array": 0,
+            "null": 0
+          }
+        }
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "Same byId shape for the fallback-selected GTA V report; simulation yields 23 settings. Notably 'Using GameHub Lite' is a JSON boolean false, which the reader renders as 'false'."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e2377d38f1e1aa-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      }
+    },
+    {
+      "id": "probe_path_api_trpc_games.get",
+      "sequence": 25,
+      "role": "root-cause probe: same procedure on the non-mobile web path",
+      "procedure": "games.get (desktop web path /api/trpc/...)",
+      "input": {
+        "search": "Half-Life 2",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Half-Life%202%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 403,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 42,
+      "sha256": "0c9b3f383de9363f8708cb5c780198e3b73fdb89f5031e3050b8488c10659f7e",
+      "time_total_s": null,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/probe_path_api_trpc_games.get.json",
+      "observed_shape": {
+        "body": {
+          "error": "Access denied. Invalid origin."
+        },
+        "headers": {
+          "x-clerk-auth-status": "signed-out",
+          "x-clerk-auth-reason": "session-token-and-uat-missing"
+        }
+      },
+      "parser_compatibility": {
+        "verdict": "not-applicable (root-cause probe)",
+        "detail": "The desktop web path enforces an origin/session gate and returns HTTP 403 JSON; the app's mobile path /api/mobile/trpc/... is public and returned 200 for the same procedure+input in the next probe. This is the most plausible explanation for the earlier 'HTTP 403 here' observation; the app itself uses the mobile path."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e2385badd9cc1e-LIS",
+        "x-clerk-auth-status": "signed-out",
+        "x-clerk-auth-reason": "session-token-and-uat-missing",
+        "vary": "Accept-Encoding"
+      },
+      "supplementary": true
+    },
+    {
+      "id": "probe_path_api_mobile_trpc_games.get",
+      "sequence": 26,
+      "role": "root-cause probe control: identical request on the app's path",
+      "procedure": "games.get (app's mobile path)",
+      "input": {
+        "search": "Half-Life 2",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Half-Life%202%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 730,
+      "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
+      "time_total_s": null,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/probe_path_api_mobile_trpc_games.get.json",
+      "observed_shape": {
+        "body": "byte-identical to search_hl2.json (same sha256)"
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "200 with the same payload as the earlier browser-UA request; path (not UA) is the 403 differentiator observed here."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e238634e049b7d-LIS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      },
+      "supplementary": true
+    },
+    {
+      "id": "probe_no_ua",
+      "sequence": 27,
+      "role": "root-cause probe: no User-Agent header at all",
+      "procedure": "games.get (app's mobile path, empty User-Agent)",
+      "input": {
+        "search": "Half-Life 2",
+        "page": 1,
+        "limit": 20
+      },
+      "request_url": "https://www.emuready.com/api/mobile/trpc/games.get?input=%7B%22json%22%3A%7B%22search%22%3A%22Half-Life%202%22%2C%22page%22%3A1%2C%22limit%22%3A20%7D%7D",
+      "http_status": 200,
+      "http_version": "HTTP/2",
+      "content_type": "application/json",
+      "bytes": 730,
+      "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
+      "time_total_s": null,
+      "raw_payload_path": "/Users/cheng/emuready-live-recheck/probe_no_ua.json",
+      "observed_shape": {
+        "body": "byte-identical to search_hl2.json (same sha256)"
+      },
+      "parser_compatibility": {
+        "verdict": "compatible",
+        "detail": "Even an empty User-Agent gets 200 on the mobile path, so a UA gate is not what the earlier 403s hit from this egress."
+      },
+      "response_headers_of_interest": {
+        "content-type": "application/json",
+        "cache-control": "private, no-store",
+        "server": "cloudflare",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "a4e239179cccb618-MRS",
+        "x-ratelimit-limit": "100",
+        "x-ratelimit-window": "180000",
+        "vary": "trpc-accept, accept, Origin",
+        "access-control-allow-origin": "null"
+      },
+      "supplementary": true
+    }
+  ],
+  "results_summary": {
+    "procedures_tested": [
+      "games.batchBySteamAppIds",
+      "games.get",
+      "listings.get",
+      "listings.byId"
+    ],
+    "requests_total": 27,
+    "app_shaped_primary_requests": 17,
+    "supplementary_data_probes": 6,
+    "root_cause_probe_requests": 4,
+    "compatible_verdict_requests": 26,
+    "primary_request_http_statuses": [
+      200
+    ],
+    "http_200_count": 26,
+    "http_403_count": 1,
+    "http_429_count": 0,
+    "payload_size_range_primary_bytes": [
+      151,
+      58259
+    ],
+    "largest_payload_bytes": 58259,
+    "parser_byte_cap_bytes": 2097152,
+    "batch_invocations": 9,
+    "batch_rows_observed": 12,
+    "batch_rows_windows_approved": 3,
+    "batch_rows_console_approved": 4,
+    "batch_rows_not_found": 5,
+    "games_get_invocations": 13,
+    "search_queries_observed": 10,
+    "listing_pages_observed": 3,
+    "listing_rows_observed": 39,
+    "listing_rows_satisfying_parseReport": 39,
+    "listing_detail_payloads_observed": 2,
+    "custom_field_items_observed": 61,
+    "custom_field_array_values_observed": 0,
+    "metadata_steamAppId_values_observed": 0,
+    "metadata_variants_observed": [
+      "null",
+      "{\"igdbId\": <int>}"
+    ]
+  },
+  "findings": {
+    "confirmed": [
+      {
+        "id": "reachability",
+        "statement": "All four reader procedures answer over HTTPS GET on https://www.emuready.com/api/mobile/trpc/<procedure>?input=<percent-encoded JSON> with HTTP/2 200 and content-type application/json; the parser's envelope result.data.json is present for every procedure.",
+        "evidence": [
+          "batch_220",
+          "batch_400",
+          "batch_440",
+          "batch_380",
+          "batch_620",
+          "search_portal",
+          "listings_hl2",
+          "listings_portal",
+          "listings_gtav",
+          "listingbyid_hl2",
+          "listingbyid_gtav"
+        ]
+      },
+      {
+        "id": "batch-envelope",
+        "statement": "games.batchBySteamAppIds returns success as a JSON boolean true, a results array, and per-row string steamAppId plus matchStrategy exact|not_found; a not-found row still exists with game:null. The parser handles both the game row and the null-game row without exceptions.",
+        "evidence": [
+          "batch_220",
+          "batch_400",
+          "batch_440",
+          "batch_380",
+          "batch_620",
+          "batch_multi"
+        ]
+      },
+      {
+        "id": "platform-guard-live",
+        "statement": "The batch endpoint really does return console entries for Windows Steam AppIDs: AppID 400 -> nintendo_switch Portal, 1174180 -> sony_playstation_4 RDR2, 413150 -> nintendo_switch Stardew Valley, 1145360 -> nintendo_switch Hades. The committed microsoft_windows guard is therefore load-bearing on live data; without it console reports would leak into the Windows reader.",
+        "evidence": [
+          "batch_400",
+          "batch_multi"
+        ]
+      },
+      {
+        "id": "batch-identity",
+        "statement": "Batch matching does not depend on game.metadata.steamAppId: all matched games had metadata null, yet selectGame(matchedBySteamAppId=true) correctly accepts the row's Windows game as the requested AppID's entry.",
+        "evidence": [
+          "batch_220",
+          "batch_620",
+          "batch_1091500",
+          "selectGame lines 106-116"
+        ]
+      },
+      {
+        "id": "title-fallback-windows",
+        "statement": "The games.get title fallback resolves a unique Windows entry when the batch row is missing or console-only, using APPROVED + microsoft_windows + UUID + exact title. Live cases: Portal (AppID 400, batch was Switch) and Grand Theft Auto V (AppID 271590, batch not_found). Portal title search had 9 rows (Windows + Switch); GTA V search had 24 rows across PS3/PS4/PS5/Xbox/Windows.",
+        "evidence": [
+          "search_portal",
+          "search_gtav",
+          "listings_portal",
+          "listings_gtav"
+        ]
+      },
+      {
+        "id": "batch-coverage-gap-upstream",
+        "statement": "Some Windows games that exist in EmuReady are not found by the batch AppID lookup: Grand Theft Auto V (AppID 271590, 230 listings) and The Witcher 3: Wild Hunt (AppID 292030, Windows entry seen in the broad search) both returned matchStrategy not_found. The title fallback is therefore not only for unindexed games; it is needed for real, well-populated entries.",
+        "evidence": [
+          "batch_multi",
+          "search_gtav",
+          "search_the"
+        ]
+      },
+      {
+        "id": "no-data-honest",
+        "statement": "Queries with no EmuReady catalog entry (Team Fortress 2, Half-Life 2: Episode One, Ghostrunner Demo) return games:[] with pagination.total 0. The reader turns that into Page(null, emptyList, ambiguous=false) with no exception.",
+        "evidence": [
+          "search_tf2",
+          "search_hl2ep1",
+          "search_ghostrunner",
+          "search_episode_one",
+          "search_hl2ep1_nopunct"
+        ]
+      },
+      {
+        "id": "listings-shape",
+        "statement": "listings.get returns a listings array plus a pagination object with integer counts and boolean hasNextPage/hasPreviousPage. All 39 sampled rows across 3 games (Half-Life 2 8, Portal 11, GTA V 20) satisfy every parseReport guard: UUID listing id, matching gameId and nested game.id, APPROVED listing status, nested microsoft_windows system, device brand.name + modelName, device soc.name, emulator.name, performance.label, string notes, non-negative int upvoteCount/downvoteCount, ISO createdAt whose first 10 chars are YYYY-MM-DD.",
+        "evidence": [
+          "listings_hl2",
+          "listings_portal",
+          "listings_gtav"
+        ]
+      },
+      {
+        "id": "limit-pagination",
+        "statement": "For a game with 230 listings the API returns exactly 20 rows for limit=20 with hasNextPage=true, so the parser's size>LIMIT rejection is not tripped and hasMore is recognized. hasNextPage=false was also observed on smaller games.",
+        "evidence": [
+          "listings_gtav",
+          "listings_hl2",
+          "listings_portal"
+        ]
+      },
+      {
+        "id": "byid-shape",
+        "statement": "listings.byId returns the listing object directly under result.data.json with id, gameId, APPROVED status, nested Windows game and customFieldValues. Across 2 reports, 61 custom-field items each had customFieldDefinition.label as a string and value as a primitive (51 strings, 10 booleans, 0 arrays, 0 nulls), all <= 100 items; the reader's label/value/blank/limit rules yield 23 settings per report.",
+        "evidence": [
+          "listingbyid_hl2",
+          "listingbyid_gtav"
+        ]
+      },
+      {
+        "id": "foreign-key-types",
+        "statement": "ids are UUID strings (not integers) on games, listings and custom-field items; steamAppId is a decimal JSON string in batch rows; createdAt is an ISO-8601 string; votes and pagination counts are JSON numbers (integers); hasNextPage is a JSON boolean; metadata is null or an object with igdbId and was never observed carrying steamAppId. These match the parser's JsonPrimitive accessors.",
+        "evidence": [
+          "batch_220",
+          "search_portal",
+          "listings_hl2",
+          "listingbyid_hl2"
+        ]
+      },
+      {
+        "id": "source-urls",
+        "statement": "The reader's generated source URL https://www.emuready.com/listings/<report id> and browse URL https://www.emuready.com/listings?search=<title> both returned 200 text/html in a supplementary check.",
+        "evidence": [
+          "supplementary_url_checks"
+        ]
+      }
+    ],
+    "gaps": [],
+    "parser_mismatches_observed": [],
+    "gap_note": "No live payload shape required a change to app/src/main/feature/library/EmuReady.kt. Every sampled shape matched what the committed parser accepts; the guard and fallback decisions behaved as designed against real data. The items below are residual risks that live sampling did not exercise, not observed defects; no code change is recommended without evidence.",
+    "residual_risks_not_triggered_live": [
+      {
+        "id": "non-approved-listing-row",
+        "risk": "parseReport throws on the first non-conforming row, so a future PENDING/REJECTED or shape-broken row inside page 1 would blank the whole page instead of skipping that row. All 39 sampled page-1 rows were APPROVED.",
+        "minimal_fix_if_ever_confirmed": "filter rows to the expected shape before mapping, or skip non-APPROVED listings instead of failing the page"
+      },
+      {
+        "id": "metadata-steamAppId",
+        "risk": "No live game carried metadata.steamAppId (always null or igdbId-only), so the string-vs-number type could not be confirmed live; the parser's contentOrNull handles both, and existing injected tests cover them.",
+        "minimal_fix_if_ever_confirmed": "none expected"
+      },
+      {
+        "id": "array-custom-field-values",
+        "risk": "No live customFieldValues item had an array value (61 primitive items observed), so the array branch of parseDetails remains validated only by injected tests.",
+        "minimal_fix_if_ever_confirmed": "none expected"
+      },
+      {
+        "id": "title-fallback-exactness",
+        "risk": "The fallback still requires trimmed case-insensitive title equality; a Steam title that differs from EmuReady's by punctuation/localization would miss only when batch lookup also fails. Live fallback examples (Portal, Grand Theft Auto V) matched exactly, and the batch path no longer depends on titles.",
+        "minimal_fix_if_ever_confirmed": "use normalizedTitle equality only after an AppID-confirmed batch row, or fall back to normalized comparison in the title search"
+      },
+      {
+        "id": "search-recall",
+        "risk": "games.get returned zero results for 'Team Fortress 2', 'Half-Life 2: Episode One' and 'Ghostrunner Demo'; the exact reason (no catalog entry vs search tokenization) cannot be distinguished from one endpoint. Evidence indicates no catalog entry (episode/subtitle probes also empty; broad 'Ghostrunner' search finds the full game).",
+        "minimal_fix_if_ever_confirmed": "none for the reader; a broader search strategy would be an upstream/UX decision"
+      },
+      {
+        "id": "unapproved-game-status",
+        "risk": "All batch/search game rows seen were status APPROVED; a non-APPROVED variant would be filtered by selectGame (safe) but was not sampled live.",
+        "minimal_fix_if_ever_confirmed": "none expected"
+      }
+    ]
+  },
+  "simulated_reader_runs": {
+    "method": "The committed reader logic (envelope, text/number accessors, selectGame, parseReport, parseDetails, reports and settings control flow) was re-implemented in python3 in the scratch directory and run over the unmodified curl payloads. This is a behavioural simulation of the committed code, not an app execution; its purpose is to check the parser accepts the live shapes end to end.",
+    "script": {
+      "path": "/Users/cheng/emuready-live-recheck/parser_sim.py",
+      "sha256": "cb7772db84151ea139b0b6d7194d54c8066fe0d91970aaf5d6f8d4b8cf415dc7"
+    },
+    "output": {
+      "path": "/Users/cheng/emuready-live-recheck/parser_sim_output.json",
+      "sha256": "8491ab77def838e7f914dd7d6bfb97b59415e7802fa6c4fff31cbc64901b6901"
+    },
+    "scenarios": [
+      {
+        "game": "Half-Life 2",
+        "steamAppId": 220,
+        "path": "batch row -> Windows game",
+        "selected_game_id": "89cf7540-e0b9-4fc0-ab7a-8b7edcd35a8a",
+        "fallback_used": false,
+        "ambiguous": false,
+        "reports_parsed": 8,
+        "hasMore": false,
+        "all_report_fields_ok": true,
+        "report_date_range": [
+          "2025-09-23",
+          "2026-08-23"
+        ],
+        "unique_report_ids": true,
+        "settings_loaded": {
+          "ok": true,
+          "fields": 23,
+          "example": [
+            {
+              "label": "Emulator Version",
+              "value": "1.1.1"
+            },
+            {
+              "label": "Container Variant",
+              "value": "bionic"
+            },
+            {
+              "label": "Wine Version",
+              "value": "proton-9.0-arm64ec"
+            }
+          ]
+        }
+      },
+      {
+        "game": "Portal",
+        "steamAppId": 400,
+        "path": "batch Switch rejected -> title fallback -> Windows game",
+        "selected_game_id": "da805799-604c-4edc-86dd-ee8d33c8102e",
+        "fallback_used": true,
+        "ambiguous": false,
+        "reports_parsed": 11,
+        "hasMore": false,
+        "all_report_fields_ok": true,
+        "report_date_range": [
+          "2025-06-29",
+          "2026-09-22"
+        ],
+        "unique_report_ids": true
+      },
+      {
+        "game": "Portal 2",
+        "steamAppId": 620,
+        "path": "batch row -> Windows game",
+        "selected_game_id": "33fb8d5f-2e15-4ec7-a7ad-85d457dfc26e",
+        "fallback_used": false,
+        "ambiguous": false,
+        "reports_parsed": "not fetched (upstream _count.listings = 19)"
+      },
+      {
+        "game": "Team Fortress 2",
+        "steamAppId": 440,
+        "path": "batch not_found -> empty title search",
+        "selected_game_id": null,
+        "fallback_used": true,
+        "ambiguous": false,
+        "reports_parsed": 0,
+        "note": "honest no-data"
+      },
+      {
+        "game": "Half-Life 2: Episode One",
+        "steamAppId": 380,
+        "path": "batch not_found -> empty title search",
+        "selected_game_id": null,
+        "fallback_used": true,
+        "ambiguous": false,
+        "reports_parsed": 0,
+        "note": "honest no-data"
+      },
+      {
+        "game": "Grand Theft Auto V",
+        "steamAppId": 271590,
+        "path": "batch not_found -> title fallback -> Windows game",
+        "selected_game_id": "6e06c087-b5ee-4ce2-bc2f-23f2f9487546",
+        "fallback_used": true,
+        "ambiguous": false,
+        "reports_parsed": 20,
+        "hasMore": true,
+        "all_report_fields_ok": true,
+        "report_date_range": [
+          "2026-05-01",
+          "2026-10-10"
+        ],
+        "unique_report_ids": true,
+        "settings_loaded": {
+          "ok": true,
+          "fields": 23,
+          "example": [
+            {
+              "label": "Emulator Version",
+              "value": "v1.2.5"
+            },
+            {
+              "label": "Using GameHub Lite",
+              "value": "false"
+            },
+            {
+              "label": "Native Rendering+",
+              "value": "Disabled"
+            }
+          ]
+        }
+      }
+    ],
+    "console_only_appids_not_followed_through": {
+      "1174180": "sony_playstation_4 RDR2",
+      "413150": "nintendo_switch Stardew Valley",
+      "1145360": "nintendo_switch Hades",
+      "note": "their title fallbacks were not fetched; the platform guard rejection is what the reader exercises first and it returned null in simulation"
+    },
+    "failures": 0
+  },
+  "supplementary_url_checks": [
+    {
+      "url": "https://www.emuready.com/listings/d925bc70-248b-4638-b7f3-8abc876f8572",
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 78086,
+      "redirects": 0,
+      "note": "report source URL built by EmuReady.Report.sourceUrl"
+    },
+    {
+      "url": "https://www.emuready.com/listings?search=Grand%20Theft%20Auto%20V",
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 52821,
+      "redirects": 0,
+      "note": "browse URL built by EmuReady.browseUrl"
+    }
+  ],
+  "raw_payloads": [
+    {
+      "path": "/Users/cheng/emuready-live-recheck/batch_1091500.json",
+      "sha256": "ea2ace4bd6968798fcea093974acd30ab7ccffe0d193964032773970a5daacd8",
+      "bytes": 11592,
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "1091500"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "http_status": 200,
+      "request_id": "batch_1091500",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/batch_1245620.json",
+      "sha256": "2b0c7a5390dec370adffdf342187275b420270d0d900af30e94920c74ece128b",
+      "bytes": 174,
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "1245620"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "http_status": 200,
+      "request_id": "batch_1245620",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/batch_220.json",
+      "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
+      "bytes": 11503,
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "220"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "http_status": 200,
+      "request_id": "batch_220",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/batch_380.json",
+      "sha256": "2f46564a7daf9282636e1059a0cb9bd37b3171dc3ca5555c72df2bf7f1b68362",
+      "bytes": 170,
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "380"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "http_status": 200,
+      "request_id": "batch_380",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/batch_400.json",
+      "sha256": "fb4043064db41a50efc58c884a1783b65a09f84e9af4c1092cd95891e80afa4a",
+      "bytes": 8259,
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "400"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "http_status": 200,
+      "request_id": "batch_400",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/batch_440.json",
+      "sha256": "b41abd2434541db9c6246f51d4698c61c8f587c4fc4a9aabc1bab919cf764a47",
+      "bytes": 170,
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "440"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "http_status": 200,
+      "request_id": "batch_440",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/batch_620.json",
+      "sha256": "8f2ef96c778ed1627bc6b3de77e75d3e5792be4c3ab9e7cc82ce062968e7fd07",
+      "bytes": 11746,
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "620"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "http_status": 200,
+      "request_id": "batch_620",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/batch_multi.json",
+      "sha256": "2978c36cade3e1357e817a50a19a9c0cfdf10c7ba55a15fb65074e5ef3322efe",
+      "bytes": 25119,
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "271590",
+          "292030",
+          "1174180",
+          "413150",
+          "1145360"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "http_status": 200,
+      "request_id": "batch_multi",
+      "role": "supplementary probe (not an app-shaped call: the app sends one AppID per request)"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/link_listings_d925bc70-248b-4638-b7f3-8abc876f8572.html",
+      "sha256": "b6c3d23b4c5a45fbdfc1da1c7afe3771b0dbc72343a861490a71c6e4b32553dd",
+      "bytes": 78086,
+      "procedure": null,
+      "input": null,
+      "http_status": 200,
+      "request_id": "supplementary_url_checks",
+      "role": "source URL page"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/link_listings_search_Grand_20Theft_20Auto_20V.html",
+      "sha256": "af05e1d01bd5c6e529895a2d68c406d772f950476f63796a76addc6d34b3d818",
+      "bytes": 52821,
+      "procedure": null,
+      "input": null,
+      "http_status": 200,
+      "request_id": "supplementary_url_checks",
+      "role": "browse URL page"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/listingbyid_gtav.json",
+      "sha256": "c3559621f3ca70b040a0031bbec6cc9b8cb68e6bba56bad00d881db474b22b01",
+      "bytes": 49001,
+      "procedure": "listings.byId",
+      "input": {
+        "id": "894e3a2c-6e00-45d1-8f11-74d94f68bc54"
+      },
+      "http_status": 200,
+      "request_id": "listingbyid_gtav",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/listingbyid_hl2.json",
+      "sha256": "5dab92d91f49f3db4a2960d24830e70c09805488426e221b05a59962366e34cf",
+      "bytes": 49001,
+      "procedure": "listings.byId",
+      "input": {
+        "id": "d925bc70-248b-4638-b7f3-8abc876f8572"
+      },
+      "http_status": 200,
+      "request_id": "listingbyid_hl2",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/listings_gtav.json",
+      "sha256": "9544694a53628340b6e2696965fbdf01b8100dd3e2ccce949e7ba357db1657fc",
+      "bytes": 58259,
+      "procedure": "listings.get",
+      "input": {
+        "gameIds": [
+          "6e06c087-b5ee-4ce2-bc2f-23f2f9487546"
+        ],
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "listings_gtav",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/listings_hl2.json",
+      "sha256": "665a9f8fd2c835e1daa8f5e8516ac642b79885e1955abdb0a3e7a9be5f7d176e",
+      "bytes": 23683,
+      "procedure": "listings.get",
+      "input": {
+        "gameIds": [
+          "89cf7540-e0b9-4fc0-ab7a-8b7edcd35a8a"
+        ],
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "listings_hl2",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/listings_portal.json",
+      "sha256": "6e584bd7389719251d45509e178b31007e28bfeba4c424b1dd3b9901c948966f",
+      "bytes": 33797,
+      "procedure": "listings.get",
+      "input": {
+        "gameIds": [
+          "da805799-604c-4edc-86dd-ee8d33c8102e"
+        ],
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "listings_portal",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/probe_default_ua.json",
+      "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
+      "bytes": 11503,
+      "procedure": "games.batchBySteamAppIds",
+      "input": {
+        "steamAppIds": [
+          "220"
+        ],
+        "maxListingsPerGame": 1,
+        "minimal": false
+      },
+      "http_status": 200,
+      "request_id": "probe_default_ua",
+      "role": "root-cause probe: identical request with curl's default User-Agent, no browser UA"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/probe_no_ua.json",
+      "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
+      "bytes": 730,
+      "procedure": "games.get (app's mobile path, empty User-Agent)",
+      "input": {
+        "search": "Half-Life 2",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "probe_no_ua",
+      "role": "root-cause probe: no User-Agent header at all"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/probe_path_api_mobile_trpc_games.get.json",
+      "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
+      "bytes": 730,
+      "procedure": "games.get (app's mobile path)",
+      "input": {
+        "search": "Half-Life 2",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "probe_path_api_mobile_trpc_games.get",
+      "role": "root-cause probe control: identical request on the app's path"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/probe_path_api_trpc_games.get.json",
+      "sha256": "0c9b3f383de9363f8708cb5c780198e3b73fdb89f5031e3050b8488c10659f7e",
+      "bytes": 42,
+      "procedure": "games.get (desktop web path /api/trpc/...)",
+      "input": {
+        "search": "Half-Life 2",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 403,
+      "request_id": "probe_path_api_trpc_games.get",
+      "role": "root-cause probe: same procedure on the non-mobile web path"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/search_episode_one.json",
+      "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
+      "bytes": 151,
+      "procedure": "games.get",
+      "input": {
+        "search": "Episode One",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "search_episode_one",
+      "role": "supplementary probe (is the subtitle absent or is search punctuation-sensitive?)"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/search_ghostrunner.json",
+      "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
+      "bytes": 151,
+      "procedure": "games.get",
+      "input": {
+        "search": "Ghostrunner Demo",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "search_ghostrunner",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/search_ghostrunner_broad.json",
+      "sha256": "37d752a7a9491cb72facb45bab826faf154373a3da25390a9a96bdbcdb390e8a",
+      "bytes": 1548,
+      "procedure": "games.get",
+      "input": {
+        "search": "Ghostrunner",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "search_ghostrunner_broad",
+      "role": "supplementary probe (broad title, to characterise the demo-title case)"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/search_gtav.json",
+      "sha256": "6461862be4c3d895bafff7c3092e96013b8dc8d128417e8db283b738059f275a",
+      "bytes": 14562,
+      "procedure": "games.get",
+      "input": {
+        "search": "Grand Theft Auto V",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "search_gtav",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/search_hl2.json",
+      "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
+      "bytes": 730,
+      "procedure": "games.get",
+      "input": {
+        "search": "Half-Life 2",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "search_hl2",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/search_hl2ep1.json",
+      "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
+      "bytes": 151,
+      "procedure": "games.get",
+      "input": {
+        "search": "Half-Life 2: Episode One",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "search_hl2ep1",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/search_hl2ep1_nopunct.json",
+      "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
+      "bytes": 151,
+      "procedure": "games.get",
+      "input": {
+        "search": "Half Life 2 Episode One",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "search_hl2ep1_nopunct",
+      "role": "supplementary probe (punctuation-free variant)"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/search_portal.json",
+      "sha256": "96c6d71961daf7ba4b5d436204288b1b83f647d53b6cf9902e9b7f7434b4278e",
+      "bytes": 6030,
+      "procedure": "games.get",
+      "input": {
+        "search": "Portal",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "search_portal",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/search_tf2.json",
+      "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
+      "bytes": 151,
+      "procedure": "games.get",
+      "input": {
+        "search": "Team Fortress 2",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "search_tf2",
+      "role": "app-shaped request"
+    },
+    {
+      "path": "/Users/cheng/emuready-live-recheck/search_the.json",
+      "sha256": "f0e5f7ce6ed3b48c6e281637b40c1bb2f22e1070eab54c5aeeed89e43e4f636a",
+      "bytes": 14214,
+      "procedure": "games.get",
+      "input": {
+        "search": "The",
+        "page": 1,
+        "limit": 20
+      },
+      "http_status": 200,
+      "request_id": "search_the",
+      "role": "supplementary probe (broad query used to locate a >20-listing Windows game for the pagination check)"
+    }
+  ],
+  "scratch_artifacts": {
+    "directory": "/Users/cheng/emuready-live-recheck",
+    "outside_repo": true,
+    "kept_at_observation_time": true,
+    "note": "Payloads are unmodified curl response bodies; each request also has a .url file with the exact URL and (where captured) a .headers file. Parser simulation script and output are in the same directory."
+  },
+  "limitations": [
+    "Single host and single observation window (2026-10-21 ~18:07-18:11 UTC). EmuReady data and catalog coverage drift; ids, counts and listing contents in this receipt are snapshots.",
+    "No Android app or emulator run was performed (not required by the brief). Compatibility is established by an offline behavioural simulation of the committed parser over raw live payloads, not by executing the app.",
+    "Only the four read procedures were sampled; HTTP error bodies, trpc error envelopes, timeouts and cancellation paths were not exercised live.",
+    "Only page 1 of three games' listings was sampled; deeper pages (hasPreviousPage) were not fetched.",
+    "User-Agent probes used curl only (browser-like, default curl, empty). OkHttp's own 'okhttp/x' default UA was not probed; however the mobile path answered 200 even with no UA header.",
+    "Exact earlier 403 requests were not recorded by the prior passes, so 'wrong path/origin gate' is inferred from a controlled probe, not proven.",
+    "games.get search semantics (ranking/tokenization) are undocumented, so 'zero results' is evidence about these queries, not proof that a title is absent from EmuReady.",
+    "Settings validation covered 2 reports (30 and 31 custom-field items); other reports may have different field subsets or types (e.g. arrays) not seen here.",
+    "Raw payloads contain public user-generated content (notes, author identifiers) and are deliberately kept outside the repo; only hashes are committed."
+  ],
+  "follow_up_needs": [
+    "If app-level live proof is required, run the reader once from the app/instrumentation against the live mobile endpoint (signed out) and capture logcat request/response; this receipt already proves the remote contract.",
+    "Re-run the scratch capture in a later session to detect upstream drift; compare payload shapes and hashes with this receipt.",
+    "Consider promoting a sanitised subset of these live payloads into committed test fixtures (decision outside this task's write scope).",
+    "Update docs/QUALIFICATION.md's stale '403 here' note and tick off the follow-up receipt's remaining 'live EmuReady service availability and payload-shape re-validation' item once the Lead accepts this receipt (not edited here).",
+    "Keep reader request volume unchanged: 4 app-shaped calls per game-page open plus 1 per settings tap is far below the observed x-ratelimit 100/180 s."
+  ],
+  "reproduction": {
+    "request": "GET {ORIGIN}/api/mobile/trpc/{procedure}?input={percent-encoded json '{\"json\": <input>}'}",
+    "origin": "https://www.emuready.com",
+    "examples": [
+      {
+        "procedure": "games.batchBySteamAppIds",
+        "input": {
+          "steamAppIds": [
+            "220"
+          ],
+          "maxListingsPerGame": 1,
+          "minimal": false
+        }
+      },
+      {
+        "procedure": "games.get",
+        "input": {
+          "search": "Portal",
+          "page": 1,
+          "limit": 20
+        }
+      },
+      {
+        "procedure": "listings.get",
+        "input": {
+          "gameIds": [
+            "89cf7540-e0b9-4fc0-ab7a-8b7edcd35a8a"
+          ],
+          "page": 1,
+          "limit": 20
+        }
+      },
+      {
+        "procedure": "listings.byId",
+        "input": {
+          "id": "d925bc70-248b-4638-b7f3-8abc876f8572"
+        }
+      }
+    ],
+    "curl": "curl -sS -A '<browser UA>' -H 'Accept: */*' '<generated URL>' (see the .url files in the scratch directory for exact captured URLs)",
+    "rate_limit": "x-ratelimit-limit 100 per 180000 ms"
+  },
+  "no_overclaims": "This receipt records one afternoon's read-only public API sampling from one machine and an offline simulation of the committed parser. It does not claim an app run, settings application, game launch, any write to EmuReady, or that the reader is free of defects beyond the sampled payloads. It notes that no live shape required a parser change and lists what was not exercised.",
+  "request_id_groups": {
+    "app_shaped_primary": [
+      "batch_220",
+      "batch_400",
+      "batch_440",
+      "batch_380",
+      "batch_1245620",
+      "batch_620",
+      "search_portal",
+      "search_hl2",
+      "search_hl2ep1",
+      "search_tf2",
+      "search_ghostrunner",
+      "search_gtav",
+      "listings_hl2",
+      "listings_portal",
+      "listings_gtav",
+      "listingbyid_hl2",
+      "listingbyid_gtav"
+    ],
+    "supplementary_data_probes": [
+      "batch_1091500",
+      "batch_multi",
+      "search_ghostrunner_broad",
+      "search_episode_one",
+      "search_hl2ep1_nopunct",
+      "search_the"
+    ],
+    "root_cause_probes": [
+      "probe_default_ua",
+      "probe_path_api_trpc_games.get",
+      "probe_path_api_mobile_trpc_games.get",
+      "probe_no_ua"
+    ]
+  },
+  "request_count": 27,
+  "recorded_payload_count": 29
+}

@@ -1,0 +1,312 @@
+{
+  "date": "2026-10-21",
+  "scope": "Full native debug APK rebuild (Rust/CMake toolchain restored to PATH, no excluded native tasks) and EmuReady re-qualification on the rebuilt APK; replaces the 'native libraries reused because cargo is unavailable' caveat in docs/evidence/2026-10-21-emuready-followup.json. No app source or other evidence file was modified.",
+  "base_commit": "63a2bbb3d2154c2a79a9a7b57feccf38b41f4565",
+  "branch": "Vapor",
+  "predecessor_evidence": "docs/evidence/2026-10-21-emuready-followup.json",
+  "source_state": "clean tracked working tree at 63a2bbb3; this task made no app source or other evidence-file changes and did not commit; the only repository file added by this task is this receipt",
+  "environment": {
+    "host": "macOS 27.0.1 (build 26A434), Mac arm64, 10 CPUs, 16 GiB RAM",
+    "java": "OpenJDK 17.0.2 (Oracle Corporation 17.0.2+8-86)",
+    "gradle": "8.10.2",
+    "kotlin": "1.9.24",
+    "android_gradle_plugin": "8.8.0",
+    "ndk": "27.3.13750724",
+    "cmake": "3.22.1-g37088a8 (SDK cmake; ninja 1.10.2)",
+    "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+    "rustc": "rustc 1.99.0 (b940084d7 2026-09-28); host aarch64-apple-darwin; LLVM 23.1.1",
+    "cargo_binary": "/Users/cheng/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin/cargo",
+    "installed_rust_targets": [
+      "aarch64-apple-darwin",
+      "aarch64-linux-android"
+    ],
+    "rust_toolchain_toml": "rust-toolchain.toml: channel 1.99.0, profile minimal, targets [aarch64-linux-android]",
+    "path_note": "~/.cargo/bin does not exist and no rustup binary is installed anywhere on the machine, but ~/.rustup/toolchains/1.99.0-aarch64-apple-darwin is a complete toolchain and already carries the aarch64-linux-android std target, so no `rustup target add` was needed or possible. The toolchain's own bin directory was put on PATH for the Gradle invocation; cargo then created ~/.cargo (393 MB after `cargo fetch --locked`) for the crate registry."
+  },
+  "what_changed_vs_previous_receipt": {
+    "previous": "docs/evidence/2026-10-21-emuready-followup.json recorded that :app:assembleStandardDebug failed at :app:configureCMakeDebug[arm64-v8a] because CMake could not find the Rust cargo executable. Its APK and test APK were built with the three native tasks excluded under `-x` and reused cached arm64-v8a .so outputs; `fully_native_rebuilt` was false.",
+    "now": "The Rust toolchain's cargo is on PATH, CMake finds CARGO_EXECUTABLE, and the full :app:assembleStandardDebug (configureCMakeDebug + buildCMakeDebug) succeeds without any -x exclusions. The Rust crate and all 23 CMake-built arm64-v8a .so libraries were rebuilt from scratch and 19 of the 23 rebuilt .so hashes differ from the cached Oct 18 outputs.",
+    "fully_native_rebuilt": true
+  },
+  "native_build": {
+    "preparation": [
+      {
+        "step": "locate the Rust toolchain",
+        "command": "ls ~/.rustup/toolchains && ls ~/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin",
+        "result": "toolchain 1.99.0-aarch64-apple-darwin present with cargo/rustc/rustdoc; no ~/.cargo/bin and no rustup binary on disk, so the toolchain bin directory is used directly instead of the usual rustup shims"
+      },
+      {
+        "step": "warm the cargo registry (the new ~/.cargo did not exist yet)",
+        "command": "PATH=~/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin:$PATH cargo fetch --locked (in app/src/main/cpp/wn-steam-client/rust)",
+        "result": "exit 0; all Cargo.lock dependencies downloaded; ~/.cargo 393 MB; log /tmp/native-rebuild-cargo-fetch.log sha256 638a464051ce637cb775331193f8edbd4b87226f58e1dc74646b8a830b07f4d1"
+      },
+      {
+        "step": "force a real Rust rebuild instead of reusing target/",
+        "command": "cargo clean (in app/src/main/cpp/wn-steam-client/rust)",
+        "result": "Removed 1477 files, 483.8MiB total; target/ no longer existed afterwards"
+      },
+      {
+        "step": "force the CMake/native tasks to run instead of reusing cached .so outputs",
+        "command": "rm -rf app/.cxx/Debug/3j72j675 app/build/intermediates/cxx/Debug/3j72j675",
+        "result": "removed stale configure state (including the CMakeCache entry CARGO_EXECUTABLE-NOTFOUND from the failed follow-up attempt) and the 23 cached arm64-v8a .so outputs; their pre-clean sha256s were saved to /tmp/native-rebuild-prior-libs-20261021.txt (sha256 160fa708f509b34b6c5a5b9146af3479c4ba2f2f86f53d30abd86ecec90127de)"
+      }
+    ],
+    "full_build": {
+      "command": "PATH=/Users/cheng/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin:$PATH ./gradlew :app:assembleStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+      "excluded_native_tasks": "none",
+      "started_local": "2026-10-21T19:09:36+01:00",
+      "finished_local": "2026-10-21T19:12:44+01:00",
+      "result": "BUILD SUCCESSFUL in 3m 7s (exit 0)",
+      "log": "/tmp/native-rebuild-assemble-20261021.log",
+      "log_sha256": "c78b1e7c0cb82bf279e30c693183ff00a40a723ab6eef50b645e084558b5727c",
+      "native_tasks_executed": [
+        ":app:configureCMakeDebug[arm64-v8a]",
+        ":app:buildCMakeDebug[arm64-v8a]",
+        ":app:mergeStandardDebugNativeLibs",
+        ":app:stripStandardDebugDebugSymbols",
+        ":app:packageStandardDebug"
+      ],
+      "cmake_configure": {
+        "configure_dir": "app/.cxx/Debug/3j72j675/arm64-v8a (regenerated 19:09)",
+        "cargo_found": true,
+        "cmake_cache_entry": "CARGO_EXECUTABLE:FILEPATH=/Users/cheng/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin/cargo",
+        "fetchcontent_refetched": {
+          "zstd": "v1.5.6 (shallow HEAD 794ea1b), re-fetched into _deps at 19:09",
+          "xz": "v5.4.6 (shallow HEAD 6e8732c), re-fetched into _deps at 19:09"
+        }
+      },
+      "cmake_build": {
+        "ninja_invocations": 1,
+        "compiler_log_lines": 714,
+        "native_libs_built": 23
+      },
+      "rust_build": {
+        "crate": "app/src/main/cpp/wn-steam-client/rust (crate wnsteam)",
+        "invoked_by": "CMake custom command in app/src/main/cpp/wn-steam-client/CMakeLists.txt (find_program(CARGO_EXECUTABLE cargo REQUIRED))",
+        "command_shape": "cargo rustc --locked --release --target aarch64-linux-android --lib -- -Clink-arg=-Wl,-soname,libwnsteam.so -Clink-arg=-Wl,-z,max-page-size=16384, with CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER/CC_aarch64_linux_android/AR_aarch64_linux_android set to the NDK 27.3 r27c clang/llvm-ar",
+        "rebuilt_from_scratch": true,
+        "evidence": "target/ had been emptied by cargo clean; after the build target/ is 509 MB with 209 fingerprint directories (168 aarch64-linux-android + 41 host proc-macro/build-script); libwnsteam.so was written at 19:11 (inside the 19:09:36-19:12:44 build window)",
+        "artifact": {
+          "path": "app/src/main/cpp/wn-steam-client/rust/target/aarch64-linux-android/release/libwnsteam.so",
+          "bytes": 4329040,
+          "sha256": "0efd630a679a199f97896ffcde4f23c7aef4c6203a1560f95d463b1ef3f3b15c",
+          "soname": "libwnsteam.so",
+          "load_segment_align": 16384
+        }
+      },
+      "native_lib_comparison": {
+        "pre_clean_outputs": "23 arm64-v8a .so files from the previous local build (Oct 18 18:03), the set the follow-up APK reused",
+        "post_rebuild_outputs": "23 arm64-v8a .so files produced by this build",
+        "changed_sha256_count": 19,
+        "unchanged_sha256": [
+          "libSDL3steam.so",
+          "libc++_shared.so",
+          "libssl.so",
+          "libwayland-server.so"
+        ],
+        "apk_provenance": "app/build/intermediates/merged_native_libs/.../out/lib/arm64-v8a/libwinlator.so sha256 65c638669d924a65f037a46e5ca3a0e1aa078fc797c7fa4d320ba0f2ed6b7b99 equals the rebuilt obj/arm64-v8a/libwinlator.so, and after stripStandardDebugDebugSymbols the APK entry sha256 509796b0f3c68f6830edd66811dcde1b7d4969663c598e7ad808186075dc7734 matches the stripped output; the same chain holds for libwnsteam.so (obj 0efd630a... -> merged 0efd630a... -> stripped/APK a42e3e807ab93fa9ae95d3e858e57a5bce84f99b094497ffc8c4d5b26004757a, 4329032 bytes after stripping)"
+      },
+      "rebuilt_native_libs_sha256": {
+        "libSDL3steam.so": "e5ec63c935b82927ef159a79e3ed4e022d72dc577908885a58020eb9ec20640c",
+        "libc++_shared.so": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708",
+        "libcrypto.so": "c1ef5fb693dd876bd2702279d59a3810e2a4deae0a09d2b7c22a447a211b2c3f",
+        "libcurl.so": "a2538951177e0954dbb05647f5ff8440fd22cb2eb27d5bc0ca2165eb302bf4ce",
+        "libfakeinput.so": "53264505a1adffa2e64bec5c6f254b3c815b749b4dd565e20d234351ae5dc1a3",
+        "libfile_redirect_hook.so": "90bebdd9287bec6aab88f01d3e9aaca5487809457c86b1366ca4d738de5e7b83",
+        "libgsl_alloc_hook.so": "9ddbbdf6c1eaba2368cdd2bd8185252889ad5b5581c8084de1b6a3736dc90c56",
+        "libhook_impl.so": "12a3e31366547e8063de9c9a1cc1126afb22a1b63a42678e6c830d454ef494aa",
+        "libmain_hook.so": "9454d7409fbbb4f99ce0e869020d5123ac4763523472be777c37f377abe9a396",
+        "libnetshim.so": "770cba917d342a06071fc620f23a86bb7a0733362dc4719fb4a9e039b482e32b",
+        "libpatchelf.so": "c205895bb974d4b47f5eec04b36d9ca68113293f7ce7be8462c0a74374bf229c",
+        "libproot-loader.so": "e4d001da64cfe3f18fb0111abd229001a6d9cd9baf9bc8940b8137e55b0fc54d",
+        "libproot.so": "ccc099920be6273f7565b0e54bb17c25ac09f46911ec63fab64eea0017411b32",
+        "libssl.so": "5a79d30a8d825600e22cf1928479dc299d4c80bb6eb7a9fc1ef75815fcf2b70b",
+        "libsteamclient.so": "e519cd8c5c100e766105e2878bc9d581a0356c51b4566b95f984ad5abf5f04ec",
+        "libsteamctrl.so": "029679993e28c915d060f679a2617a9218a04a4578249786f5de60fd070d65cd",
+        "libwaudio.so": "85fd4c55caea5d08039b1b2cedf352eda33326e735d135d3f6873576b20c10b9",
+        "libwayland-server.so": "2daff7500b6acee55291567d786653ba75f5aecf5a5e648fce4c10fe6bc7a8ea",
+        "libwinlator.so": "65c638669d924a65f037a46e5ca3a0e1aa078fc797c7fa4d320ba0f2ed6b7b99",
+        "libwnaudiohost.so": "20211699309e5b8b8daf21fa7f2f63a1fcdaae59391895078eb81274087d5771",
+        "libwnsteam.so": "0efd630a679a199f97896ffcde4f23c7aef4c6203a1560f95d463b1ef3f3b15c",
+        "libwnsteambootstrap.so": "2ca0ee8bf3f148fb9c34678c9da478091403050050ddff20935b75fe882f47bd",
+        "libwnwayland.so": "18cfcfcf9a5bad93cddc827874beb3680e0168ad867ffe81de71991fc13a62c7"
+      }
+    }
+  },
+  "apk": {
+    "path": "app/build/outputs/apk/standard/debug/standard.apk",
+    "bytes": 684926636,
+    "sha256": "889bc3bce50446fa412a1d8eb54389af81f74b0d947fe26b4b52e128a6918fe1",
+    "built_at_local": "2026-10-21T19:12:42+01:00",
+    "signing": "development/debug",
+    "package": "app.vapor.android",
+    "versionName": "0.1.0-dev",
+    "versionCode": 1,
+    "minSdkVersion": 29,
+    "targetSdkVersion": 28,
+    "native_libs": "39 arm64-v8a .so entries in the APK, including the rebuilt-and-stripped libwnsteam.so and libwinlator.so; no native library was reused from the previous APK",
+    "fully_native_rebuilt": true,
+    "previous_followup_apk_sha256": "8fd0f9d2bd9bb34bcd5916fc69fb505dd4f7decfd2c3f80c84bf03e28386621c"
+  },
+  "android_test_apk": {
+    "path": "app/build/outputs/apk/androidTest/standard/debug/app-standard-debug-androidTest.apk",
+    "bytes": 3759428,
+    "sha256": "2bb4c4bd17e4ce0ba9564e0067949161b54d3a44b3c7ce1d735dc169c15de760",
+    "built_at_local": "2026-10-21T19:13:14+01:00",
+    "build_command": "./gradlew :app:assembleStandardDebugAndroidTest --max-workers=4 --console=plain --no-configuration-cache (BUILD SUCCESSFUL in 7s; log /tmp/native-rebuild-androidtest-20261021.log sha256 b09b11eaa6f29479714496f992351673e4e1d8668c7c5745d013ea0c3e462abc)",
+    "previous_followup_apk_sha256": "c238ec5ab8be93be31cf692f96e43262b5f4c50a43962289d2a12fa6ab8b7695"
+  },
+  "jvm_suites": [
+    {
+      "name": "com.winlator.cmod.feature.library.EmuReadyTest",
+      "tests": 24,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time_seconds": 0.095,
+      "result_xml": "app/build/test-results/testStandardDebugUnitTest/TEST-com.winlator.cmod.feature.library.EmuReadyTest.xml",
+      "result_xml_sha256": "ef981ca836f8b52c854de83f8864ca94ec48bc126c06a0c9143410b693783ed1"
+    },
+    {
+      "name": "com.winlator.cmod.app.shell.CommunityReportsUiTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time_seconds": 7.217,
+      "result_xml": "app/build/test-results/testStandardDebugUnitTest/TEST-com.winlator.cmod.app.shell.CommunityReportsUiTest.xml",
+      "result_xml_sha256": "9a272ed6996a97b1cef80ee24bf45eb5d02d0be247cc4519abfde7a6b2294697"
+    }
+  ],
+  "verification_commands": [
+    {
+      "purpose": "full native debug APK build (includes CMake configure/build and Rust cargo build)",
+      "command": "PATH=/Users/cheng/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin:$PATH ./gradlew :app:assembleStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL in 3m 7s; no excluded tasks"
+    },
+    {
+      "purpose": "instrumented test APK build",
+      "command": "./gradlew :app:assembleStandardDebugAndroidTest --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL in 7s"
+    },
+    {
+      "purpose": "focused JVM suites on the rebuilt project",
+      "command": "./gradlew :app:testStandardDebugUnitTest --tests '*EmuReadyTest' --tests '*CommunityReportsUiTest' --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL in 14s; EmuReadyTest 24/24 and CommunityReportsUiTest 17/17, 0 failures/errors/skips; log /tmp/native-rebuild-jvm-20261021.log sha256 6ba2abecd3a444e4846521c098fd7268601e8ae3f5605e8edfa9e872963c5ae2"
+    },
+    {
+      "purpose": "report-related Android instrumentation on the rebuilt APK (17 tests)",
+      "command": "ANDROID_SERIAL=emulator-5556 ./gradlew :app:connectedStandardDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.winlator.cmod.app.shell.CommunityReportsDeviceTest,com.winlator.cmod.app.shell.LibraryGamePageUiTest --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL in 1m 51s; 17/17 tests passed (CommunityReportsDeviceTest 5, LibraryGamePageUiTest 12), 0 failed/errors/skipped, instrumentation test time 84.048s"
+    },
+    {
+      "purpose": "catalog gating Android instrumentation on the rebuilt APK (14 tests)",
+      "command": "ANDROID_SERIAL=emulator-5556 ./gradlew :app:connectedStandardDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.winlator.cmod.app.shell.SteamCatalogInstallUiTest --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL in 1m 4s; 14/14 tests passed (SteamCatalogInstallUiTest), 0 failed/errors/skipped, instrumentation test time 49.04s"
+    }
+  ],
+  "android": {
+    "emulator": {
+      "avd": "Vapor_UI_API36",
+      "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 3072 -cores 4",
+      "serial": "emulator-5556",
+      "android": "16",
+      "sdk": 36,
+      "page_size": 4096,
+      "abi": "arm64-v8a",
+      "display": "1080x2400, 420 dpi",
+      "windowless": true,
+      "gpu": "lavapipe",
+      "kill_command": "adb -s emulator-5556 emu kill (to be run after the last suite)",
+      "boot_time": "Boot completed in 119937 ms per the emulator log",
+      "log": "/tmp/native-rebuild-emulator-run2-20261021.log",
+      "log_sha256": "3d7e2835da513d7b05752108a565ce0ea58b989de95d575658357393bcb1c3b6",
+      "teardown": "adb -s emulator-5556 emu kill at 2026-10-21T19:34:16+01:00 (OK: killing emulator, bye bye); afterwards `adb devices` was empty and no qemu-system process remained"
+    },
+    "runs": [
+      {
+        "purpose": "report-related Android checks (CommunityReportsDeviceTest plus the LibraryGamePageUiTest reports test)",
+        "filter_syntax": "-Pandroid.testInstrumentationRunnerArguments.class=<comma-separated class list>; the connected task rejects the --tests option in this AGP version, so no --tests filter was used",
+        "class_filter": "com.winlator.cmod.app.shell.CommunityReportsDeviceTest,com.winlator.cmod.app.shell.LibraryGamePageUiTest",
+        "command": "ANDROID_SERIAL=emulator-5556 ./gradlew :app:connectedStandardDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.winlator.cmod.app.shell.CommunityReportsDeviceTest,com.winlator.cmod.app.shell.LibraryGamePageUiTest --max-workers=4 --console=plain --no-configuration-cache",
+        "tests": 17,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "per_class": {
+          "com.winlator.cmod.app.shell.CommunityReportsDeviceTest": 5,
+          "com.winlator.cmod.app.shell.LibraryGamePageUiTest": 12
+        },
+        "suite_time_seconds": 84.048,
+        "wall_time": "started 2026-10-21T19:31:03+01:00; finished 2026-10-21T19:32:55+01:00 (BUILD SUCCESSFUL in 1m 51s)",
+        "suite_xml_timestamp": "2026-10-21T18:32:54Z (19:32:54 local)",
+        "result_xml": "app/build/outputs/androidTest-results/connected/debug/flavors/standard/TEST-Vapor_UI_API36(AVD) - 16-_app-standard.xml (this run's XML was overwritten in the build directory by the later 14-test run; a copy was saved at /tmp/native-rebuild-run17-xml-20261021.xml with the sha256 below)",
+        "saved_result_xml": "/tmp/native-rebuild-run17-xml-20261021.xml",
+        "saved_result_xml_sha256": "2829290832da5e37c908154973c8928f68565782e1d5876aade261b65162018f",
+        "log": "/tmp/native-rebuild-instrumentation-17test-run2-20261021.log",
+        "log_sha256": "90629e6a9f9ca973d0cf07c2039f6661a404b9b9d7908ded0725072b29a16230",
+        "observed": "Finished 17 tests on Vapor_UI_API36(AVD) - 16; 0 skipped, 0 failed; BUILD SUCCESSFUL",
+        "apk_sha256": "889bc3bce50446fa412a1d8eb54389af81f74b0d947fe26b4b52e128a6918fe1",
+        "android_test_apk_sha256": "2bb4c4bd17e4ce0ba9564e0067949161b54d3a44b3c7ce1d735dc169c15de760"
+      },
+      {
+        "purpose": "catalog gating Android checks (SteamCatalogInstallUiTest)",
+        "filter_syntax": "-Pandroid.testInstrumentationRunnerArguments.class=<single class>; no --tests filter",
+        "class_filter": "com.winlator.cmod.app.shell.SteamCatalogInstallUiTest",
+        "command": "ANDROID_SERIAL=emulator-5556 ./gradlew :app:connectedStandardDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.winlator.cmod.app.shell.SteamCatalogInstallUiTest --max-workers=4 --console=plain --no-configuration-cache",
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "per_class": {
+          "com.winlator.cmod.app.shell.SteamCatalogInstallUiTest": 14
+        },
+        "suite_time_seconds": 49.04,
+        "wall_time": "started 2026-10-21T19:33:02+01:00; finished 2026-10-21T19:34:07+01:00 (BUILD SUCCESSFUL in 1m 4s)",
+        "suite_xml_timestamp": "2026-10-21T18:34:06Z (19:34:06 local)",
+        "result_xml": "app/build/outputs/androidTest-results/connected/debug/flavors/standard/TEST-Vapor_UI_API36(AVD) - 16-_app-standard.xml",
+        "result_xml_sha256": "1f54a9461ea76659a2614772da3938ab581a922bb5b01b169ead83eced341d95",
+        "saved_result_xml": "/tmp/native-rebuild-run14-xml-20261021.xml",
+        "saved_result_xml_sha256": "1f54a9461ea76659a2614772da3938ab581a922bb5b01b169ead83eced341d95",
+        "log": "/tmp/native-rebuild-instrumentation-14test-run2-20261021.log",
+        "log_sha256": "54d14e3bcdb7097126bcae9118efd5403f5c50733c261dc206ea5136f5d30e32",
+        "observed": "Finished 14 tests on Vapor_UI_API36(AVD) - 16; 0 skipped, 0 failed; BUILD SUCCESSFUL",
+        "apk_sha256": "889bc3bce50446fa412a1d8eb54389af81f74b0d947fe26b4b52e128a6918fe1",
+        "android_test_apk_sha256": "2bb4c4bd17e4ce0ba9564e0067949161b54d3a44b3c7ce1d735dc169c15de760"
+      }
+    ],
+    "failed_attempts": [
+      {
+        "purpose": "first 17-test instrumentation attempt",
+        "command": "ANDROID_SERIAL=emulator-5556 ./gradlew :app:connectedStandardDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.winlator.cmod.app.shell.CommunityReportsDeviceTest,com.winlator.cmod.app.shell.LibraryGamePageUiTest --max-workers=4 --console=plain --no-configuration-cache",
+        "result": "BUILD FAILED in 1m 26s; Finished 0 tests on Vapor_UI_API36(AVD) - 16",
+        "error": "com.android.ddmlib.AdbCommandRejectedException: device offline - the emulator on port 5556 was shut down and a different instance took the port while the run was in progress (emulator ownership collision with another teammate; Lead confirmed staging-patch held 5556 for its runtime validation). No test executed and no test failure occurred.",
+        "log": "/tmp/native-rebuild-instrumentation-17test-20261021.log",
+        "log_sha256": "235f3de08cb2abcdae159884488f5d7a5e0e7c12fd1fa52c4367206c381b3796",
+        "saved_result_xml": "/tmp/native-rebuild-failed-run-xml-20261021.xml",
+        "saved_result_xml_sha256": "2b7918294645b7a6f270334840cb482a42f58374ff4e9a22bbceba3cb6733e40",
+        "tests": 0,
+        "retried_after_lead_go_ahead": true
+      }
+    ],
+    "used_apks": {
+      "standard_apk_sha256": "889bc3bce50446fa412a1d8eb54389af81f74b0d947fe26b4b52e128a6918fe1",
+      "android_test_apk_sha256": "2bb4c4bd17e4ce0ba9564e0067949161b54d3a44b3c7ce1d735dc169c15de760",
+      "note": "the APKs were rebuilt before the runs and their sha256s were re-checked unchanged after the runs; Gradle installed those outputs on the emulator"
+    }
+  },
+  "build_blockers": [],
+  "unaddressed_items": [
+    "byte-for-byte APK reproducibility was not checked (debug builds embed timestamps/build IDs)",
+    "no live EmuReady service request was made; instrumentation uses injected fake pages/settings",
+    "physical device / gamepad / TalkBack coverage remains out of scope",
+    "the emulator ownership collision cost one failed 17-test attempt (0 tests executed); it was retried after the Lead re-confirmed ownership"
+  ],
+  "remaining": [
+    "physical phone and physical gamepad/TalkBack pass",
+    "live EmuReady service availability and payload-shape re-validation",
+    "byte-for-byte APK reproducibility across machines",
+    "commercial service/data reuse agreement before any commercial distribution"
+  ],
+  "no_overclaims": "This receipt records a full native debug APK rebuild from source (Rust cargo build + CMake/ninja native build with no excluded tasks), the rebuilt APKs' SHA-256s, the focused JVM suites, and Android instrumentation re-run on the rebuilt APK and test APK on an emulator. It does not claim physical-hardware coverage, live EmuReady service verification, game launch, accessibility sign-off, or byte-identical reproducibility."
+}
