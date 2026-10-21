@@ -135,6 +135,21 @@ The later source experiment maps the Leegao release's reviewed image and generat
 files to the current pinned source. It does not establish either other variant's
 source identity. File sizes describe payload storage, not resident RAM or speed.
 
+A 21 October static check (no execution and no repackaging) confirms all three
+hashes above and separates the build lines. The default and GameNative payloads
+are not builds of the v0.0.5r5 source: both use NDK r29/clang 21, 16 KB `LOAD`
+alignment and an ICD-only 15-export set, the default payload retains `debug_info`
+and a Termux build directory, and compile units they name (`graphicsenv_hook.cpp`,
+`spirv_patcher.cpp`, `wrapper_bcdec.c`) do not exist in the v0.0.5r5 tag, the
+reviewed `3abf4870` tree or the 16 upstream branches examined. Their exact source
+revisions remain open. The Leegao release was packaged by the retained
+`leegao/vulkan_wrapper_termux-packages` repository at `c5c45d88` (Termux Docker
+build, NDK r27c, API 26). A build of the tag source reproduces that payload's
+SONAME, 20 `NEEDED` names, export family and 4 KB `LOAD` alignment, but not its
+bytes, because NDK r27c, the release sysroot/Docker image and the release
+SPIRV-Tools revision are not retained.
+See [the reproduction receipt](evidence/2026-10-21-wrapper-release-repro.json).
+
 ## Open-source reuse decision — 14 October 2026
 
 Vapor remains a GPL-3.0 WinNative derivative. Retain the integration, source history,

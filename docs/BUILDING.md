@@ -531,6 +531,14 @@ This experiment builds the existing Leegao wrapper source for Android ARM64;
 it does not replace a bundled wrapper. [Component notes](../tools/vulkan-wrapper/README.md)
 describe the image-ownership and trace-gating patches and their source tests.
 
+The v0.0.5r5 release itself was packaged by a separate retained Termux repository,
+`leegao/vulkan_wrapper_termux-packages` at `c5c45d88` (Docker with NDK r27c,
+API 26, `-landroid-shmem -ladrenotools`, then zstd/tar). The tag source contains
+no release workflow. Exact byte reproduction of the release payload is therefore
+bounded by that Docker image/sysroot, NDK r27c and the release SPIRV-Tools
+revision, none of which is retained; the receipt records how close the local build
+gets and what remains open.
+
 Pinned build inputs:
 
 - Wrapper: `leegao/bionic-vulkan-wrapper`,

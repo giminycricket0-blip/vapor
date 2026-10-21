@@ -35,9 +35,12 @@ libraries build. The candidates pass 37 Turnip cases, 26 wrapper image cases and
 seven generated-call cases with clean sanitizers, plus the separate allocation
 and read-only-memory checks. Meson's generator dependency is corrected. Original
 controls expose the recorded faults. The wrapper also passes an offscreen native
-load and BC probe on the 4 KB API 36 and 16 KB API 37 emulators, and a staging
+load and BC probe on the 4 KB API 36 and 16 KB API 37 emulators, a staging
 lifetime review records the upstream late-free/growth behavior plus one
-conditional open risk. No APK/default or physical performance result.
+conditional open risk, and a packaged-payload identity check bounds the release
+reproduction (Leegao recipe located; exact bytes not reproducible from retained
+inputs; default/GameNative are a different source line with exact revisions
+open). No APK/default or physical performance result.
 [Qualification](QUALIFICATION.md#graphics-component-source-refactors--21-october-2026).
 
 Continue in this order:
@@ -78,11 +81,16 @@ and component receipts. No whole-repository or full-catalog audit is complete.
 
 **Read-only slice implemented and locally checked.** The public API reader,
 shared native modal, identity guards and explicit settings viewer are in place.
-44 focused JVM/Compose tests pass; 17 Android checks pass on the earlier feature
-APK and the five reports checks repeat on the final APK. Live signed-out catalog
-browsing retrieves Windows Half-Life 2 reports and settings. [Qualification and
+44 focused JVM/Compose tests passed on the first APK; a follow-up review then
+fixed eight matching/gating/error-state findings and re-verified with 41 JVM
+tests (24/24 + 17/17), 17 report/game-page Android checks and 14 catalog-install
+Android checks on the rebuilt Kotlin/resource APK (native libraries reused; a full
+native rebuild needs cargo). Live signed-out catalog browsing retrieves Windows
+Half-Life 2 reports and settings. [Qualification and
 screenshots](QUALIFICATION.md#emuready-community-reports--21-october-2026).
-Selective settings application and automatic route ranking are not implemented.
+Selective settings application and automatic route ranking are not implemented;
+live-service re-validation, full native APK rebuild and physical-phone/TalkBack
+acceptance remain.
 
 Implementation scope and verification plan:
 

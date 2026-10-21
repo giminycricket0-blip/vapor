@@ -111,9 +111,8 @@ runtime. The local files retain build-tree RUNPATHs and are not packaged updates
 The optional packaged Leegao binary matches release `v0.0.5r5`, whose tag resolves
 to `c8baafbd4f4835ca103acb55ec3ac13642b6b7e3`. Its four reviewed image/generator
 files match the current source base. Vapor's default and GameNative wrapper
-payloads differ and are not established as builds of this source. Reproducing
-the complete released binary, effective-driver image quality, concurrency and
-GPU/phone performance checks remain separate.
+payloads differ and are not established as builds of this source. Effective-driver
+image quality, concurrency and GPU/phone performance checks remain separate.
 
 ### Wrapper native loading and BC probe
 
@@ -154,6 +153,27 @@ recorded as open: staging memory allocated on the wrapper's emulated-memory path
 trampoline, so a later device destroy can free the same memory again. The probe
 does not enable those features; a dedicated fixture is required to settle it and
 no defect is claimed. [Staging receipt](evidence/2026-10-21-vulkan-wrapper-staging.json).
+
+### Packaged wrapper payload identity
+
+Static analysis (no execution, no repackaging) confirms the three packaged payload
+sizes and hashes and separates their build lines. The Leegao payload (8,709,528 B,
+`520ec0ba…`) is byte-identical to the v0.0.5r5 release asset and follows the
+retained Termux recipe `leegao/vulkan_wrapper_termux-packages` at `c5c45d88`
+(Docker, NDK r27c, API 26): 20 `NEEDED` entries, 3,583 exports, 4 KB `LOAD`
+alignment, no `.comment`. A clean build of the verified tag source succeeds and
+matches the SONAME, `NEEDED` names, wrapper/SPIRV-Tools export family and 4 KB
+alignment, but not the bytes: NDK r27c, the release sysroot/Docker image, the
+release SPIRV-Tools revision and the release strip step are not retained.
+The default payload (19,146,576 B, `ff43589b…`) and GameNative payload
+(2,705,856 B, `25e80104…`) are different builds — NDK r29/clang 21, 16 KB
+alignment, an ICD-only 15-export set, with the default retaining `debug_info` and
+a Termux build path. Compile units they name (`graphicsenv_hook.cpp`,
+`spirv_patcher.cpp`, `wrapper_bcdec.c`) are absent from the v0.0.5r5 tag, the
+reviewed tree and the 16 upstream branches examined, so their exact source
+revisions remain open. Static identity evidence does not establish execution,
+image quality or performance.
+[Reproduction receipt](evidence/2026-10-21-wrapper-release-repro.json).
 
 ### Remaining boundaries
 
@@ -198,6 +218,21 @@ Android checks** successfully (59.684 seconds). This is a subset repetition, not
 22 distinct Android tests. The original pre-result ADB interruption is not counted
 as a pass. Both application and test APKs build; the final installed application
 hash matches the local APK. [Build/test receipt](evidence/2026-10-21-emuready.json).
+
+**Follow-up corrections (21 October):** an independent review of this committed
+slice found two medium and six low issues: batch AppID identity could reject
+Windows entries whose titles differ in punctuation or accent, the catalog action
+appeared for known non-Windows apps, missing and ambiguous entries shared one
+message, and several error/wording details were inconsistent. All were fixed and
+re-verified. EmuReadyTest passes **24/24** and CommunityReportsUiTest **17/17**
+(41 focused JVM tests); the rebuilt APK and test APK were run on the Android
+16/API 36 emulator with injected data: **17 report/game-page checks** (5 reports
++ 12 game-page, 155.682 s) and **14 catalog-install checks** including both new
+platform-gating cases (77.114 s), with no results carried over. The APK is a
+Kotlin/resource rebuild because a full native build needs a Rust/cargo toolchain
+not installed here, so it reuses the prior native libraries. The Gradle
+dependency fetch now sends explicit HTTP headers to GitHub.
+[Follow-up receipt](evidence/2026-10-21-emuready-followup.json).
 
 ### Live public data in the normal app
 

@@ -1,0 +1,1390 @@
+{
+  "date": "2026-10-21",
+  "task_id": "task-4",
+  "scope": "Bounded, read-only static investigation of the three packaged Vulkan-wrapper payloads in app/src/main/assets/graphics_driver/, the upstream v0.0.5r5 release source tag, and the retained upstream Termux build/packaging recipe. Verifies payload identities, attempts a source build into scratch with the recorded local toolchain and an upstream-recipe-aligned relink, and states exactly what is and is not established about default/GameNative source identity. No execution, no device, no packaging or default changes, no upstream submission.",
+  "base_commit": "8c9c94764d4a706857819ffded2089defdd8a8b3",
+  "source_branch": "Vapor",
+  "method": "Static ELF analysis with Android NDK llvm-readelf/llvm-nm/llvm-strings (NDK 27.3.13750724); hashes with sha256/sha1; GitHub release/tree metadata from retained JSON records and fresh read-only API/archive fetches; one clean scratch build of the verified tag source plus one relink with upstream-aligned link flags. No payload was executed and no emulator/GPU was involved.",
+  "inputs": [
+    {
+      "path": "app/src/main/assets/graphics_driver/wrapper-leegao.tzst",
+      "bytes": 3057352,
+      "sha256": "3eabf6fc53f3b738eb80e7f80e3b28f761a8cebaa62b7e6c1f05e0e1228a969d",
+      "role": "packaged Leegao wrapper archive (zstd-compressed tar, no dictionary)"
+    },
+    {
+      "path": "app/src/main/assets/graphics_driver/wrapper.tzst",
+      "bytes": 3815368,
+      "sha256": "718b6b22647d1246da5cd524c4b1c41933b44a71cbe41e5ab19f43ad22850ce9",
+      "role": "packaged default wrapper archive"
+    },
+    {
+      "path": "app/src/main/assets/graphics_driver/wrapper-gamenative.tzst",
+      "bytes": 759382,
+      "sha256": "e38683ac1d382dc875d97fcae763f56d411655e56c1d1f43c743f57a58b605bc",
+      "role": "packaged GameNative wrapper archive"
+    },
+    {
+      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/runtime-research-20261016/leegao--bionic-vulkan-wrapper/{tree.json,releases.json,identity.json}",
+      "role": "retained read-only GitHub metadata for leegao/bionic-vulkan-wrapper",
+      "notes": {
+        "tree.json": {
+          "tree_sha": "c8baafbd4f4835ca103acb55ec3ac13642b6b7e3",
+          "entries": 11028,
+          "blobs": 10364,
+          "truncated": false
+        },
+        "identity.json": {
+          "repo": "leegao/bionic-vulkan-wrapper",
+          "branch": "wrapper",
+          "head": "c8baafbd4f4835ca103acb55ec3ac13642b6b7e3"
+        },
+        "releases.json": "3 releases: ETC2-Milestone-2, v0.0.5r5, v0.0.5r4 with asset names, sizes and sha256 digests"
+      }
+    },
+    {
+      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/{baseline.so,baseline-stripped.so,candidate.so,candidate-stripped.so,binary-checks.json,final-configuration.json,source.tar.gz,spirv-build/}",
+      "role": "previous complete local Android builds of leegao/bionic-vulkan-wrapper 3abf48704a4d9303967a0811c0dc8ff8567d613b with the recorded recipe; read-only"
+    },
+    {
+      "path": "/Users/cheng/wrapper-release-repro/tag-source/c8baafbd.tar.gz",
+      "bytes": 47247579,
+      "sha256": "d29d0a21f8e0923abd4650522759a08bd51d17327c2f09a9343c5de15d245dde",
+      "url": "https://codeload.github.com/leegao/bionic-vulkan-wrapper/tar.gz/c8baafbd4f4835ca103acb55ec3ac13642b6b7e3",
+      "role": "fresh download of the release tag source; archive verified against retained tree.json"
+    },
+    {
+      "path": "/Users/cheng/wrapper-release-repro/termux-recipe/vulkan_wrapper_termux-packages-c5c45d88.tar.gz",
+      "bytes": 64546682,
+      "sha256": "846eee8e83d975d5f5c62caa417c8d9791dbc8609c450d6a7ec64be7238802f0",
+      "url": "https://codeload.github.com/leegao/vulkan_wrapper_termux-packages/tar.gz/c5c45d88a5f5c403bbe9f4c436139433628210de",
+      "role": "fresh download of the retained upstream Termux build/packaging repo (branch dev/wrapper)"
+    }
+  ],
+  "payload_extraction": {
+    "commands": [
+      "file app/src/main/assets/graphics_driver/wrapper*.tzst",
+      "tar --zstd -tf <archive>.tzst",
+      "tar --zstd -xf <archive>.tzst -C <scratch>/<variant>",
+      "shasum -a 256 <scratch>/<variant>/usr/lib/*.so <scratch>/<variant>/usr/share/vulkan/icd.d/*.json"
+    ],
+    "archive_format": "zstd-compressed tar (Zstandard v0.8+, Dictionary ID: None); tar --zstd extracted all three",
+    "extracted_per_archive": {
+      "wrapper-leegao": {
+        "usr/lib/libvulkan_wrapper.so": {
+          "bytes": 8709528,
+          "sha256": "520ec0ba1b5a404b12282d18f863761a44703012be6e2421b0f5adcb9d47be11"
+        },
+        "usr/lib/libadrenotools.so": {
+          "bytes": 49096,
+          "sha256": "c7dcc64978da91199a6005780f2c22783ac7039be26e363994cdd44d32825dee"
+        },
+        "usr/lib/libfile_redirect_hook.so": {
+          "bytes": 6456,
+          "sha256": "096e27b3de60aba1979f6b2dbcd72ca124b46402bfd8a0755e44f23aa3c173ff"
+        },
+        "usr/lib/libgsl_alloc_hook.so": {
+          "bytes": 7520,
+          "sha256": "f37a0af52885bb52efe7adc45dd098fda4414fd08d932cd9632803280f3031f6"
+        },
+        "usr/lib/libhook_impl.so": {
+          "bytes": 42160,
+          "sha256": "0f3f911ac2b189657f8c2b08b80761bf9129c899e4497ea6166e2291bf13fe79"
+        },
+        "usr/lib/libmain_hook.so": {
+          "bytes": 7552,
+          "sha256": "9a73b12b6af01e2722f7877642610dd86aa15aef549d381e662ae0ebb238deb1"
+        },
+        "usr/share/vulkan/icd.d/wrapper_icd.aarch64.json": {
+          "bytes": 140,
+          "sha256": "adb27bf7cad76917424a9eaee918c5f0ec755adc98c0921f78434d67f89de304"
+        }
+      },
+      "wrapper": {
+        "usr/lib/libvulkan_wrapper.so": {
+          "bytes": 19146576,
+          "sha256": "ff43589bd34c236a048f93f0beb0af0ff0cbb5c8a0ecfe4227bacd5db7d2ba7a",
+          "state": "ELF with debug_info, not stripped"
+        },
+        "usr/lib/libadrenotools.so": {
+          "bytes": 47760,
+          "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c"
+        },
+        "usr/lib/libfile_redirect_hook.so": {
+          "bytes": 6448,
+          "sha256": "081809c19edc4d6ef44667f16bacdc3ff534be5669a87db015d24ca50ee60953"
+        },
+        "usr/lib/libgsl_alloc_hook.so": {
+          "bytes": 7488,
+          "sha256": "80969e481472084ce5f565b716a4707c91ff1f9fe99b9ec70eebebff0ab54cc7"
+        },
+        "usr/lib/libhook_impl.so": {
+          "bytes": 40968,
+          "sha256": "63d5960e97119a93a00c0d5b7fa1c4e4a84ec47f7dd7c15024142f1943487632"
+        },
+        "usr/lib/libmain_hook.so": {
+          "bytes": 7560,
+          "sha256": "de9418db319242ad08e2c0d52ecfefb1eeede5341989ef1aa20cba8dca8fb926"
+        },
+        "usr/share/vulkan/icd.d/wrapper_icd.aarch64.json": {
+          "bytes": 140,
+          "sha256": "adb27bf7cad76917424a9eaee918c5f0ec755adc98c0921f78434d67f89de304"
+        }
+      },
+      "wrapper-gamenative": {
+        "usr/lib/libvulkan_wrapper.so": {
+          "bytes": 2705856,
+          "sha256": "25e8010444dca69a448fa8bbd145b650e8283e329228fc7b7d1b70b79e63d1f3",
+          "state": "stripped"
+        },
+        "usr/lib/libadrenotools.so": {
+          "bytes": 47760,
+          "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c"
+        },
+        "usr/lib/libfile_redirect_hook.so": {
+          "bytes": 6448,
+          "sha256": "081809c19edc4d6ef44667f16bacdc3ff534be5669a87db015d24ca50ee60953"
+        },
+        "usr/lib/libgsl_alloc_hook.so": {
+          "bytes": 7488,
+          "sha256": "80969e481472084ce5f565b716a4707c91ff1f9fe99b9ec70eebebff0ab54cc7"
+        },
+        "usr/lib/libhook_impl.so": {
+          "bytes": 40968,
+          "sha256": "63d5960e97119a93a00c0d5b7fa1c4e4a84ec47f7dd7c15024142f1943487632"
+        },
+        "usr/lib/libmain_hook.so": {
+          "bytes": 7560,
+          "sha256": "de9418db319242ad08e2c0d52ecfefb1eeede5341989ef1aa20cba8dca8fb926"
+        },
+        "usr/share/vulkan/icd.d/wrapper_icd.aarch64.json": {
+          "bytes": 140,
+          "sha256": "adb27bf7cad76917424a9eaee918c5f0ec755adc98c0921f78434d67f89de304"
+        }
+      }
+    },
+    "verification": {
+      "matches_PROVENANCE_values": true,
+      "supporting_files": "The five usr/lib hook/adrenotools libraries and the ICD JSON are byte-identical in wrapper.tzst and wrapper-gamenative.tzst, and those bytes equal the local build's hooks/ link inputs (hooks/libadrenotools.so sha256 7412c757...). They are different (older/different) files in wrapper-leegao.tzst and equal, byte for byte, the files retained in the upstream Termux packaging repo's wrapper/usr/ tree (verified below).",
+      "icd_json": "All three archives ship the same 140-byte wrapper_icd.aarch64.json (sha256 adb27bf7...)."
+    }
+  },
+  "upstream_release_identity": {
+    "tag": "v0.0.5r5",
+    "tag_commit": "c8baafbd4f4835ca103acb55ec3ac13642b6b7e3",
+    "release_id": 241796441,
+    "published_at": "2025-08-22T11:16:05Z",
+    "asset_name": "libvulkan_wrapper.so",
+    "asset_bytes": 8709528,
+    "asset_sha256_published_digest": "520ec0ba1b5a404b12282d18f863761a44703012be6e2421b0f5adcb9d47be11",
+    "packaged_payload_bytes": 8709528,
+    "packaged_payload_sha256": "520ec0ba1b5a404b12282d18f863761a44703012be6e2421b0f5adcb9d47be11",
+    "byte_identical_to_published_release_asset": true,
+    "evidence": [
+      "Retained releases.json records asset size 8,709,528 and GitHub asset digest sha256:520ec0ba... for v0.0.5r5.",
+      "Extracted usr/lib/libvulkan_wrapper.so from wrapper-leegao.tzst hashes to exactly 520ec0ba... and is 8,709,528 bytes."
+    ],
+    "earlier_release_for_context": {
+      "tag": "v0.0.5r4",
+      "published_at": "2025-08-20T09:37:51Z",
+      "asset_bytes": 8326904,
+      "asset_sha256_published_digest": "c42f9cde0f4a0fcd36402091fd0d1c6c475f492ca1f1d111d72a94ba4bac45dc"
+    },
+    "later_dev_assets_for_context": [
+      {
+        "asset": "libvulkan_wrapper_5_22_26.so.zip",
+        "bytes": 3086944,
+        "sha256": "94c2163cdc81789316585a66147e55bc00659d4277c0a5c1b0049d45832ecac7",
+        "extracted_lib_bytes": 8735768,
+        "extracted_lib_sha256": "19201ae6ebfc65d5e36489ef9c14ff651bff9adc457d8dff0504d23e655de6fa"
+      },
+      {
+        "asset": "libvulkan_wrapper_5_25_26.so.zip",
+        "bytes": 3092726,
+        "sha256": "7f151f94731b358bdbe70f3f30ae252afdf3fd41d56c2986bcabafddf773f597",
+        "extracted_lib_bytes": 8751808,
+        "extracted_lib_sha256": "d69f098b1259ff2c3eb9e85a50b9166ca0d31e72489d044ab4708e9eef47d826"
+      }
+    ],
+    "text_conclusion": "The packaged Leegao payload is byte-identical to the official v0.0.5r5 release asset, in both local hash and the GitHub-published asset digest. This is a binary identity, not a source-to-binary reproduction."
+  },
+  "upstream_release_source": {
+    "repository": "https://github.com/leegao/bionic-vulkan-wrapper",
+    "default_branch": "wrapper",
+    "tag_tree": "c8baafbd4f4835ca103acb55ec3ac13642b6b7e3",
+    "archive": {
+      "url": "https://codeload.github.com/leegao/bionic-vulkan-wrapper/tar.gz/c8baafbd4f4835ca103acb55ec3ac13642b6b7e3",
+      "bytes": 47247579,
+      "sha256": "d29d0a21f8e0923abd4650522759a08bd51d17327c2f09a9343c5de15d245dde"
+    },
+    "archive_verification_against_retained_tree_json": {
+      "tree_entries": 11028,
+      "tree_blobs": 10364,
+      "regular_file_blobs_match_git_blob_sha": 10336,
+      "symlinks_match": 13,
+      "csv_files_with_expected_crlf_archive_conversion": 15,
+      "gitattributes_rule": "*.csv eol=crlf",
+      "missing_files": 0,
+      "gitlink_submodules_absent_from_tarball": [
+        ".gitlab-ci/bin",
+        ".gitlab-ci/docs"
+      ],
+      "verdict": "archive is the recorded tag tree"
+    },
+    "version_file": {
+      "path": "VERSION",
+      "content": "24.2.5",
+      "bytes": 7
+    },
+    "has_github_workflows": false,
+    "workflow_search": "No .github/workflows directory or any .yml/.yaml release workflow exists in the tag tree; the tree's CI files are the upstream Mesa .gitlab-ci set. The release build recipe is therefore not defined by the tag source.",
+    "wrapper_branch_commit_context": [
+      {
+        "sha": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+        "date": "2026-10-18T01:58:20Z",
+        "subject": "Merge pull request #228 from JuliusPinsker/fix/no-prefer-dedicated"
+      },
+      {
+        "sha": "0d2bb123c7c1aa9a11b8d76543f3edeb20a9092b",
+        "date": "2026-10-17T08:43:06Z",
+        "subject": "Clear prefersDedicatedAllocation in memory requirements"
+      },
+      {
+        "sha": "c8baafbd4f4835ca103acb55ec3ac13642b6b7e3",
+        "date": "2025-08-22T11:00:50Z",
+        "subject": "Merge pull request #168 from leegao/debug-495 (the release tag)"
+      }
+    ],
+    "reviewed_files_vs_october_source": {
+      "note": "The four files named by the existing receipt are byte-identical between tag c8baafbd and commit 3abf4870 (wrapper_image.c 5580732..., vk_entrypoints.py 8cea499..., vk_wrapper_trampolines_gen.py 9cccd5e4..., vk_unwrapper_gen.py 8ca3db9d...). The full wrapper directories differ only by the two post-tag commits (wrapper_device.c prefersDedicatedAllocation change) plus the local candidate patches already applied in the wrapper-build tree.",
+      "other_tag_file_examples": {
+        "wrapper_device.c": "089dcbbfe3009ab634e08d6e989ee45fa0d2e942e95c1f31843ec92ffb1a1795",
+        "wrapper_physical_device.c": "c2fb0bcddb95572fa9014650c64d9d02d7fe3ccd396773f69a462de91f54a147",
+        "spirv_edit.cpp": "065671544757c71150afe1c03a1f5045109d9e4aad3d9c3740aab013edae5f4d",
+        "meson.build": "941f6fd6e8ead48625febf16db6bc67c28365da9904644a9c04b94fef8c4cfdb"
+      }
+    },
+    "source_tree_shape": "Mesa 24.2.5 fork tree with the wrapper at src/vulkan/wrapper; SPIRV-Tools headers committed under src/vulkan/wrapper/include/spirv-tools but no SPIRV-Tools static archives; pull_spirv_tools.sh builds them from a sibling ../SPIRV-Tools checkout via its own build.sh and copies build/app/local/arm64-v8a/*.a into src/vulkan/wrapper/lib/."
+  },
+  "upstream_release_recipe": {
+    "repository": "https://github.com/leegao/vulkan_wrapper_termux-packages",
+    "branch": "dev/wrapper",
+    "head": "c5c45d88a5f5c403bbe9f4c436139433628210de",
+    "archive_sha256": "846eee8e83d975d5f5c62caa417c8d9791dbc8609c450d6a7ec64be7238802f0",
+    "note": "The repo description of leegao/bionic-vulkan-wrapper names this repo as the build source. Its retained head is 2025-08-20, between v0.0.5r4 and v0.0.5r5, so it records the release pipeline but not the exact per-release invocation.",
+    "key_files": {
+      "packages/vulkan-wrapper-android/build.sh": {
+        "bytes": 2101,
+        "sha256": "3a7058d24e8380e726236b71e6b70c0399ee6fb70e806ecba32ff4bd5dfbf58f"
+      },
+      "packages/vulkan-wrapper-android/leegao.patch": {
+        "bytes": 775900,
+        "sha256": "8db8adea8f46065bca371564d72df54b1f7941943181e37918c7fb7d9cecd6be"
+      },
+      "packages/vulkan-wrapper-android/staging.patch": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "wrapper/build.sh": {
+        "bytes": 1415,
+        "sha256": "8bf1b8e83f8e9b37eeaa5e11c1bae404e4b292ba01943b901b1da07342ea9f76"
+      },
+      "wrapper/build_termux.sh": {
+        "bytes": 1457,
+        "sha256": "e5c9a7371e8c1e6f4905953c95340d7263d2f174befc19000b5a680e0b9e35e4"
+      },
+      "wrapper/push.sh": {
+        "bytes": 892,
+        "sha256": "af5d0e4c1d7e4b78fefbc86b2c781a8d3b8949b22017bad9f15568ad3c78d664"
+      },
+      "wrapper.sh": {
+        "bytes": 586,
+        "sha256": "eceb11dee2b31e2921ed13f73375b3cbb741f275d5aac3ebfe7faaf649d1b831"
+      }
+    },
+    "build_configuration": {
+      "package": "vulkan-wrapper-android",
+      "TERMUX_PKG_VERSION": "25.0.0",
+      "TERMUX_PKG_REVISION": "2",
+      "TERMUX_PKG_API_LEVEL": 26,
+      "source": "git+file:///home/builder/termux-packages/mesa_bionic (branch wrapper); _COMMIT abf3138b2f2852c61925e8d8a97fea1e91c4dd1f present but commented out, so the built revision is the checked-out working tree",
+      "ndk": "/home/builder/lib/android-ndk-r27c",
+      "build_command": "time sudo ./scripts/run-docker.sh sudo bash -c \"NDK=/home/builder/lib/android-ndk-r27c ./build-package.sh --library bionic vulkan-wrapper-android -s -f\"",
+      "extra_configure_args": [
+        "--cmake-prefix-path $TERMUX_PREFIX",
+        "-Dcpp_rtti=false",
+        "-Dgbm=disabled",
+        "-Dopengl=false",
+        "-Dllvm=disabled",
+        "-Dshared-llvm=disabled",
+        "-Dplatforms=x11",
+        "-Dgallium-drivers=",
+        "-Dxmlconfig=disabled",
+        "-Dvulkan-drivers=wrapper",
+        "-D_b_ndebug=true",
+        "--buildtype=release"
+      ],
+      "pre_configure": [
+        "CPPFLAGS+=' -D__USE_GNU'",
+        "LDFLAGS+=' -landroid-shmem -ladrenotools'",
+        "copy mesa_bionic/src/vulkan/wrapper/lib/*.a into src/vulkan/wrapper/lib/"
+      ],
+      "artifact_extraction": "cp ~/.termux-build/vulkan-wrapper-android/build/src/vulkan/wrapper/libvulkan_wrapper.so wrapper/usr/lib/libvulkan_wrapper.so",
+      "tzst_packaging": "wrapper/build.sh zips the built lib as libvulkan_wrapper.so.zip and, for the Winlator APK, replaces assets/graphics_driver/wrapper.tzst: tar usr -> zstd wrapper.tar -o assets/graphics_driver/wrapper.tzst. The upstream repo also retains termux.deb and wrapper.tzst.orig payloads."
+    },
+    "retained_wrapper_directory": {
+      "supporting_files_match_packaged_leegao_archive": true,
+      "matching_files": [
+        "usr/lib/libadrenotools.so c7dcc649...",
+        "usr/lib/libfile_redirect_hook.so 096e27b3...",
+        "usr/lib/libgsl_alloc_hook.so f37a0af5...",
+        "usr/lib/libhook_impl.so 0f3f911a...",
+        "usr/lib/libmain_hook.so 9a73b12b...",
+        "usr/share/vulkan/icd.d/wrapper_icd.aarch64.json adb27bf7..."
+      ],
+      "artifacts": [
+        {
+          "name": "libvulkan_wrapper.so.orig",
+          "bytes": 26798986,
+          "sha256": "58cbe49ba8f5c8e139533dccebef90c41d20b3a867c9b5cc96c0e908af0ab104",
+          "analysis": "truncated ELF: section table starts at 26,799,568, beyond the 26,798,986-byte file; loadable segments complete. Embeds NDK r27c, clang 18.0.3, build path /home/Code/mesa/build-wrapper. Pre-r5 (repo head 2025-08-20). Not the r5 asset and not byte-reproducible from the retained file."
+        },
+        {
+          "name": "libvulkan_wrapper_pb.so",
+          "bytes": 27326460,
+          "sha256": "e9a400b7f2ace73525ae363c37ee42f77835063f276c107dc9d31450a398f22c",
+          "analysis": "truncated ELF; embeds NDK r27c; pre-r5 development copy."
+        },
+        {
+          "name": "libvulkan_wrapper_orig.so",
+          "bytes": 4003426,
+          "sha256": "4c74b3847271ee50b4b57c819a5df70618ee49e5e52b9c27f7607bf52fc1cbea",
+          "analysis": "stripped ELF with an unparsable dynamic table; pre-r5 development copy."
+        },
+        {
+          "name": "libvulkan_wrapper.so.zip",
+          "bytes": 2934042,
+          "sha256": "a623ed887d4ccd31c29c5ac82f2bf2bf1ec5d7e0a8df8c44e04675e6a643c9b9",
+          "analysis": "corrupt/truncated zip (CRC failure, central directory incomplete); listed payload 8,326,728 bytes, i.e. a different, earlier build, not the 8,709,528-byte r5 asset."
+        },
+        {
+          "name": "wrapper.tzst.orig",
+          "bytes": 1129305,
+          "sha256": "87b632638aa504a92c9450d70caa5702f90f85b584e284ffc0322c608f01eb8a",
+          "analysis": "earlier upstream wrapper archive, not the packaged 3,057,352-byte wrapper-leegao.tzst."
+        },
+        {
+          "name": "termux.deb",
+          "bytes": 1369666,
+          "sha256": "a10bbcfa5b396a8426e1c3fde3f9d758b0cc208dd27fc3376dd3a8e9d6c00b6e",
+          "analysis": "upstream termux package (control.tar.zst/data.tar.zst); metadata Version 0.0.4r8, Maintainer @leegao."
+        }
+      ]
+    },
+    "missing_recipe_inputs": [
+      "mesa_bionic/ is an empty gitlink in the retained repo: the release working tree it built is not retained (the tag source is the published equivalent, not proven identical to the uncommitted build tree).",
+      "SPIRV-Tools/ is an empty gitlink: the SPIRV-Tools fork revision whose .a archives were copied into src/vulkan/wrapper/lib/ is not recorded anywhere retained.",
+      "The Termux package-builder Docker image and the Termux prefix sysroot used at release time are not retained.",
+      "NDK r27c (27.2.12479018) itself is not installed; only NDK 27.3.13750724 (r27d) is available."
+    ]
+  },
+  "elf_fingerprints": {
+    "leegao_payload": {
+      "bytes": 8709528,
+      "sha256": "520ec0ba1b5a404b12282d18f863761a44703012be6e2421b0f5adcb9d47be11",
+      "file": "ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, stripped",
+      "soname": [
+        "libvulkan_wrapper.so"
+      ],
+      "needed": [
+        "libandroid-shmem.so",
+        "libadrenotools.so",
+        "libcutils.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libz.so.1",
+        "libm.so",
+        "libzstd.so.1",
+        "libxcb.so",
+        "libX11-xcb.so",
+        "libxcb-dri3.so",
+        "libxcb-present.so",
+        "libxcb-sync.so",
+        "libxcb-randr.so",
+        "libxcb-shm.so",
+        "libdrm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "runpath": [
+        "/data/data/com.termux/files/usr/lib:$ORIGIN/../../android_stub"
+      ],
+      "load_alignments": [
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000"
+      ],
+      "has_tls_segment": false,
+      "bind_now": true,
+      "stripped": true,
+      "symtab_present": false,
+      "debug_sections": [],
+      "named_section_count": 24,
+      "note_android_ident": {
+        "api_level": 26,
+        "ndk": "r27c",
+        "ndk_build": "12479018"
+      },
+      "comment": [],
+      "exports": {
+        "count": 3583,
+        "sha256": "f926c6ac5a9d1d5d5ddbb572f46fb021f0ba65731ee304b281464490c3ad8160",
+        "types": {
+          "T": 2120,
+          "W": 1254,
+          "V": 102,
+          "R": 1,
+          "D": 103,
+          "B": 3
+        }
+      },
+      "undefined": {
+        "strong_count": 436,
+        "strong_sha256": "d371fa98d85505b8f0a89fc76126a140d4052f9ffb6ca1b841a08ef872757215",
+        "weak_count": 4,
+        "weak_sha256": "3b2bc1e7ffa89076a2d17f1b325fc597f7729f171ef8d90e6cd2a0a68ad6b1cc"
+      },
+      "key_section_bytes": {
+        ".dynsym": 96576,
+        ".dynstr": 329711,
+        ".rodata": 1857004,
+        ".text": 4577440,
+        ".data": 13752
+      },
+      "string_fingerprints": {
+        "mesa_24_2_5": [
+          "24.2.5"
+        ],
+        "clang_versions": [],
+        "ndk_tags_in_file": [
+          "r27c"
+        ],
+        "build_dirs": [],
+        "graphicsenv_strings": [
+          "libgraphicsenv.so",
+          "libgraphicsenv.so:"
+        ],
+        "wrapper_diag_marker": []
+      }
+    },
+    "default_payload": {
+      "bytes": 19146576,
+      "sha256": "ff43589bd34c236a048f93f0beb0af0ff0cbb5c8a0ecfe4227bacd5db7d2ba7a",
+      "file": "ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, with debug_info, not stripped",
+      "soname": [
+        "libvulkan_wrapper.so"
+      ],
+      "needed": [
+        "libandroid-sysvshm.so",
+        "libadrenotools.so",
+        "libnativewindow.so",
+        "libm.so",
+        "libxcb.so",
+        "libX11-xcb.so",
+        "libxcb-dri3.so",
+        "libxcb-present.so",
+        "libxcb-sync.so",
+        "libxcb-randr.so",
+        "libxcb-shm.so",
+        "libdrm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "runpath": [
+        "/data/data/com.termux/files/usr/bin/../../usr/lib"
+      ],
+      "load_alignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "has_tls_segment": false,
+      "bind_now": true,
+      "stripped": false,
+      "symtab_present": true,
+      "debug_sections": [
+        ".debug_abbrev",
+        ".debug_info",
+        ".debug_str",
+        ".debug_line",
+        ".debug_loc",
+        ".debug_ranges"
+      ],
+      "named_section_count": 34,
+      "note_android_ident": {
+        "api_level": 24,
+        "ndk": "r29",
+        "ndk_build": "14206865"
+      },
+      "comment": [
+        "Android (13989888, +pgo, +bolt, +lto, +mlgo, based on r563880c) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 5e96669f06077099aa41290cdb4c5e6fa0f59349)",
+        "Linker: LLD 21.1.8",
+        "clang version 21.1.8"
+      ],
+      "exports": {
+        "count": 15,
+        "sha256": "1ce80c2dbdae4c2c64f641c557cace3c9353750a3157f870e94cd83988ed4f75",
+        "types": {
+          "V": 10,
+          "T": 5
+        }
+      },
+      "undefined": {
+        "strong_count": 304,
+        "strong_sha256": "ac29c1b17dfc2a90e69cd2615e7071c2865cecf175c812698c2e3baf24f0148a",
+        "weak_count": 4,
+        "weak_sha256": "3b2bc1e7ffa89076a2d17f1b325fc597f7729f171ef8d90e6cd2a0a68ad6b1cc"
+      },
+      "key_section_bytes": {
+        ".dynsym": 7776,
+        ".dynstr": 6332,
+        ".rodata": 492844,
+        ".text": 1638692,
+        ".data": 13624
+      },
+      "string_fingerprints": {
+        "mesa_24_2_5": [],
+        "clang_versions": [
+          "clang version 21.0.0",
+          "clang version 21.1.8"
+        ],
+        "ndk_tags_in_file": [],
+        "build_dirs": [
+          "/data/data/com.termux/files/home/Code/mesa/build-wrapper"
+        ],
+        "graphicsenv_strings": [
+          "/system/lib64/libgraphicsenv.so",
+          "libgraphicsenv.so"
+        ],
+        "wrapper_diag_marker": []
+      }
+    },
+    "gamenative_payload": {
+      "bytes": 2705856,
+      "sha256": "25e8010444dca69a448fa8bbd145b650e8283e329228fc7b7d1b70b79e63d1f3",
+      "file": "ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, stripped",
+      "soname": [
+        "libvulkan_wrapper.so"
+      ],
+      "needed": [
+        "libandroid-shmem.so",
+        "libadrenotools.so",
+        "libnativewindow.so",
+        "libm.so",
+        "libxcb.so",
+        "libX11-xcb.so",
+        "libxcb-dri3.so",
+        "libxcb-present.so",
+        "libxcb-sync.so",
+        "libxcb-randr.so",
+        "libxcb-shm.so",
+        "libdrm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "runpath": [
+        "/data/data/com.termux/files/usr/bin/../../usr/lib:$ORIGIN/../../../subprojects/libadrenotools:$ORIGIN/../../android_stub"
+      ],
+      "load_alignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "has_tls_segment": false,
+      "bind_now": true,
+      "stripped": true,
+      "symtab_present": false,
+      "debug_sections": [],
+      "named_section_count": 26,
+      "note_android_ident": {
+        "api_level": 24,
+        "ndk": "r29",
+        "ndk_build": "14206865"
+      },
+      "comment": [
+        "Android (13989888, +pgo, +bolt, +lto, +mlgo, based on r563880c) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 5e96669f06077099aa41290cdb4c5e6fa0f59349)",
+        "Linker: LLD 21.1.8",
+        "clang version 21.1.8"
+      ],
+      "exports": {
+        "count": 15,
+        "sha256": "1ce80c2dbdae4c2c64f641c557cace3c9353750a3157f870e94cd83988ed4f75",
+        "types": {
+          "V": 10,
+          "T": 5
+        }
+      },
+      "undefined": {
+        "strong_count": 306,
+        "strong_sha256": "3a2d0f2211d254461f6741b1ad0cb3b8d2ad89e1ff34fdcdc50d3c4499112089",
+        "weak_count": 4,
+        "weak_sha256": "3b2bc1e7ffa89076a2d17f1b325fc597f7729f171ef8d90e6cd2a0a68ad6b1cc"
+      },
+      "key_section_bytes": {
+        ".dynsym": 7824,
+        ".dynstr": 6343,
+        ".rodata": 610780,
+        ".text": 1668908,
+        ".data": 13688
+      },
+      "string_fingerprints": {
+        "mesa_24_2_5": [],
+        "clang_versions": [
+          "clang version 21.0.0",
+          "clang version 21.1.8"
+        ],
+        "ndk_tags_in_file": [],
+        "build_dirs": [],
+        "graphicsenv_strings": [
+          "/system/lib64/libgraphicsenv.so",
+          "libgraphicsenv.so"
+        ],
+        "wrapper_diag_marker": [
+          "WRAPPER_DIAG"
+        ]
+      }
+    },
+    "previous_local_baseline_stripped_3abf4870": {
+      "bytes": 10698760,
+      "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+      "file": "ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, stripped",
+      "soname": [
+        "libvulkan_wrapper.so"
+      ],
+      "needed": [
+        "libadrenotools.so",
+        "libandroid-shmem.so",
+        "libc++_shared.so",
+        "libcutils.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libz.so.1",
+        "libm.so",
+        "libzstd.so.1",
+        "libxcb.so",
+        "libX11-xcb.so",
+        "libxcb-dri3.so",
+        "libxcb-present.so",
+        "libxcb-sync.so",
+        "libxcb-randr.so",
+        "libxcb-shm.so",
+        "libdrm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "runpath": [
+        "$ORIGIN/../../android_stub:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
+      ],
+      "load_alignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "has_tls_segment": true,
+      "bind_now": true,
+      "stripped": true,
+      "symtab_present": false,
+      "debug_sections": [],
+      "named_section_count": 27,
+      "note_android_ident": {
+        "api_level": 34,
+        "ndk": "r27d",
+        "ndk_build": "13750724"
+      },
+      "comment": [
+        "Android (13989888, +pgo, +bolt, +lto, +mlgo, based on r563880c) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 5e96669f06077099aa41290cdb4c5e6fa0f59349)",
+        "Android (13691557, +pgo, +bolt, +lto, +mlgo, based on r522817d) clang version 18.0.4 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)",
+        "Android (13691557, +pgo, -bolt, +lto, -mlgo, based on r522817d) clang version 18.0.4 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)",
+        "Linker: LLD 18.0.4"
+      ],
+      "exports": {
+        "count": 4073,
+        "sha256": "d49d5d708408319895a9ab40cab6fdad89c4308cc6c9224ce25598a1cab3f0da",
+        "types": {
+          "T": 2124,
+          "W": 1296,
+          "V": 346,
+          "R": 102,
+          "D": 204,
+          "B": 1
+        }
+      },
+      "undefined": {
+        "strong_count": 434,
+        "strong_sha256": "2c143d5a22fda9467bb1e5418f966cba4529df52efb0d8f405e9d51ca52cc3cc",
+        "weak_count": 4,
+        "weak_sha256": "3b2bc1e7ffa89076a2d17f1b325fc597f7729f171ef8d90e6cd2a0a68ad6b1cc"
+      },
+      "key_section_bytes": {
+        ".dynsym": 108288,
+        ".dynstr": 363431,
+        ".rodata": 1974292,
+        ".text": 6214576,
+        ".data": 13656
+      },
+      "string_fingerprints": {
+        "mesa_24_2_5": [
+          "24.2.5"
+        ],
+        "clang_versions": [
+          "clang version 18.0.4",
+          "clang version 21.0.0"
+        ],
+        "ndk_tags_in_file": [
+          "r27d"
+        ],
+        "build_dirs": [],
+        "graphicsenv_strings": [
+          "libgraphicsenv.so",
+          "libgraphicsenv.so:"
+        ],
+        "wrapper_diag_marker": []
+      }
+    },
+    "tag_source_build_recorded_recipe_unstripped": {
+      "bytes": 131377496,
+      "sha256": "a20dc398ebecea4ea49d36ccf472ca5932c0970d0aa6c18a3070d203087ed127",
+      "file": "ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, with debug_info, not stripped",
+      "soname": [
+        "libvulkan_wrapper.so"
+      ],
+      "needed": [
+        "libadrenotools.so",
+        "libandroid-shmem.so",
+        "libc++_shared.so",
+        "libcutils.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libz.so.1",
+        "libm.so",
+        "libzstd.so.1",
+        "libxcb.so",
+        "libX11-xcb.so",
+        "libxcb-dri3.so",
+        "libxcb-present.so",
+        "libxcb-sync.so",
+        "libxcb-randr.so",
+        "libxcb-shm.so",
+        "libdrm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "runpath": [
+        "$ORIGIN/../../android_stub:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
+      ],
+      "load_alignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "has_tls_segment": true,
+      "bind_now": true,
+      "stripped": false,
+      "symtab_present": true,
+      "debug_sections": [
+        ".debug_loc",
+        ".debug_abbrev",
+        ".debug_info",
+        ".debug_ranges",
+        ".debug_str",
+        ".debug_line"
+      ],
+      "named_section_count": 35,
+      "note_android_ident": {
+        "api_level": 34,
+        "ndk": "r27d",
+        "ndk_build": "13750724"
+      },
+      "comment": [
+        "Android (13989888, +pgo, +bolt, +lto, +mlgo, based on r563880c) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 5e96669f06077099aa41290cdb4c5e6fa0f59349)",
+        "Android (13691557, +pgo, +bolt, +lto, +mlgo, based on r522817d) clang version 18.0.4 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)",
+        "Android (13691557, +pgo, -bolt, +lto, -mlgo, based on r522817d) clang version 18.0.4 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)",
+        "Linker: LLD 18.0.4"
+      ],
+      "exports": {
+        "count": 4073,
+        "sha256": "d49d5d708408319895a9ab40cab6fdad89c4308cc6c9224ce25598a1cab3f0da",
+        "types": {
+          "T": 2124,
+          "W": 1296,
+          "V": 346,
+          "R": 102,
+          "D": 204,
+          "B": 1
+        }
+      },
+      "undefined": {
+        "strong_count": 434,
+        "strong_sha256": "2c143d5a22fda9467bb1e5418f966cba4529df52efb0d8f405e9d51ca52cc3cc",
+        "weak_count": 4,
+        "weak_sha256": "3b2bc1e7ffa89076a2d17f1b325fc597f7729f171ef8d90e6cd2a0a68ad6b1cc"
+      },
+      "key_section_bytes": {
+        ".dynsym": 108288,
+        ".dynstr": 363431,
+        ".rodata": 1973812,
+        ".text": 6213232,
+        ".data": 13656
+      },
+      "string_fingerprints": {
+        "mesa_24_2_5": [
+          "24.2.5"
+        ],
+        "clang_versions": [
+          "clang version 18.0.4",
+          "clang version 21.0.0"
+        ],
+        "ndk_tags_in_file": [
+          "r27d"
+        ],
+        "build_dirs": [
+          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build"
+        ],
+        "graphicsenv_strings": [
+          "libgraphicsenv.so",
+          "libgraphicsenv.so:"
+        ],
+        "wrapper_diag_marker": []
+      }
+    },
+    "tag_source_build_recorded_recipe_stripped": {
+      "bytes": 10696016,
+      "sha256": "0122e36726db9e9ed5174365a1b6116dd0aa4ac95b216b2e5fd193acfb02a0ba",
+      "file": "ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, stripped",
+      "soname": [
+        "libvulkan_wrapper.so"
+      ],
+      "needed": [
+        "libadrenotools.so",
+        "libandroid-shmem.so",
+        "libc++_shared.so",
+        "libcutils.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libz.so.1",
+        "libm.so",
+        "libzstd.so.1",
+        "libxcb.so",
+        "libX11-xcb.so",
+        "libxcb-dri3.so",
+        "libxcb-present.so",
+        "libxcb-sync.so",
+        "libxcb-randr.so",
+        "libxcb-shm.so",
+        "libdrm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "runpath": [
+        "$ORIGIN/../../android_stub:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
+      ],
+      "load_alignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "has_tls_segment": true,
+      "bind_now": true,
+      "stripped": true,
+      "symtab_present": false,
+      "debug_sections": [],
+      "named_section_count": 26,
+      "note_android_ident": {
+        "api_level": 34,
+        "ndk": "r27d",
+        "ndk_build": "13750724"
+      },
+      "comment": [],
+      "exports": {
+        "count": 4073,
+        "sha256": "d49d5d708408319895a9ab40cab6fdad89c4308cc6c9224ce25598a1cab3f0da",
+        "types": {
+          "T": 2124,
+          "W": 1296,
+          "V": 346,
+          "R": 102,
+          "D": 204,
+          "B": 1
+        }
+      },
+      "undefined": {
+        "strong_count": 434,
+        "strong_sha256": "2c143d5a22fda9467bb1e5418f966cba4529df52efb0d8f405e9d51ca52cc3cc",
+        "weak_count": 4,
+        "weak_sha256": "3b2bc1e7ffa89076a2d17f1b325fc597f7729f171ef8d90e6cd2a0a68ad6b1cc"
+      },
+      "key_section_bytes": {
+        ".dynsym": 108288,
+        ".dynstr": 363431,
+        ".rodata": 1973812,
+        ".text": 6213232,
+        ".data": 13656
+      },
+      "string_fingerprints": {
+        "mesa_24_2_5": [
+          "24.2.5"
+        ],
+        "clang_versions": [],
+        "ndk_tags_in_file": [
+          "r27d"
+        ],
+        "build_dirs": [],
+        "graphicsenv_strings": [
+          "libgraphicsenv.so",
+          "libgraphicsenv.so:"
+        ],
+        "wrapper_diag_marker": []
+      }
+    },
+    "tag_source_build_termux_aligned_relink_stripped": {
+      "bytes": 10696016,
+      "sha256": "edf35ccd9eefda209d235eba70c77ca4f8ec437ef22c414d0a6beecbb573758c",
+      "file": "ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, stripped",
+      "soname": [
+        "libvulkan_wrapper.so"
+      ],
+      "needed": [
+        "libandroid-shmem.so",
+        "libadrenotools.so",
+        "libc++_shared.so",
+        "libcutils.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libz.so.1",
+        "libm.so",
+        "libzstd.so.1",
+        "libxcb.so",
+        "libX11-xcb.so",
+        "libxcb-dri3.so",
+        "libxcb-present.so",
+        "libxcb-sync.so",
+        "libxcb-randr.so",
+        "libxcb-shm.so",
+        "libdrm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "runpath": [
+        "$ORIGIN/../../android_stub:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
+      ],
+      "load_alignments": [
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000"
+      ],
+      "has_tls_segment": true,
+      "bind_now": true,
+      "stripped": true,
+      "symtab_present": false,
+      "debug_sections": [],
+      "named_section_count": 26,
+      "note_android_ident": {
+        "api_level": 34,
+        "ndk": "r27d",
+        "ndk_build": "13750724"
+      },
+      "comment": [],
+      "exports": {
+        "count": 4073,
+        "sha256": "d49d5d708408319895a9ab40cab6fdad89c4308cc6c9224ce25598a1cab3f0da",
+        "types": {
+          "T": 2124,
+          "W": 1296,
+          "V": 346,
+          "R": 102,
+          "D": 204,
+          "B": 1
+        }
+      },
+      "undefined": {
+        "strong_count": 434,
+        "strong_sha256": "2c143d5a22fda9467bb1e5418f966cba4529df52efb0d8f405e9d51ca52cc3cc",
+        "weak_count": 4,
+        "weak_sha256": "3b2bc1e7ffa89076a2d17f1b325fc597f7729f171ef8d90e6cd2a0a68ad6b1cc"
+      },
+      "key_section_bytes": {
+        ".dynsym": 108288,
+        ".dynstr": 363431,
+        ".rodata": 1973812,
+        ".text": 6213232,
+        ".data": 13656
+      },
+      "string_fingerprints": {
+        "mesa_24_2_5": [
+          "24.2.5"
+        ],
+        "clang_versions": [],
+        "ndk_tags_in_file": [
+          "r27d"
+        ],
+        "build_dirs": [],
+        "graphicsenv_strings": [
+          "libgraphicsenv.so",
+          "libgraphicsenv.so:"
+        ],
+        "wrapper_diag_marker": []
+      }
+    }
+  },
+  "comparisons": {
+    "payload_vs_payload": {
+      "needed_library_sets": {
+        "leegao": "20 libraries (libandroid-shmem, libadrenotools, libcutils, liblog, libnativewindow, libsync, libz.so.1, libm, libzstd.so.1, 8 xcb/X11, libdrm, libc++_shared, libdl, libc)",
+        "default": "15 libraries; lacks libcutils, liblog, libsync, libz.so.1, libzstd.so.1; uses libandroid-sysvshm instead of libandroid-shmem",
+        "gamenative": "15 libraries; same set as default except libandroid-shmem instead of libandroid-sysvshm",
+        "same_needed_set_leegao_vs_default": false,
+        "same_needed_set_leegao_vs_gamenative": false,
+        "same_needed_set_default_vs_gamenative": false
+      },
+      "runpath": {
+        "leegao": "/data/data/com.termux/files/usr/lib:$ORIGIN/../../android_stub",
+        "default": "/data/data/com.termux/files/usr/bin/../../usr/lib",
+        "gamenative": "/data/data/com.termux/files/usr/bin/../../usr/lib:$ORIGIN/../../../subprojects/libadrenotools:$ORIGIN/../../android_stub"
+      },
+      "toolchain_fingerprint": {
+        "leegao": "NDK r27c (build 12479018) from .note.android.ident; no .comment section; no debug sections",
+        "default": "NDK r29 (build 14206865) from .note.android.ident; .comment: clang 21.0.0 / LLD 21.1.8 / clang 21.1.8; keeps .debug_* (not stripped)",
+        "gamenative": "NDK r29 (build 14206865); identical .comment to default; stripped",
+        "default_and_gamenative_same_ndk_build": true
+      },
+      "abi_page_alignment": {
+        "leegao": "0x1000 (4 KB) on all four PT_LOAD",
+        "default": "0x4000 (16 KB) on all four PT_LOAD",
+        "gamenative": "0x4000 (16 KB) on all four PT_LOAD",
+        "note": "Only the Leegao payload is a 4 KB-aligned legacy build; the two WinNative-packaged variants are 16 KB aligned."
+      },
+      "export_surface": {
+        "leegao": {
+          "count": 3583,
+          "sha256_sorted_names": "f926c6ac5a9d1d5d5ddbb572f46fb021f0ba65731ee304b281464490c3ad8160",
+          "shape": "all wrapper entrypoints plus every exported SPIRV-Tools symbol (spv* and spvtools::*) and Mesa symbols"
+        },
+        "default": {
+          "count": 15,
+          "sha256_sorted_names": "1ce80c2dbdae4c2c64f641c557cace3c9353750a3157f870e94cd83988ed4f75",
+          "names": [
+            "_ZTISt11logic_error",
+            "_ZTISt12length_error",
+            "_ZTISt20bad_array_new_length",
+            "_ZTISt9bad_alloc",
+            "_ZTISt9exception",
+            "_ZTSSt11logic_error",
+            "_ZTSSt12length_error",
+            "_ZTSSt20bad_array_new_length",
+            "_ZTSSt9bad_alloc",
+            "_ZTSSt9exception",
+            "__init_cpu_features",
+            "__init_cpu_features_resolver",
+            "vk_icdGetInstanceProcAddr",
+            "vk_icdGetPhysicalDeviceProcAddr",
+            "vk_icdNegotiateLoaderICDInterfaceVersion"
+          ]
+        },
+        "gamenative": {
+          "count": 15,
+          "sha256_sorted_names": "1ce80c2dbdae4c2c64f641c557cace3c9353750a3157f870e94cd83988ed4f75",
+          "shape": "identical 15-name ICD-only export set to default"
+        },
+        "default_and_gamenative_export_sets_identical": true
+      },
+      "undefined_strong_symbols": {
+        "leegao": 436,
+        "default": 304,
+        "gamenative": 306
+      },
+      "code_size": {
+        "leegao": {
+          ".text": 4577440,
+          ".rodata": 1857004
+        },
+        "default": {
+          ".text": 1638692,
+          ".rodata": 492844
+        },
+        "gamenative": {
+          ".text": 1668908,
+          ".rodata": 610780
+        },
+        "text_conclusion": "default/GameNative link a much smaller subset of the Mesa runtime than the Leegao payload (about 36% of its .text), consistent with a different build configuration/source tree."
+      },
+      "embedded_source_files": {
+        "leegao": [
+          "../src/src/vulkan/wrapper/wrapper_device.c",
+          "../src/src/vulkan/wrapper/wrapper_device_memory.c",
+          "../src/src/vulkan/wrapper/wrapper_image.c",
+          "../src/src/vulkan/wrapper/wrapper_instance.c",
+          "../src/src/vulkan/wrapper/wrapper_objects.c"
+        ],
+        "default": [
+          "../src/vulkan/wrapper/graphicsenv_hook.cpp",
+          "../src/vulkan/wrapper/spirv_patcher.cpp",
+          "../src/vulkan/wrapper/wrapper_bcdec.c",
+          "../src/vulkan/wrapper/wrapper_device.c",
+          "../src/vulkan/wrapper/wrapper_device_memory.c",
+          "../src/vulkan/wrapper/wrapper_instance.c",
+          "../src/vulkan/wrapper/wrapper_log.c",
+          "../src/vulkan/wrapper/wrapper_physical_device.c",
+          "src/vulkan/wrapper/wrapper_entrypoints.c",
+          "src/vulkan/wrapper/wrapper_features.c",
+          "src/vulkan/wrapper/wrapper_trampolines.c"
+        ],
+        "gamenative": [
+          "../src/vulkan/wrapper/wrapper_device.c",
+          "../src/vulkan/wrapper/wrapper_device_memory.c",
+          "../src/vulkan/wrapper/wrapper_instance.c"
+        ],
+        "text_conclusion": "graphicsenv_hook.cpp, spirv_patcher.cpp and wrapper_bcdec.c are absent from the v0.0.5r5 tag tree, from commit 3abf4870, and from every branch behind the published head (checked through the GitHub contents API for all 16 branches). They therefore identify default's build as a different source revision/line, not the v0.0.5r5 source. All 16 upstream branches behind the published wrapper head were checked through the GitHub contents API; none contains any of the three file names (analysis/branch-file-check.json).",
+        "branches_checked": 16,
+        "branch_file_matches": 0,
+        "checked_files": [
+          "graphicsenv_hook.cpp",
+          "spirv_patcher.cpp",
+          "wrapper_bcdec.c"
+        ]
+      },
+      "embedded_markers": {
+        "leegao": [
+          "24.2.5 (Mesa base version; also present in the 3abf4870 build, so it identifies the Mesa-24.2.5 wrapper-branch family, not the exact commit)",
+          "libgraphicsenv.so lookup strings"
+        ],
+        "default": [
+          "no 24.2.5 string",
+          "/data/data/com.termux/files/home/Code/mesa/build-wrapper (build directory)",
+          "/system/lib64/libgraphicsenv.so",
+          "MESA_VK_FORMAT_CLASS_ETC2_* enum strings",
+          "Failed to get function pointers from libgraphicsenv.so"
+        ],
+        "gamenative": [
+          "no 24.2.5 string",
+          "/system/lib64/libgraphicsenv.so",
+          "[WRAPPER_DIAG] BCn emulate/transcode/cache marker",
+          "app.gamenative imagefs/tmp runtime paths",
+          "PIPE_FORMAT_ETC2_* enum strings"
+        ]
+      },
+      "section_content_hashes": {
+        "all_normalized_section_hashes_retained_at": "/Users/cheng/wrapper-release-repro/analysis/section-hashes.json",
+        "default_vs_gamenative": "only .comment and .note.android.ident are identical; .text/.rodata differ, so they are not the same binary with/without debug info",
+        "leegao_vs_default": "no shared section content",
+        "leegao_vs_etc2_5_25_26_dev_asset": "only 8 metadata sections identical; .text/.rodata differ"
+      }
+    },
+    "payload_vs_local_builds": {
+      "same_soname": true,
+      "same_needed_library_names_leegao_vs_local_build": true,
+      "same_export_set_leegao_vs_local_build": false,
+      "needed_set_identical": true,
+      "export_delta": {
+        "leegao": 3583,
+        "local_and_tag_builds": 4073,
+        "common": 3542,
+        "leegao_only": 41,
+        "tag_or_local_only": 531,
+        "character": "the delta is confined to SPIRV-Tools C++ symbols (spv*, spvtools::*); wrapper entrypoint names are all common"
+      },
+      "undefined_delta": {
+        "leegao": 436,
+        "tag_build": 434,
+        "common": 425,
+        "leegao_only": 11,
+        "tag_only": 9,
+        "character": "libc++/compiler-runtime symbols"
+      },
+      "tag_source_build_export_set_equals_3abf4870_build_export_set": true,
+      "export_set_equality_sha256": "d49d5d708408319895a9ab40cab6fdad89c4308cc6c9224ce25598a1cab3f0da",
+      "text_conclusion": "Export-surface differences between the release payload and the local/tag builds are attributable to the SPIRV-Tools revision linked and to libc++/NDK revision, not to a different wrapper entrypoint surface."
+    }
+  },
+  "reproduction": {
+    "goal": "attempt a clean build of the verified v0.0.5r5 tag source in scratch without touching the Codex tree",
+    "environment": {
+      "host": "macOS darwin x86_64",
+      "ndk": "27.3.13750724 (r27d), clang 18.0.4",
+      "meson": "1.9.1",
+      "ninja": "1.10.2",
+      "cmake": "3.22.1",
+      "glslang": "16.6.0",
+      "bison": "host-tools/bin/bison",
+      "termux_sysroot": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64 (retained Wine-experiment Termux sysroot)",
+      "spirv_archives": "libSPIRV-Tools.a 64,530,758 B sha256 f71b46d4..., libSPIRV-Tools-opt.a 241,329,312 B sha256 29f201be..., built with the same NDK from leegao/SPIRV-Tools 56db26cf58f2f1b1f70ce92fc733ae91e136094d",
+      "scratch_source": "/Users/cheng/wrapper-release-repro/build/tag-src"
+    },
+    "attempts": [
+      {
+        "id": "A",
+        "description": "tag source + recorded local recipe (NDK r27d, API 34, 16 KB page-size link flags, local Termux Wine-experiment sysroot, pinned SPIRV-Tools archives)",
+        "configure_command": [
+          "meson setup /Users/cheng/wrapper-release-repro/build/tag-build /Users/cheng/wrapper-release-repro/build/tag-src",
+          "--cross-file android-scratch.ini --native-file <retained>/native.ini --buildtype release --prefix=/usr",
+          "-Dplatforms=x11 -Dplatform-sdk-version=34 -Dandroid-stub=true -Dvulkan-drivers=wrapper -Dgallium-drivers=",
+          "-Dglx=disabled -Degl=disabled -Dgbm=disabled -Dllvm=disabled -Dopengl=false",
+          "-Dandroid-libbacktrace=disabled -Dxmlconfig=disabled"
+        ],
+        "build_command": [
+          "ninja -C tag-build -j8 src/vulkan/wrapper/libvulkan_wrapper.so"
+        ],
+        "result": "SUCCESS",
+        "outputs": {
+          "unstripped": {
+            "path": "/Users/cheng/wrapper-release-repro/build/tag-build-recipe16k.so",
+            "bytes": 131377496,
+            "sha256": "a20dc398ebecea4ea49d36ccf472ca5932c0970d0aa6c18a3070d203087ed127"
+          },
+          "stripped_with_llvm_strip_strip_all": {
+            "path": "/Users/cheng/wrapper-release-repro/build/tag-build-recipe16k-stripped.so",
+            "bytes": 10696016,
+            "sha256": "0122e36726db9e9ed5174365a1b6116dd0aa4ac95b216b2e5fd193acfb02a0ba"
+          }
+        },
+        "logs": {
+          "meson-setup.log": {
+            "bytes": 13791,
+            "sha256": "4019e85a714f8d333884db715b19ee5b197fbcbdb96a7f8c831ad08768131f6f"
+          },
+          "build-tag-recipe.log": {
+            "bytes": 42836,
+            "sha256": "0c79e2b61a82d82ed806528ba8411e1132cb93505a36d1a1a16140201e0b6cf0"
+          }
+        },
+        "fingerprint_vs_leegao_payload": {
+          "bytes": "10,696,016 vs 8,709,528 (stripped)",
+          "sha256_match": false,
+          "soname_match": true,
+          "needed_name_set_match": true,
+          "needed_order_match": false,
+          "export_set_match": false,
+          "load_alignment_match": false,
+          "note_android_ident": "r27d / API 34 / build 13750724 vs r27c / API 26 / build 12479018",
+          "comment": "local build carries clang 18.0.4 (NDK r27d) plus clang 21.0.0 strings from the reused SPIRV-Tools archive objects; the release has no .comment"
+        }
+      },
+      {
+        "id": "B",
+        "description": "same tag source objects, relinked with upstream-recipe-aligned flags: page-size flags removed (4 KB), prefix /data/data/com.termux/files/usr, link order -landroid-shmem -ladrenotools",
+        "commands": [
+          "meson configure tag-build --prefix=/data/data/com.termux/files/usr -Dc_link_args='[... -landroid-shmem -ladrenotools]' -Dcpp_link_args='[... -landroid-shmem -ladrenotools -lc++_shared]'",
+          "ninja -C tag-build -j8 src/vulkan/wrapper/libvulkan_wrapper.so",
+          "llvm-strip --strip-all"
+        ],
+        "result": "SUCCESS (relink only)",
+        "output": {
+          "path": "/Users/cheng/wrapper-release-repro/build/tag-build-termuxlike-stripped.so",
+          "bytes": 10696016,
+          "sha256": "edf35ccd9eefda209d235eba70c77ca4f8ec437ef22c414d0a6beecbb573758c"
+        },
+        "log": {
+          "meson-reconfigure-4k.log": {
+            "bytes": 16643,
+            "sha256": "fc354d1737cd4105f429cc403f67e5fdd43d943ab20d92d1050071be9811f562"
+          }
+        },
+        "fingerprint_vs_leegao_payload": {
+          "sha256_match": false,
+          "load_alignment_match": true,
+          "needed_order_first_two_match": [
+            "libandroid-shmem.so",
+            "libadrenotools.so"
+          ],
+          "remaining_needed_order_delta": "the local link puts libc++_shared.so at position 3 while the release has it at position 18 and libcutils/liblog/libnativewindow/libsync next; this follows the recorded cross-file/Sysroot specifics and is a link-configuration difference, not a source difference",
+          "note_android_ident": "still r27d / API 34 because the installed NDK is r27d"
+        }
+      }
+    ],
+    "verdict": {
+      "exact_byte_reproduction_achieved": false,
+      "closest_match": "Attempt A/B: a library built from the verified v0.0.5r5 tag tree that matches the release payload's SONAME, its 20-name NEEDED set, its wrapper+SPIRV-Tools exported symbol family, and (in attempt B) its 4 KB PT_LOAD alignment and NEEDED link order. The 2.0 MB stripped-size difference and the SPIRV-Tools symbol-set delta remain.",
+      "why_not_byte_identical": [
+        "The release used NDK r27c (27.2.12479018); only r27d (27.3.13750724) is installed, which changes codegen and the embedded .note.android.ident (r27c/API26 vs r27d/API34).",
+        "The SPIRV-Tools fork revision built into the release is not recorded in the retained recipe or tag source (empty SPIRV-Tools submodule; empty lib/ directory). The retained pinned archive is the 2026-10-18 revision, which adds 490 exported SPIRV-Tools symbols relative to the release payload.",
+        "The release was built inside the Termux package-builder Docker image against a Termux prefix sysroot; the retained local sysroot is a later Wine-experiment Termux fs, so dependency library bytes/versions and link order differ.",
+        "Build paths embedded at release time (e.g. /home/Code/mesa/build-wrapper in other upstream artifacts) differ from the scratch build directory; the release is stripped (no .comment) while this rebuild's strip step leaves .ARM.attributes and a TLS .tbss section.",
+        "The retained upstream wrapper/ directory only contains 2025-08-20 pre-r5 build outputs, not the r5 build output, so the release link step itself cannot be replayed from retained bytes."
+      ],
+      "missing_inputs": [
+        "Android NDK r27c (27.2.12479018) and its exact clang/LLD.",
+        "The release-time Termux package-builder image and Termux prefix sysroot.",
+        "The exact leegao/SPIRV-Tools fork revision used for the release and its prebuilt arm64-v8a libSPIRV-Tools{,-opt}.a archives.",
+        "The uncommitted mesa_bionic working tree used by the release build (tag source is the published equivalent, not proven identical)."
+      ]
+    }
+  },
+  "conclusions": {
+    "confirmed": [
+      "All three packaged usr/lib/libvulkan_wrapper.so payloads match the sizes/SHA-256 recorded in docs/PROVENANCE.md; extracted archive bytes and their supporting files are enumerated above.",
+      "The packaged wrapper-leegao payload is byte-identical to the official v0.0.5r5 release asset (size 8,709,528; local sha256 520ec0ba...; published GitHub asset digest 520ec0ba...).",
+      "The five supporting hook/adrenotools libraries and the ICD JSON in wrapper-leegao.tzst are byte-identical to the upstream Termux packaging repo's retained wrapper/usr/ files, and differ from the supporting files in wrapper.tzst/wrapper-gamenative.tzst; those latter files are identical between the two WinNative archives and equal the local build's hooks/ link inputs.",
+      "The downloaded tag archive is the recorded tag tree c8baafbd: 10,336 regular-file blobs and 13 symlinks match the retained tree.json exactly, the 15 CSV files differ only by the archive's *.csv eol=crlf conversion, and no tree blob is missing.",
+      "The v0.0.5r5 tag tree contains no .github/workflows or any release workflow; its CI files are upstream Mesa .gitlab-ci. The release recipe is not defined by the tag source.",
+      "The upstream release recipe is retained in leegao/vulkan_wrapper_termux-packages (head c5c45d88, 2025-08-20): Termux package build in Docker with NDK r27c, TERMUX_PKG_API_LEVEL=26, --buildtype=release, LDFLAGS -landroid-shmem -ladrenotools, and a zstd/tar .tzst packaging step.",
+      "Building the verified tag source with the recorded local recipe succeeds and produces a library with the same SONAME, the same 20-name NEEDED set, and the same wrapper+SPIRV-Tools export family as the release payload; dropping the local 16 KB page-size link flags reproduces the release payload's 4 KB PT_LOAD alignment, and link order -landroid-shmem -ladrenotools reproduces its first two NEEDED entries.",
+      "Static fingerprints of the Leegao payload match the retained upstream Termux recipe rather than the recorded local recipe: NDK r27c in .note.android.ident, API level 26, RUNPATH /data/data/com.termux/files/usr/lib:$ORIGIN/../../android_stub, 4 KB PT_LOAD alignment, no .comment, and the termux-prefix link order. The recorded local recipe differs on every one of these (NDK r27d, API 34, build-tree RUNPATH, 16 KB alignment, .comment retained).",
+      "The default and GameNative payloads are demonstrably not builds of the v0.0.5r5 source: both are NDK r29/clang 21.0.0 builds with 16 KB alignment and an ICD-only 15-symbol export surface; default embeds debug info and the build directory /data/data/com.termux/files/home/Code/mesa/build-wrapper; both contain code strings (/system/lib64/libgraphicsenv.so, BCn emulation messages, default's graphicsenv_hook.cpp/spirv_patcher.cpp/wrapper_bcdec.c compile units, GameNative's WRAPPER_DIAG marker) that are absent from the tag tree, from commit 3abf4870, and from every upstream branch behind the published head; neither embeds the 24.2.5 Mesa-base string that both known wrapper-branch builds do.",
+      "The previous local baseline/candidate builds (3abf4870, recorded recipe) and the tag-source rebuild have byte-identical exported-symbol sets (4073 symbols, sha256 d49d5d70...); the release payload's different export count (3583) is confined to SPIRV-Tools C++ symbols, i.e. a dependency-revision delta rather than a wrapper entrypoint-surface delta."
+    ],
+    "open": [
+      "Exact byte reproduction of the v0.0.5r5 release binary from source: not achieved, and not achievable from the retained inputs because NDK r27c, the release-time Termux sysroot/Docker image, the release-time SPIRV-Tools fork revision and the release working tree are not retained.",
+      "Source identity of the default payload: not established. It is a different, later wrapper source line built with NDK r29 at a Termux build directory, and its exact revision is not identified.",
+      "Source identity of the GameNative payload: not established. It is a different build with NDK r29, a GameNative-specific configuration/marker, and its exact source revision is not identified.",
+      "Whether the default/GameNative wrapper sources correspond to a public revision anywhere (all 16 upstream branches plus the two known wrapper-branch commits were checked for the embedded source file names; no match).",
+      "The release packaging step that removes .comment/.ARM.attributes and avoids the TLS .tbss section is not reproduced by llvm-strip --strip-all in this environment; the exact strip/elf-cleaner invocation used for the release is not retained.",
+      "Whether the uncommitted mesa_bionic working tree built for v0.0.5r5 is byte-identical to tag c8baafbd is not proven (the tag source is the published equivalent; only the four reviewed files were previously checked against the October 2026 source)."
+    ]
+  },
+  "what_static_evidence_does_not_establish": [
+    "It does not prove the release build is deterministic or that any rebuilt binary would match byte-for-byte.",
+    "It does not establish the source identity of the default or GameNative wrapper libraries; their archives' supporting files only show shared WinNative packaging lineage.",
+    "It does not establish GPU loading, driver initialization, Vulkan conformance, rendering correctness or 16 KB device execution for any payload.",
+    "File sizes and symbol counts say nothing about runtime performance, memory use or speed."
+  ],
+  "limitations": [
+    "Static analysis only; no payload was executed, no Vulkan loader/driver was involved, no GPU or emulator run.",
+    "No device attached; no APK rebuild; no asset/default/packaging change; nothing committed, pushed or submitted upstream.",
+    "GitHub metadata was sampled read-only on 2026-10-21; upstream branches/releases may change later.",
+    "The .orig/.pb upstream development artifacts in the retained recipe repo are truncated ELF files and could only be fingerprinted through strings and loadable segments, not fully parsed."
+  ],
+  "raw_scratch_directory": "/Users/cheng/wrapper-release-repro",
+  "retained_scratch_artifacts": [
+    "payloads/{wrapper-leegao,wrapper,wrapper-gamenative}/ - extracted archives",
+    "tag-source/c8baafbd.tar.gz and extracted tag tree",
+    "termux-recipe/... - upstream build/packaging repo and its wrapper/ artifacts",
+    "upstream-artifacts/ - extracted upstream wrapper/ artifacts and ETC2 dev assets",
+    "build/ - tag-source builds (recorded recipe and Termux-aligned relink) and stripped variants",
+    "analysis/{facts.json,section-hashes.json,exports/,elf-payloads.json,elf-upstream-artifacts.json,elf_analyze.py,facts.py}",
+    "logs/{meson-setup.log,build-tag-recipe.log,meson-reconfigure-4k.log}"
+  ],
+  "application": {
+    "defaults_changed": false,
+    "packaging_changed": false,
+    "apk_rebuilt": false,
+    "driver_installed": false,
+    "device_or_gpu_used": false,
+    "commit_or_push": false,
+    "upstream_submission": false
+  }
+}

@@ -18,6 +18,17 @@ to the corresponding reviewed files at `3abf4870`; per-file SHA-256s are recorde
 in the component receipt. This establishes the changed
 source paths' relationship to the release, not reproduction of its complete binary.
 
+A static payload check confirms all three archive hashes and separates the build
+lines. The default and GameNative payloads are a later wrapper line: NDK
+r29/clang 21, 16 KB `LOAD` alignment, an ICD-only 15-symbol export set, and
+compile units that do not exist in the v0.0.5r5 tag or the reviewed tree. Their
+exact source revisions remain open. The Leegao release recipe is the retained
+Termux packaging repository (`leegao/vulkan_wrapper_termux-packages` at
+`c5c45d88`, NDK r27c, API 26); a build of the tag source matches its SONAME,
+20 `NEEDED` names, export family and 4 KB alignment but not its bytes, because
+the release NDK, sysroot and SPIRV-Tools revision are not retained.
+[Reproduction receipt](../../docs/evidence/2026-10-21-wrapper-release-repro.json).
+
 ## Image creation
 
 The original function allocates a temporary create-info copy and a list node for

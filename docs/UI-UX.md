@@ -20,13 +20,18 @@ service separate from Steam's authenticated web panel.
 No request runs while opening the game page. Closing cancels in-flight work; a
 page-local snapshot is reused on reopening, and leaving the game page discards it.
 Failures offer explicit retry, while missing or ambiguous Windows entries get a
-dedicated message. Console ports are excluded, title-only matches are labeled, and
-external ratings do not become Vapor compatibility badges.
+dedicated message and an unexpected response has its own wording. Known
+non-Windows catalog entries hide the action entirely, and **Browse on EmuReady**
+uses the matched EmuReady title when it differs from Steam's. Console ports are
+excluded, title-only matches are labeled, and external ratings do not become
+Vapor compatibility badges.
 
 The dialog retains a reachable close action and source button while reports scroll.
 Narrow/large-text and short-landscape layouts have Compose coverage; Android
-instrumentation covers controller B dismissal as well as touch actions. Physical
-controllers and TalkBack remain separate acceptance checks.
+instrumentation covers controller B dismissal as well as touch actions, including
+the catalog platform gating. A follow-up review pass fixed eight findings and
+re-ran 41 JVM and 31 Android checks on the rebuilt APK. Physical controllers and
+TalkBack remain separate acceptance checks.
 
 See [qualification and screenshots](QUALIFICATION.md#emuready-community-reports--21-october-2026).
 
