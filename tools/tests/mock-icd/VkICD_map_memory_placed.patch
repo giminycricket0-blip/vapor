@@ -1,0 +1,49 @@
+diff --git a/icd/generated/function_definitions.h b/icd/generated/function_definitions.h
+index 7657c12..4276e5f 100644
+--- a/icd/generated/function_definitions.h
++++ b/icd/generated/function_definitions.h
+@@ -3934,6 +3934,16 @@ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceFeatures2KHR(
+        feat_bools = (VkBool32*)&host_image_copy_features->hostImageCopy;
+        SetBoolArrayTrue(feat_bools, 1);
+     }
++
++    // Vapor loader-path lane: advertise VK_EXT_map_memory_placed feature bits so
++    // the loader-mediated harness can exercise placed and range-placed mapping
++    // through the mock ICD. Keep this patch minimal and documented; the real
++    // capability simulation path is the Vulkan-Profiles layer.
++    auto *map_memory_placed_features = lvl_find_mod_in_chain<VkPhysicalDeviceMapMemoryPlacedFeaturesEXT>(pFeatures->pNext);
++    if (map_memory_placed_features) {
++       map_memory_placed_features->memoryMapPlaced = VK_TRUE;
++       map_memory_placed_features->memoryMapRangePlaced = VK_TRUE;
++    }
+ }
+ 
+ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceProperties2KHR(
+@@ -3948,6 +3958,12 @@ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceProperties2KHR(
+     auto *props_11 = lvl_find_mod_in_chain<VkPhysicalDeviceVulkan11Properties>(pProperties->pNext);
+     if (props_11) {
+         props_11->protectedNoFault = VK_FALSE;
++        // Vapor loader-path lane: the mock only fills the deprecated
++        // VkPhysicalDeviceMaintenance3Properties mirrors; a core-1.2+ query
++        // goes through the promoted Vulkan11 struct, so validation would
++        // otherwise read maxMemoryAllocationSize == 0 and reject allocations.
++        props_11->maxMemoryAllocationSize = 1073741824;
++        props_11->maxPerSetDescriptors = 1024;
+     }
+ 
+     auto *props_12 = lvl_find_mod_in_chain<VkPhysicalDeviceVulkan12Properties>(pProperties->pNext);
+@@ -4072,6 +4088,14 @@ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceProperties2KHR(
+         std::strncpy(driver_properties->driverInfo, "Branch: --unknown-- Tag Info: --unknown--", VK_MAX_DRIVER_INFO_SIZE);
+ #endif
+     }
++
++    // Vapor loader-path lane: report a non-zero placed-memory map alignment so
++    // the validation layer's VK_MEMORY_MAP_PLACED_BIT_EXT alignment checks are
++    // meaningful (the stock mock leaves this property at 0).
++    auto *map_memory_placed_props = lvl_find_mod_in_chain<VkPhysicalDeviceMapMemoryPlacedPropertiesEXT>(pProperties->pNext);
++    if (map_memory_placed_props) {
++       map_memory_placed_props->minPlacedMemoryMapAlignment = 4096;
++    }
+ }
+ 
+ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceFormatProperties2KHR(

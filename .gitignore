@@ -64,6 +64,7 @@ dist/
 /armsx2/emucore-out/
 !tools/tests/turnip-kgsl-wait.py
 !tools/tests/turnip-kgsl-wait-any.py
+!tools/tests/vulkan-loader-path.py
 !tools/tests/vulkan-wrapper-image.py
 !tools/tests/vulkan-wrapper-reference.py
 !tools/tests/vulkan-wrapper-trace.py

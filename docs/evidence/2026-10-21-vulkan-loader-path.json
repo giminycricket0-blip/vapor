@@ -1,0 +1,365 @@
+{
+  "date": "2026-10-21",
+  "scope": "No-GPU Vulkan loader-path qualification for VK_EXT_map_memory_placed: a loader-mediated harness (linked against libvulkan, never dlopening an ICD), a minimal Vulkan Profiles capability file, a documented Vulkan-Tools Mock ICD capability patch and an independent GitHub Actions workflow with a lavapipe skip lane and a mock-ICD supported lane. Loader/entry-point plumbing, capability reporting, validation cleanliness and the capability-skip logic only: no real placed-memory address semantics are exercised and no RADV/ANV/NVK/Turnip hardware result is claimed. No CI run is claimed by this receipt.",
+  "base_commit": "1d22fda5e0c6c655eabf5a6b99ac76c03da16f35",
+  "git_status_note": "Only new files are created by this lane (harness, driver, mock-ICD directory, workflow, receipt); no existing repository file was modified and nothing was committed.",
+  "deliverables": {
+    "harness": {
+      "path": "tools/tests/vulkan-loader-path.c",
+      "sha256": "3d466f3560e84a74a429674f38a0f71c33fc77c882d383a64eec3aab53cbd7ac",
+      "bytes": 26996
+    },
+    "driver": {
+      "path": "tools/tests/vulkan-loader-path.py",
+      "sha256": "b9e56d6beba3fac2a10cd8d2fd398c35cbb56f088d51e4b711c4cddffb073ff1",
+      "bytes": 16148
+    },
+    "profile": {
+      "path": "tools/tests/mock-icd/VP_VAPOR_map_memory_placed.json",
+      "sha256": "f808a93f5e9ca97387dacfb63475f614a339bce9894d10ec8df66d10f34c8558",
+      "bytes": 1367
+    },
+    "mock_icd_patch": {
+      "path": "tools/tests/mock-icd/VkICD_map_memory_placed.patch",
+      "sha256": "7392aa6696104d24e07a3093b2b17dcc14fb3caa23d0b4d94a9554dec2fbb5bc",
+      "bytes": 2652
+    },
+    "workflow": {
+      "path": ".github/workflows/vulkan-loader-ci.yml",
+      "sha256": "d040ecb75a6cba35ae4d6cb799e60b0ebed2b73ef69d79a63b880e7cc498909b",
+      "bytes": 7487
+    },
+    "receipt": {
+      "path": "docs/evidence/2026-10-21-vulkan-loader-path.json",
+      "sha256": "self-reference: this field cannot contain the hash of the file that contains it; hash the file after checkout/CI",
+      "bytes": 22810
+    }
+  },
+  "harness": {
+    "path": "tools/tests/vulkan-loader-path.c",
+    "language": "C11, linked against the Vulkan loader (no VK_NO_PROTOTYPES, no direct ICD dlopen)",
+    "protocol": [
+      "HARNESS=vulkan-loader-path",
+      "INSTANCE_API=<loader version>",
+      "VALIDATION_REQUESTED=0|1 VALIDATION_AVAILABLE=0|1 VALIDATION_ERRORS=<n> VUID_ERRORS=<n>",
+      "INSTANCE_LAYER=<name> (with --layers)",
+      "PHYSICAL_DEVICES=<n> DEVICE_NAME=<name> DEVICE_TYPE=<n> DEVICE_API=<x.y.z>",
+      "EXTENSION_NAME=VK_EXT_map_memory_placed EXTENSION_PRESENT=0|1",
+      "MAP_MEMORY2_EXTENSION_PRESENT=0|1",
+      "MEMORY_MAP_PLACED=0|1 MEMORY_MAP_RANGE_PLACED=0|1 MEMORY_UNMAP_RESERVE=0|1",
+      "MIN_PLACED_MAP_ALIGNMENT=<n>",
+      "DEVICE_EXTENSION=<name> (with --print-all)",
+      "DEVICE_CREATED=0|1 PLACED_MAP_RESULT=<VkResult> UNMAP2_RESULT=<VkResult>",
+      "PLACED_RANGE_MAP_RESULT=<VkResult> FREE_MEMORY_RESULT=<VkResult>",
+      "EXPECT=skip|supported RESULT=PASS|SKIP|FAIL REASON=<text>"
+    ],
+    "exit_codes": {
+      "0": "expectation met",
+      "77": "SKIP observed",
+      "1": "mismatch/failure",
+      "2": "usage error"
+    },
+    "modes": {
+      "--expect skip|supported": "expected capability outcome (default supported)",
+      "--validation": "enable VK_LAYER_KHRONOS_validation + VK_EXT_debug_utils; fail on any ERROR message/VUID; fail if the layer or debug-utils is unavailable",
+      "--layers": "print available instance layers",
+      "--print-all": "dump every device extension reported through the loader",
+      "--require-extension": "turn a missing extension into FAIL instead of SKIP"
+    },
+    "supported_mode_sequence": [
+      "query VK_EXT_map_memory_placed through the loader and VkPhysicalDeviceMapMemoryPlacedFeaturesEXT",
+      "vkCreateDevice with the extension plus its VK_KHR_map_memory2 dependency when advertised, and the placed feature bits enabled",
+      "create a 4 KiB TRANSFER_SRC|TRANSFER_DST buffer, allocate host-visible (device-local preferred) memory",
+      "vkMapMemory2 with VK_MEMORY_MAP_PLACED_BIT_EXT + VkMemoryMapPlacedInfoEXT at a 64 KiB-aligned address, vkUnmapMemory2, then a 4 KiB range-placed map + unmap2",
+      "vkFreeMemory/destroy buffer/device/instance and assert VK_SUCCESS on every step"
+    ],
+    "extension_dependency": "VK_EXT_map_memory_placed depends on VK_KHR_map_memory2 or Vulkan 1.4; the harness enables VK_KHR_map_memory2 at device creation when the ICD advertises it, which the patched mock ICD does."
+  },
+  "driver": {
+    "path": "tools/tests/vulkan-loader-path.py",
+    "role": "runs the harness with an explicit VK_ICD_FILENAMES/VK_DRIVER_FILES, optional VK_LAYER_PATH and loader library path, parses the machine-readable output, writes a per-lane log and fails on any unmet assertion",
+    "lanes": {
+      "lavapipe": "RESULT=SKIP, exit 77, no VUID/ERROR when --validation is used",
+      "mock": "EXTENSION_PRESENT=1, MEMORY_MAP_PLACED=1, MEMORY_MAP_RANGE_PLACED=1, DEVICE_CREATED=1, placed/range-placed map and unmap2 all VK_SUCCESS, RESULT=PASS, exit 0, and no VUID/ERROR when --validation is used"
+    },
+    "modes": [
+      "--lane/--harness/--expect/--validation",
+      "--icd/--layer-path/--instance-layers/--loader-lib-dir/--loader-debug/--log-dir/--print-all",
+      "--validate-profile PATH (Vulkan Profiles JSON against the official Khronos schema)",
+      "--self-test (7 canned-output assertion cases, no Vulkan driver needed)"
+    ]
+  },
+  "profiles_capability_file": {
+    "path": "tools/tests/mock-icd/VP_VAPOR_map_memory_placed.json",
+    "role": "minimal Vulkan Profiles file whose MUST capabilities are VK_EXT_map_memory_placed (v1) and VkPhysicalDeviceMapMemoryPlacedFeaturesEXT {memoryMapPlaced:true, memoryMapRangePlaced:true}; intended input for a VK_LAYER_KHRONOS_profiles simulation over the mock ICD",
+    "schema": "https://schema.khronos.org/vulkan/profiles-0.8-latest.json",
+    "validation": {
+      "verified_locally": true,
+      "against_latest_schema": "valid",
+      "against_profiles-0.8.2-273": "invalid: that older schema predates VkPhysicalDeviceMapMemoryPlacedFeaturesEXT (the extension was first present in Vulkan-Headers v1.3.278), so the -273 schema rejects the feature struct. Use profiles-0.8-latest.",
+      "ci_step": "the workflow runs the driver's --validate-profile against the latest Khronos schema"
+    },
+    "profiles_layer_route": {
+      "used_in_ci": false,
+      "why_not": "Vulkan-Profiles needs a multi-package CMake bootstrap (VulkanHeaders, Vulkan-Utility-Libraries, valijson, jsoncpp) plus a Python venv created during configure; that is a sizeable, fragile CI step compared with the documented mock-ICD capability patch. The profile JSON is delivered and schema-validated so the route can be enabled later without changing the harness.",
+      "documented_route": [
+        "build/install Vulkan-Profiles at a pinned tag, put its layer JSON directory on VK_LAYER_PATH",
+        "enable VK_LAYER_KHRONOS_profiles before VK_LAYER_KHRONOS_validation",
+        "configure the layer with a vk_layer_settings.txt via VK_LAYER_SETTINGS_PATH containing 'khronos_profiles.profile_file = <path to VP_VAPOR_map_memory_placed.json>' (setting name profile_file, from layer/profiles.h in Vulkan-Profiles)",
+        "run the harness with the mock ICD and --expect supported --validation"
+      ]
+    }
+  },
+  "mock_icd_patch": {
+    "path": "tools/tests/mock-icd/VkICD_map_memory_placed.patch",
+    "target": {
+      "repository": "https://github.com/KhronosGroup/Vulkan-Tools",
+      "tag": "vulkan-sdk-1.4.313.0",
+      "commit": "ad2f0170f9466fadd96e3fdd65fad02cd3a3739b",
+      "file": "icd/generated/function_definitions.h"
+    },
+    "route": "documented mock-ICD capability patch fallback (selected over the profiles-layer route)",
+    "changes": [
+      "GetPhysicalDeviceFeatures2KHR: set VkPhysicalDeviceMapMemoryPlacedFeaturesEXT {memoryMapPlaced, memoryMapRangePlaced} TRUE. The stock mock advertises VK_EXT_map_memory_placed but leaves these bits false (the generated function only fills a handful of feature structs).",
+      "GetPhysicalDeviceProperties2KHR: fill the promoted VkPhysicalDeviceVulkan11Properties maxMemoryAllocationSize/maxPerSetDescriptors (the stock mock only fills the deprecated VkPhysicalDeviceMaintenance3Properties mirror; validation on a core-1.2+ instance reads the promoted struct, sees 0 and rejects any allocation).",
+      "GetPhysicalDeviceProperties2KHR: report VkPhysicalDeviceMapMemoryPlacedPropertiesEXT minPlacedMemoryMapAlignment = 4096 (stock mock leaves it 0; validation's placed-map alignment checks treat 0 as 'not aligned' and would reject the placed map)."
+    ],
+    "verification": "applies cleanly to a clean pinned tree (git apply --check), mock ICD builds with the Vulkan-Tools CMake target VkICD_mock_icd, and the local supported lane plus validation lane pass with the patched ICD (see local_smoke)",
+    "upstream_note": "These are mock-ICD gaps that other users of VK_EXT_map_memory_placed + validation would hit; worth reporting to Vulkan-Tools if not already fixed."
+  },
+  "ci_workflow": {
+    "path": ".github/workflows/vulkan-loader-ci.yml",
+    "runner": "ubuntu-24.04",
+    "triggers": [
+      "pull_request",
+      "push (branches: Vapor)",
+      "workflow_dispatch"
+    ],
+    "permissions": "contents: read",
+    "concurrency": "vulkan-loader-path-${{ github.ref }}, cancel-in-progress",
+    "timeout_minutes": 15,
+    "expected_cold_runtime_minutes": "about 2-3 (apt + LunarG repo, pinned mock ICD build, harness compile, two short lanes); no caching used",
+    "host_vulkan_stack": {
+      "source": "pinned LunarG Ubuntu repository https://packages.lunarg.com/vulkan/1.4.313/lunarg-vulkan-1.4.313-noble.list",
+      "why": "Ubuntu 24.04 archive packages are Vulkan 1.3.275, which predate VK_EXT_map_memory_placed (first present in Vulkan-Headers v1.3.278); the matching validation layer must know the feature structs or it rejects them.",
+      "packages": [
+        "vulkan-headers",
+        "libvulkan-dev",
+        "libvulkan1",
+        "vulkan-validationlayers",
+        "mesa-vulkan-drivers"
+      ]
+    },
+    "steps": [
+      "checkout (no submodules/LFS needed)",
+      "install build-essential/ca-certificates/cmake/git/wget/pkg-config/python3/python3-jsonschema, add the pinned LunarG apt repo key+list, install the Vulkan host stack and mesa lavapipe",
+      "clone Vulkan-Tools at the pinned tag, verify the commit SHA, apply the mock-ICD patch, configure with -DBUILD_CUBE=OFF -DBUILD_VULKANINFO=OFF -DBUILD_TESTS=OFF, build target VkICD_mock_icd",
+      "build the loader-path harness with gcc -std=c11 -O2 -Wall -Wextra -Werror ... -lvulkan",
+      "validate the Vulkan Profiles capability file against the latest Khronos schema",
+      "run the driver --self-test",
+      "Lane A: lavapipe ICD via VK_ICD_FILENAMES, --validation --expect skip --print-all (twice: assertion pass + print-all log pass)",
+      "Lane B: patched mock ICD JSON, --validation --expect supported",
+      "upload build/logs as artifact vulkan-loader-path-logs (if: always())"
+    ],
+    "lane_commands": [
+      "python3 tools/tests/vulkan-loader-path.py --lane lavapipe --expect skip --validation --harness build/vulkan-loader-path --icd <lvp_icd.x86_64.json> --log-dir build/logs --print-all",
+      "python3 tools/tests/vulkan-loader-path.py --lane mock-icd --expect supported --validation --harness build/vulkan-loader-path --icd build/vulkan-tools/icd/VkICD_mock_icd.json --log-dir build/logs"
+    ],
+    "failure_behaviour": "the job fails if either lane's expectation is not met (exit codes, RESULT, feature bits, placed-map results or validation errors/VUIDs), if the pinned Vulkan-Tools SHA does not match, if the patch does not apply, or if the profiles schema validation/self-test fails"
+  },
+  "pinned_revisions": {
+    "vulkan_tools_ci_pin": {
+      "repo": "KhronosGroup/Vulkan-Tools",
+      "tag": "vulkan-sdk-1.4.313.0",
+      "commit": "ad2f0170f9466fadd96e3fdd65fad02cd3a3739b",
+      "used_for": "CI mock ICD build + patch"
+    },
+    "lunarg_apt_repo": {
+      "url": "https://packages.lunarg.com/vulkan/1.4.313/lunarg-vulkan-1.4.313-noble.list",
+      "version": "1.4.313",
+      "expected_package_versions": {
+        "vulkan-headers": "1.4.313.0~rc1-1lunarg24.04-1",
+        "libvulkan-dev": "1.4.313.0~rc1-1lunarg24.04-1",
+        "libvulkan1": "1.4.313.0~rc1-1lunarg24.04-1",
+        "vulkan-validationlayers": "1.4.313.0~rc2-1lunarg24.04-1"
+      },
+      "note": "CI prints the resolved package versions (dpkg-query) in the log; the repository URL is pinned so apt cannot silently pick a newer Vulkan release."
+    },
+    "lavapipe": {
+      "source": "Ubuntu 24.04 mesa-vulkan-drivers (archive package)",
+      "icd_manifest": "/usr/share/vulkan/icd.d/lvp_icd.x86_64.json",
+      "note": "exact mesa version is whatever the pinned ubuntu-24.04 image provides and is printed by the harness (DEVICE_NAME/DEVICE_API) in the lane log"
+    },
+    "local_smoke_only": {
+      "vulkan_headers": {
+        "tag": "vulkan-sdk-1.4.363.0",
+        "commit": "6802bb4733b63ed5efd3adb308a6c885ef180ea1"
+      },
+      "vulkan_loader": {
+        "tag": "vulkan-sdk-1.4.363.0",
+        "commit": "fa218055ff4948b159f31d43f800c808a13d51df"
+      },
+      "vulkan_tools": {
+        "tag": "vulkan-sdk-1.4.363.0",
+        "commit": "6fe2055cf2fa921d52a4c6a31528cfc279a6977f",
+        "used_for": "macOS unpatched/patched mock ICD smoke builds"
+      },
+      "vulkan_validation_layers": {
+        "tag": "vulkan-sdk-1.4.363.0",
+        "commit": "15c64e73db67e27ff0215708fbe48684a35c6827",
+        "used_for": "macOS source-built validation layer for the local clean-validation smoke; CI uses the LunarG 1.4.313 package instead"
+      },
+      "vulkan_profiles": {
+        "tag": "vulkan-sdk-1.4.363.0",
+        "commit": "fce885d30ebafed32e03c0b199bc67d6a758887f",
+        "used_for": "schema inspection and profiles-layer route research; not built for CI"
+      }
+    }
+  },
+  "local_smoke": {
+    "host": {
+      "os": "macOS 27.0.1 (build 26A434)",
+      "compiler": "Apple clang 21.0.0 (clang-2100.3.34.2)",
+      "cmake": "4.4.4",
+      "python": "3.14.4",
+      "scratch": "/Users/cheng/loader-path-scratch"
+    },
+    "note": "macOS cannot run lavapipe, so Lane A is CI-only. The mock-ICD lane was exercised end to end locally with the pinned artefacts.",
+    "builds": [
+      "Vulkan-Headers 1.4.363 installed with CMake (header-only)",
+      "Vulkan-Loader 1.4.363 built with -DBUILD_TESTS=OFF -DUPDATE_DEPS=OFF and WSI support off",
+      "Vulkan-Tools 1.4.363 + 1.4.313 mock ICDs built with CMake target VkICD_mock_icd; the 1.4.313 build has the repository patch applied",
+      "Vulkan-ValidationLayers 1.4.363 built from source with -DUPDATE_DEPS=ON, target vvl, only to smoke-test validation cleanliness locally (CI uses the LunarG 1.4.313 package)",
+      "harness compiled with Apple clang -std=c11 -O2 -Wall -Wextra -Werror against both the pinned 1.4.363 headers and the LunarG 1.4.313 headers (the latter proves the CI compile works with the apt headers)",
+      "driver --self-test: 7/7 assertions pass",
+      "profiles capability file: valid against profiles-0.8-latest"
+    ],
+    "lanes": [
+      {
+        "lane": "mock-unpatched (skip path)",
+        "expectation": "skip",
+        "observed": {
+          "EXTENSION_PRESENT": 1,
+          "MEMORY_MAP_PLACED": 0,
+          "MEMORY_MAP_RANGE_PLACED": 0,
+          "RESULT": "SKIP",
+          "exit_code": 77
+        },
+        "verdict": "pass"
+      },
+      {
+        "lane": "mock-patched (supported path, no validation)",
+        "expectation": "supported",
+        "observed": {
+          "EXTENSION_PRESENT": 1,
+          "MAP_MEMORY2_EXTENSION_PRESENT": 1,
+          "MEMORY_MAP_PLACED": 1,
+          "MEMORY_MAP_RANGE_PLACED": 1,
+          "MIN_PLACED_MAP_ALIGNMENT": 4096,
+          "DEVICE_CREATED": 1,
+          "PLACED_MAP_RESULT": 0,
+          "UNMAP2_RESULT": 0,
+          "PLACED_RANGE_MAP_RESULT": 0,
+          "FREE_MEMORY_RESULT": 0,
+          "RESULT": "PASS",
+          "exit_code": 0
+        },
+        "verdict": "pass"
+      },
+      {
+        "lane": "mock-patched (supported path, --validation)",
+        "expectation": "supported",
+        "observed": {
+          "VALIDATION_AVAILABLE": 1,
+          "VALIDATION_ERRORS": 0,
+          "VUID_ERRORS": 0,
+          "RESULT": "PASS",
+          "exit_code": 0
+        },
+        "verdict": "pass",
+        "note": "local layer is source-built Vulkan-ValidationLayers 1.4.363; both patch workarounds (Vulkan11 maxMemoryAllocationSize, minPlacedMemoryMapAlignment=4096) are what make this clean. The same checks exist in VVL 1.4.313 (verified in that tag's cc_device_memory.cpp / dispatch_object_manual.cpp), so the CI layer is expected to behave the same, but CI is the authoritative check."
+      },
+      {
+        "lane": "mock-unpatched (skip path, --validation)",
+        "expectation": "skip",
+        "observed": {
+          "VALIDATION_AVAILABLE": 1,
+          "VALIDATION_ERRORS": 0,
+          "VUID_ERRORS": 0,
+          "RESULT": "SKIP",
+          "exit_code": 77
+        },
+        "verdict": "pass"
+      }
+    ],
+    "evidence_logs": [
+      {
+        "path": "/Users/cheng/loader-path-scratch/final-logs/final-laneB.log",
+        "sha256": "e7f817d1e23f8301ec6ddffad88d4468632f91a6677a965c5d7b508e3893ecd9"
+      },
+      {
+        "path": "/Users/cheng/loader-path-scratch/final-logs/final-skip.log",
+        "sha256": "0f3a3b8016bfa39d48818259d53dcdcb151db7245aea0f7dcf68c9c8f1f61aae"
+      },
+      {
+        "path": "/Users/cheng/loader-path-scratch/final-logs/mock-icd-supported-validated-20261021-230632.log",
+        "sha256": "b8900861e77443c08c7e757c6af016976de4296772c50bf20fdbb1f400be1ba2"
+      },
+      {
+        "path": "/Users/cheng/loader-path-scratch/final-logs/mock-unpatched-skip-validated-20261021-230632.log",
+        "sha256": "c16367067fb36a769eda76df01d1a614e630e763c5d38ee0aede796cba8c26f1"
+      }
+    ]
+  },
+  "ci_verification_required": [
+    "Lane A on ubuntu-24.04 with the LunarG 1.4.313 loader: lavapipe must report no VK_EXT_map_memory_placed support, RESULT=SKIP/exit 77, and zero validation errors/VUIDs.",
+    "Lane B on ubuntu-24.04 with the LunarG 1.4.313 validation layer: the patched mock ICD must report MEMORY_MAP_PLACED=1/MEMORY_MAP_RANGE_PLACED=1, the placed and range-placed vkMapMemory2 calls must return VK_SUCCESS, and validation must report zero errors/VUIDs.",
+    "The pinned LunarG apt repository must resolve the expected 1.4.313 package versions on the runner, and the pinned Vulkan-Tools commit must match ad2f0170f9466fadd96e3fdd65fad02cd3a3739b.",
+    "The Vulkan Profiles capability file must validate against the current Khronos latest schema from the runner network.",
+    "Total workflow runtime and the artifact upload (build/logs)."
+  ],
+  "not_verified_locally": [
+    "No Linux run: the Ubuntu apt/LunarG package install, the lavapipe lane and the workflow itself were not executed locally (macOS host).",
+    "Lane B was validated locally against a source-built validation layer 1.4.363, not the LunarG 1.4.313 package that CI installs; the checks are present in both revisions but CI confirms.",
+    "No CI run has happened yet; the Lead will push and add the run result. This receipt deliberately does not claim one."
+  ],
+  "limitations": [
+    "Loader/entry-point plumbing only: the mock ICD ignores the requested placement address, so placed-memory address semantics, residency, reservation and real driver behaviour are NOT tested.",
+    "lavapipe does not implement VK_EXT_map_memory_placed; Lane A only exercises the capability-skip logic and validation cleanliness on a real software ICD.",
+    "Lane B validation runs over the Vulkan-Tools Mock ICD, not over hardware; a clean VUID result there says the harness usage is valid, not that a real driver would accept it.",
+    "No RADV/ANV/NVK/Turnip (or any physical GPU) result is claimed; real placed-memory semantics still need one of those drivers on real hardware.",
+    "No Android phone/emulator was used for this lane, and no app/Steam/Wine path is involved.",
+    "The mock-ICD capability patch is a local test aid, not an upstream change: it makes the mock advertise capability bits/properties that the app would only get from a real driver.",
+    "Ubuntu 24.04 archive Vulkan packages (1.3.275) are too old for the extension, so CI depends on the pinned LunarG apt repository being reachable."
+  ],
+  "ci_run": {
+    "performed": false,
+    "note": "Lead pushes and watches the workflow; this receipt documents the design, pins and local smoke results only."
+  },
+  "raw_artifacts": {
+    "scratch": "/Users/cheng/loader-path-scratch",
+    "local_logs": "/Users/cheng/loader-path-scratch/final-logs",
+    "built_harness": "/Users/cheng/loader-path-scratch/bin/vulkan-loader-path-gcc",
+    "patched_mock_icd": "/Users/cheng/loader-path-scratch/build/tools313/icd/VkICD_mock_icd.json",
+    "local_validation_layer": "/Users/cheng/loader-path-scratch/build/vvl/layers",
+    "local_pinned_loader": "/Users/cheng/loader-path-scratch/prefix/lib/libvulkan.1.dylib"
+  },
+  "specification": {
+    "extension": "VK_EXT_map_memory_placed",
+    "spec_page": "https://docs.vulkan.org/refpages/latest/refpages/source/VK_EXT_map_memory_placed.html",
+    "features": "VkPhysicalDeviceMapMemoryPlacedFeaturesEXT {memoryMapPlaced, memoryMapRangePlaced, memoryUnmapReserve}",
+    "dependency": "VK_KHR_map_memory2 or Vulkan 1.4",
+    "new": "VkMemoryMapPlacedInfoEXT (chained from VkMemoryMapInfo), VkPhysicalDeviceMapMemoryPlacedPropertiesEXT.minPlacedMemoryMapAlignment, VK_MEMORY_MAP_PLACED_BIT_EXT / VK_MEMORY_UNMAP_RESERVE_BIT_EXT"
+  },
+  "real_driver_scope": {
+    "needs": "a RADV/ANV/NVK/Turnip-class Vulkan driver for real placed-memory semantics (placement address honoured, residency/reservation, external-memory interactions)",
+    "this_lane_covers": "loader enumeration and entry-point plumbing, device-extension + dependency extension enablement, capability reporting (extension + feature bits + alignment property), capability-skip logic, Khronos validation cleanliness over a real software ICD (lavapipe) and a mock ICD",
+    "not_covered": "real placed address semantics, RADV/ANV/NVK/Turnip, Android/phone, performance"
+  },
+  "does_not_claim": [
+    "No CI run is claimed; the workflow has not been executed from this workspace.",
+    "No physical GPU / real driver placed-memory semantic result is claimed.",
+    "Lane B's clean validation is over the Vulkan-Tools Mock ICD, not hardware.",
+    "No Android, phone, app, Steam/Wine or game path is involved in this lane."
+  ]
+}
