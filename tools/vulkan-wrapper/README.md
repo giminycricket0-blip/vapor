@@ -169,9 +169,13 @@ confirm the intended release points: the unpatched control frees a single
 64-resource batch inside `vkDestroyImage`, while the patched library frees two
 resources per command-buffer free in the staging path, inside `vkWaitForFences`
 for one-time-submit+fence, and inside `vkDeviceWaitIdle` for the device-idle path,
-with equal tracking/release totals and no destroy-time crash. Resubmission,
-unfenced submissions, the placed-memory path and long-running growth remain
-pending. See
+with equal tracking/release totals and no destroy-time crash. Deeper runtime
+validation (23 runs on 4 KB and 16 KB) adds unfenced command-buffer-free
+releases, reset/begin reclamation, `vkQueueSubmit2`-with-fence reclamation, a
+documented semaphore-only limitation, stress peaks of 16 and 2 tracked resources
+against 512 for the unpatched control, and 16 KB A/B passes. Validation layers,
+the placed-memory path, concurrency and phone-duration growth remain pending.
+See
 [the staging review](../../docs/evidence/2026-10-21-vulkan-wrapper-staging.json)
 and [the reclaim patch receipt](../../docs/evidence/2026-10-21-wrapper-staging-reclaim.json).
 
@@ -187,6 +191,17 @@ and llvmpipe's native decode within 2 LSB. Depth D16/D24S8/D32 transfers are
 bit-exact round trips. `--print-runbook` prints the phone command and expected
 controls; these are software-Vulkan synthetic results, not Adreno/KGSL evidence.
 [Probe receipt](../../docs/evidence/2026-10-21-vulkan-wrapper-reference.json).
+
+Extended cases add the 16 KB matrix (43/43 pass, page size 16384), odd extents,
+partial regions with sentinels, mips/array layers, sRGB variants and independent
+BC4/BC5 (RGTC) decoders; the depth-reduction knob is reachable through
+`DEPTH_STENCIL_ATTACHMENT` images and recorded per mode. Two suspected
+wrapper-side defects are documented, both software-emulation only: BC_SRGB data
+decodes differently between the compute path and the host-CPU fallback, and the
+host-CPU path corrupts partial edge blocks for out-of-spec non-block-aligned copy
+extents. The extended tool also fixes a missing `re` import in the first-pass
+revision while keeping the default matrix/format names.
+[Extended receipt](../../docs/evidence/2026-10-21-vulkan-wrapper-reference-extended.json).
 
 ## Android build and limits
 

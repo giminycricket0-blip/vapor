@@ -172,6 +172,20 @@ one-time submissions, the `VK_EXT_map_memory_placed` path, semaphores, validatio
 layers, 16 KB pages, concurrency and long-running phone growth remain pending.
 [Reclaim patch receipt](evidence/2026-10-21-wrapper-staging-reclaim.json).
 
+Deeper runtime validation (23 runs on the 4 KB and 16 KB emulators) extends this:
+unfenced one-time submissions release at command-buffer free; re-submittable
+command buffers release inside `vkResetCommandBuffer`/`vkBeginCommandBuffer` (or
+at free without a re-begin); `vkQueueSubmit2` with a fence still reclaims inside
+`vkWaitForFences`; a semaphore-only submit does not reclaim early (documented
+limitation, released at command-buffer free, no leak past destroy); stress runs
+show peak tracked counts of 16 (32 images × 8 copies) and 2 (one image × 256
+copies) against 512 for the unpatched control, with tracking equal to released in
+every case; and the same A/B, one-time+fence and image-view cases pass on the
+Android 17/API 37 16 KB emulator. Validation layers could not be attached because
+the probe uses the wrapper directly as an ICD, and the placed-memory path,
+concurrency and physical-phone duration remain pending. No defect was found in
+the patch. [Extended runtime receipt](evidence/2026-10-21-wrapper-staging-reclaim-extended.json).
+
 ### Packaged wrapper payload identity
 
 Static analysis (no execution, no repackaging) confirms the three packaged payload
@@ -210,6 +224,23 @@ D32_SFLOAT create/bind/upload/readback bit-exactly on system loader, baseline an
 candidate; unsupported combinations are recorded.
 [Probe receipt](evidence/2026-10-21-vulkan-wrapper-reference.json),
 [tool](../tools/tests/vulkan-wrapper-reference.py).
+
+Extended coverage adds a 16 KB-page run (43/43 matrix passes, page_size=16384,
+wrapper compute decode exact and depth bit-exact), odd non-multiple-of-4 extents
+(5x7, 13x17, 1x1, 63x65: compute paths decode every in-bounds pixel exactly),
+partial-region copies with sentinel checks, three mip levels × two array layers,
+BC1/BC3 sRGB variants plus an RGBA8_SRGB control, and independent BC4/BC5 (RGTC)
+decoders whose wrapper compute and host paths are exact. The wrapper's
+depth-format-reduction knob is reachable through `DEPTH_STENCIL_ATTACHMENT` images:
+unset stays bit-exact, `safe` reduces D32→D16 (D24S8 unchanged), `aggressive`
+reduces D32/D24S8→D16 (transfers no longer bit-exact), and `disabled` rejects
+image creation with `VK_ERROR_FORMAT_NOT_SUPPORTED`. Two suspected defects are
+recorded for the wrapper owners, both in software emulation: BC_SRGB data decodes
+to different pixels depending on whether the compute shader (linearised) or the
+host-CPU fallback (encoded) runs, and the host-CPU path corrupts partial edge
+blocks for out-of-spec non-block-aligned copy extents. Neither is an app defect and
+neither is claimed as a conformance failure.
+[Extended receipt](evidence/2026-10-21-vulkan-wrapper-reference-extended.json).
 
 These are software-Vulkan, synthetic-data results: no Adreno/KGSL driver, physical
 GPU, sampling/rendering pipeline, mip/array/sRGB variants, validation layers or
@@ -300,9 +331,13 @@ rebuilt and `libwnsteam.so` recompiled from cargo. The fresh APK is 684,926,636 
 focused JVM suites re-passed (EmuReadyTest 24/24, CommunityReportsUiTest 17/17),
 and both Android suites re-ran on the rebuilt APK: 17/17 report/game-page and
 14/14 catalog-install checks pass, with no carried-over results. This replaces
-the earlier "native libraries reused" caveat; byte-for-byte APK reproducibility
-across machines is not claimed.
-[Native rebuild receipt](evidence/2026-10-21-emuready-native-rebuild.json).
+the earlier "native libraries reused" caveat. A clean rebuild of the identical
+source state on the same machine was **not byte-for-byte identical**: three dex
+entries and `libcrypto.so` differ, and ZIP entry ordering/padding differs, while
+the entry set, uncompressed sizes, signing certificate and 16 KB alignment stay
+valid. Byte-for-byte APK reproducibility is therefore not established.
+[Native rebuild receipt](evidence/2026-10-21-emuready-native-rebuild.json),
+[rebuild reproducibility receipt](evidence/2026-10-21-apk-rebuild-reproducibility.json).
 
 ### Live public data in the normal app
 
@@ -332,12 +367,42 @@ The separate [Android UI fixture capture](images/emuready-reports-emulator-sampl
 uses labeled sample content. All captures are from the Android 16 / API 36 ARM64
 emulator with 4 KB pages; they are not physical Xiaomi or gameplay measurements.
 
+### Live emulator journey — 21 October
+
+The rebuilt APK was installed on an Android 16/API 36 ARM64 emulator and opened
+normally with Steam signed out. The journey **Store → Half-Life 2 → Community
+reports → View reported settings** succeeded with live data: the modal rendered
+the AYN Thor Pro / Snapdragon 8 Gen 2 / Reported Playable · GameNative report
+(2026-08-23, 0 positive / 0 negative votes, FLASH WARNING notes), and View
+reported settings loaded the live report's values (Emulator Version 1.1.1,
+Container Variant bionic, Wine Version proton-9.0-arm64ec, Resolution 1280x720
+16:9) read-only. On-screen values were cross-checked against fresh live payloads
+and match. Both source actions handed off to Chrome with the reader-generated
+URLs. Team Fortress 2 reached the honest "No matching Windows entry found" state.
+The live mobile path also accepts the app's default OkHttp user agent, and live
+malformed/missing/unknown/oversized inputs map to the reader's connection-failure
+wording rather than the unexpected-response state; a valid envelope with an
+unknown game id returns an empty page.
+
+[Live journey receipt](evidence/2026-10-21-emuready-live-app-journey.json).
+Screenshots: [reports](images/emuready-live-app-2026-10-21-reports.png),
+[settings](images/emuready-live-app-2026-10-21-settings.png),
+[no entry](images/emuready-live-app-2026-10-21-no-entry.png),
+[catalog action](images/emuready-live-app-2026-10-21-catalog-action.png).
+
+The Windows-less gating branch was not observable live (no Steam catalog app with
+`platforms.windows=false` could be located) and remains covered by the committed
+JVM/device tests. The emulator ran under host memory pressure (one SystemUI ANR
+and one app-process restart, no app crash) and in landscape; no physical phone,
+TalkBack or physical gamepad pass was performed.
+
 Remaining: physical-phone acceptance, physical gamepad and TalkBack, same-device/
 runtime matching and selective settings preview/application. Live API reads do
 not qualify long-term service availability, catalog coverage, game performance,
-Steam Cloud, achievements or chat. External source navigation is callback-tested;
-the manual journey did not open the browser. No account, purchase, runtime launch,
-settings mutation, APK publication or Git push was performed in this slice.
+Steam Cloud, achievements or chat. External source navigation is callback-tested,
+and the later live emulator journey opens both source links in Chrome. No account,
+purchase, runtime launch, settings mutation, APK publication or Git push was
+performed in this slice.
 
 ## Production parent-runner execution — 20 October 2026
 

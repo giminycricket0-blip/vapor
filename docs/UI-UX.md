@@ -31,7 +31,10 @@ Narrow/large-text and short-landscape layouts have Compose coverage; Android
 instrumentation covers controller B dismissal as well as touch actions, including
 the catalog platform gating. A live re-check of the public API validated the
 reader's request format and response shapes, including the platform guard against
-console entries. A follow-up review pass fixed eight findings and re-ran 41 JVM
+console entries. A signed-out emulator journey on 21 October rendered live
+Half-Life 2 reports and their settings from the real service (on-screen values
+matching fresh payloads) and handed both source links off to Chrome with the
+reader-built URLs. A follow-up review pass fixed eight findings and re-ran 41 JVM
 and 31 Android checks on the rebuilt APK; a full native rebuild with Rust/cargo
 then re-passed the same JVM and Android checks. Physical controllers and TalkBack
 remain separate acceptance checks.
