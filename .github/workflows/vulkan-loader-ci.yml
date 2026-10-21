@@ -127,20 +127,150 @@ jobs:
       - name: Lane A - lavapipe must SKIP placed memory with clean validation
         run: |
           set -euo pipefail
-          LAVAPIPE_ICD="$(ls /usr/share/vulkan/icd.d/lvp_icd.*.json | head -n 1)"
-          test -f "$LAVAPIPE_ICD"
-          echo "lavapipe ICD: $LAVAPIPE_ICD"
-          mkdir -p "$BUILD_DIR/logs"
+          mkdir -p "$BUILD_DIR/logs" "$BUILD_DIR/lavapipe"
+          VULKAN_ICD_SYSTEM_DIRS="/usr/share/vulkan /etc/vulkan"
+          VULKAN_LIB_DIRS="/usr/lib /usr/lib64 /usr/local/lib"
+
+          echo "=== lavapipe ICD discovery ==="
+          MESA_DPKG_FILES="$(dpkg -L mesa-vulkan-drivers 2>/dev/null | grep -Ei 'vulkan|icd' || true)"
+          echo "--- dpkg -L mesa-vulkan-drivers | grep -Ei 'vulkan|icd' ---"
+          printf '%s\n' "$MESA_DPKG_FILES" || true
+          echo "--- ls -la /usr/share/vulkan/icd.d ---"
+          ls -la /usr/share/vulkan/icd.d/ || true
+          echo "--- ls -la /usr/share/vulkan/explicit_layer.d ---"
+          ls -la /usr/share/vulkan/explicit_layer.d/ || true
+          echo "--- find $VULKAN_ICD_SYSTEM_DIRS $VULKAN_LIB_DIRS -iname '*lvp*' ---"
+          find $VULKAN_ICD_SYSTEM_DIRS $VULKAN_LIB_DIRS -iname '*lvp*' 2>/dev/null | sort || true
+
+          # Mesa has shipped the lavapipe ICD manifest as lvp_icd.x86_64.json,
+          # lvp_icd.json and (in some builds) only libvulkan_lvp.so.  Resolve the
+          # manifest defensively and, if only the library is present, synthesize a
+          # minimal manifest with an absolute library_path in $BUILD_DIR.  Manifests
+          # with a relative library_path are copied to $BUILD_DIR with an absolute
+          # path so the lane never depends on loader-relative-path resolution.
+          echo "--- dpkg-listed lavapipe files (existing only) ---"
+          MESA_DPKG_JSON_FILES="$(printf '%s\n' "$MESA_DPKG_FILES" | grep -E '\.json$' | while IFS= read -r path; do [ -e "$path" ] && printf '%s\n' "$path"; done || true)"
+          MESA_DPKG_LVP_LIB="$(printf '%s\n' "$MESA_DPKG_FILES" | grep -E 'libvulkan_lvp' | while IFS= read -r path; do [ -e "$path" ] && printf '%s\n' "$path"; done | head -n 1 || true)"
+          printf '%s\n' "$MESA_DPKG_JSON_FILES" || true
+          printf '%s\n' "$MESA_DPKG_LVP_LIB" || true
+
+          ICD_JSON_CANDIDATES="$({ find $VULKAN_ICD_SYSTEM_DIRS -maxdepth 3 -type f -name '*.json' 2>/dev/null || true; printf '%s\n' "$MESA_DPKG_JSON_FILES" || true; } | grep -E '\.json$' | sort -u || true)"
+          LVP_LIB="$(find $VULKAN_LIB_DIRS -iname 'libvulkan_lvp*' 2>/dev/null | head -n 1 || true)"
+          if [ -z "$LVP_LIB" ] && [ -n "$MESA_DPKG_LVP_LIB" ]; then
+            LVP_LIB="$MESA_DPKG_LVP_LIB"
+          fi
+          echo "ICD_JSON_CANDIDATES=$ICD_JSON_CANDIDATES"
+          echo "LVP_LIB=$LVP_LIB"
+          export BUILD_DIR ICD_JSON_CANDIDATES LVP_LIB
+
+          RESOLVED_ICD="$(python3 - <<'PYRESOLVE'
+          import json
+          import os
+          import pathlib
+          import sys
+
+          build_dir = pathlib.Path(os.environ["BUILD_DIR"])
+          out_dir = build_dir / "lavapipe"
+          out_dir.mkdir(parents=True, exist_ok=True)
+          lib = os.environ.get("LVP_LIB", "").strip()
+          candidates = [line.strip() for line in
+                        os.environ.get("ICD_JSON_CANDIDATES", "").splitlines()
+                        if line.strip()]
+
+          def basename_mentions_lvp(path):
+              name = pathlib.Path(path).name.lower()
+              return "lvp" in name or "lavapipe" in name
+
+          def manifest_details(path):
+              """Return (ok, library_path, resolved_library) or (False, reason, None)."""
+              try:
+                  data = json.loads(pathlib.Path(path).read_text())
+              except (OSError, ValueError) as error:
+                  return False, "unreadable manifest: %s" % error, None
+              icd = data.get("ICD") or {}
+              library_path = icd.get("library_path")
+              if not library_path:
+                  return False, "manifest has no ICD.library_path", None
+              resolved = pathlib.Path(library_path)
+              if not resolved.is_absolute():
+                  resolved = (pathlib.Path(path).parent / resolved).resolve()
+              if resolved.is_file():
+                  return True, library_path, resolved
+              return False, "library_path does not resolve: %s" % resolved, None
+
+          def normalise_manifest(path):
+              """Copy a manifest with a relative library_path to $BUILD_DIR with an
+              absolute path; return the path to hand to VK_ICD_FILENAMES."""
+              data = json.loads(pathlib.Path(path).read_text())
+              library = pathlib.Path(data["ICD"]["library_path"])
+              if library.is_absolute():
+                  return path, False
+              data["ICD"]["library_path"] = str((pathlib.Path(path).parent / library).resolve())
+              target = out_dir / (pathlib.Path(path).stem + "_absolute.json")
+              target.write_text(json.dumps(data, indent=4) + "\n")
+              return str(target), True
+
+          preferred = [candidate for candidate in candidates if basename_mentions_lvp(candidate)]
+          others = [candidate for candidate in candidates if candidate not in preferred]
+
+          def accept(candidate, source):
+              ok, detail, resolved = manifest_details(candidate)
+              if not ok:
+                  print("LAVAPIPE_ICD_SKIP=%s (%s)" % (candidate, detail), file=sys.stderr)
+                  return False
+              manifest, normalised = normalise_manifest(candidate)
+              print("LAVAPIPE_ICD_SOURCE=%s%s" % (source,
+                    "-normalized" if normalised else ""), file=sys.stderr)
+              print("LAVAPIPE_ICD_LIBRARY=%s" % detail, file=sys.stderr)
+              if normalised:
+                  print("LAVAPIPE_ICD_ORIGINAL=%s" % candidate, file=sys.stderr)
+              print(manifest)
+              sys.exit(0)
+
+          # Preferred manifests (lvp/lavapipe in the file name) must resolve.
+          for candidate in preferred:
+              accept(candidate, "manifest")
+
+          # A differently named manifest is accepted only when its library path
+          # clearly points at lavapipe, so this lane can never silently run on a
+          # different ICD.
+          for candidate in others:
+              ok, detail, resolved = manifest_details(candidate)
+              library_name = pathlib.Path(detail).name.lower() if detail else ""
+              if ok and ("lvp" in library_name or "lavapipe" in library_name):
+                  accept(candidate, "manifest-content")
+
+          if lib:
+              target = out_dir / "lvp_icd.json"
+              target.write_text(json.dumps({
+                  "file_format_version": "1.0.0",
+                  "ICD": {"library_path": str(pathlib.Path(lib).resolve()), "api_version": "1.3.0"},
+              }, indent=4) + "\n")
+              print("LAVAPIPE_ICD_SOURCE=synthesized-from-library", file=sys.stderr)
+              print("LAVAPIPE_ICD_LIBRARY=%s" % pathlib.Path(lib).resolve(), file=sys.stderr)
+              print(target)
+              sys.exit(0)
+
+          print("ERROR: no lavapipe ICD manifest and no libvulkan_lvp library found", file=sys.stderr)
+          print("candidates checked: %s" % (candidates or "none"), file=sys.stderr)
+          sys.exit(1)
+          PYRESOLVE
+          )"
+          test -n "$RESOLVED_ICD"
+          test -f "$RESOLVED_ICD"
+          echo "resolved lavapipe ICD: $RESOLVED_ICD"
+          echo "resolved lavapipe manifest:"; cat "$RESOLVED_ICD"
+
           python3 tools/tests/vulkan-loader-path.py \
             --lane lavapipe --expect skip --validation \
             --harness "$BUILD_DIR/vulkan-loader-path" \
-            --icd "$LAVAPIPE_ICD" \
+            --icd "$RESOLVED_ICD" \
             --log-dir "$BUILD_DIR/logs" --print-all
           echo "--- second pass with --print-all for the log ---"
           python3 tools/tests/vulkan-loader-path.py \
             --lane lavapipe-print-all --expect skip --validation --print-all \
             --harness "$BUILD_DIR/vulkan-loader-path" \
-            --icd "$LAVAPIPE_ICD" \
+            --icd "$RESOLVED_ICD" \
             --log-dir "$BUILD_DIR/logs"
 
       - name: Lane B - patched mock ICD must SUPPORT placed memory with clean validation
@@ -148,6 +278,33 @@ jobs:
           set -euo pipefail
           MOCK_ICD="$BUILD_DIR/vulkan-tools/icd/VkICD_mock_icd.json"
           test -f "$MOCK_ICD"
+          # Resolve the build-tree manifest's relative library_path to an absolute
+          # path so the lane does not depend on loader-relative-path resolution.
+          MOCK_ICD="$(python3 - "$MOCK_ICD" <<'PYABS'
+          import json
+          import pathlib
+          import sys
+
+          path = pathlib.Path(sys.argv[1])
+          data = json.loads(path.read_text())
+          library = pathlib.Path(data["ICD"]["library_path"])
+          if not library.is_absolute():
+              library = (path.parent / library).resolve()
+              data["ICD"]["library_path"] = str(library)
+              path.write_text(json.dumps(data, indent=4) + "\n")
+          print(data["ICD"]["library_path"])
+          print(path)
+          PYABS
+          )"
+          MOCK_ICD="$(printf '%s\n' "$MOCK_ICD" | tail -n 1)"
+          echo "resolved mock ICD manifest: $MOCK_ICD"
+          python3 - "$MOCK_ICD" <<'PYSHOW'
+          import json
+          import pathlib
+          import sys
+
+          print("mock ICD manifest:", json.dumps(json.loads(pathlib.Path(sys.argv[1]).read_text())))
+          PYSHOW
           python3 tools/tests/vulkan-loader-path.py \
             --lane mock-icd --expect supported --validation \
             --harness "$BUILD_DIR/vulkan-loader-path" \

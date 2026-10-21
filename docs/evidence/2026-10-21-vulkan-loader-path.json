@@ -162,10 +162,17 @@
       "upload build/logs as artifact vulkan-loader-path-logs (if: always())"
     ],
     "lane_commands": [
-      "python3 tools/tests/vulkan-loader-path.py --lane lavapipe --expect skip --validation --harness build/vulkan-loader-path --icd <lvp_icd.x86_64.json> --log-dir build/logs --print-all",
+      "python3 tools/tests/vulkan-loader-path.py --lane lavapipe --expect skip --validation --harness build/vulkan-loader-path --icd <resolved lavapipe manifest or synthesized JSON> --log-dir build/logs --print-all",
       "python3 tools/tests/vulkan-loader-path.py --lane mock-icd --expect supported --validation --harness build/vulkan-loader-path --icd build/vulkan-tools/icd/VkICD_mock_icd.json --log-dir build/logs"
     ],
-    "failure_behaviour": "the job fails if either lane's expectation is not met (exit codes, RESULT, feature bits, placed-map results or validation errors/VUIDs), if the pinned Vulkan-Tools SHA does not match, if the patch does not apply, or if the profiles schema validation/self-test fails"
+    "failure_behaviour": "the job fails if either lane's expectation is not met (exit codes, RESULT, feature bits, placed-map results or validation errors/VUIDs), if the pinned Vulkan-Tools SHA does not match, if the patch does not apply, or if the profiles schema validation/self-test fails",
+    "sha256": "70f7b6b1821c9deebfecb6e2ec09e39ec420f96bfeb4182d7c9a6f6131292ab4",
+    "sha256_note": "Current committed workflow; supersedes the first-attempt workflow (d040ecb75a6cba35ae4d6cb799e60b0ebed2b73ef69d79a63b880e7cc498909b) after the Lane A lavapipe discovery fix.",
+    "lavapipe_discovery": {
+      "problem": "First CI attempt used a glob /usr/share/vulkan/icd.d/lvp_icd.*.json; Ubuntu noble-updates mesa-vulkan-drivers 25.2.8 ships /usr/share/vulkan/icd.d/lvp_icd.json (no arch suffix) with a RELATIVE library_path (\"libvulkan_lvp.so\"), so the glob missed it.",
+      "fix": "Lane A now prints dpkg -L/list/find diagnostics, harvests ICD manifests and libraries from find+dpkg, accepts only genuinely-lavapipe manifests, normalises relative library_path manifests to absolute JSON copies under $BUILD_DIR, synthesizes a minimal manifest when only libvulkan_lvp*.so is present, and hard-fails only when neither exists. LAVAPIPE_ICD_SOURCE is echoed. Verified locally against 9 fake-root scenarios including the exact Mesa 25.2.8 layout.",
+      "de_risking": "Mesa 25.2.8 source implements VK_EXT_map_memory_placed only in RADV; lavapipe has no references, so Lane A SKIP remains the correct expectation."
+    }
   },
   "pinned_revisions": {
     "vulkan_tools_ci_pin": {
@@ -319,9 +326,10 @@
     "Total workflow runtime and the artifact upload (build/logs)."
   ],
   "not_verified_locally": [
-    "No Linux run: the Ubuntu apt/LunarG package install, the lavapipe lane and the workflow itself were not executed locally (macOS host).",
+    "The successful CI execution itself: attempt 1 (run 39684414300) failed only at Lane A lavapipe ICD discovery; the harness build, patched mock-ICD build, profile validation and driver self-test steps passed before it.",
     "Lane B was validated locally against a source-built validation layer 1.4.363, not the LunarG 1.4.313 package that CI installs; the checks are present in both revisions but CI confirms.",
-    "No CI run has happened yet; the Lead will push and add the run result. This receipt deliberately does not claim one."
+    "The Linux lavapipe Lane A execution (SKIP + clean validation) has not yet run successfully in CI.",
+    "No real RADV/ANV/NVK/Turnip placement semantics are tested by this lane."
   ],
   "limitations": [
     "Loader/entry-point plumbing only: the mock ICD ignores the requested placement address, so placed-memory address semantics, residency, reservation and real driver behaviour are NOT tested.",
@@ -334,7 +342,8 @@
   ],
   "ci_run": {
     "performed": false,
-    "note": "Lead pushes and watches the workflow; this receipt documents the design, pins and local smoke results only."
+    "status": "attempt-1 failed on Lane A discovery; fix committed; next run pending",
+    "note": "The Lead pushes and reports the run; this receipt will be refreshed with the successful run id/results. No CI success is claimed here."
   },
   "raw_artifacts": {
     "scratch": "/Users/cheng/loader-path-scratch",
@@ -361,5 +370,27 @@
     "No physical GPU / real driver placed-memory semantic result is claimed.",
     "Lane B's clean validation is over the Vulkan-Tools Mock ICD, not hardware.",
     "No Android, phone, app, Steam/Wine or game path is involved in this lane."
+  ],
+  "ci_attempts": [
+    {
+      "run_id": 39684414300,
+      "workflow": "Vulkan loader path",
+      "workflow_sha256": "d040ecb75a6cba35ae4d6cb799e60b0ebed2b73ef69d79a63b880e7cc498909b",
+      "head_sha": "bef7c48bfaaa44eef9098522c9a331b4ffe074dc",
+      "result": "failure",
+      "failing_step": "Lane A - lavapipe must SKIP placed memory with clean validation",
+      "cause": "ls /usr/share/vulkan/icd.d/lvp_icd.*.json found nothing: Ubuntu mesa-vulkan-drivers 25.2.8 ships lvp_icd.json (no arch suffix) with a relative library_path.",
+      "steps_before_passing": [
+        "install host packages + LunarG 1.4.313 stack",
+        "build patched Vulkan-Tools mock ICD",
+        "build harness",
+        "validate Profiles capability file",
+        "driver --self-test"
+      ]
+    },
+    {
+      "run": null,
+      "status": "pending after Lane A discovery fix (COMMITTED_WORKFLOW_SHA 70f7b6b1821c9deebfecb6e2ec09e39ec420f96bfeb4182d7c9a6f6131292ab4)"
+    }
   ]
 }
