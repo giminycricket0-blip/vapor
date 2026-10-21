@@ -1,0 +1,1072 @@
+{
+  "date": "2026-10-21",
+  "task": "task-9",
+  "subject": "Staging reclaim deep runtime validation (incl. 16 KB, stress)",
+  "scope": "Deep runtime validation of the committed staging-reclamation patch (tools/vulkan-wrapper/staging-reclaim.patch) beyond the first A/B pass. Two emulator phases were run on exclusive port 5556: Phase 1 AVD Vapor_UI_API36 (4 KB pages) and Phase 2 AVD Vapor_API_37_16KB (16 KB pages). Cases: unfenced one-time submit, begin/reset reclamation in isolation, vkQueueSubmit2 and semaphore submissions, 32-image and long-lived-image stress with peak-tracked accounting and RSS, 16 KB A/B, and an attempted Khronos validation-layer run. A new scratch-only probe fixture (probe-deep.c) drove the extra cases; no repo file other than this receipt was created or modified and nothing was committed.",
+  "base_vapor_commit": "95ecbf62ace30988411f6f65de4f513632a395fc",
+  "base_vapor_branch": "Vapor",
+  "component": {
+    "name": "vulkan-wrapper staging resources (bionic-vulkan-wrapper)",
+    "source_repository": "https://github.com/leegao/bionic-vulkan-wrapper",
+    "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+    "patch": "tools/vulkan-wrapper/staging-reclaim.patch",
+    "patch_sha256": "c92b69ebbbf244c74d05455e1bfff3da0c0aaff94bbd8a75ab4dc4f6308a6568",
+    "previous_receipt": "docs/evidence/2026-10-21-wrapper-staging-reclaim.json",
+    "previous_receipt_first_ab_pass": "7 runs on emulator-5556/AVD Vapor_UI_API36: release points inside vkFreeCommandBuffers, vkWaitForFences and vkDeviceWaitIdle"
+  },
+  "binary_identity": {
+    "scratch_build_tree": "/Users/cheng/wrapper-staging-reclaim/work/build",
+    "unpatched_build_library": {
+      "path": "/Users/cheng/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+      "bytes": 131385216,
+      "sha256": "e8eae86bd4174b0035c04db875a0080cfaef2d1fe294b0f4bc2d0c494e62079e"
+    },
+    "patched_library_used_on_device": {
+      "path": "/Users/cheng/staging-deep/runtime/patched-stripped.so",
+      "bytes": 10703312,
+      "sha256": "08ef8247e34c0e083cede47d61112784f472fc57a503fc0402d85d0d1b9dbca6"
+    },
+    "control_candidate_library_used_on_device": {
+      "path": "/Users/cheng/staging-deep/runtime/candidate.so",
+      "bytes": 10699464,
+      "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506"
+    },
+    "base_probe_binary": {
+      "path": "/Users/cheng/staging-deep/runtime/probe",
+      "bytes": 162504,
+      "sha256": "eaabe9afc3c443ffa2de65e741f114f2a1de4b7fd23625c76983f06724af79da",
+      "note": "prior native probe from /Users/cheng/wrapper-probe-16k/run, LOAD 0x4000, used for identity cross-check only; all new cases used probe-deep"
+    },
+    "extended_probe_source": {
+      "path": "/Users/cheng/staging-deep/probes/probe-deep.c",
+      "bytes": 29365,
+      "sha256": "2b7907089ecd91c508514df3c7d4e0e2c842656815bec628d7527a573798ea7a",
+      "note": "derived from tools/tests/vulkan-wrapper-native.c (source sha256 03909d3d077cd49bf35bef0d31288196b8fd26d82a1bc470b63d23041a54a0f7) with MARKER/RSS prints and env-independent extra modes; scratch-only, never added to the repo"
+    },
+    "extended_probe_4kb_binary": {
+      "path": "/Users/cheng/staging-deep/probes/probe-deep",
+      "bytes": 34688,
+      "sha256": "964423f6002912d279af257d433871ab679467f9c47e90af55c64302c6a48e28",
+      "load_alignment": "0x1000",
+      "used": "Phase 1 (4 KB guest)"
+    },
+    "extended_probe_16kb_binary": {
+      "path": "/Users/cheng/staging-deep/probes/probe-deep-16k",
+      "bytes": 34688,
+      "sha256": "85ec5b54394b9b02d2d6abeb5c237381676797e3369a674ecdb715c753440fb7",
+      "load_alignment": "0x4000",
+      "used": "Phase 2 (16 KB guest)",
+      "rebuild_flags": "-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384"
+    }
+  },
+  "emulator": {
+    "ownership": "Exclusive port 5556. Ports 5558/5560/5562 were never touched. `adb emu kill` was issued at the end of each phase; no qemu is left on 5556.",
+    "phase1": {
+      "avd": "Vapor_UI_API36",
+      "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 4",
+      "guest_abi": "arm64-v8a",
+      "guest_sdk": 36,
+      "page_size": 4096,
+      "vulkan_device_reported_by_probe": "llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096",
+      "boot_log": {
+        "path": "/Users/cheng/staging-deep/emulator-phase1.log",
+        "sha256": "9ba76e989e6a59da0b315c167173fdd2d354f6fa29ce3075ac136de31ad44067"
+      },
+      "notes": "boot_completed=1 verified before any run; device directory /data/local/tmp/vapor-staging-deep"
+    },
+    "phase2": {
+      "avd": "Vapor_API_37_16KB",
+      "avd_ini": "/Users/cheng/.android/avd/Vapor_API_37_16KB.ini",
+      "avd_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/emulator/Vapor_API_37_16KB.avd",
+      "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_API_37_16KB -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 4",
+      "guest_model": "sdk_gphone16k_arm64",
+      "guest_fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CE2A.260420.050/16231978:userdebug/dev-keys",
+      "guest_sdk": 37,
+      "page_size": 16384,
+      "debuggable": 1,
+      "vulkan_device_reported_by_probe": "Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384",
+      "boot_log": {
+        "path": "/Users/cheng/staging-deep/emulator-phase2b.log",
+        "sha256": "c16dc0f566d1b43bf6ee223f1acf27ef2839c2c663f1e54db08465cbfd6cde91"
+      },
+      "coordination_note": "First Phase 2 boot attempt failed with `FATAL | Running multiple emulators with the same AVD is an experimental feature` because another teammate held AVD Vapor_API_37_16KB on port 5558 (log: /Users/cheng/staging-deep/emulator-phase2.log sha256 a65d2502cb15c4b7508117b62a6c14d3e169c8d1076a82b1c14b767b7380515d). After the Lead confirmed release and `adb devices`/`ps` showed the 5558 instance gone, the AVD booted on 5556 successfully. No clone was needed.",
+      "fixture_note": "The first Phase 2 run batch crashed with `Segmentation fault` (exit 139) for all 5 runs because the probe-deep binary then in use was linked with 4 KB LOAD alignment (0x1000) and cannot run on the 16 KB-page guest. The probe was rebuilt with -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 (LOAD 0x4000) and the same 5 runs were repeated successfully once. The failed-attempt exit codes remain in /Users/cheng/staging-deep/runs.tsv; that was a fixture error, not a wrapper defect."
+    }
+  },
+  "protocol": {
+    "command_template": "adb -s emulator-5556 shell \"cd /data/local/tmp/vapor-staging-deep && LD_LIBRARY_PATH=. PREFIX=. WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=<0|1> ./probe-deep ./<patched-stripped.so|candidate.so> <MODE> <PARAM> 16\"",
+    "host_runner": "/Users/cheng/staging-deep/run-case.sh (writes /Users/cheng/staging-deep/runs.tsv and logs/<tag>.log)",
+    "probe_modes": {
+      "staging": "base probe behaviour: non-one-time command buffer per cycle, fence submit/wait, free per cycle (4 KB anchor)",
+      "oneshot": "ONE_TIME_SUBMIT command buffer + classic vkQueueSubmit with fence, wait, free",
+      "nofence": "ONE_TIME_SUBMIT command buffer submitted with VK_NULL_HANDLE fence, vkDeviceWaitIdle for completion, then free",
+      "reset-cb": "one re-submittable command buffer reused across cycles; release point under test is vkResetCommandBuffer",
+      "reset-pool-begin": "one command buffer; vkResetCommandPool (not hooked by the patch) then vkBeginCommandBuffer is the release point",
+      "free-norebegin": "re-submittable command buffer freed without reset/re-begin (release expected in vkFreeCommandBuffers)",
+      "submit2": "ONE_TIME_SUBMIT + vkQueueSubmit2 with a fence",
+      "semaphore": "ONE_TIME_SUBMIT submitted with a binary signal semaphore and NO fence; a second valid submission waits that semaphore with a fence",
+      "stress-images": "32 images x 8 CmdCopyBufferToImage copies, one submitted command buffer per image, RSS sampled",
+      "stress-long": "one long-lived image x 256 copies, one command buffer per copy, RSS sampled"
+    },
+    "log_analysis": "/Users/cheng/staging-deep/summary-runs.json (sha256 eb82be981754714e3a7b91504418e7c12ccaaf65428d5c75c2a1c89f7fa82e66) computes tracking, release calls/totals, peak tracked resources, marker intervals and tracked==released from the raw debug logs."
+  },
+  "results": {
+    "summary": "23 successful runs: 18 in Phase 1 (4 KB) and 5 in Phase 2 (16 KB), all exit code 0, 'PASS clean-exit', no FAIL lines, no wrapper staging-path errors, no probe crashes/tombstones. tracking==released and peak-tracked accounting hold in every patched and control run. 5 additional Phase 2 attempts exited 139 because of the 4 KB-aligned probe binary and were repeated after rebuilding the probe (fixture error, see emulator.phase2.fixture_note).",
+    "anchor_4kb_ab": {
+      "patched": {
+        "log": "p1-anchor-patched-32v0.log",
+        "log_sha256": "78a9152e0c6395e2c8e92bb8ecb63b27bd513fe2bb19637849c5be74e31ecb26",
+        "log_bytes": 123162,
+        "tracking_buffer_lines": 32,
+        "tracking_view_lines": 0,
+        "tracked_total_resources": 64,
+        "release_calls": 32,
+        "released_total_resources": 64,
+        "peak_tracked_resources": 2,
+        "tracked_equals_released": true,
+        "release_marker_intervals": [
+          [
+            "before-free",
+            "after-free"
+          ]
+        ],
+        "releases_after_last_pixel_pass": 0,
+        "pass_pixels": 32,
+        "clean_exit": true,
+        "errors_excluding_known_banner": 0,
+        "rss_lines": [
+          "RSS process-start vm_rss_kb=3200 vm_hwm_kb=3200",
+          "RSS after-setup vm_rss_kb=21092 vm_hwm_kb=21092",
+          "RSS before-final-destroy vm_rss_kb=21220 vm_hwm_kb=21220",
+          "RSS before-device-destroy vm_rss_kb=21220 vm_hwm_kb=21220",
+          "RSS after-device-destroy vm_rss_kb=21220 vm_hwm_kb=21220"
+        ]
+      },
+      "control": {
+        "log": "p1-anchor-control-32v0.log",
+        "log_sha256": "1ea081e31cb92c551cbb5cdc5d3c59f99ea28dcb9177aadce7adbe5aa6dbe809",
+        "log_bytes": 119815,
+        "tracking_buffer_lines": 32,
+        "tracking_view_lines": 0,
+        "tracked_total_resources": 64,
+        "release_calls": 1,
+        "released_total_resources": 64,
+        "peak_tracked_resources": 64,
+        "tracked_equals_released": true,
+        "release_marker_intervals": [
+          [
+            "after-free",
+            null
+          ]
+        ],
+        "releases_after_last_pixel_pass": 1,
+        "pass_pixels": 32,
+        "clean_exit": true,
+        "errors_excluding_known_banner": 0,
+        "rss_lines": [
+          "RSS process-start vm_rss_kb=3328 vm_hwm_kb=3328",
+          "RSS after-setup vm_rss_kb=21532 vm_hwm_kb=21532",
+          "RSS before-final-destroy vm_rss_kb=21788 vm_hwm_kb=21788",
+          "RSS before-device-destroy vm_rss_kb=21788 vm_hwm_kb=21788",
+          "RSS after-device-destroy vm_rss_kb=21788 vm_hwm_kb=21788"
+        ]
+      },
+      "verdict": "PASS. Patched: 32 tracking events, 64 resources released in 32 two-resource calls inside vkFreeCommandBuffers, peak 2 tracked. Control: 32 tracking events, 64 resources released in one call at vkDestroyImage, peak 64 tracked. Both tracking==released."
+    },
+    "case1_unfenced_one_time": {
+      "patched": {
+        "log": "p1-case1-nofence-patched-8v0.log",
+        "log_sha256": "f4bf53b49ccdee5ec10c2c8ca00da5dca67e955bf32391d50dafde6be1678010",
+        "log_bytes": 75347,
+        "tracking_buffer_lines": 8,
+        "tracking_view_lines": 0,
+        "tracked_total_resources": 16,
+        "release_calls": 8,
+        "released_total_resources": 16,
+        "peak_tracked_resources": 2,
+        "tracked_equals_released": true,
+        "release_marker_intervals": [
+          [
+            "before-free",
+            "after-free"
+          ]
+        ],
+        "releases_after_last_pixel_pass": 0,
+        "pass_pixels": 8,
+        "clean_exit": true,
+        "errors_excluding_known_banner": 0,
+        "rss_lines": [
+          "RSS process-start vm_rss_kb=3200 vm_hwm_kb=3200",
+          "RSS after-setup vm_rss_kb=21528 vm_hwm_kb=21528",
+          "RSS before-final-destroy vm_rss_kb=21656 vm_hwm_kb=21656",
+          "RSS before-device-destroy vm_rss_kb=21656 vm_hwm_kb=21656",
+          "RSS after-device-destroy vm_rss_kb=21656 vm_hwm_kb=21656"
+        ]
+      },
+      "control": {
+        "log": "p1-case1-nofence-control-8v0.log",
+        "log_sha256": "9324d12f21f011e36db7f86781f39160a0aff1b40c703b688a41d52edd2754f1",
+        "log_bytes": 74592,
+        "tracking_buffer_lines": 8,
+        "tracking_view_lines": 0,
+        "tracked_total_resources": 16,
+        "release_calls": 1,
+        "released_total_resources": 16,
+        "peak_tracked_resources": 16,
+        "tracked_equals_released": true,
+        "release_marker_intervals": [
+          [
+            "after-free",
+            null
+          ]
+        ],
+        "releases_after_last_pixel_pass": 1,
+        "pass_pixels": 8,
+        "clean_exit": true,
+        "errors_excluding_known_banner": 0,
+        "rss_lines": [
+          "RSS process-start vm_rss_kb=3200 vm_hwm_kb=3200",
+          "RSS after-setup vm_rss_kb=21136 vm_hwm_kb=21136",
+          "RSS before-final-destroy vm_rss_kb=21264 vm_hwm_kb=21264",
+          "RSS before-device-destroy vm_rss_kb=21264 vm_hwm_kb=21264",
+          "RSS after-device-destroy vm_rss_kb=21264 vm_hwm_kb=21264"
+        ]
+      },
+      "verdict": "PASS. 8 ONE_TIME_SUBMIT command buffers submitted without a fence: no release at vkDeviceWaitIdle (resources are unstamped, as designed), all 16 resources released inside vkFreeCommandBuffers; no leak (tracking==released), no crash. Control releases 16 at image destroy."
+    },
+    "case2_begin_reset_reclamation": {
+      "reset_command_buffer": {
+        "patched": {
+          "log": "p1-case2-resetcb-patched-8v0.log",
+          "log_sha256": "171e6ec0d1e36d6a4267493f9d4626e656bf0cf38b47d524f81d618a9232ef25",
+          "log_bytes": 75353,
+          "tracking_buffer_lines": 8,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 16,
+          "release_calls": 8,
+          "released_total_resources": 16,
+          "peak_tracked_resources": 2,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "before-reset-cb",
+              "after-reset-cb"
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3328 vm_hwm_kb=3328",
+            "RSS after-setup vm_rss_kb=21420 vm_hwm_kb=21420",
+            "RSS before-final-destroy vm_rss_kb=21548 vm_hwm_kb=21548",
+            "RSS before-device-destroy vm_rss_kb=21548 vm_hwm_kb=21548",
+            "RSS after-device-destroy vm_rss_kb=21548 vm_hwm_kb=21548"
+          ]
+        },
+        "control": {
+          "log": "p1-case2-resetcb-control-8v0.log",
+          "log_sha256": "f052979ad52a82d27d03db96c42708d627b7cc9b15278a986ade774ae588c926",
+          "log_bytes": 74598,
+          "tracking_buffer_lines": 8,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 16,
+          "release_calls": 1,
+          "released_total_resources": 16,
+          "peak_tracked_resources": 16,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              null
+            ]
+          ],
+          "releases_after_last_pixel_pass": 1,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3200 vm_hwm_kb=3200",
+            "RSS after-setup vm_rss_kb=21180 vm_hwm_kb=21180",
+            "RSS before-final-destroy vm_rss_kb=21180 vm_hwm_kb=21180",
+            "RSS before-device-destroy vm_rss_kb=21180 vm_hwm_kb=21180",
+            "RSS after-device-destroy vm_rss_kb=21180 vm_hwm_kb=21180"
+          ]
+        },
+        "verdict": "PASS. All 8 two-resource releases occur between MARKER before-reset-cb and MARKER after-reset-cb (inside vkResetCommandBuffer); nothing is released before that point. Control keeps 16 resources until image destroy."
+      },
+      "reset_pool_then_begin": {
+        "patched": {
+          "log": "p1-case2-resetpoolbegin-patched-8v0.log",
+          "log_sha256": "809c2bab8cc224f4244cc5ebeed76b4965d365f09d20c3e033f8d1c17cebe9c4",
+          "log_bytes": 75833,
+          "tracking_buffer_lines": 8,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 16,
+          "release_calls": 8,
+          "released_total_resources": 16,
+          "peak_tracked_resources": 2,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "before-begin",
+              "after-begin"
+            ],
+            [
+              "before-free",
+              "after-free"
+            ]
+          ],
+          "releases_after_last_pixel_pass": 1,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3328 vm_hwm_kb=3328",
+            "RSS after-setup vm_rss_kb=21432 vm_hwm_kb=21432",
+            "RSS before-final-destroy vm_rss_kb=21688 vm_hwm_kb=21688",
+            "RSS before-device-destroy vm_rss_kb=21688 vm_hwm_kb=21688",
+            "RSS after-device-destroy vm_rss_kb=21688 vm_hwm_kb=21688"
+          ]
+        },
+        "control": {
+          "log": "p1-case2-resetpoolbegin-control-8v0.log",
+          "log_sha256": "4f64c41ff3da5fc7cffc55bb26a7d662668a98283d4637e340c375cba5565f42",
+          "log_bytes": 75078,
+          "tracking_buffer_lines": 8,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 16,
+          "release_calls": 1,
+          "released_total_resources": 16,
+          "peak_tracked_resources": 16,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              null
+            ]
+          ],
+          "releases_after_last_pixel_pass": 1,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3072 vm_hwm_kb=3072",
+            "RSS after-setup vm_rss_kb=21036 vm_hwm_kb=21036",
+            "RSS before-final-destroy vm_rss_kb=21164 vm_hwm_kb=21164",
+            "RSS before-device-destroy vm_rss_kb=21164 vm_hwm_kb=21164",
+            "RSS after-device-destroy vm_rss_kb=21164 vm_hwm_kb=21164"
+          ]
+        },
+        "verdict": "PASS. vkResetCommandPool is not hooked by the patch, so no release happens there; the subsequent vkBeginCommandBuffer releases the previous cycle's resources (7 of 8 releases between before-begin/after-begin; the final command buffer's resources are released when it is freed after the loop, hence one extra before-free/after-free interval). Control keeps 16 resources until image destroy."
+      },
+      "free_without_rebegin": {
+        "patched": {
+          "log": "p1-case2-freenorebegin-patched-8v0.log",
+          "log_sha256": "022ae131afce4795fecb768e2c95fe883e5c4e4c4496803e2acda06718eed59a",
+          "log_bytes": 75242,
+          "tracking_buffer_lines": 8,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 16,
+          "release_calls": 8,
+          "released_total_resources": 16,
+          "peak_tracked_resources": 2,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "before-free",
+              "after-free"
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=2688 vm_hwm_kb=2688",
+            "RSS after-setup vm_rss_kb=20860 vm_hwm_kb=20860",
+            "RSS before-final-destroy vm_rss_kb=21244 vm_hwm_kb=21244",
+            "RSS before-device-destroy vm_rss_kb=21244 vm_hwm_kb=21244",
+            "RSS after-device-destroy vm_rss_kb=21244 vm_hwm_kb=21244"
+          ]
+        },
+        "control": {
+          "log": "p1-case2-freenorebegin-control-8v0.log",
+          "log_sha256": "5e66e1039a747f22f87d1d5e6a0cdb24773d23a50417127814309beb271b03f8",
+          "log_bytes": 74487,
+          "tracking_buffer_lines": 8,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 16,
+          "release_calls": 1,
+          "released_total_resources": 16,
+          "peak_tracked_resources": 16,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              null
+            ]
+          ],
+          "releases_after_last_pixel_pass": 1,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3200 vm_hwm_kb=3200",
+            "RSS after-setup vm_rss_kb=21456 vm_hwm_kb=21456",
+            "RSS before-final-destroy vm_rss_kb=21456 vm_hwm_kb=21456",
+            "RSS before-device-destroy vm_rss_kb=21456 vm_hwm_kb=21456",
+            "RSS after-device-destroy vm_rss_kb=21456 vm_hwm_kb=21456"
+          ]
+        },
+        "verdict": "PASS. Re-submittable command buffers freed without any reset/re-begin release their staging resources inside vkFreeCommandBuffers (8 x 2 = 16); tracking==released."
+      }
+    },
+    "case3_semaphores_and_queue_submit2": {
+      "queue_submit2": {
+        "patched": {
+          "log": "p1-case3-submit2-patched-8v0.log",
+          "log_sha256": "b4967cd608aa2ecc67b4d9c3c821b07849d4cb1625f737f80c99ed2c90438548",
+          "log_bytes": 75235,
+          "tracking_buffer_lines": 8,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 16,
+          "release_calls": 8,
+          "released_total_resources": 16,
+          "peak_tracked_resources": 2,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "before-wait",
+              "after-wait"
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3200 vm_hwm_kb=3200",
+            "RSS after-setup vm_rss_kb=21256 vm_hwm_kb=21256",
+            "RSS before-final-destroy vm_rss_kb=21384 vm_hwm_kb=21384",
+            "RSS before-device-destroy vm_rss_kb=21384 vm_hwm_kb=21384",
+            "RSS after-device-destroy vm_rss_kb=21384 vm_hwm_kb=21384"
+          ]
+        },
+        "control": {
+          "log": "p1-case3-submit2-control-8v0.log",
+          "log_sha256": "d484a7c857df7a96061064b64d614012c5a8d02f92c375ae42540c6a19821e1b",
+          "log_bytes": 74480,
+          "tracking_buffer_lines": 8,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 16,
+          "release_calls": 1,
+          "released_total_resources": 16,
+          "peak_tracked_resources": 16,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              null
+            ]
+          ],
+          "releases_after_last_pixel_pass": 1,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3200 vm_hwm_kb=3200",
+            "RSS after-setup vm_rss_kb=21292 vm_hwm_kb=21292",
+            "RSS before-final-destroy vm_rss_kb=21548 vm_hwm_kb=21548",
+            "RSS before-device-destroy vm_rss_kb=21548 vm_hwm_kb=21548",
+            "RSS after-device-destroy vm_rss_kb=21548 vm_hwm_kb=21548"
+          ]
+        },
+        "verdict": "PASS. The patched WRAPPER_QueueSubmit2 path stamps the submission fence: all 8 two-resource releases occur inside vkWaitForFences (between before-wait/after-wait), proving the QueueSubmit2 reclaim path works at runtime. Control keeps 16 resources until image destroy."
+      },
+      "binary_semaphore_without_fence": {
+        "patched": {
+          "log": "p1-case3-semaphore-patched-8v0.log",
+          "log_sha256": "d92b64666d07673c6be79d0938f3a42d25b8b1b6a5f5c5925a6238ec70006b1c",
+          "log_bytes": 75237,
+          "tracking_buffer_lines": 8,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 16,
+          "release_calls": 8,
+          "released_total_resources": 16,
+          "peak_tracked_resources": 2,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "before-free",
+              "after-free"
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3048 vm_hwm_kb=3048",
+            "RSS after-setup vm_rss_kb=21400 vm_hwm_kb=21400",
+            "RSS before-final-destroy vm_rss_kb=21528 vm_hwm_kb=21528",
+            "RSS before-device-destroy vm_rss_kb=21528 vm_hwm_kb=21528",
+            "RSS after-device-destroy vm_rss_kb=21528 vm_hwm_kb=21528"
+          ]
+        },
+        "control": {
+          "log": "p1-case3-semaphore-control-8v0.log",
+          "log_sha256": "d01cde475a1e27d46b115d2b3ccdde7e8fd9fc86ff98ec96f292d32cf0fc4e6e",
+          "log_bytes": 74482,
+          "tracking_buffer_lines": 8,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 16,
+          "release_calls": 1,
+          "released_total_resources": 16,
+          "peak_tracked_resources": 16,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              null
+            ]
+          ],
+          "releases_after_last_pixel_pass": 1,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3200 vm_hwm_kb=3200",
+            "RSS after-setup vm_rss_kb=21464 vm_hwm_kb=21464",
+            "RSS before-final-destroy vm_rss_kb=21592 vm_hwm_kb=21592",
+            "RSS before-device-destroy vm_rss_kb=21592 vm_hwm_kb=21592",
+            "RSS after-device-destroy vm_rss_kb=21592 vm_hwm_kb=21592"
+          ]
+        },
+        "verdict": "PASS (no crash) but documents the patch's known limitation: semaphore-only completion is not tracked. The one-time command buffer's resources are not stamped (no fence passed to vkQueueSubmit), so no early release happens at the semaphore/fence wait of the second submission; all 16 resources are released inside vkFreeCommandBuffers. tracking==released, no leak past command-buffer destruction."
+      }
+    },
+    "case4_stress_growth": {
+      "images_32x8": {
+        "patched": {
+          "log": "p1-case4-stressimages-patched.log",
+          "log_sha256": "d3d0248dace76135e10ce39b0ae8c16cd5e36da45d322ed07a4108b163df8a79",
+          "log_bytes": 517488,
+          "tracking_buffer_lines": 256,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 512,
+          "release_calls": 32,
+          "released_total_resources": 512,
+          "peak_tracked_resources": 16,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              "before-free"
+            ],
+            [
+              null,
+              "before-free"
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 0,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3200 vm_hwm_kb=3200",
+            "RSS after-setup vm_rss_kb=21432 vm_hwm_kb=21432",
+            "RSS before-upload vm_rss_kb=21432 vm_hwm_kb=21432",
+            "RSS after-image-create vm_rss_kb=21432 vm_hwm_kb=21432",
+            "RSS mid-upload vm_rss_kb=21432 vm_hwm_kb=21432",
+            "RSS after-upload vm_rss_kb=21688 vm_hwm_kb=21688",
+            "RSS after-image-destroy vm_rss_kb=21688 vm_hwm_kb=21688",
+            "RSS before-final-destroy vm_rss_kb=21688 vm_hwm_kb=21688",
+            "RSS before-device-destroy vm_rss_kb=21688 vm_hwm_kb=21688",
+            "RSS after-device-destroy vm_rss_kb=21688 vm_hwm_kb=21688"
+          ]
+        },
+        "control": {
+          "log": "p1-case4-stressimages-control.log",
+          "log_sha256": "46a24c74e8ad1078d18a94b56b0819c1b6792159b710fb30116015ba20e73b9e",
+          "log_bytes": 517488,
+          "tracking_buffer_lines": 256,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 512,
+          "release_calls": 32,
+          "released_total_resources": 512,
+          "peak_tracked_resources": 512,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              null
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 0,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3328 vm_hwm_kb=3328",
+            "RSS after-setup vm_rss_kb=21016 vm_hwm_kb=21016",
+            "RSS before-upload vm_rss_kb=21016 vm_hwm_kb=21016",
+            "RSS after-image-create vm_rss_kb=21144 vm_hwm_kb=21144",
+            "RSS mid-upload vm_rss_kb=21528 vm_hwm_kb=21528",
+            "RSS after-upload vm_rss_kb=21656 vm_hwm_kb=21656",
+            "RSS after-image-destroy vm_rss_kb=21656 vm_hwm_kb=21656",
+            "RSS before-final-destroy vm_rss_kb=21656 vm_hwm_kb=21656",
+            "RSS before-device-destroy vm_rss_kb=21656 vm_hwm_kb=21656",
+            "RSS after-device-destroy vm_rss_kb=21656 vm_hwm_kb=21656"
+          ]
+        },
+        "verdict": "PASS. 256 copies (32 images x 8) = 512 tracked resources. Patched peak 16 tracked (one image's 8 copies x 2 while its command buffer is alive), released 512 in 32 calls; control peak 512 (all live until image destroy), released 512 in 32 calls at destroy. tracking==released in both. RSS: see raw lines in summary-runs.json."
+      },
+      "long_lived_1x256": {
+        "patched": {
+          "log": "p1-case4-stresslong-patched.log",
+          "log_sha256": "14aac30145827daf110ba75f9d8026deee0128d4458641cbaf20998598d2b614",
+          "log_bytes": 550638,
+          "tracking_buffer_lines": 256,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 512,
+          "release_calls": 256,
+          "released_total_resources": 512,
+          "peak_tracked_resources": 2,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              "before-free"
+            ],
+            [
+              null,
+              "before-free"
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 0,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3072 vm_hwm_kb=3072",
+            "RSS after-setup vm_rss_kb=21092 vm_hwm_kb=21092",
+            "RSS before-upload vm_rss_kb=21092 vm_hwm_kb=21092",
+            "RSS mid-upload vm_rss_kb=21092 vm_hwm_kb=21092",
+            "RSS after-upload vm_rss_kb=21092 vm_hwm_kb=21092",
+            "RSS after-image-destroy vm_rss_kb=21092 vm_hwm_kb=21092",
+            "RSS before-final-destroy vm_rss_kb=21092 vm_hwm_kb=21092",
+            "RSS before-device-destroy vm_rss_kb=21092 vm_hwm_kb=21092",
+            "RSS after-device-destroy vm_rss_kb=21092 vm_hwm_kb=21092"
+          ]
+        },
+        "control": {
+          "log": "p1-case4-stresslong-control.log",
+          "log_sha256": "734acef7c42ed50429236eafa0e31f30fce98c5c9df38252e37a02b08bce7465",
+          "log_bytes": 523100,
+          "tracking_buffer_lines": 256,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 512,
+          "release_calls": 1,
+          "released_total_resources": 512,
+          "peak_tracked_resources": 512,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              null
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 0,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=3456 vm_hwm_kb=3456",
+            "RSS after-setup vm_rss_kb=21532 vm_hwm_kb=21532",
+            "RSS before-upload vm_rss_kb=21532 vm_hwm_kb=21532",
+            "RSS mid-upload vm_rss_kb=21916 vm_hwm_kb=21916",
+            "RSS after-upload vm_rss_kb=22172 vm_hwm_kb=22172",
+            "RSS after-image-destroy vm_rss_kb=22172 vm_hwm_kb=22172",
+            "RSS before-final-destroy vm_rss_kb=22172 vm_hwm_kb=22172",
+            "RSS before-device-destroy vm_rss_kb=22172 vm_hwm_kb=22172",
+            "RSS after-device-destroy vm_rss_kb=22172 vm_hwm_kb=22172"
+          ]
+        },
+        "verdict": "PASS. 256 copies into one long-lived image = 512 tracked resources. Patched peak 2 tracked (one copy x 2), released 512 across 256 calls; control peak 512 with a single 512-resource release at image destroy. tracking==released in both."
+      },
+      "rss_observation": "RSS was sampled from /proc/self/status inside the probe (process-start, after-setup, mid-upload at copy 128, after-upload, after-image-destroy, before/after-device-destroy). It stayed in the 21-25 MB range and did not separate patched from control at this scale; the tracked-resource peaks (2/16 vs 64/512) are the meaningful signal, not RSS on a software driver with caching allocators."
+    },
+    "case5_16kb_ab": {
+      "environment": "AVD Vapor_API_37_16KB, guest model sdk_gphone16k_arm64, fingerprint google/sdk_gphone16k_arm64/emu64a16k:17/CE2A.260420.050/16231978:userdebug/dev-keys, PAGE_SIZE=16384, probe sysconf(_SC_PAGESIZE)=16384, Vulkan device 'Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits))' api 1.3.0. Patched library and extended probe both LOAD-aligned 0x4000 and loaded successfully.",
+      "staging_32_cycles": {
+        "patched": {
+          "log": "p2-anchor-patched-32v0.log",
+          "log_sha256": "7361c778ad13a31c22e33f30aee457383f05332bd2fe53eadbeab16a2c45eb17",
+          "log_bytes": 127638,
+          "tracking_buffer_lines": 32,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 64,
+          "release_calls": 32,
+          "released_total_resources": 64,
+          "peak_tracked_resources": 2,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "before-free",
+              "after-free"
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 32,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=4176 vm_hwm_kb=4176",
+            "RSS after-setup vm_rss_kb=24784 vm_hwm_kb=24784",
+            "RSS before-final-destroy vm_rss_kb=25008 vm_hwm_kb=25008",
+            "RSS before-device-destroy vm_rss_kb=25008 vm_hwm_kb=25008",
+            "RSS after-device-destroy vm_rss_kb=25008 vm_hwm_kb=25008"
+          ]
+        },
+        "control": {
+          "log": "p2-anchor-control-32v0.log",
+          "log_sha256": "cf8e5a9a11e60054cbe6851efcb7dad43f9103cc705fb68efddb92cab54a4066",
+          "log_bytes": 124291,
+          "tracking_buffer_lines": 32,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 64,
+          "release_calls": 1,
+          "released_total_resources": 64,
+          "peak_tracked_resources": 64,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              null
+            ]
+          ],
+          "releases_after_last_pixel_pass": 1,
+          "pass_pixels": 32,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=4160 vm_hwm_kb=4160",
+            "RSS after-setup vm_rss_kb=24320 vm_hwm_kb=24320",
+            "RSS before-final-destroy vm_rss_kb=24624 vm_hwm_kb=24624",
+            "RSS before-device-destroy vm_rss_kb=24624 vm_hwm_kb=24624",
+            "RSS after-device-destroy vm_rss_kb=24624 vm_hwm_kb=24624"
+          ]
+        },
+        "verdict": "PASS. page_size=16384; patched releases 64 resources in 32 two-resource calls inside vkFreeCommandBuffers (peak 2) vs control one 64-resource release at vkDestroyImage (peak 64); tracking==released both."
+      },
+      "one_time_submit_plus_fence_32_cycles": {
+        "patched": {
+          "log": "p2-oneshot-patched-32v0.log",
+          "log_sha256": "ebe5bdf79129f151cdd2a4bc458960ef75301368f81e4ed0af6a7b4891b13a37",
+          "log_bytes": 127638,
+          "tracking_buffer_lines": 32,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 64,
+          "release_calls": 32,
+          "released_total_resources": 64,
+          "peak_tracked_resources": 2,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "before-wait",
+              "after-wait"
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 32,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=4176 vm_hwm_kb=4176",
+            "RSS after-setup vm_rss_kb=24960 vm_hwm_kb=24960",
+            "RSS before-final-destroy vm_rss_kb=25152 vm_hwm_kb=25152",
+            "RSS before-device-destroy vm_rss_kb=25152 vm_hwm_kb=25152",
+            "RSS after-device-destroy vm_rss_kb=25152 vm_hwm_kb=25152"
+          ]
+        },
+        "control": {
+          "log": "p2-oneshot-control-32v0.log",
+          "log_sha256": "6383b9c19c158ddc00a23509dddbdf7c8b5e3d5fc43ab79bf003aea6370479ff",
+          "log_bytes": 124291,
+          "tracking_buffer_lines": 32,
+          "tracking_view_lines": 0,
+          "tracked_total_resources": 64,
+          "release_calls": 1,
+          "released_total_resources": 64,
+          "peak_tracked_resources": 64,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "after-free",
+              null
+            ]
+          ],
+          "releases_after_last_pixel_pass": 1,
+          "pass_pixels": 32,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=4176 vm_hwm_kb=4176",
+            "RSS after-setup vm_rss_kb=24816 vm_hwm_kb=24816",
+            "RSS before-final-destroy vm_rss_kb=25024 vm_hwm_kb=25024",
+            "RSS before-device-destroy vm_rss_kb=25024 vm_hwm_kb=25024",
+            "RSS after-device-destroy vm_rss_kb=25024 vm_hwm_kb=25024"
+          ]
+        },
+        "verdict": "PASS. patched releases 64 resources in 32 two-resource calls inside vkWaitForFences (between before-wait/after-wait, peak 2) vs control one 64-resource release at vkDestroyImage; tracking==released both."
+      },
+      "image_view_one_time_fence_8_cycles": {
+        "patched": {
+          "log": "p2-oneshot-view1-patched-8v1.log",
+          "log_sha256": "1b4c1935d158d383879d493bbebffc74e638f8440fb659839e8d43f598a01034",
+          "log_bytes": 80854,
+          "tracking_buffer_lines": 0,
+          "tracking_view_lines": 8,
+          "tracked_total_resources": 8,
+          "release_calls": 8,
+          "released_total_resources": 8,
+          "peak_tracked_resources": 1,
+          "tracked_equals_released": true,
+          "release_marker_intervals": [
+            [
+              "before-wait",
+              "after-wait"
+            ]
+          ],
+          "releases_after_last_pixel_pass": 0,
+          "pass_pixels": 8,
+          "clean_exit": true,
+          "errors_excluding_known_banner": 0,
+          "rss_lines": [
+            "RSS process-start vm_rss_kb=4208 vm_hwm_kb=4208",
+            "RSS after-setup vm_rss_kb=24656 vm_hwm_kb=24656",
+            "RSS before-final-destroy vm_rss_kb=24768 vm_hwm_kb=24768",
+            "RSS before-device-destroy vm_rss_kb=24768 vm_hwm_kb=24768",
+            "RSS after-device-destroy vm_rss_kb=24768 vm_hwm_kb=24768"
+          ]
+        },
+        "verdict": "PASS. 8 tracked staging image views, 8 one-resource releases inside vkWaitForFences; tracking==released."
+      }
+    },
+    "case6_validation_layer": {
+      "verdict": "NOT RUN / NOT FEASIBLE with this probe architecture; no VUID claim is made.",
+      "attempts": [
+        "Downloaded the official Khronos asset android-binaries-1.4.363.0.tar.gz (libVkLayer_khronos_validation.so for arm64-v8a present); scratch file /Users/cheng/staging-deep/vvl-android.tar.gz sha256 b2727789f4c4d83b7149e904768bbaf54e8236ec912691730a70e22aebcba419. It was not installed because the probe never goes through the Vulkan loader.",
+        "The extended probe (like the repo probe) dlopens the wrapper directly as an ICD and uses vk_icdGetInstanceProcAddr, bypassing the Vulkan loader; Khronos validation layers are loader layers and cannot be attached to this path.",
+        "Loader-path attempt 1: dlopen /system/lib64/libvulkan.so with VK_ICD_FILENAMES=<patched.so> -> the device enumerated and ran but produced no wrapper debug output and the BC1 pixel check failed (rgba 0,248,0,0), i.e. the native ranchu/lavapipe ICD was used instead of the wrapper. Logs: p1-loader-smoke.log.",
+        "Loader-path attempt 2: VK_LOADER_DEBUG=error,warn,info plus a valid wrapper ICD manifest JSON -> VK_LOADER_DEBUG and the ICD selection still had no effect (no loader/layer diagnostics in the guest output; same uncompressed-BC1 pixel failure). Logs: p1-loader-debug.log, p1-loader-json.log.",
+        "No /vendor/etc/vulkan/icd.d or /system/etc/vulkan/icd.d config was writable/visible from the shell on this image, and modifying system partitions was out of scope; therefore the validation layer could not be attached to the patched wrapper without a different loader-based fixture."
+      ]
+    }
+  },
+  "control_comparison_summary": "In every case where the unpatched candidate.so was run (same probe, same environment), it retained all tracked staging resources until image/device destroy and released them in a single call there; the patched library always released them at the completion-gated point under test, with the same totals and tracking==released.",
+  "defects_found": "None. The patch behaved as designed in all executed cases. Non-defect observations: (1) semaphore-only completion does not trigger early reclaim (documented design limitation of the patch, no leak past command-buffer destruction); (2) RSS is not a discriminating metric on this software driver; (3) the first 16 KB batch failed only because the scratch probe was 4 KB-aligned - fixed by rebuilding the probe, not by changing the wrapper.",
+  "confirmed": [
+    "Patch identity: tools/vulkan-wrapper/staging-reclaim.patch sha256 c92b69ebbbf244c74d05455e1bfff3da0c0aaff94bbd8a75ab4dc4f6308a6568 in repo at HEAD 95ecbf62; device library is the stripped form of the recorded scratch build (lib sha256 e8eae86b..., stripped 08ef8247...).",
+    "Case 1 (unfenced one-time submit) PASS: resources released at vkFreeCommandBuffers, not at vkDeviceWaitIdle, tracking==released, no crash.",
+    "Case 2 (begin/reset in isolation) PASS: vkResetCommandBuffer and vkBeginCommandBuffer each release the previous recording's staging resources at that call (release log between the probe's markers), and free-without-rebegin releases at vkFreeCommandBuffers.",
+    "Case 3 PASS for vkQueueSubmit2+fence (release inside vkWaitForFences) and PASS-with-documented-limitation for binary-semaphore-only completion (no early release; released at command-buffer free; no crash/no leak).",
+    "Case 4 PASS: 32 images x 8 copies peak 16 tracked vs control 512; one long-lived image x 256 copies peak 2 vs control 512; both released 512 total; tracking==released; RSS recorded but not discriminating.",
+    "Case 5 PASS on the real 16 KB guest (PAGE_SIZE and probe sysconf both 16384): 32-cycle staging A/B, 32-cycle one-time+fence A/B, and 8-cycle image-view one-time+fence run all release at the expected points, tracking==released, no crashes.",
+    "No wrapper staging-path errors, no probe crashes or tombstones in any successful run; only the known benign wrapper banner appears once per debug log.",
+    "Control (candidate.so, unpatched) behaves as the previous review described in every A/B: single release of all tracked resources at image destroy."
+  ],
+  "still_pending": [
+    "No physical phone/GPU run: all runtime evidence is llvmpipe/Goldfish GFXStream software Vulkan on emulators; the patch's behavior on a production Adreno/Mali driver is unverified.",
+    "The wrapper-emulated-memory path (VK_EXT_map_memory_placed + VkPhysicalDeviceMapMemoryPlacedFeaturesEXT.memoryMapPlaced) was still not testable on llvmpipe, so the raw-dispatch staging allocation change and the O1 double-free fix are not runtime-proven.",
+    "Khronos validation layers could not be attached (probe bypasses the Vulkan loader; loader path does not load the wrapper on this image); no VUID cleanliness is claimed.",
+    "Concurrency/thread-safety stress was not run; the wrapper still relies on Vulkan external synchronization.",
+    "No real game/streaming workload or long-duration memory measurement; the peak-tracked counts are from a synthetic probe, not from a game.",
+    "Timeline semaphores are not tracked by the patch; only binary-semaphore submissions were exercised (and they document the limitation).",
+    "No performance/FPS measurement; timings are not collected because WRAPPER_LOG_LEVEL=debug dominates the run time.",
+    "16 KB evidence covers A/B staging and one-time+fence only; stress cases were not repeated on the 16 KB guest."
+  ],
+  "limitations": [
+    "Software Vulkan (llvmpipe) on both phases; no hardware driver behavior.",
+    "Probe uses synthetic BC1 data and its own offscreen copy path; no game assets, no Steam/Wine/window.",
+    "Single graphics/compute queue, single-threaded host, synchronous fence waits.",
+    "The extended probe is a new scratch-only fixture; it does not replace the repo probe for the existing protocol, and its staging/copy logic mirrors tools/tests/vulkan-wrapper-native.c.",
+    "RSS from /proc/self/status is not a reliable allocation measure on this driver; peaks of tracked wrapper resources were derived from the wrapper's own debug log lines."
+  ],
+  "artifacts": {
+    "repo_file_created": "docs/evidence/2026-10-21-wrapper-staging-reclaim-extended.json",
+    "scratch_root": "/Users/cheng/staging-deep",
+    "run_manifest": {
+      "path": "/Users/cheng/staging-deep/runs.tsv",
+      "sha256": "1d383cea9284b4841871e260ebdb2f1ea131fe9045399ca4db88fe09cffbc972"
+    },
+    "analysis": {
+      "path": "/Users/cheng/staging-deep/summary-runs.json",
+      "sha256": "eb82be981754714e3a7b91504418e7c12ccaaf65428d5c75c2a1c89f7fa82e66"
+    },
+    "raw_logs": [
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-anchor-control-32v0.log",
+        "sha256": "1ea081e31cb92c551cbb5cdc5d3c59f99ea28dcb9177aadce7adbe5aa6dbe809",
+        "bytes": 119815
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-anchor-patched-32v0.log",
+        "sha256": "78a9152e0c6395e2c8e92bb8ecb63b27bd513fe2bb19637849c5be74e31ecb26",
+        "bytes": 123162
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case1-nofence-control-8v0.log",
+        "sha256": "9324d12f21f011e36db7f86781f39160a0aff1b40c703b688a41d52edd2754f1",
+        "bytes": 74592
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case1-nofence-patched-8v0.log",
+        "sha256": "f4bf53b49ccdee5ec10c2c8ca00da5dca67e955bf32391d50dafde6be1678010",
+        "bytes": 75347
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case2-freenorebegin-control-8v0.log",
+        "sha256": "5e66e1039a747f22f87d1d5e6a0cdb24773d23a50417127814309beb271b03f8",
+        "bytes": 74487
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case2-freenorebegin-patched-8v0.log",
+        "sha256": "022ae131afce4795fecb768e2c95fe883e5c4e4c4496803e2acda06718eed59a",
+        "bytes": 75242
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case2-resetcb-control-8v0.log",
+        "sha256": "f052979ad52a82d27d03db96c42708d627b7cc9b15278a986ade774ae588c926",
+        "bytes": 74598
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case2-resetcb-patched-8v0.log",
+        "sha256": "171e6ec0d1e36d6a4267493f9d4626e656bf0cf38b47d524f81d618a9232ef25",
+        "bytes": 75353
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case2-resetpoolbegin-control-8v0.log",
+        "sha256": "4f64c41ff3da5fc7cffc55bb26a7d662668a98283d4637e340c375cba5565f42",
+        "bytes": 75078
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case2-resetpoolbegin-patched-8v0.log",
+        "sha256": "809c2bab8cc224f4244cc5ebeed76b4965d365f09d20c3e033f8d1c17cebe9c4",
+        "bytes": 75833
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case3-semaphore-control-8v0.log",
+        "sha256": "d01cde475a1e27d46b115d2b3ccdde7e8fd9fc86ff98ec96f292d32cf0fc4e6e",
+        "bytes": 74482
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case3-semaphore-patched-8v0.log",
+        "sha256": "d92b64666d07673c6be79d0938f3a42d25b8b1b6a5f5c5925a6238ec70006b1c",
+        "bytes": 75237
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case3-submit2-control-8v0.log",
+        "sha256": "d484a7c857df7a96061064b64d614012c5a8d02f92c375ae42540c6a19821e1b",
+        "bytes": 74480
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case3-submit2-patched-8v0.log",
+        "sha256": "b4967cd608aa2ecc67b4d9c3c821b07849d4cb1625f737f80c99ed2c90438548",
+        "bytes": 75235
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case4-stressimages-control.log",
+        "sha256": "46a24c74e8ad1078d18a94b56b0819c1b6792159b710fb30116015ba20e73b9e",
+        "bytes": 517488
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case4-stressimages-patched.log",
+        "sha256": "d3d0248dace76135e10ce39b0ae8c16cd5e36da45d322ed07a4108b163df8a79",
+        "bytes": 517488
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case4-stresslong-control.log",
+        "sha256": "734acef7c42ed50429236eafa0e31f30fce98c5c9df38252e37a02b08bce7465",
+        "bytes": 523100
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-case4-stresslong-patched.log",
+        "sha256": "14aac30145827daf110ba75f9d8026deee0128d4458641cbaf20998598d2b614",
+        "bytes": 550638
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p2-anchor-control-32v0.log",
+        "sha256": "cf8e5a9a11e60054cbe6851efcb7dad43f9103cc705fb68efddb92cab54a4066",
+        "bytes": 124291
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p2-anchor-patched-32v0.log",
+        "sha256": "7361c778ad13a31c22e33f30aee457383f05332bd2fe53eadbeab16a2c45eb17",
+        "bytes": 127638
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p2-oneshot-control-32v0.log",
+        "sha256": "6383b9c19c158ddc00a23509dddbdf7c8b5e3d5fc43ab79bf003aea6370479ff",
+        "bytes": 124291
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p2-oneshot-patched-32v0.log",
+        "sha256": "ebe5bdf79129f151cdd2a4bc458960ef75301368f81e4ed0af6a7b4891b13a37",
+        "bytes": 127638
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p2-oneshot-view1-patched-8v1.log",
+        "sha256": "1b4c1935d158d383879d493bbebffc74e638f8440fb659839e8d43f598a01034",
+        "bytes": 80854
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-loader-smoke.log",
+        "sha256": "aa761a4943d05cc78bb82c481a14c45225ecdd7b234f5afd537251eeb9658e91"
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-loader-debug.log",
+        "sha256": "7099fb2472bd851777063f33babbffe1e4297dda81d4d6990e2806b38ee73ed5"
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/p1-loader-json.log",
+        "sha256": "fcb7d343b7b6726c6783fe6e1611a4870af11e497e88aec7a97070cc97de17a6"
+      },
+      {
+        "path": "/Users/cheng/staging-deep/logs/smoke-deep.log",
+        "sha256": "c9b8979a72889e147d80f829009191d4e6bcfbc588b6608534e5e48209b69dfe"
+      }
+    ],
+    "probe": {
+      "source": "/Users/cheng/staging-deep/probes/probe-deep.c",
+      "source_sha256": "2b7907089ecd91c508514df3c7d4e0e2c842656815bec628d7527a573798ea7a",
+      "build_commands": [
+        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang -O2 -Wall -Wextra -o probe-deep probe-deep.c -ldl (4 KB guest; LOAD 0x1000)",
+        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang -O2 -Wall -Wextra -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 -o probe-deep-16k probe-deep.c -ldl (16 KB guest; LOAD 0x4000)"
+      ]
+    },
+    "emulator_logs": [
+      {
+        "path": "/Users/cheng/staging-deep/emulator-phase1.log",
+        "sha256": "9ba76e989e6a59da0b315c167173fdd2d354f6fa29ce3075ac136de31ad44067"
+      },
+      {
+        "path": "/Users/cheng/staging-deep/emulator-phase2.log",
+        "sha256": "a65d2502cb15c4b7508117b62a6c14d3e169c8d1076a82b1c14b767b7380515d",
+        "note": "failed first Phase 2 boot: AVD held by port 5558"
+      },
+      {
+        "path": "/Users/cheng/staging-deep/emulator-phase2b.log",
+        "sha256": "c16dc0f566d1b43bf6ee223f1acf27ef2839c2c663f1e54db08465cbfd6cde91"
+      }
+    ],
+    "downloaded_validation_layer_artifact": {
+      "path": "/Users/cheng/staging-deep/vvl-android.tar.gz",
+      "sha256": "b2727789f4c4d83b7149e904768bbaf54e8236ec912691730a70e22aebcba419",
+      "note": "khronos Vulkan-ValidationLayers android-binaries-1.4.363.0 (arm64-v8a lib present); unused because the probe bypasses the Vulkan loader"
+    }
+  },
+  "emulator_left_running": false
+}
