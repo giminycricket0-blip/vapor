@@ -246,9 +246,22 @@ The same extended families also pass on the Android 17/API 37 16 KB emulator
 `page_size=16384`), and both suspected defects reproduce there.
 [16 KB extended receipt](evidence/2026-10-21-vulkan-wrapper-reference-16k-extended.json).
 
+A later opt-in BC7 family (256 deterministic valid blocks across modes 0-7;
+`--cases bc7`) decodes **exactly** against the bcdec reference through the wrapper
+compute shader and through the llvmpipe native decoder — 16384/16384 pixels for
+BC7_UNORM and BC7_SRGB through the wrapper, 4096/4096 for the native blit, 0 LSB
+delta, on both 4 KB and 16 KB emulators. The host-CPU path is exact by
+construction because it uses the same bcdec decoder (a self-consistency check);
+the compute-shader and llvmpipe decoders are the independent comparisons. The
+BC7_SRGB results extend the known sRGB storage split: compute stores linearised
+values while host-CPU stores sRGB-encoded values, so their readbacks differ
+(4,185/16,384 bytes, max channel delta 73) even though each matches its own
+reference exactly. BC2/BC6H/BC7 format support is recorded.
+[BC7 receipt](evidence/2026-10-22-vulkan-wrapper-bc7-reference.json).
+
 These are software-Vulkan, synthetic-data results: no Adreno/KGSL driver, physical
-GPU, sampling/rendering pipeline, mip/array/sRGB variants, validation layers or
-game asset is covered. The receipt carries a one-command phone runbook
+GPU, sampling/rendering pipeline, validation layers or game asset is covered. The
+receipt carries a one-command phone runbook
 (`--serial <PHONE> --label phone-adreno`) with controls and adjudication; no phone
 result is claimed.
 
@@ -373,13 +386,22 @@ rebuilt and `libwnsteam.so` recompiled from cargo. The fresh APK is 684,926,636 
 focused JVM suites re-passed (EmuReadyTest 24/24, CommunityReportsUiTest 17/17),
 and both Android suites re-ran on the rebuilt APK: 17/17 report/game-page and
 14/14 catalog-install checks pass, with no carried-over results. This replaces
-the earlier "native libraries reused" caveat. A clean rebuild of the identical
-source state on the same machine was **not byte-for-byte identical**: three dex
-entries and `libcrypto.so` differ, and ZIP entry ordering/padding differs, while
-the entry set, uncompressed sizes, signing certificate and 16 KB alignment stay
-valid. Byte-for-byte APK reproducibility is therefore not established.
+the earlier "native libraries reused" caveat. A same-machine rebuild was not
+byte-for-byte identical end to end, but root-cause analysis (22 October) shows
+the differences are build inputs/metadata rather than general build
+nondeterminism: the three dex entries differ only because the two builds carried
+different git `BUILD_ID` values (application source identical; only `BuildConfig`
+and two classes inlining it change), `libcrypto.so` differs only by OpenSSL's
+embedded build timestamp (`.comment`, symbols and headers are identical; the
+differing instructions are address fix-ups of a moved `.rodata` string), and the
+4.87 MB size delta is incremental-packaging hole/padding reuse. Mitigations are
+identified — `SOURCE_DATE_EPOCH` for the OpenSSL ExternalProject, a pinned
+`BUILD_ID`, clean packaging directories before compared builds — and are being
+demonstrated; cross-machine and release-signing reproducibility remain out of
+scope.
 [Native rebuild receipt](evidence/2026-10-21-emuready-native-rebuild.json),
-[rebuild reproducibility receipt](evidence/2026-10-21-apk-rebuild-reproducibility.json).
+[rebuild reproducibility receipt](evidence/2026-10-21-apk-rebuild-reproducibility.json),
+[root-cause receipt](evidence/2026-10-22-apk-reproducibility-rootcause.json).
 
 ### Live public data in the normal app
 

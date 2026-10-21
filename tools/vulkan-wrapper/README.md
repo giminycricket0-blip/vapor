@@ -210,6 +210,14 @@ host-CPU path corrupts partial edge blocks for out-of-spec non-block-aligned cop
 extents. The extended tool also fixes a missing `re` import in the first-pass
 revision while keeping the default matrix/format names.
 [Extended receipt](../../docs/evidence/2026-10-21-vulkan-wrapper-reference-extended.json).
+
+A later opt-in BC7 family (`--cases bc7`) uses 256 deterministic valid blocks
+across modes 0-7 and compares against a host bcdec reference: the wrapper compute
+and llvmpipe native decoders are exact for BC7_UNORM and BC7_SRGB on 4 KB and
+16 KB, while the host-CPU path is exact by construction (same decoder). The
+BC7_SRGB check confirms the known compute-vs-host sRGB storage split (readbacks
+differ, each matching its own reference). BC2/BC6H/BC7 format support is recorded.
+[BC7 receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-bc7-reference.json).
 The same extended families also pass on the 16 KB Android 17/API 37 emulator
 (page_size=16384), where both suspected defects reproduce.
 [16 KB extended receipt](../../docs/evidence/2026-10-21-vulkan-wrapper-reference-16k-extended.json).

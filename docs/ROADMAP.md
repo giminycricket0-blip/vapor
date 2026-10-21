@@ -57,8 +57,9 @@ Continue in this order:
    bounded: Leegao recipe located, exact bytes not reproducible from retained
    inputs, default/GameNative a different source line with exact revisions
    open. Native loading, synthetic BC decode and depth transfers pass the
-   emulator probes, and a reference-image probe matches an independent S3TC
-   decoder exactly for the wrapper compute path. Next: run that probe on an
+   emulator probes, and a reference-image probe matches independent S3TC, RGTC
+   and BC7 decoders exactly for the wrapper compute path (BC7 verified on both
+   4 KB and 16 KB emulators). Next: run that probe on an
    Adreno/KGSL phone (runbook ready); the staging-reclamation patch is now
    runtime-validated on 4 KB and 16 KB (unfenced/one-time, reset/begin,
    `vkQueueSubmit2`-with-fence, stress peak 2–16 tracked vs 512 for the
@@ -110,7 +111,9 @@ byte-identical. [Qualification and
 screenshots](QUALIFICATION.md#emuready-community-reports--21-october-2026).
 Selective settings application and automatic route ranking are not implemented;
 physical-phone/TalkBack acceptance, live coverage of the Windows-less gating
-branch, and byte-for-byte APK reproducibility remain.
+branch, and a demonstrated byte-reproducible APK build remain (observed APK deltas
+are root-caused to the OpenSSL build timestamp, the `BUILD_ID` input and
+incremental packaging history; mitigations are identified).
 
 Implementation scope and verification plan:
 

@@ -238,12 +238,16 @@ The Android UI checks `StoreGameDetailPlayTest`, `StoreGameDetailBranchPickerTes
 
 APK: `app/build/outputs/apk/standard/debug/standard.apk`. Package: `app.vapor.android`. Development default: version `0.1.0-dev`, version code `1`; `VERSION_NAME` and `VERSION_CODE` can be supplied for a deliberate release. `BUILD_ID` identifies the source revision; local dirty builds must record their diff separately.
 
-Clean rebuilds of the identical source state are **not byte-for-byte
-reproducible** here: three dex entries and `libcrypto.so` differed between two
-builds, and ZIP entry ordering/alignment padding differed, while the entry set,
-uncompressed sizes, signing certificate and 16 KB alignment stayed valid. Do not
-treat APK hashes as reproducible across machines; see the
-[reproducibility receipt](evidence/2026-10-21-apk-rebuild-reproducibility.json).
+Byte-for-byte APK reproducibility is not automatic, but the differences observed
+between two same-machine builds are root-caused to inputs/metadata rather than
+general nondeterminism (OpenSSL build timestamp, git `BUILD_ID`, incremental
+packaging holes). For a comparable build: pass `-PBUILD_ID=<fixed>` (or build
+both APKs from the same commit), set `SOURCE_DATE_EPOCH` for the OpenSSL
+ExternalProject, clean `app/build` and packaging intermediates before each
+compared build, and keep the toolchain pinned. Do not treat APK hashes as
+reproducible across machines; see the
+[root-cause receipt](evidence/2026-10-22-apk-reproducibility-rootcause.json) and
+the [initial comparison](evidence/2026-10-21-apk-rebuild-reproducibility.json).
 
 Debug builds use the normal local debug key unless signing is explicitly configured. They are development artifacts, not official Vapor releases. Runtime redistribution review and release signing remain open gates.
 
@@ -643,9 +647,11 @@ the recorded NDK, stages the pinned wrapper libraries and auxiliary libraries,
 runs deterministic BC1/BC3 and depth cases, and compares readbacks against an
 independent S3TC decoder. `--self-test` validates the decoder, `--print-runbook`
 prints the phone procedure, `--replay` re-assembles evidence from saved runs and
-`--cases default|extended|all` (with `--extended-cases`) selects the original
-matrix or the odd-extent, partial-copy, mip/array, sRGB, BC4/BC5 and depth-reduce
-families. Run it with `--serial emulator-5556` for the emulator, or
+`--cases default|extended|bc7|all` (with `--extended-cases`) selects the original
+matrix, the odd-extent/partial-copy/mip-array/sRGB/BC4/BC5/depth-reduce families,
+or the opt-in deterministic BC7 family (modes 0-7 blocks, BC7_UNORM and
+BC7_SRGB, compared against a host bcdec reference). Run it with
+`--serial emulator-5556` for the emulator, or
 `--serial <PHONE_SERIAL> --label phone-adreno` for the effective-driver pass. It
 does not modify the app or the pinned libraries.
 
