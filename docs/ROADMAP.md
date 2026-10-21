@@ -106,14 +106,15 @@ reader's request format and response shapes, including the load-bearing Windows
 platform guard; the earlier 403s were the desktop web path's origin gate, and
 batch AppID coverage gaps make the title fallback load-bearing. A signed-out
 emulator journey then rendered live Half-Life 2 reports and settings and opened
-both source links in Chrome, and a clean-rebuild check showed the APK is not
-byte-identical. [Qualification and
+both source links in Chrome; a clean-rebuild difference was then root-caused to
+build inputs/metadata and two fixed-input clean builds produced byte-identical
+APKs. [Qualification and
 screenshots](QUALIFICATION.md#emuready-community-reports--21-october-2026).
 Selective settings application and automatic route ranking are not implemented;
 physical-phone/TalkBack acceptance, live coverage of the Windows-less gating
-branch, and a demonstrated byte-reproducible APK build remain (observed APK deltas
-are root-caused to the OpenSSL build timestamp, the `BUILD_ID` input and
-incremental packaging history; mitigations are identified).
+branch, and cross-machine/release-signing reproducibility remain (same-machine
+byte-identical APKs were demonstrated with a pinned `BUILD_ID`,
+`SOURCE_DATE_EPOCH` and clean packaging).
 
 Implementation scope and verification plan:
 

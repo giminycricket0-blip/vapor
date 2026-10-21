@@ -238,14 +238,16 @@ The Android UI checks `StoreGameDetailPlayTest`, `StoreGameDetailBranchPickerTes
 
 APK: `app/build/outputs/apk/standard/debug/standard.apk`. Package: `app.vapor.android`. Development default: version `0.1.0-dev`, version code `1`; `VERSION_NAME` and `VERSION_CODE` can be supplied for a deliberate release. `BUILD_ID` identifies the source revision; local dirty builds must record their diff separately.
 
-Byte-for-byte APK reproducibility is not automatic, but the differences observed
-between two same-machine builds are root-caused to inputs/metadata rather than
-general nondeterminism (OpenSSL build timestamp, git `BUILD_ID`, incremental
-packaging holes). For a comparable build: pass `-PBUILD_ID=<fixed>` (or build
-both APKs from the same commit), set `SOURCE_DATE_EPOCH` for the OpenSSL
-ExternalProject, clean `app/build` and packaging intermediates before each
-compared build, and keep the toolchain pinned. Do not treat APK hashes as
-reproducible across machines; see the
+Byte-for-byte APK reproducibility was demonstrated on this host with fixed
+inputs: pass `-PBUILD_ID=<fixed>`, set `SOURCE_DATE_EPOCH` for the OpenSSL
+ExternalProject, clear `app/build` and `app/.cxx` before each compared build
+(this also forces the OpenSSL `buildinf.h` to be regenerated), and keep the
+toolchain pinned. Two such clean builds produced byte-identical APKs
+(SHA-256 `f8cc0b2f…`, 676,228,770 B). The default build is not byte-reproducible
+because the OpenSSL build date, the git-derived `BUILD_ID` and inherited
+packaging holes otherwise vary. Cross-machine and release-signing reproducibility
+remain out of scope; see the
+[mitigation receipt](evidence/2026-10-22-apk-reproducibility-mitigation.json),
 [root-cause receipt](evidence/2026-10-22-apk-reproducibility-rootcause.json) and
 the [initial comparison](evidence/2026-10-21-apk-rebuild-reproducibility.json).
 

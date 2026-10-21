@@ -395,13 +395,16 @@ and two classes inlining it change), `libcrypto.so` differs only by OpenSSL's
 embedded build timestamp (`.comment`, symbols and headers are identical; the
 differing instructions are address fix-ups of a moved `.rodata` string), and the
 4.87 MB size delta is incremental-packaging hole/padding reuse. Mitigations are
-identified — `SOURCE_DATE_EPOCH` for the OpenSSL ExternalProject, a pinned
-`BUILD_ID`, clean packaging directories before compared builds — and are being
-demonstrated; cross-machine and release-signing reproducibility remain out of
-scope.
+now demonstrated: at a fixed commit with a pinned `BUILD_ID`, a fixed
+`SOURCE_DATE_EPOCH`, cleared `app/build` and `app/.cxx`, and the pinned
+toolchain, two clean builds produced **byte-identical APKs** (676,228,770 B,
+SHA-256 `f8cc0b2f…`), with identical ZIP layout/padding, a fixed OpenSSL build
+date and no dex `BUILD_ID` drift. Cross-machine and release-signing
+reproducibility remain out of scope.
 [Native rebuild receipt](evidence/2026-10-21-emuready-native-rebuild.json),
 [rebuild reproducibility receipt](evidence/2026-10-21-apk-rebuild-reproducibility.json),
-[root-cause receipt](evidence/2026-10-22-apk-reproducibility-rootcause.json).
+[root-cause receipt](evidence/2026-10-22-apk-reproducibility-rootcause.json),
+[mitigation receipt](evidence/2026-10-22-apk-reproducibility-mitigation.json).
 
 ### Live public data in the normal app
 

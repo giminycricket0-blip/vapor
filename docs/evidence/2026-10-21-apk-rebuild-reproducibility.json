@@ -137,6 +137,7 @@
       "ZIP layout / 4,874,972-byte size delta: benign incremental-packaging history (holes/padding reuse); 1,634/1,638 entries keep identical local offsets and only the four changed entries moved into prior holes."
     ],
     "mitigations": "SOURCE_DATE_EPOCH for the OpenSSL ExternalProject; pin BUILD_ID (or build both from the same commit); clean app/build + packaging intermediates before compared builds; keep the toolchain pinned. A follow-up experiment builds twice with those inputs to demonstrate (or bound) byte reproducibility.",
-    "conclusion_update": "The observed APK difference was not proof of general build nondeterminism: one component is a benign timestamp string, one is a build-input (BUILD_ID) difference, and one is packaging history. Cross-machine/release-signing reproducibility remains out of scope."
+    "conclusion_update": "The observed APK difference was not proof of general build nondeterminism: one component is a benign timestamp string, one is a build-input (BUILD_ID) difference, and one is packaging history. Cross-machine/release-signing reproducibility remains out of scope.",
+    "mitigation_result": "Demonstrated 2026-10-22: two clean same-machine builds with SOURCE_DATE_EPOCH fixed, BUILD_ID pinned, app/build + app/.cxx cleared and the toolchain pinned produced byte-identical APKs (sha256 f8cc0b2f\u2026, 676,228,770 B). See docs/evidence/2026-10-22-apk-reproducibility-mitigation.json."
   }
 }
