@@ -157,6 +157,37 @@ settle it and does not claim a defect.
 
 [Staging review receipt](../../docs/evidence/2026-10-21-vulkan-wrapper-staging.json).
 
+A follow-up patch ([`staging-reclaim.patch`](staging-reclaim.patch)) implements the
+intended reclamation: staging ownership moves to the recording command buffer,
+one-time-submit resources take the submit fence and are freed from
+`vkWaitForFences`/`vkDeviceWaitIdle`, re-submittable command buffers release on
+begin/reset/destroy, and internal staging buffer/memory use the raw dispatch table
+so the emulated-memory double-free class is removed. The patch applies and
+compiles cleanly, and the built library keeps the candidate's SONAME, 20 `NEEDED`
+names, `0x4000` alignment and 4,073-export set. A/B probe runs on the emulator
+confirm the intended release points: the unpatched control frees a single
+64-resource batch inside `vkDestroyImage`, while the patched library frees two
+resources per command-buffer free in the staging path, inside `vkWaitForFences`
+for one-time-submit+fence, and inside `vkDeviceWaitIdle` for the device-idle path,
+with equal tracking/release totals and no destroy-time crash. Resubmission,
+unfenced submissions, the placed-memory path and long-running growth remain
+pending. See
+[the staging review](../../docs/evidence/2026-10-21-vulkan-wrapper-staging.json)
+and [the reclaim patch receipt](../../docs/evidence/2026-10-21-wrapper-staging-reclaim.json).
+
+## Reference-image probe
+
+[`tools/tests/vulkan-wrapper-reference.py`](../tests/vulkan-wrapper-reference.py)
+drives an offscreen fixture with deterministic BC1/BC3 blocks and depth formats,
+compares wrapper readbacks against an independent S3TC decoder, and includes the
+system loader as a native-driver cross-check. On the emulator the wrapper
+BC1/BC3 decode is exact (4096/4096 pixels, 0 LSB) for candidate and baseline in
+both staging and image-view configurations; the CPU fallback stays within 1 LSB
+and llvmpipe's native decode within 2 LSB. Depth D16/D24S8/D32 transfers are
+bit-exact round trips. `--print-runbook` prints the phone command and expected
+controls; these are software-Vulkan synthetic results, not Adreno/KGSL evidence.
+[Probe receipt](../../docs/evidence/2026-10-21-vulkan-wrapper-reference.json).
+
 ## Android build and limits
 
 Build the baseline before applying both patches with `patch -p1 --fuzz=0`, then

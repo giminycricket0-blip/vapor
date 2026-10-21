@@ -40,7 +40,9 @@ lifetime review records the upstream late-free/growth behavior plus one
 conditional open risk, and a packaged-payload identity check bounds the release
 reproduction (Leegao recipe located; exact bytes not reproducible from retained
 inputs; default/GameNative are a different source line with exact revisions
-open). No APK/default or physical performance result.
+open), and a reference-image probe now verifies exact BC1/BC3 wrapper decode plus
+bit-exact D16/D24S8/D32 transfers on the emulator (synthetic data, software
+Vulkan). No APK/default or physical performance result.
 [Qualification](QUALIFICATION.md#graphics-component-source-refactors--21-october-2026).
 
 Continue in this order:
@@ -49,14 +51,17 @@ Continue in this order:
    rendering. Compare the baseline and candidate built from identical inputs;
    count how often the changed path is reached before inferring a game benefit.
    Preserve the working driver and ordinary Steam/Cloud teardown.
-2. Continue wrapper verification: reproduce the released binary and the
-   default/GameNative source identities, and test BC/native formats plus depth
-   paths against reference images on the effective Adreno driver. Native loading
-   and synthetic BC decode now pass on 4 KB and 16 KB emulators (software
-   Vulkan), and the staging lifetime review is complete; follow-ups are
-   fence/semaphore reclamation of staging resources, streaming-growth
-   measurement on a device, and a placed-memory fixture for the recorded
-   conditional double-free risk.
+2. Continue wrapper verification. The released-payload identity/reproduction is
+   bounded: Leegao recipe located, exact bytes not reproducible from retained
+   inputs, default/GameNative a different source line with exact revisions
+   open. Native loading, synthetic BC decode and depth transfers pass the
+   emulator probes, and a reference-image probe matches an independent S3TC
+   decoder exactly for the wrapper compute path. Next: run that probe on an
+   Adreno/KGSL phone (runbook ready); the staging-reclamation patch now shows the
+   intended release points in emulator A/B runs (per command-buffer free, inside
+   `vkWaitForFences`, inside `vkDeviceWaitIdle`), with unfenced/resubmission
+   paths, the placed-memory fixture, validation layers and long-running phone
+   growth still pending.
 3. Deepen DXVK queue/compiler and VKD3D shader/capability/descriptor review on the
    exact packaged ARM64EC bases. Measure submission cost, shader stalls, waits,
    memory and cold/warm behavior. Reuse upstream priority/cache mechanisms;
@@ -84,13 +89,16 @@ shared native modal, identity guards and explicit settings viewer are in place.
 44 focused JVM/Compose tests passed on the first APK; a follow-up review then
 fixed eight matching/gating/error-state findings and re-verified with 41 JVM
 tests (24/24 + 17/17), 17 report/game-page Android checks and 14 catalog-install
-Android checks on the rebuilt Kotlin/resource APK (native libraries reused; a full
-native rebuild needs cargo). Live signed-out catalog browsing retrieves Windows
-Half-Life 2 reports and settings. [Qualification and
+Android checks on the rebuilt Kotlin/resource APK (native libraries reused at that
+point; a later full native rebuild with Rust/cargo rebuilt the APK and re-passed
+the JVM and both Android suites). Live signed-out catalog browsing retrieves Windows
+Half-Life 2 reports and settings. A live public-API re-check confirmed the
+reader's request format and response shapes, including the load-bearing Windows
+platform guard; the earlier 403s were the desktop web path's origin gate, and
+batch AppID coverage gaps make the title fallback load-bearing. [Qualification and
 screenshots](QUALIFICATION.md#emuready-community-reports--21-october-2026).
 Selective settings application and automatic route ranking are not implemented;
-live-service re-validation, full native APK rebuild and physical-phone/TalkBack
-acceptance remain.
+physical-phone/TalkBack acceptance and byte-for-byte APK reproducibility remain.
 
 Implementation scope and verification plan:
 

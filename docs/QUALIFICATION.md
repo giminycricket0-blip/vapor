@@ -154,6 +154,24 @@ trampoline, so a later device destroy can free the same memory again. The probe
 does not enable those features; a dedicated fixture is required to settle it and
 no defect is claimed. [Staging receipt](evidence/2026-10-21-vulkan-wrapper-staging.json).
 
+A follow-up patch, `tools/vulkan-wrapper/staging-reclaim.patch`, implements the
+reclamation: staging ownership moves to the recording command buffer,
+one-time-submit resources take the submit fence and are freed from
+`vkWaitForFences`/`vkDeviceWaitIdle`, re-submittable command buffers release on
+free/begin/reset, and internal staging buffer/memory use the raw dispatch table so
+the emulated-memory double-free class is removed. It applies and compiles cleanly,
+and the built library keeps the candidate's SONAME, 20 `NEEDED` names, four
+`0x4000`-aligned `LOAD` segments and the 4,073-export set. A/B probe runs on the
+Android 16/API 36 emulator now show the intended release points: the unpatched
+control keeps its single 64-resource release inside `vkDestroyImage`, while the
+patched library releases two resources per command-buffer free in the staging
+path, per fence inside `vkWaitForFences` for one-time-submit+fence, and inside
+`vkDeviceWaitIdle` for the device-idle path; tracking and release totals are equal
+and no crash occurs at image or device destroy. Resubmission, unfenced
+one-time submissions, the `VK_EXT_map_memory_placed` path, semaphores, validation
+layers, 16 KB pages, concurrency and long-running phone growth remain pending.
+[Reclaim patch receipt](evidence/2026-10-21-wrapper-staging-reclaim.json).
+
 ### Packaged wrapper payload identity
 
 Static analysis (no execution, no repackaging) confirms the three packaged payload
@@ -175,14 +193,39 @@ revisions remain open. Static identity evidence does not establish execution,
 image quality or performance.
 [Reproduction receipt](evidence/2026-10-21-wrapper-release-repro.json).
 
+### Wrapper reference-image BC/depth probe
+
+An offscreen reference probe (`tools/tests/vulkan-wrapper-reference.py` plus its
+own fixture; `--print-runbook` for the phone procedure) uploads deterministic
+BC1/BC3 blocks and compares readbacks with an independent pure-Python S3TC
+decoder, with the system loader as a native-driver cross-check. On the Android
+16/API 36 4 KB emulator (llvmpipe software Vulkan) all 43 runs pass: the
+wrapper's compute-shader decode via staging and via image view is **exact** for
+BC1 and BC3 (4096/4096 pixels, 0 LSB delta) for candidate and baseline, the host
+CPU fallback (bcdec) stays within 1 LSB, and llvmpipe's native decode via
+`vkCmdBlitImage` stays within 2 LSB (expected inter-decoder convention spread).
+Candidate and baseline readbacks are byte-identical, so the format-list fix does
+not change decoded pixels. Depth transfers for D16_UNORM, D24_UNORM_S8_UINT and
+D32_SFLOAT create/bind/upload/readback bit-exactly on system loader, baseline and
+candidate; unsupported combinations are recorded.
+[Probe receipt](evidence/2026-10-21-vulkan-wrapper-reference.json),
+[tool](../tools/tests/vulkan-wrapper-reference.py).
+
+These are software-Vulkan, synthetic-data results: no Adreno/KGSL driver, physical
+GPU, sampling/rendering pipeline, mip/array/sRGB variants, validation layers or
+game asset is covered. The receipt carries a one-command phone runbook
+(`--serial <PHONE> --label phone-adreno`) with controls and adjudication; no phone
+result is claimed.
+
 ### Remaining boundaries
 
 Neither candidate is installed or bundled. No phone, authenticated game session,
-Cloud synchronization or game run was performed. Native loading and BC decode
-were exercised only through the synthetic emulator probe on software Vulkan.
-Matched Adreno/KGSL loading, reference-image/depth correctness, actual game frame
+Cloud synchronization or game run was performed. Native loading, synthetic BC
+decode and depth transfers pass the offscreen emulator probes on software Vulkan,
+and the source checks cover reference-image BC decode. Matched Adreno/KGSL
+loading, physical-driver reference-image/depth correctness, actual game frame
 times/power, physical 16 KB-device execution and release/distribution review
-remain separate gates. Selected
+remain separate gates; the phone runbook is ready but not executed. Selected
 DXVK queue/compiler and VKD3D queue/cache paths were read at pinned revisions;
 they were not changed or exhaustively audited. Wine/FEX retain their earlier
 component records and open gates.
@@ -233,6 +276,33 @@ Kotlin/resource rebuild because a full native build needs a Rust/cargo toolchain
 not installed here, so it reuses the prior native libraries. The Gradle
 dependency fetch now sends explicit HTTP headers to GitHub.
 [Follow-up receipt](evidence/2026-10-21-emuready-followup.json).
+
+**Live-service re-check (21 October):** all four mobile procedures answer with the
+reader's exact URL format (HTTP 200, JSON), and the envelope, identity and
+platform guards match the committed parser on 39 sampled listings plus two
+settings lookups. The Windows platform guard is load-bearing on live data: the
+batch endpoint returns console entries for Windows AppIDs (Portal → Switch,
+Red Dead Redemption 2 → PS4, Stardew Valley and Hades → Switch). Batch AppID
+coverage has gaps — GTA V and The Witcher 3 have Windows entries and many
+listings but are not returned by the batch lookup — so the title fallback is
+load-bearing for well-populated games, not only unindexed ones. The earlier 403s
+came from the desktop web path's origin gate, not from headers. No parser change
+was required; residual risks (a non-approved page-1 row blanking the page,
+unobserved `metadata.steamAppId` and array field shapes) are documented.
+[Live re-check receipt](evidence/2026-10-21-emuready-live-recheck.json).
+
+**Full native rebuild (21 October):** the Rust/cargo toolchain was located on the
+build host (1.99.0 with the `aarch64-linux-android` target). After clearing the
+cached Rust and CMake outputs, a full debug APK build succeeded with **no
+excluded tasks**, including the native CMake stages: 23 arm64 libraries were
+rebuilt and `libwnsteam.so` recompiled from cargo. The fresh APK is 684,926,636 B
+(SHA-256 `889bc3bc…`) and the test APK 3,759,428 B (SHA-256 `2bb4c4bd…`). The
+focused JVM suites re-passed (EmuReadyTest 24/24, CommunityReportsUiTest 17/17),
+and both Android suites re-ran on the rebuilt APK: 17/17 report/game-page and
+14/14 catalog-install checks pass, with no carried-over results. This replaces
+the earlier "native libraries reused" caveat; byte-for-byte APK reproducibility
+across machines is not claimed.
+[Native rebuild receipt](evidence/2026-10-21-emuready-native-rebuild.json).
 
 ### Live public data in the normal app
 

@@ -629,6 +629,17 @@ buffer-image copy is unreliable; see the
 [wrapper notes](../tools/vulkan-wrapper/README.md#native-loading-and-bc-probe)
 and the two receipts.
 
+### Running the reference-image and depth probe
+
+`tools/tests/vulkan-wrapper-reference.py` builds its own offscreen fixture with
+the recorded NDK, stages the pinned wrapper libraries and auxiliary libraries,
+runs deterministic BC1/BC3 and depth cases, and compares readbacks against an
+independent S3TC decoder. `--self-test` validates the decoder, `--print-runbook`
+prints the phone procedure, and `--replay` re-assembles evidence from saved runs.
+Run it with `--serial emulator-5556` for the emulator, or
+`--serial <PHONE_SERIAL> --label phone-adreno` for the effective-driver pass. It
+does not modify the app or the pinned libraries.
+
 ## Android ntsync library experiment
 
 This is a library/source investigation, **not an installable Wine component**.

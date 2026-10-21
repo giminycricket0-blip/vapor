@@ -29,9 +29,12 @@ Vapor compatibility badges.
 The dialog retains a reachable close action and source button while reports scroll.
 Narrow/large-text and short-landscape layouts have Compose coverage; Android
 instrumentation covers controller B dismissal as well as touch actions, including
-the catalog platform gating. A follow-up review pass fixed eight findings and
-re-ran 41 JVM and 31 Android checks on the rebuilt APK. Physical controllers and
-TalkBack remain separate acceptance checks.
+the catalog platform gating. A live re-check of the public API validated the
+reader's request format and response shapes, including the platform guard against
+console entries. A follow-up review pass fixed eight findings and re-ran 41 JVM
+and 31 Android checks on the rebuilt APK; a full native rebuild with Rust/cargo
+then re-passed the same JVM and Android checks. Physical controllers and TalkBack
+remain separate acceptance checks.
 
 See [qualification and screenshots](QUALIFICATION.md#emuready-community-reports--21-october-2026).
 
