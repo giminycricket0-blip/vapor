@@ -15,8 +15,8 @@
  *   vulkan-wrapper-reference depth-attach LIBRARY FORMAT INPUT OUTPUT WIDTH HEIGHT
  *
  * LIBRARY is a .so path (a wrapper/baseline build or /system/lib64/libvulkan.so).
- * FORMAT is one of: bc1 bc3 bc7 bc4 bc5 bc1_srgb bc3_srgb rgba8 rgba8_srgb
- * r8 r8g8 d16 d24s8 d32.
+ * FORMAT is one of: bc1 bc3 bc4 bc5 bc7 bc1_srgb bc3_srgb bc7_srgb rgba8
+ * rgba8_srgb r8 r8g8 d16 d24s8 d32.
  *
  * copy: creates an image with VK_IMAGE_USAGE_TRANSFER_DST_BIT |
  *       VK_IMAGE_USAGE_TRANSFER_SRC_BIT (plus SAMPLED for colour formats),
@@ -120,6 +120,8 @@ static const ProbeFormat PROBE_FORMATS[] = {
     VK_FORMAT_R8G8B8A8_UNORM, 4},
    {"bc7", VK_FORMAT_BC7_UNORM_BLOCK, VK_IMAGE_ASPECT_COLOR_BIT, true, 16, 0, 0,
     VK_FORMAT_R8G8B8A8_UNORM, 4},
+   {"bc7_srgb", VK_FORMAT_BC7_SRGB_BLOCK, VK_IMAGE_ASPECT_COLOR_BIT, true, 16, 0, 0,
+    VK_FORMAT_R8G8B8A8_SRGB, 4},
    {"bc4", VK_FORMAT_BC4_UNORM_BLOCK, VK_IMAGE_ASPECT_COLOR_BIT, true, 8, 0, 0,
     VK_FORMAT_R8_UNORM, 1},
    {"bc5", VK_FORMAT_BC5_UNORM_BLOCK, VK_IMAGE_ASPECT_COLOR_BIT, true, 16, 0, 0,
@@ -151,7 +153,11 @@ static const struct { const char *name; VkFormat format; } CAPS_FORMATS[] = {
    {"bc3", VK_FORMAT_BC3_UNORM_BLOCK},
    {"bc4", VK_FORMAT_BC4_UNORM_BLOCK},
    {"bc5", VK_FORMAT_BC5_UNORM_BLOCK},
+   {"bc2_srgb", VK_FORMAT_BC2_SRGB_BLOCK},
+   {"bc6h_uf16", VK_FORMAT_BC6H_UFLOAT_BLOCK},
+   {"bc6h_sf16", VK_FORMAT_BC6H_SFLOAT_BLOCK},
    {"bc7", VK_FORMAT_BC7_UNORM_BLOCK},
+   {"bc7_srgb", VK_FORMAT_BC7_SRGB_BLOCK},
    {"bc1_rgba_srgb", VK_FORMAT_BC1_RGBA_SRGB_BLOCK},
    {"bc3_srgb", VK_FORMAT_BC3_SRGB_BLOCK},
    {"rgba8", VK_FORMAT_R8G8B8A8_UNORM},
@@ -189,8 +195,8 @@ static void usage(const char *argv0) {
       "       %s copy-partial LIBRARY FORMAT BASE PATCH OUTPUT W H PX PY PW PH\n"
       "       %s copy-levels LIBRARY FORMAT INPUT OUTPUT W H LEVELS LAYERS\n"
       "       %s depth-attach LIBRARY FORMAT INPUT OUTPUT WIDTH HEIGHT\n"
-      "FORMAT: bc1 bc3 bc7 bc4 bc5 bc1_srgb bc3_srgb rgba8 rgba8_srgb r8 r8g8 "
-      "d16 d24s8 d32\n",
+      "FORMAT: bc1 bc3 bc4 bc5 bc7 bc1_srgb bc3_srgb bc7_srgb rgba8 rgba8_srgb "
+      "r8 r8g8 d16 d24s8 d32\n",
       argv0, argv0, argv0, argv0, argv0, argv0);
 }
 
