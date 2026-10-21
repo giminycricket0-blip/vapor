@@ -777,6 +777,7 @@ internal fun SteamCatalogDetailsContent(
                 artwork(Modifier.fillMaxWidth())
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp), content = information)
             }
+            CommunityReportsButton(game.appId, game.name, Modifier.fillMaxWidth())
             if (game.description.isNotBlank()) Text(game.description, color = TextPrimary)
             if (detailsFailed) {
                 Text(stringResource(R.string.vapor_store_details_error), color = TextSecondary)

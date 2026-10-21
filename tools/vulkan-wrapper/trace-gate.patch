@@ -1,0 +1,31 @@
+--- a/src/vulkan/wrapper/vk_entrypoints.py
++++ b/src/vulkan/wrapper/vk_entrypoints.py
+@@ -490,7 +490,7 @@
+                 types.append(f"{param.name}: %x")
+         # handle_wrap_logic.append(f"    WLOGA(\"dispatch->{command.name} {'returned %d' if command.return_type != 'void' else 'finished'} (id=%d)\"{', result' if command.return_type != 'void' else ''}, cmd_id);")
+         pre_print = []
+-        pre_print.append(f"    if (should_log) {{")
++        pre_print.append(f"    if (should_print) {{")
+         pre_print.append(f"        VK_CMD_LOG(\"wrapper_{self.name} (id=%d)\", cmd_id);")
+         # pre_print += print_param(self, self.params[0], mode='input')
+         for param in self.params:
+@@ -504,7 +504,7 @@
+         pre_print.append(f"    }}")
+ 
+         post_print = []
+-        post_print.append(f"    if (should_log) {{")
++        post_print.append(f"    if (should_print) {{")
+         if self.return_type == 'VkResult':
+             post_print += print_param(self, 'result', mode='output')
+         for param in self.params[1:]:
+--- a/src/vulkan/wrapper/meson.build
++++ b/src/vulkan/wrapper/meson.build
+@@ -47,7 +47,7 @@
+     '--out-h', '@OUTPUT1@',
+     '--beta', with_vulkan_beta.to_string(),
+   ],
+-  depend_files: vk_dispatch_trampolines_gen_depend_files,
++  depend_files: vk_dispatch_trampolines_gen_depend_files + files('vk_entrypoints.py'),
+ )
+ 
+ wrapper_features_gen = files('vk_wrapper_features_gen.py')

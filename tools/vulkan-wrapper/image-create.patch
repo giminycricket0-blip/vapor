@@ -1,0 +1,153 @@
+--- a/src/vulkan/wrapper/wrapper_image.c
++++ b/src/vulkan/wrapper/wrapper_image.c
+@@ -5,6 +5,7 @@
+ #include "vk_common_entrypoints.h"
+ #include "vk_dispatch_table.h"
+ #include "vk_extensions.h"
++#include "vk_enum_to_str.h"
+ #include "vk_util.h"
+ #include "vk_printers.h"
+ #include "wrapper_trampolines.h"
+@@ -22,73 +23,99 @@
+    VK_FROM_HANDLE(wrapper_device, device, _device);
+    bool emulate_bcn = (is_bc123_image_format(pCreateInfo->format) && device->physical->needs_bc1_emulation) ||
+                      (is_bc4567_image_format(pCreateInfo->format) && device->physical->needs_bc4_emulation);
+-   uint32_t disabled_mask = get_disabled_bcn_masks();
+-   uint32_t format_id = (uint32_t) pCreateInfo->format - VK_FORMAT_BC1_RGB_UNORM_BLOCK;
+-   if ((disabled_mask & (1 << format_id)) != 0) {
+-      emulate_bcn = false;
++   if (emulate_bcn) {
++      uint32_t disabled_mask = get_disabled_bcn_masks();
++      uint32_t format_id = (uint32_t) pCreateInfo->format - VK_FORMAT_BC1_RGB_UNORM_BLOCK;
++      if ((disabled_mask & (1u << format_id)) != 0)
++         emulate_bcn = false;
+    }
+ 
+-   struct temporary_objects temp;
+-   list_inithead(&temp.objects);
+-
+-   VkImageCreateInfo *create_info = TEMP_OBJECT(device, &temp, VkImageCreateInfo, pCreateInfo);
++   VkImageCreateInfo create_info = *pCreateInfo;
++   VkImageFormatListCreateInfo format_list;
++   void *pnext_copy = NULL;
+    bool is_depth_stencil_reduced = false;
+    VkFormat original_format = pCreateInfo->format;
+    VkFormat new_format = pCreateInfo->format;
+    VkResult result;
+ 
+    if (device->depth_override_mode != OVERRIDE_NONE &&
+-       (create_info->usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
++       (create_info.usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+ 
+       if (device->depth_override_mode == OVERRIDE_DISABLED) {
+          WLOGE("Depth override: Blocking creation of depth image.");
+-         free_temp_objects(&temp);
+          return VK_ERROR_FORMAT_NOT_SUPPORTED;
+       }
+       new_format = get_depth_stencil_vk_format(device, original_format);
+       if (new_format != original_format) {
+          WLOGD("Depth override: Changing image format from %d to %d", original_format, new_format);
+-         create_info->format = new_format;
++         create_info.format = new_format;
+          is_depth_stencil_reduced = true;
+       }
+    } else if (emulate_bcn) {
+-      create_info->format = (new_format = unwrap_vk_format(device, original_format)); // Done within the next layer
++      create_info.format = (new_format = unwrap_vk_format(device, original_format)); // Done within the next layer
+       WLOGD("Emulate BCn: Changing image (%dx%d) format from bcn texture: %d to %d", 
+          pCreateInfo->extent.width, pCreateInfo->extent.height, original_format, new_format);
+-      create_info->usage |=  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+-      create_info->flags &= 0xffffff7f;
+-      create_info->flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
++      create_info.usage |=  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
++      create_info.flags &= 0xffffff7f;
++      create_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+ 
+-      vk_foreach_struct_const(pnext, create_info->pNext) {
+-         switch ((int32_t)pnext->sType) {
+-         case VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO:
+-            {            
+-               VkImageFormatListCreateInfo *ext = (VkImageFormatListCreateInfo *) pnext;
+-               if (ext->pViewFormats) {
+-                  ext->viewFormatCount = 1;
+-                  ((VkFormat*)ext->pViewFormats)[0] = new_format;
+-               }
++      const VkImageFormatListCreateInfo *formats =
++         vk_find_struct_const(create_info.pNext, IMAGE_FORMAT_LIST_CREATE_INFO);
++      if (formats && formats->viewFormatCount) {
++         format_list = *formats;
++         format_list.viewFormatCount = 1;
++         format_list.pViewFormats = &new_format;
++
++         size_t prefix_size = 0;
++         const VkBaseInStructure *node = create_info.pNext;
++         while (node != (const void *)formats) {
++            size_t size = vk_structure_type_size(node);
++            if (!size)
++               return vk_error(&device->vk, VK_ERROR_FORMAT_NOT_SUPPORTED);
++            prefix_size += ALIGN_POT(size, 8);
++            node = node->pNext;
++         }
++
++         if (prefix_size) {
++            pnext_copy = vk_alloc(&device->vk.alloc, prefix_size, 8,
++                                 VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
++            if (!pnext_copy)
++               return vk_error(&device->vk, VK_ERROR_OUT_OF_HOST_MEMORY);
++
++            char *cursor = pnext_copy;
++            VkBaseOutStructure *previous = NULL;
++            node = create_info.pNext;
++            while (node != (const void *)formats) {
++               size_t size = vk_structure_type_size(node);
++               VkBaseOutStructure *copy = (void *)cursor;
++               memcpy(copy, node, size);
++               if (previous)
++                  previous->pNext = copy;
++               previous = copy;
++               cursor += ALIGN_POT(size, 8);
++               node = node->pNext;
+             }
+-            break;
+-         default:
+-            break;
++            previous->pNext = (void *)&format_list;
++            create_info.pNext = pnext_copy;
++         } else {
++            create_info.pNext = &format_list;
+          }
+       }
+    }
+ 
+-   result = CHECK(CreateImage(_device, create_info, pAllocator, pImage));
++   result = CHECK(CreateImage(_device, &create_info, pAllocator, pImage));
+    if (result != VK_SUCCESS) {
+       if (is_depth_stencil_reduced) {
+          WLOGE("CreateImage failed with modified depth format (%d -> %d), try unsetting WRAPPER_REDUCE_DEPTH_FORMAT", original_format, new_format);
+       }
+-      free_temp_objects(&temp);
+-      return result;
++      goto out;
+    }
+ 
+-   struct wrapper_image *wimg = wrapper_image_create(device, create_info, *pImage);
++   struct wrapper_image *wimg = wrapper_image_create(device, &create_info, *pImage);
+    if (!wimg) {
+-      free_temp_objects(&temp);
+-      return vk_error(&device->vk, VK_ERROR_OUT_OF_HOST_MEMORY);
++      CHECKV(DestroyImage(_device, *pImage, pAllocator));
++      result = vk_error(&device->vk, VK_ERROR_OUT_OF_HOST_MEMORY);
++      goto out;
+    }
+ 
+    // Track data about this image
+@@ -97,7 +124,8 @@
+    wimg->is_bcn_emulated = emulate_bcn;
+    wimg->is_depth_stencil_reduced = is_depth_stencil_reduced;
+ 
+-   free_temp_objects(&temp);
++out:
++   vk_free(&device->vk.alloc, pnext_copy);
+    return result;
+ }
+ 

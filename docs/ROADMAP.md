@@ -22,6 +22,81 @@ flowchart TD
     Wine --> Android[Android display, audio and controls]
 ```
 
+## Graphics component source engineering — 21 October 2026
+
+The accepted scope now explicitly includes source-level performance refactoring
+of the drivers, graphics translators, Wine and FEX. Use the existing component
+formats and retain credited upstream code. A complete rewrite, new runtime
+manager, configuration database or graphics service is not required.
+
+**Completed bounded checkpoint:** Turnip wait-any, wrapper image creation and
+wrapper tracing have source changes; both components' baseline/candidate Android
+libraries build. The candidates pass 37 Turnip cases, 26 wrapper image cases and
+seven generated-call cases with clean sanitizers, plus the separate allocation
+and read-only-memory checks. Meson's generator dependency is corrected. Original
+controls expose the recorded faults. No APK/default or physical performance result.
+[Qualification](QUALIFICATION.md#graphics-component-source-refactors--21-october-2026).
+
+Continue in this order:
+
+1. Qualify the native Turnip wait-any refactor through actual driver loading and
+   rendering. Compare the baseline and candidate built from identical inputs;
+   count how often the changed path is reached before inferring a game benefit.
+   Preserve the working driver and ordinary Steam/Cloud teardown.
+2. Complete wrapper native-load and released-binary reproduction checks; the
+   optional Leegao release and its reviewed source paths are mapped, while the
+   default/GameNative wrapper source identities remain open. Image/pNext ownership
+   and disabled tracing now have source checks and complete Android builds.
+   Continue the staging lifetime review and test BC/native formats and depth
+   paths against reference images on the effective driver.
+3. Deepen DXVK queue/compiler and VKD3D shader/capability/descriptor review on the
+   exact packaged ARM64EC bases. Measure submission cost, shader stalls, waits,
+   memory and cold/warm behavior. Reuse upstream priority/cache mechanisms;
+   refactor a demonstrated cost with a small source patch and regression checks.
+4. Continue Wine display/synchronization/media and FEX instruction/cache work
+   from their existing component experiments. Match Bionic interfaces and the
+   genuine Steam host. The unresolved ntsync owner-death gate blocks promotion,
+   not analysis of other Wine performance paths.
+5. Use EmuReady reports to choose reproducible game/device/configuration cases,
+   retaining platform, edition and runtime differences. Start with the user's
+   Helltaker, TF2 training and Ghostrunner Demo; treat Onimusha's capability error
+   as a separate investigation. Reports do not replace source traces or matched
+   phone evidence. Other GPU families require their own kernel/driver review.
+
+Each source change needs an input revision, explained cost reduction, source
+regression, native build and the relevant device result before promotion. Track
+reviewed paths and open boundaries in the existing
+[runtime research](RUNTIME-RESEARCH.md#direct-driver-and-translator-engineering--21-october-2026)
+and component receipts. No whole-repository or full-catalog audit is complete.
+
+## EmuReady community reports — 21 October 2026
+
+**Read-only slice implemented and locally checked.** The public API reader,
+shared native modal, identity guards and explicit settings viewer are in place.
+44 focused JVM/Compose tests pass; 17 Android checks pass on the earlier feature
+APK and the five reports checks repeat on the final APK. Live signed-out catalog
+browsing retrieves Windows Half-Life 2 reports and settings. [Qualification and
+screenshots](QUALIFICATION.md#emuready-community-reports--21-october-2026).
+Selective settings application and automatic route ranking are not implemented.
+
+Implementation scope and verification plan:
+
+Implement the read-only slice reviewed in [runtime research](RUNTIME-RESEARCH.md#emuready-compatibility-prior-art--20-october-2026):
+
+1. Add an on-demand public API reader beside the library feature. Resolve Steam
+   identity and require the Windows platform; title-only matches remain labeled.
+   The live lookup can return a Switch game with the same title, so reject that
+   result and search for an unambiguous Windows entry before reading reports.
+2. Reuse a native Community reports modal from installed Steam game pages and
+   catalog details. Fetch settings only when a report is opened; retain report
+   source/device/emulator context. No account, settings import or launch dependency.
+3. Verify JSON boundaries, platform/demo identity, missing reports versus service
+   errors, cancellation, controller actions and narrow/large-text layouts. Run
+   focused JVM/Compose checks, compile the APK, then inspect an emulator capture.
+
+Do not add a backend mirror, startup library scan, generated GameNative config
+import, or automatic report submission. Settings application remains a later slice.
+
 ## Production parent-runner execution — 20 October 2026
 
 `tools/tests/steam-probe-parent-runtime.cpp` includes the existing launcher source

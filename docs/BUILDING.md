@@ -489,6 +489,109 @@ profiler or game benchmark. The separate [source wait test](../tools/tests/turni
 checks the KGSL fix with mocked clock/ioctl calls. Keep those evidence categories
 separate from actual Turnip phone rendering and power measurements.
 
+### KGSL wait-any source refactor — 21 October 2026
+
+The later source experiment uses Mesa
+`f28352d1179a4a85b4be286a883747bae2d3786b`, with archive URL
+`https://gitlab.freedesktop.org/api/v4/projects/176/repository/archive.tar.gz?sha=f28352d1179a4a85b4be286a883747bae2d3786b`.
+Observed archive: **134,338,825 bytes**, SHA-256
+`0e1068773f16d89f6836969d4ff1b9188769fbb8cf1454b6c6a88db648e150f8`.
+Use a separate source/build directory; retain the preceding experiment.
+
+The toolchain and API-34 configuration above remain the same. Put the retained
+glslang 16.6.0 binary directory on `PATH` alongside modern Bison and the build
+Python environment. Apply `tools/turnip/android-driver.patch` without fuzz and
+build the baseline first. Save its driver and original `tu_knl_kgsl.cc`. Then apply
+`tools/turnip/kgsl-wait-any.patch` without fuzz, rebuild the same target and save
+the candidate. The latter rebuild compiles the changed object and links; all
+other source inputs stay the same.
+
+The sanitizer fixture takes the actual before/after source plus the Mesa tree:
+
+```sh
+python3 tools/tests/turnip-kgsl-wait-any.py before.cc after.cc mesa-source /tmp/vapor-kgsl-wait-any
+```
+
+It extracts the real wait-any/timeout helpers and vector implementation, using
+Mesa's stack-array primitive. Only kernel/FD/Vulkan boundaries are mocked. The
+original must expose division-by-zero and failed-allocation access; the candidate
+must preserve the behavioral cases and pass allocation bounds with clean
+sanitizers. This host fixture requires Clang with ASan/UBSan.
+
+The local ZIP is `Vapor-Turnip-f28352d1-wait-any-experimental.zip`, outside the
+checkout in `../turnip-refactor-qualification/`. It uses the existing Adrenotools
+format with `minApi=34`, a payload checksum, both patches, build inputs and
+component notices. It is not a reproduction of the full V38 vendor patch set.
+Do not replace a phone's working driver or claim a performance gain from a build
+or ELF-alignment result alone. [Qualification](QUALIFICATION.md#graphics-component-source-refactors--21-october-2026).
+
+## Vulkan-wrapper source build — 21 October 2026
+
+This experiment builds the existing Leegao wrapper source for Android ARM64;
+it does not replace a bundled wrapper. [Component notes](../tools/vulkan-wrapper/README.md)
+describe the image-ownership and trace-gating patches and their source tests.
+
+Pinned build inputs:
+
+- Wrapper: `leegao/bionic-vulkan-wrapper`,
+  `3abf48704a4d9303967a0811c0dc8ff8567d613b`.
+- Custom shader passes: `leegao/SPIRV-Tools`,
+  `56db26cf58f2f1b1f70ce92fc733ae91e136094d`.
+- Its `DEPS` headers: `KhronosGroup/SPIRV-Headers`,
+  `97e96f9e9defeb4bba3cfbd034dec516671dd7a3`.
+- NDK `27.3.13750724`, API 34, CMake 3.22.1, Meson 1.9.1, Ninja 1.10.2,
+  glslang 16.6.0 and the existing Wine experiment's ARM64 Termux sysroot.
+
+The [receipt](evidence/2026-10-21-graphics-source.json) records archive hashes,
+dependency hashes, compiler/link flags, source-test results and output identities.
+Keep this source/build directory separate from the Turnip tree. The wrapper
+fork's Vulkan utility macros and custom SPIRV-Tools API are version-sensitive.
+
+Build SPIRV-Tools with the NDK CMake toolchain, `ANDROID_ABI=arm64-v8a`,
+`ANDROID_PLATFORM=android-34`, `ANDROID_STL=c++_static`,
+`CMAKE_POSITION_INDEPENDENT_CODE=ON`, `CMAKE_BUILD_TYPE=Release`,
+`SPIRV_SKIP_TESTS=ON`, `SPIRV_SKIP_EXECUTABLES=ON`,
+`SPIRV_TOOLS_BUILD_STATIC=ON` and `SPIRV-Headers_SOURCE_DIR` pointing to the pinned
+headers. Build targets `SPIRV-Tools-opt` and `SPIRV-Tools-static`. Copy the two
+archives into the wrapper source's existing `src/vulkan/wrapper/lib/` directory.
+
+Use an Android cross file and X11 dependencies from the retained ARM64 sysroot.
+Its cross pkg-config must translate the root `-I.../usr/include` to `-idirafter`,
+leaving NDK libc/libc++ headers ahead of the dependency headers. Set
+`-D__TERMUX__` and `-include fcntl.h` in both C/C++ arguments for this fork.
+Link to `libandroid-shmem` and Adrenotools and explicitly to shared `libc++`, with
+`-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384`. The final baseline and
+candidate use identical flags and dependencies. Android stub libraries remain
+link-time inputs, not files to ship in place of platform libraries.
+
+Configure the Mesa fork with:
+
+```sh
+meson setup wrapper-build wrapper-source --cross-file android.ini --native-file native.ini \
+  --buildtype release \
+  --prefix=/usr -Dplatforms=x11 -Dplatform-sdk-version=34 -Dvulkan-drivers=wrapper \
+  -Dgallium-drivers= -Dopengl=false -Dglx=disabled -Degl=disabled -Dgbm=disabled \
+  -Dllvm=disabled -Dandroid-stub=true -Dandroid-libbacktrace=disabled -Dxmlconfig=disabled
+ninja -C wrapper-build src/vulkan/wrapper/libvulkan_wrapper.so
+```
+
+`native.ini` pins the Bison binary the recorded configuration used; without that
+override the newer default Bison fails on this wrapper tree. The cross file and
+native file are retained with the build inputs described in the receipt.
+
+Retain the baseline library and three source files named by the patches. Apply
+`tools/vulkan-wrapper/image-create.patch` and `tools/vulkan-wrapper/trace-gate.patch`
+with `patch -p1 --fuzz=0`, then rebuild the same target. The latter patch also
+repairs the local Python import dependency: the completed candidate regenerates
+`wrapper_trampolines.h` and replaces all 1,174 `if (should_log)` conditions.
+A rebuild that only compiles `wrapper_image.c` has not incorporated that change.
+
+Run the image and generated-call sanitizer commands in the component notes.
+After building, compare ELF `LOAD` alignment, SONAME, dynamic imports and exports
+between baseline and candidate. Build-tree RUNPATHs and dependency/runtime
+availability still require packaging and native-load qualification. This is not
+an APK build, installed runtime, reproduced release binary or GPU result.
+
 ## Android ntsync library experiment
 
 This is a library/source investigation, **not an installable Wine component**.

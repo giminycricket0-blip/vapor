@@ -190,6 +190,7 @@ internal fun LibraryGameLaunchScreen(
     storeOptions: List<LaunchStoreOption> = emptyList(),
     selectedStoreId: String = "",
     onSelectStore: (String) -> Unit = {},
+    steamAppId: Int? = null,
 ) {
     val context = LocalContext.current
     var uninstallMenuOpen by remember { mutableStateOf(false) }
@@ -540,6 +541,9 @@ internal fun LibraryGameLaunchScreen(
                                         )
                                     }
                                 }
+                            }
+                            if (steamAppId != null && steamAppId > 0) {
+                                CommunityReportsButton(steamAppId, appName, Modifier.fillMaxWidth())
                             }
                             if (!uninstallEnabled) {
                                 Text(

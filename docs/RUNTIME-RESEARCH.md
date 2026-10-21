@@ -1,6 +1,6 @@
 # Vapor runtime efficiency and translation research
 
-Research date: 16 October 2026. This is a source investigation and a proposed experiment order, not a runtime upgrade or a performance result.
+Initial research: 16 October 2026; follow-up dates are recorded below. This is a source investigation and a proposed experiment order, not a runtime upgrade or a performance result.
 
 ## Recommendation
 
@@ -9,6 +9,258 @@ Keep the native Steam frontend and the Bionic Wine/FEX foundation. The strongest
 The earlier compatibility database, save history and launch diagnostics proposals improve the product. They do not, by themselves, improve translation quality. A distinctive technical contribution would be a reproducible fix to Wine/Android synchronization or Vulkan presentation that makes games smoother at the same power draw, with its correctness demonstrated and its patch available upstream.
 
 Do not start a new emulator, graphics API, container framework or optimization service. Most of the proposed mechanisms already have public implementations. Extend their existing owners, and select original work from an observed bottleneck.
+
+## Direct driver and translator engineering — 21 October 2026
+
+The owner's requested scope includes source refactoring and performance work in
+the drivers/translators themselves. Configuration and automatic selection remain
+separate product work. Android/Bionic, ARM64 and ARM64EC component builds already
+exist; adapting them for Vapor means improving their actual host boundaries and
+preserving compatible interfaces, not removing the Windows/CPU/shader translation
+that the games still require.
+
+**Current source checkpoint: Turnip and wrapper Android candidates build;
+no physical-game performance verdict.**
+
+- **Turnip:** `kgsl_syncobj_wait_any` now uses Mesa's stack-array primitive instead
+  of a temporary growable vector. The real source fixture measures fewer
+  allocations and no vector-growth copies, and reproduces/corrects divide-by-zero
+  and failed-allocation accesses. Both Android baseline and candidate build.
+  [Patch and source checks](../tools/turnip/README.md#kgsl-wait-any-refactor--21-october-2026).
+- **Vulkan wrapper:** image creation avoids two ordinary-image scratch allocations,
+  confines BC mask evaluation, preserves the caller's format list/pNext chain and
+  cleans up on failure. The public call generator also skips detailed logging
+  when tracing is off; Meson now tracks that generator's local import. The
+  Android baseline/candidate build. There are 26 image cases plus a read-only
+  subprocess and seven generated-call cases, with clean candidate sanitizers.
+  The three-call trace fixture removes 175 log-file lookups and 34 printer calls
+  with tracing off. These are function-level counts, not game speed results.
+  [Source, build mapping and limits](../tools/vulkan-wrapper/README.md).
+
+These are local generated changes with credited upstream sources. They add no
+new runtime API, service, cache database or settings layer. They are not activated
+in Vapor. Function-level reductions do not establish faster games: single-object
+waits already bypass the modified Turnip path, and its frequency in real gameplay
+has not been measured. See [the evidence and limits](QUALIFICATION.md#graphics-component-source-refactors--21-october-2026).
+
+The broader review follows the existing component owners:
+
+| Component | Concrete source review / next investigation | Required evidence before changing a default |
+| --- | --- | --- |
+| Turnip / IR3 | Complete the KGSL candidate's GPU checks; then investigate command submission, shader compilation, memory lifetime and GMEM/sysmem decisions separately | Matched workload, correct pixels/synchronization, frame-time and power results |
+| Vulkan wrapper | Image/pNext ownership and disabled tracing have source regressions and complete Android builds; continue into BC staging-buffer lifetime and barriers | Complete released-binary reproduction and native loading; actual format/chain/image comparisons on the effective driver |
+| DXVK | Queue submission/completion and pipeline-worker paths sampled at `d713ef8748a1eee3e90d4b6d5dc2e80f5be4b519`; investigate compiler scheduling versus Wine/FEX CPU demand and cold/warm pipeline work | Establish the packaged ARM64EC source/patch base and measure the dominant CPU/wait cost before a source change |
+| VKD3D-Proton | Fence-worker and pipeline-cache validation sampled at `ef9a02e873715c9e2da0d6db8a236aca8380b303`; inspect capability rejection, shader lowering and descriptor/submission costs | Real missing-feature results, shader correctness and controlled DX12 scenes; preserve existing device/build/cache identity checks |
+| Wine | Continue the existing Bionic/ARM64EC X11 work through Vulkan/display ownership, synchronization and media boundaries | Full package/Steam ABI mapping, targeted native probes and matched rendering/input/audio results; the ntsync recovery gate remains held |
+| FEX | Extend the existing cache/instruction tests from a measured guest translation or memory-ordering cost | Guest-architecture regression cases and game traces; preserve required ordering and self-modifying-code semantics |
+
+DXVK already has prioritized compiler workers; VKD3D already validates cached
+pipelines against device, build and driver identities. Do not replace these with
+a generic worker pool/cache or assume their waits are redundant. The reviewed
+heads were updated on 21 and 20 October respectively; community attitudes toward
+AI do not establish inactivity or that code has never been analyzed. Downloaded
+files/hashes are recorded in the receipt; only named paths were inspected, not
+the entire repositories.
+
+EmuReady is a workload/reproduction reference: retain Windows edition/AppID,
+device, emulator, runtime, driver, settings and report age. A demo/full-game or
+GPU mismatch cannot become a driver diagnosis. Fresh Ghostrunner and Onimusha
+requests returned HTTP 403 during this pass, so no new report contents guided
+these two source changes. The existing app's earlier live read-only integration
+result remains separate. Do not make report retrieval a launch dependency or
+silently import generated configurations.
+
+Other GPU families need separate kernel/userspace feasibility and hardware work;
+an ARM64 build is not universal GPU support. Proprietary vendor driver source is
+not editable here. Read and respect each source tree's contribution instructions:
+the reviewed Mesa instructions prohibit agent GitLab participation and changes
+in several GPU trees, including Panfrost. No excluded source tree was changed or
+upstream message/submission sent. Source analysis does not justify claiming an
+exhaustive audit, novelty, conformance or a general performance percentage.
+
+## Turnip Gen8 V38 review — 21 October 2026
+
+**Recommendation: qualify V38 as an imported driver candidate, preserving the
+working driver and current defaults until matched phone tests pass.** The existing
+importer, Vulkan probe and automatic route planner are the integration owners;
+another installer, cache database or graphics service is unnecessary.
+
+Reviewed StevenMXZ's [Turnip Gen8 V38 / v27.0.0-R1 release](https://github.com/StevenMXZ/Adreno-Tools-Drivers/releases/tag/v27.0.0-R1),
+published 19 October, and selected build/patch sources at tag commit
+`b3b32ad30e7d7b4bd897e678af064036eeb9df09`. All four downloaded ZIPs match their
+GitHub asset SHA-256 digests. They were inspected outside the checkout; no driver
+was installed, bundled, or selected by this review.
+
+| Archive | Declared GPU family | Role in a comparison |
+| --- | --- | --- |
+| `Turnip_Gen8_V38.zip` | A8xx (release asset text lists A840, A830, A829, A825, A810) | First Gen8 candidate against the phone's working driver |
+| `Turnip_Gen8_V38_Patched.zip` | A8xx | Separate experimental candidate; do not assume it is faster |
+| `Turnip_v27.0.0-R1.zip` | A6xx/A7xx | Older GPU family; not interchangeable with the Gen8 build |
+| `Turnip_v27.0.0-R1-Oneui.zip` | A6xx/A7xx | Separate OneUI variant, requiring its own device check |
+
+The libraries identify themselves as `Mesa 27.0.0-devel (git-f28352d117)`; the
+release's Vulkan 1.4.363 label does not establish conformance or a game's complete
+DirectX feature requirements. All four ARM64 libraries have four `LOAD` segments
+aligned at `0x4000`. This is ELF packaging evidence, not a successful load or game
+run on a 16 KB Android kernel.
+
+**A concrete packaging discrepancy:** every archive declares `minApi: 28`, but
+each library strongly imports `call_once`, `mtx_lock` and `mtx_unlock` at `LIBC_R`.
+The [Bionic export map](https://android.googlesource.com/platform/bionic/+/refs/heads/main/libc/libc.map.txt)
+introduces that block at API 30. NDK r27's ARM64 API 28/29 stubs lack the checked
+exports; API 30/35 stubs contain them. Under the stock Android loader, these imports
+therefore require at least Android 11/API 30. That lower bound does not establish
+API 30 sufficiency. Vapor's importer currently trusts the declared minimum; its
+later availability probe can reject a failed load but does not explain this
+specific metadata error.
+
+The selected [mesh-shader patch](https://github.com/StevenMXZ/Adreno-Tools-Drivers/blob/b3b32ad30e7d7b4bd897e678af064036eeb9df09/patches/patchs1/0001-tu-Emulate-VK_EXT_mesh_shader-with-compute.patch)
+converts task/mesh work into compute, stores output in a shared ring and generates
+vertex work; mesh-containing render passes use sysmem. This could supply a missing
+feature at an extra compute/memory cost. It is not evidence of native mesh hardware,
+a general FPS improvement, or a fix for Onimusha's unsupported-GPU message. The
+patched binary contains mesh-ring implementation text absent from the regular
+Gen8 binary, but working feature support remains a device qualification.
+
+The recipe also contains KGSL command-buffer aliasing, cache invalidation,
+zero-timeout polling and retired-IB storage work. The last cache patch permits up
+to 256 MiB of idle storage; its environment-variable/log literals are absent from
+the released libraries. A repository patch's presence does not prove it shipped
+in an asset. The embedded Git prefix resolves to Mesa
+`f28352d1179a4a85b4be286a883747bae2d3786b`; the complete applied patch/build inputs
+and source-to-binary reproduction remain open. Do not apply all WinNative/Vauzi patches again: some are
+already upstream, and several Vauzi experiments target different GPU generations.
+
+Concrete Vapor improvements, in order:
+
+1. **Complete the existing automatic driver choices.**
+   `AutomaticGraphics.prepare` currently considers the configured driver and
+   System. Importing V38 alone does not add it to retries. After device validation,
+   extend this same owner with a small qualified installed candidate set, retaining
+   explicit settings, the four-attempt bound and Steam/Cloud cleanup. Existing
+   payload/capability fingerprints already invalidate remembered routes; preserve
+   that mechanism instead of adding another cache.
+2. **Qualify the effective graphics chain.** The JNI probe reads underlying
+   physical-device properties/features without creating a logical device or
+   presenting frames. Check the selected driver through the actual wrapper,
+   Wine and DXVK/VKD3D combination. A minimum feature filter is not a successful
+   DirectX device or game launch; report which stage failed.
+3. **Measure the forced sysmem default.** `Container.DEFAULT_ENV_VARS` includes
+   `TU_DEBUG=noconform,sysmem`. Compare normal Turnip selection against that mode
+   on the supported GPU. [GMEM and system-memory rendering](https://docs.mesa3d.org/drivers/freedreno.html)
+   have different memory costs. Do not remove required A810/A829 workarounds or
+   assume GMEM wins for every workload; mesh emulation can still require sysmem.
+4. **Keep variants and origins distinct in the importer.** The two older-family
+   archives declare the same `meta.name`, while `DriverPackages.install` keys the
+   install directory by that name and rejects duplicates. Preserve their distinct
+   variant identity, retain asset/library digests and source URL, and validate
+   actual loader compatibility. Keep the existing bounded ZIP and Android/Linux
+   platform checks.
+5. **Choose deeper driver work from a trace.** First separate shader compilation,
+   CPU submission/queue waits, memory pressure and presentation stalls. Compare
+   exact KGSL fixes against the current Mesa base before carrying patches. Neither
+   a Vulkan version increase nor a command-buffer cache proves lower memory use
+   or better frame pacing.
+
+The smallest useful phone comparison is the working driver versus regular V38
+versus patched V38, using Helltaker, TF2 training and Ghostrunner Demo. Hold Wine,
+FEX, translator, scene, resolution, frame cap and cooling constant. Record cold
+and warm runs, repeated launch/exit, frame-time percentiles, memory and power over
+sustained gameplay. Use Onimusha separately to identify the missing graphics
+requirement; do not count an error disappearing as a performance pass. No device
+was connected for this review, so no FPS, power, game-support or Cloud claim is
+added. [Archive/source receipt](evidence/2026-10-21-turnip-v38.json).
+
+## EmuReady read-only integration — 21 October 2026
+
+The first app slice now extends the existing Steam Library game page and catalog
+details with a native Community reports modal. `feature/library/EmuReady.kt` reads
+public JSON through the existing HTTP client without account headers or cookies.
+Requests occur only after opening the modal; report settings load on a separate
+explicit action. Response size and lists are bounded, parsing runs off the UI
+thread, and closing cancels outstanding work. A page-local snapshot avoids another
+fetch when reopening the same game's modal; no persistent cache or backend is added.
+
+The live API responded on 21 October. The Steam batch lookup returned no entries
+for TF2 (`440`) or Ghostrunner Demo (`1249200`), and a same-title Nintendo Switch
+entry for Portal (`400`). A bounded title search also returned the Windows Portal
+entry. The reader checks platform and declared Steam AppID, uses a unique Windows
+match as a fallback, and labels title-only matches as edition/build unconfirmed.
+Missing or ambiguous data is distinct from service failure and from incompatibility.
+
+Report lists retain device, SoC, emulator, rating, date, notes and vote counts. A
+report's raw `customFieldValues` are read separately, without filling defaults or
+importing its generated emulator config. Source links open EmuReady in the browser;
+no Steam web session is passed to the external service. Windows report identity
+and approval are checked again for the settings response.
+
+No settings are applied, no driver/runtime is downloaded, no report is submitted,
+and no Vapor compatibility badge or performance claim is inferred. Device/runtimes
+matching and selective settings application remain later work. See
+[qualification](QUALIFICATION.md#emuready-community-reports--21-october-2026) for the
+build, fixture checks, live app observations and remaining gates. The 20 October
+review below describes the discovery stage, including its earlier API timeouts.
+
+## EmuReady compatibility prior art — 20 October 2026
+
+**Decision: use as an external community evidence source; extend existing game
+settings and automatic routing after a read-only integration is qualified.** This
+is a source review and proposed integration, not an implemented app feature.
+Reviewed [EmuReady](https://github.com/Producdevity/EmuReady) staging commit
+`174e5cb4e73027d52f8b898f64faa8a907548d43` alongside Vapor's
+`AutomaticGraphics.prepare`, `GameEngineHints` and existing `GameSettings`.
+
+The [public integration API](https://github.com/Producdevity/EmuReady/blob/174e5cb4e73027d52f8b898f64faa8a907548d43/docs/MOBILE_API.md)
+uses `/api/mobile/trpc`. `games.batchBySteamAppIds` accepts Steam AppIDs and can
+return report settings, device/SoC, emulator and community ratings. Its full result
+also gives a match strategy: metadata, exact title, normalized title or no match.
+`listings.get` provides game, device, SoC and emulator filters; `listings.byId`
+provides report details. Reading is documented as public; submission requires an
+EmuReady identity. Steam credentials must not be sent to this service.
+
+Two portability traps are visible in the source:
+
+- Batch results default to one report per game and sort by success rate/vote count,
+  rather than matching this phone. Resolve the game first, then use filtered
+  listings and report details. Title-only matches, demos and full-game reports
+  must not silently become exact Steam-build matches.
+- `listings.getEmulatorConfig` currently supports Azahar, Eden and GameNative,
+  not Vapor. Its GameNative converter starts with a complete default config before
+  overlaying report fields. Use raw `customFieldValues`, retaining which values
+  were actually reported; do not import a whole generated GameNative config.
+  Driver names, FEX/Box64 presets and Bionic/glibc containers are not interchangeable.
+
+Proposed smallest app slice: a Community reports section on the existing game page,
+with source links, emulator/device/config context, rating counts and clear unknown
+states. Fetch on demand through existing HTTP code; do not scan a user's whole
+library on startup, block Play on network access or introduce a backend mirror.
+Cached reports must retain their source and age, and an unavailable service is not
+an incompatibility verdict.
+
+A subsequent settings preview may map bounded resolution/FPS choices and installed
+component versions to existing shortcut fields. Unknown drivers, environment
+variables, executable paths, DLL downloads and prefix changes are not imported.
+Explicit user settings remain authoritative. Eligible reports can eventually rank
+routes in `AutomaticGraphics` after the same hardware/component checks; preserve
+its four-attempt limit, cancellation and Steam/Cloud cleanup. A community rating
+never becomes a Vapor qualification badge or a probability of successful launch.
+Local rendering evidence remains distinct from playable gameplay, saving and sync.
+
+Validation before enabling import: exact versus ambiguous/demo identity; same SoC
+with a different GPU/driver/runtime; missing components; malformed/unknown fields;
+service timeout/offline behavior; preservation of explicit settings; and attribution.
+Reports may guide a reproducible fix, but are not themselves translator patches.
+
+The project README identifies GPL-3.0-or-later source. Hosted service/data usage is
+separate: the [current terms](https://www.emuready.com/terms) restrict commercial
+service use without authorization. Clarify API/data reuse conditions before bulk
+redistribution or a commercial integration; no service credentials, maintainer
+message, report submission or dataset copy was created by this review.
+
+Live read-only probes of `emulators.get` and `games.batchBySteamAppIds` timed out
+from this environment. API uptime, deployed schema parity, report coverage for
+Vapor's reference games and actual settings import remain unverified. The source
+clone is outside Vapor; no external code or runtime settings were imported.
 
 ## Runtime and driver follow-up — 18 October 2026
 

@@ -3260,4 +3260,21 @@ In your hands.</string>
     <string name="vapor_login_verifying">Checking code…</string>
     <string name="vapor_login_another_method">Use another sign-in method</string>
     <string name="vapor_chat_change_presence">Change Steam status</string>
+    <string name="vapor_community_reports">Community reports</string>
+    <string name="vapor_community_note">From EmuReady · Reported on other setups, not verified in Vapor. Settings are shown for reference and are not applied.</string>
+    <string name="vapor_community_loading">Loading reports…</string>
+    <string name="vapor_community_unavailable">Could not reach EmuReady. You can still play your game. Any reports already shown are from this visit.</string>
+    <string name="vapor_community_no_game">No matching Windows entry found. This does not mean the game is incompatible.</string>
+    <string name="vapor_community_empty">No community reports for this Windows entry yet.</string>
+    <string name="vapor_community_title_match">Matched by Windows title: %1$s. Steam edition and build are not confirmed.</string>
+    <string name="vapor_community_browse">Browse on EmuReady</string>
+    <string name="vapor_community_source">Read original report</string>
+    <string name="vapor_community_unknown_device">Device not specified</string>
+    <string name="vapor_community_reported">Reported %1$s · %2$s</string>
+    <string name="vapor_community_votes">%1$d positive · %2$d negative votes</string>
+    <string name="vapor_community_view_settings">View reported settings</string>
+    <string name="vapor_community_no_settings">No settings recorded in this report.</string>
+    <string name="vapor_community_settings_error">Could not load this report’s settings. Your settings are unchanged.</string>
+    <string name="vapor_community_more">Showing up to 20 reports. Browse EmuReady for more devices and filters.</string>
+    <string name="vapor_community_no_browser">No browser is available to open EmuReady.</string>
 </resources>

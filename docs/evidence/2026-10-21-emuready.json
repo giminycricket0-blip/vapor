@@ -1,0 +1,127 @@
+{
+  "date": "2026-10-21",
+  "scope": "read-only EmuReady reports on existing Steam game pages; no settings import or game qualification",
+  "base_commit": "07e3026fee8700e3424c30cc8e969b3eb6b7c646",
+  "source_state": "local uncommitted feature changes",
+  "upstream_api_source": "https://github.com/Producdevity/EmuReady/tree/174e5cb4e73027d52f8b898f64faa8a907548d43",
+  "apk": {
+    "path": "app/build/outputs/apk/standard/debug/standard.apk",
+    "bytes": 680791360,
+    "sha256": "64df7d09ee0d5bcd64ca76670a2ac1d8d5c18e29309bfce09f6c511bbd787c0e",
+    "installed_hash_matches": true,
+    "signing": "development/debug"
+  },
+  "emulator": {
+    "serial": "emulator-5554",
+    "android": "16",
+    "sdk": 36,
+    "page_size": 4096,
+    "physical_phone": false
+  },
+  "jvm_suites": [
+    {
+      "name": "com.winlator.cmod.feature.stores.steam.service.SteamCatalogTest",
+      "tests": "14",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.winlator.cmod.app.shell.CommunityReportsUiTest",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.winlator.cmod.feature.library.EmuReadyTest",
+      "tests": "20",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "android": {
+    "combined_run": {
+      "reports_tests": 5,
+      "game_page_tests": 12,
+      "total": 17,
+      "passed": 17,
+      "seconds": 268.812,
+      "artifact_scope": "earlier feature APK before moving parsing off the UI thread; its APK hash was not retained"
+    },
+    "final_apk_repeat": {
+      "suite": "CommunityReportsDeviceTest",
+      "tests": 5,
+      "passed": 5,
+      "seconds": 59.684
+    },
+    "initial_interruption": "First install succeeded; ADB returned 255 before any instrumentation result. Reconnected, then ran the passing suites. Not counted as a test pass."
+  },
+  "live_public_api": {
+    "authentication": "none",
+    "batch_observations": {
+      "440": "not_found in batch lookup",
+      "1249200": "not_found in batch lookup",
+      "400": "batch returned Nintendo Switch; separate title search contained Windows and Switch entries"
+    },
+    "manual_app_journey": [
+      "signed-out Home \u2192 Store",
+      "search Half-Life 2",
+      "open Steam catalog game page",
+      "open Community reports",
+      "Windows title match displayed with edition/build qualification",
+      "read AYN Thor Pro / Snapdragon 8 Gen 2 / GameNative report",
+      "tap View reported settings; received emulator 1.1.1, Bionic, proton-9.0-arm64ec, 1280x720, pulse"
+    ],
+    "not_performed": [
+      "Steam sign-in",
+      "purchase or license acquisition",
+      "settings application",
+      "game launch",
+      "report submission",
+      "external source browser navigation in the manual journey"
+    ]
+  },
+  "screenshots": {
+    "docs/images/emuready-reports-emulator-sample.png": {
+      "sha256": "0287a47b92eef7275461064f0156c8efc37d0d4f46bd62de6bf49c7d7dd9164b",
+      "method": "actual emulator screenshot",
+      "data": "labeled synthetic report"
+    },
+    "docs/images/emuready-reports-emulator-live.png": {
+      "sha256": "567cf1738c47300b6e18ddee0970c79529b35f0370278b9274c6668f00575001",
+      "method": "actual emulator screenshot",
+      "data": "live public EmuReady response; signed-out app"
+    },
+    "docs/images/emuready-settings-emulator-live.png": {
+      "sha256": "5491d25f0672c8ca7cf1a4b2a95e2e15431e754cb085de1a2fce2ff81ff86322",
+      "method": "actual emulator screenshot",
+      "data": "live public EmuReady response; signed-out app"
+    }
+  },
+  "source_sha256": {
+    "app/src/main/feature/library/EmuReady.kt": "62ada48c60cf21647826042198fa8370894f593aa94bb0b9a534987aeb84c267",
+    "app/src/main/app/shell/CommunityReports.kt": "ce33b6050009c5f158d75048dadf6e416aa8f17464f4d9a0521f9d894d92a568",
+    "app/src/main/app/shell/LibraryGameLaunchScreen.kt": "96e19bc32dbc477f52a220ac65f2f7258105c7d1699f0552a1375f8c750fc2a7",
+    "app/src/main/app/shell/SteamCatalogScreen.kt": "1d8464df763f38829417e60fcb3d98894f7a9814944303321dc6f477aa8b8831",
+    "app/src/main/app/shell/UnifiedActivityGameDialogs.kt": "63944e0dc85e87217ce64a46c1ef289cd9ec8b7b85756c4fb7964f97f5eb34b8",
+    "app/src/test/kotlin/com/winlator/cmod/feature/library/EmuReadyTest.kt": "a065bed828991ab8c19d6f1abfe7aa3b23ba6fbe88ef3158415910920f75bfee",
+    "app/src/test/kotlin/com/winlator/cmod/app/shell/CommunityReportsUiTest.kt": "50ad44acbf86fc3ceeaf61211543334a4f8491d9eb569deab9e2c182f4136e5a",
+    "app/src/androidTest/kotlin/com/winlator/cmod/app/shell/CommunityReportsDeviceTest.kt": "497cce64477b18c1ea3427880a42a270ba93374217b2bef7a215801d5b21656e",
+    "app/src/androidTest/kotlin/com/winlator/cmod/app/shell/LibraryGamePageUiTest.kt": "d69de0de08a98a928f93241c5deda7d760ddf91c68de18a9880ee96a78743efa"
+  },
+  "log_sha256": {
+    "vapor-emuready-final-build-20261021.log": "3dd395455cbb69bf3a6d8a07808f35d36ebf6c30f6c176fb93cfd634b621fd57",
+    "vapor-emuready-instrumentation-retry-20261021.log": "f029667e626919ba5aed38df357df33c64a299ada5d6c4a4a3b8d0484f289c19",
+    "vapor-emuready-final-instrumentation-20261021.log": "dfb170d1dd93537f434fea9b66f77e071b681b68f17ddea86a40eb2ff3f74107"
+  },
+  "remaining": [
+    "physical Xiaomi UX",
+    "physical gamepad and TalkBack",
+    "same-device/runtime matching",
+    "selective settings preview/application",
+    "full API availability and catalog coverage",
+    "commercial service/data reuse agreement before any commercial distribution"
+  ]
+}

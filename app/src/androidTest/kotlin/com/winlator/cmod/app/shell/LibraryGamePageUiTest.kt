@@ -52,6 +52,7 @@ class LibraryGamePageUiTest {
         useDialog: Boolean = false,
         preview: Boolean = false,
         showBranches: Boolean = false,
+        steamAppId: Int? = null,
     ) {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val artwork = File(context.getExternalFilesDir(null), "game-page-art.jpg").takeIf { preview && it.isFile }
@@ -65,6 +66,7 @@ class LibraryGamePageUiTest {
                         SideEffect { pageView = view }
                         Box(if (width != null) Modifier.size(width.dp, height.dp) else Modifier) {
                             LibraryGameLaunchScreen(
+                                steamAppId = steamAppId,
                                 appName = if (preview) "Helltaker" else "Sample game with a longer title",
                                 subtitle = if (preview) "Game page preview · sample play history" else "Sample history · no account connected",
                                 sourceLabel = "Steam", heroImageUrl = previewBitmap, customHeroImageCacheKey = null,
@@ -135,6 +137,12 @@ class LibraryGamePageUiTest {
             assertTrue("$label is clipped: visible=${node.boundsInRoot.height}, measured=${node.size.height}",
                 node.boundsInRoot.height >= node.size.height - 1f)
         }
+    }
+
+    @Test fun steamCommunityReportsAndPlayRemainReachableInShortLandscape() {
+        screen(width = 880, height = 400, steamAppId = 220)
+        compose.onNodeWithText("Community reports").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Play").performScrollTo().assertIsDisplayed()
     }
 
     @Test fun managePreservesExistingMaintenanceCallbacks() {

@@ -8,6 +8,189 @@ screenshot. On 15 October the owner confirmed that **all tested games had sound*
 reported EU3, TF2, You Have to Win the Game and Helltaker sessions. Audio is owner-confirmed;
 persistence and repeat-launch checks remain separate.
 
+## Graphics component source refactors — 21 October 2026
+
+**Checkpoint: Turnip and Vulkan-wrapper source changes build for Android;
+no physical-GPU or game-performance comparison.** These are changes to
+Turnip and the Vulkan wrapper themselves. Guided runtime selections, APK assets,
+game settings and the existing EmuReady feature remain unchanged.
+
+### Turnip KGSL wait-any
+
+Mesa `f28352d1179a4a85b4be286a883747bae2d3786b` contains the wait-any path. A
+21 October sample of Mesa main (`c90ff433291a5c3ff5cea9913bbebeef9cd4e885`) has an
+identical `tu_knl_kgsl.cc`; the sampled file SHA-256 is recorded in the receipt.
+The original same-queue timestamp
+route calls `u_vector_length` on a zero-initialized vector whose element size is
+zero. UBSan reproduces division by zero. A failed initial allocation reproduces
+invalid memory access under the sanitizer fixture. Kernel calls are mocked; no
+claim about the cause of a reported game freeze follows from these results.
+
+`tools/turnip/kgsl-wait-any.patch` replaces the temporary growable vector with
+Mesa's own stack-array primitive and checks the fallback allocation. The candidate
+passes **37 host-source checks** with clean ASan/UBSan output, plus the separate
+failed-allocation subprocess. Original behavior checks complete, but its sanitizer
+and allocation-failure controls fail as expected. Coverage includes borrowed/owned
+FD cleanup, conversion failure, polling errors/timeouts, interrupted deadlines,
+timestamp ordering/wrap, early returns and input counts 2/8/9/32/64.
+Two additional mixed-input cases ensure that 64 inputs needing only two polled
+descriptors still avoid heap allocation. The preceding 14-case timestamp-wait
+regression also passes against the final candidate source; its old-source control
+continues to fail eight cases. These are separate source fixtures, not app tests.
+
+For input counts 2/8/9/32/64, observed scratch allocations are
+**1→0, 2→0, 3→1, 4→1 and 5→1**; growth-copy bytes are
+**0→0, 32→0, 96→0, 224→0 and 480→0**. These are function-level
+work reductions, not game CPU, RAM or FPS measurements. The path's frequency in a
+real game is not established.
+
+Baseline and candidate full Android drivers build successfully from that pinned
+Mesa base plus the same existing Android adaptations. The candidate adds only the
+wait-any patch. All four `LOAD` segments in each are `0x4000` aligned; the exported
+`HMI` HAL module symbol is unchanged. The experimental ZIP is
+**2,839,098 bytes**, SHA-256
+`e10e5743d628b6c4d43d203dc536bf45b9cc81f10327158d69c7ce5a5cd9b5ab`;
+its 14,109,000-byte stripped `libvulkan_freedreno.so` payload is SHA-256
+`d407b11f5c9c51802ebad895699a4ad54b9c8ded95d46243e77a20df1f47c4f4`.
+Its metadata declares API 34 and records that payload checksum. Source/build
+inputs, patches and notices are included. It is separate from StevenMXZ's V38
+packages and not a full reproduction of their patch stacks.
+
+### Vulkan-wrapper image creation
+
+The source at `leegao/bionic-vulkan-wrapper`
+`3abf48704a4d9303967a0811c0dc8ff8567d613b` allocates a temporary create-info and
+list node even for ordinary images. It also shifts a BC-relative mask for non-BC
+formats, which UBSan reports as an invalid shift. The source patch uses a stack
+copy, confines mask evaluation to actual emulation and releases the underlying
+image if wrapper bookkeeping fails. Source replay is exact without fuzz.
+
+The follow-up traces the generated public entry point: it calls the image
+function with the caller's data, before the lower dispatch trampoline. The
+original BC format-list path mutates that caller data and crashes when it is
+read-only. The candidate uses its own stack format list and copies only extension
+nodes preceding it when needed. It preserves extension order, fields and the
+original tail; scratch is released on success and failure. Empty format lists
+remain empty. An unknown-size prefix requiring rewriting returns
+`VK_ERROR_FORMAT_NOT_SUPPORTED`; unknown tails and untouched chains pass through.
+
+The candidate passes **26 host-source cases plus a separate read-only-memory
+subprocess** with clean ASan/UBSan. Ordinary-image temporary allocations change
+**2→0**. The original fails three preservation cases, produces the invalid-shift
+report and crashes on read-only input. Driver calls, format helpers, registry-size
+lookup and bookkeeping are mocked; these are ownership and control-flow checks,
+not GPU format/conformance or performance results.
+
+### Vulkan-wrapper tracing and complete build
+
+The existing generator tests `if (should_log)`, the always-true address of a
+function, instead of the `should_print` boolean it computes. The patch uses that
+boolean for input/output details. **Seven generated-call cases pass** using the
+upstream logging macros under ASan/UBSan; the original fails five. The fixture
+generates image creation, vertex-buffer binding and queue submission, with driver
+execution and structure printers stubbed. Tracing off changes log-file lookups
+**175→0** and printer calls **34→0** for the selected three-call batch. Explicit
+tracing and returned Vulkan results are preserved. These counts are not per draw
+or a game frame-time measurement.
+
+The Android baseline and candidate both compile with the pinned custom
+SPIRV-Tools fork and NDK r27d (27.3.13750724)/API 34. The first incremental
+attempt showed the generator's local Python import was missing from Meson's
+dependencies. The patch adds it; the final build regenerates the header and
+replaces all 1,174 faulty conditions. Merely compiling the image object was not
+counted as a complete pass.
+
+Both final libraries have four `LOAD` segments aligned at `0x4000`. Their SONAME,
+4,073 exported-symbol entries, 434 strong undefined-symbol entries and 20 direct
+shared-library dependencies match each other. Those dependency names also match
+the optional Leegao release. Symbol inventories and alignment do not establish
+successful loading or dependency-version compatibility in Vapor's production
+runtime. The local files retain build-tree RUNPATHs and are not packaged updates.
+
+The optional packaged Leegao binary matches release `v0.0.5r5`, whose tag resolves
+to `c8baafbd4f4835ca103acb55ec3ac13642b6b7e3`. Its four reviewed image/generator
+files match the current source base. Vapor's default and GameNative wrapper
+payloads differ and are not established as builds of this source. Reproducing
+the complete released binary, native loading, BC decoding, staging lifetime,
+concurrency and GPU image-quality/performance checks remain separate.
+
+### Remaining boundaries
+
+Neither candidate is installed or bundled. No phone, authenticated game session,
+Cloud synchronization or emulator game run was performed in this component pass.
+Matched GPU loading, Vulkan correctness, actual game frame times/power, 16 KB
+kernel execution and release/distribution review remain separate gates. Selected
+DXVK queue/compiler and VKD3D queue/cache paths were read at pinned revisions;
+they were not changed or exhaustively audited. Wine/FEX retain their earlier
+component records and open gates.
+
+Fresh public EmuReady Ghostrunner/Onimusha lookups returned HTTP 403 here; no new
+report contents or settings were used as evidence for either patch. The earlier
+live app observations below remain a separate result. Reports should guide
+reproduction workloads, not establish a source bottleneck or a Vapor badge.
+
+[Component receipt](evidence/2026-10-21-graphics-source.json),
+[Turnip source notes](../tools/turnip/README.md),
+[wrapper source notes](../tools/vulkan-wrapper/README.md),
+[build instructions](BUILDING.md#vulkan-wrapper-source-build--21-october-2026).
+
+## EmuReady community reports — 21 October 2026
+
+Steam catalog details and installed Steam game pages now expose a native Community
+reports modal. It reads public EmuReady data on demand, retains a page-local
+snapshot, cancels work on close, and reads a report's settings only when requested.
+It does not apply settings, download components, submit reports or use Steam auth.
+
+**44 focused JVM/Compose tests pass:** 20 API/identity tests, 10 reports UI tests
+and the existing 14 Store catalog tests. Coverage includes rejecting console ports
+and conflicting Steam IDs, separate demo titles, ambiguous Windows matches,
+missing data versus service errors, cancellation, explicit settings loads,
+single-tap retry, and narrow/large-text and short-landscape layouts.
+
+An earlier feature APK passes **17 Android instrumentation tests**: 5 Community
+reports checks plus 12 game-page checks, including the new action in short
+landscape (268.812 seconds). Parsing was subsequently moved off the UI thread;
+the final APK passes all 44 focused JVM tests and repeats the **same five reports
+Android checks** successfully (59.684 seconds). This is a subset repetition, not
+22 distinct Android tests. The original pre-result ADB interruption is not counted
+as a pass. Both application and test APKs build; the final installed application
+hash matches the local APK. [Build/test receipt](evidence/2026-10-21-emuready.json).
+
+### Live public data in the normal app
+
+The final APK was opened normally with Steam signed out. The journey
+**Store → Half-Life 2 → Community reports → View reported settings** succeeded.
+The Windows title match is explicitly labeled with Steam edition/build unconfirmed.
+The app displayed a report for AYN Thor Pro / Snapdragon 8 Gen 2 / GameNative and
+retrieved its reported emulator version, Bionic container, Wine version, resolution
+and audio values. Those are the contributor's settings, not a Vapor recommendation
+or a Half-Life 2 gameplay test.
+
+The public API batch lookup also returned a Nintendo Switch entry for Steam's
+Portal AppID. A separate title search returned both Windows and Switch entries;
+the reader filters platform before selecting an unambiguous Windows match. Batch
+lookups for TF2 and Ghostrunner Demo returned no entry during the observation;
+that alone does not establish absence from every EmuReady search or incompatibility.
+
+<table>
+<tr>
+<td width="50%"><img src="images/emuready-reports-emulator-live.png" width="300" alt="Actual signed-out Vapor app showing live Windows Half-Life 2 community reports" /></td>
+<td width="50%"><img src="images/emuready-settings-emulator-live.png" width="300" alt="Actual Vapor app displaying the selected community report's settings without applying them" /></td>
+</tr>
+<tr><td>Live community reports</td><td>Live reported settings</td></tr>
+</table>
+
+The separate [Android UI fixture capture](images/emuready-reports-emulator-sample.png)
+uses labeled sample content. All captures are from the Android 16 / API 36 ARM64
+emulator with 4 KB pages; they are not physical Xiaomi or gameplay measurements.
+
+Remaining: physical-phone acceptance, physical gamepad and TalkBack, same-device/
+runtime matching and selective settings preview/application. Live API reads do
+not qualify long-term service availability, catalog coverage, game performance,
+Steam Cloud, achievements or chat. External source navigation is callback-tested;
+the manual journey did not open the browser. No account, purchase, runtime launch,
+settings mutation, APK publication or Git push was performed in this slice.
+
 ## Production parent-runner execution — 20 October 2026
 
 A test-only entry point includes the actual launcher source and directly exercises

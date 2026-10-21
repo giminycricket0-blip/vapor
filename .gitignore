@@ -63,6 +63,9 @@ dist/
 /armsx2/emucore-src/
 /armsx2/emucore-out/
 !tools/tests/turnip-kgsl-wait.py
+!tools/tests/turnip-kgsl-wait-any.py
+!tools/tests/vulkan-wrapper-image.py
+!tools/tests/vulkan-wrapper-trace.py
 !tools/tests/wayland-fences.py
 
 # Local build-directory symlinks and generated developer packages

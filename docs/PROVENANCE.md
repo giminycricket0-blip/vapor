@@ -115,10 +115,25 @@ The `usr/lib/libvulkan_wrapper.so` inside `graphics_driver/wrapper-leegao.tzst`
 is **8,709,528 bytes**, SHA-256
 `520ec0ba1b5a404b12282d18f863761a44703012be6e2421b0f5adcb9d47be11`.
 It is byte-for-byte identical to the official [v0.0.5r5 release asset](https://github.com/leegao/bionic-vulkan-wrapper/releases/tag/v0.0.5r5),
-including the release API's published digest. The source branch inspected resolves to
-`c8baafbd4f4835ca103acb55ec3ac13642b6b7e3`. The other files in the bundled archive
+including the release API's published digest. The release tag was resolved again
+on 21 October to `c8baafbd4f4835ca103acb55ec3ac13642b6b7e3`.
+The other files in the bundled archive
 are separate inputs; this match does not prove their provenance or a reproducible
 wrapper build from source. No wrapper binary or device-specific flags changed.
+
+Vapor's default selection is `wrapper`, which extracts `wrapper.tzst`; the optional
+`wrapper-leegao` and `wrapper-gamenative` selections extract their own archives.
+Their `usr/lib/libvulkan_wrapper.so` payloads are distinct:
+
+| Variant | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Default | 19,146,576 | `ff43589bd34c236a048f93f0beb0af0ff0cbb5c8a0ecfe4227bacd5db7d2ba7a` |
+| Leegao | 8,709,528 | `520ec0ba1b5a404b12282d18f863761a44703012be6e2421b0f5adcb9d47be11` |
+| GameNative | 2,705,856 | `25e8010444dca69a448fa8bbd145b650e8283e329228fc7b7d1b70b79e63d1f3` |
+
+The later source experiment maps the Leegao release's reviewed image and generator
+files to the current pinned source. It does not establish either other variant's
+source identity. File sizes describe payload storage, not resident RAM or speed.
 
 ## Open-source reuse decision — 14 October 2026
 
@@ -327,6 +342,48 @@ backend activation, Steam lifecycle and phone performance remain distinct checks
 The [qualification record](QUALIFICATION.md#android-ntsync-recovery-gate--16-october-2026)
 documents the observed owner-death failure and the guarded build's explicit refusal.
 No proprietary GameNative execution/bootstrap helper is imported.
+
+## Local graphics source refactors — 21 October 2026
+
+The new Turnip experiment uses Mesa
+`f28352d1179a4a85b4be286a883747bae2d3786b`, the existing credited Android adaptation
+patch and `tools/turnip/kgsl-wait-any.patch`. The latter is a local generated source
+change to KGSL synchronization scratch storage. Both Android baseline and
+candidate build; the candidate is kept outside APK assets as a separate manual
+import ZIP with its source patches, input manifest, payload checksum and retained
+Mesa/dependency/toolchain/donor notices. The existing donor-license distinction
+below still applies. This is not a reproduction of the entire V38 patch stack.
+
+`tools/vulkan-wrapper/image-create.patch` is a local generated change against
+`leegao/bionic-vulkan-wrapper` commit
+`3abf48704a4d9303967a0811c0dc8ff8567d613b`. It changes image-creation scratch
+storage, mask evaluation, caller-owned pNext/format-list handling and error cleanup.
+`tools/vulkan-wrapper/trace-gate.patch` corrects the existing public-call logging
+gate and its Meson import dependency. Both complete Android baseline/candidate
+builds succeed; 26 image cases plus a read-only subprocess and seven generated-call
+cases pass on the candidate with clean sanitizers. Native GPU execution and
+reproduction of the full packaged binary remain unqualified.
+
+The four reviewed image/generator files at that source revision are byte-identical
+to release tag `v0.0.5r5` at `c8baafbd4f4835ca103acb55ec3ac13642b6b7e3`.
+The source archive is **47,251,711 bytes**, SHA-256
+`fe1f7e32f0c4b151f74b252ffda3f3561d56df96e3b17863f66c89b01b698f3d`.
+The build uses the custom `leegao/SPIRV-Tools` fork at
+`56db26cf58f2f1b1f70ce92fc733ae91e136094d` and its `DEPS` SPIRV-Headers pin
+`97e96f9e9defeb4bba3cfbd034dec516671dd7a3`, preserving the respective upstream
+licenses. This is not a build using unmodified Khronos shader passes. Exact input,
+dependency and output hashes are in the existing component receipt. The bundled
+wrapper identities recorded above remain unchanged.
+
+Both component experiments are AI-assisted local experiments. The reviewed wrapper
+files retain their upstream Mesa MIT license, and the custom `leegao/SPIRV-Tools`
+fork retains its Apache-2.0 license. Neither component is installed, bundled,
+promoted or submitted upstream. No proprietary Valve component or game file is
+modified; the source tree's contribution instructions and public distribution
+review apply before any later publication. Do not treat local test
+or build results as approval for redistribution, GPU conformance or game support.
+[Input/output hashes and limits](evidence/2026-10-21-graphics-source.json),
+[qualification](QUALIFICATION.md#graphics-component-source-refactors--21-october-2026).
 
 ## Local Android Turnip candidate — 16 October 2026
 

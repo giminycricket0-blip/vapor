@@ -87,6 +87,8 @@ jobs:
           --tests '*GameSettingsNavTest'
           --tests '*SteamConversationTest'
           --tests '*SteamChatServiceTest'
+          --tests '*EmuReadyTest'
+          --tests '*CommunityReportsUiTest'
           --tests '*ArtworkMemoryTest'
           --tests '*StoreArtworkCacheTest'
           --max-workers=4 --console=plain

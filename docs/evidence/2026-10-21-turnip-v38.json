@@ -1,0 +1,337 @@
+{
+  "date": "2026-10-21",
+  "scope": "Release archive, selected patch/build source and local graphics-launch code audit; no driver installation or game benchmark",
+  "base_commit": "07e3026fee8700e3424c30cc8e969b3eb6b7c646",
+  "vapor_state": "Pre-existing uncommitted EmuReady feature work retained; no app source changes made by this driver review",
+  "release_url": "https://github.com/StevenMXZ/Adreno-Tools-Drivers/releases/tag/v27.0.0-R1",
+  "release_name": "Turnip Gen8 V38 / Turnip v27.0.0-R1",
+  "published_at": "2026-10-19T08:50:28Z",
+  "source_tag_commit": "b3b32ad30e7d7b4bd897e678af064036eeb9df09",
+  "archives": [
+    {
+      "browser_download_url": "https://github.com/StevenMXZ/Adreno-Tools-Drivers/releases/download/v27.0.0-R1/Turnip_Gen8_V38.zip",
+      "digest": "sha256:642cb514534dc6b712ce0fb16aa76db566359b6c8542f0577f8ba6dd3aff8674",
+      "name": "Turnip_Gen8_V38.zip",
+      "size": 2765405,
+      "sha256_matches_github": true,
+      "metadata": {
+        "schemaVersion": 1,
+        "name": "Turnip Gen8 V38",
+        "description": "27.0.0-1 for a8xx",
+        "author": "StevenMXZ",
+        "vendor": "Mesa",
+        "driverVersion": "Vulkan 1.4.363",
+        "minApi": 28,
+        "libraryName": "libvulkan_freedreno.so"
+      },
+      "library_bytes": 13489168,
+      "library_sha256": "41da037364520e0fe1a2e2fb6d9aa7c0116110daa0ec0c94cbfa6c08a52fd013",
+      "load_segment_alignment": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "version_string": "Mesa 27.0.0-devel (git-f28352d117)",
+      "strong_libc_r_imports": [
+        "call_once@LIBC_R",
+        "mtx_lock@LIBC_R",
+        "mtx_unlock@LIBC_R"
+      ],
+      "needed_libraries": [
+        "libhardware.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libm.so",
+        "libz.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "mesh_ring_literal_present": false,
+      "kgsl_ib_cache_environment_literal_present": false
+    },
+    {
+      "browser_download_url": "https://github.com/StevenMXZ/Adreno-Tools-Drivers/releases/download/v27.0.0-R1/Turnip_Gen8_V38_Patched.zip",
+      "digest": "sha256:2bbb279a3da7680503a54a51a3051c7a4302c8fb2a089f8b183b4b5d6ba9ac17",
+      "name": "Turnip_Gen8_V38_Patched.zip",
+      "size": 2805553,
+      "sha256_matches_github": true,
+      "metadata": {
+        "schemaVersion": 1,
+        "name": "Turnip Gen8 V38-patched",
+        "description": "27.0.0-1 for a8xx",
+        "author": "StevenMXZ",
+        "vendor": "Mesa",
+        "driverVersion": "Vulkan 1.4.363",
+        "minApi": 28,
+        "libraryName": "libvulkan_freedreno.so"
+      },
+      "library_bytes": 13581752,
+      "library_sha256": "7b0b16fb0c8fb7854868e77eb8b284a1e95789e32c1fd8b545ed91165bf78189",
+      "load_segment_alignment": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "version_string": "Mesa 27.0.0-devel (git-f28352d117)",
+      "strong_libc_r_imports": [
+        "call_once@LIBC_R",
+        "mtx_lock@LIBC_R",
+        "mtx_unlock@LIBC_R"
+      ],
+      "needed_libraries": [
+        "libhardware.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libm.so",
+        "libz.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "mesh_ring_literal_present": true,
+      "kgsl_ib_cache_environment_literal_present": false
+    },
+    {
+      "browser_download_url": "https://github.com/StevenMXZ/Adreno-Tools-Drivers/releases/download/v27.0.0-R1/Turnip_v27.0.0-R1-Oneui.zip",
+      "digest": "sha256:e5b6ac03977cfbfb26608eefcbfc5117ed2189db1ddc1687aa98ea84a3429784",
+      "name": "Turnip_v27.0.0-R1-Oneui.zip",
+      "size": 2764954,
+      "sha256_matches_github": true,
+      "metadata": {
+        "schemaVersion": 1,
+        "name": "Turnip v27.0.0-R1",
+        "description": "27.0.0-1 for a6xx/a7xx",
+        "author": "StevenMXZ",
+        "vendor": "Mesa",
+        "driverVersion": "Vulkan 1.4.363",
+        "minApi": 28,
+        "libraryName": "libvulkan_freedreno.so"
+      },
+      "library_bytes": 13486464,
+      "library_sha256": "e2e870fba4b6d25e0398a98008e8bb5263e8790f2506392510adabfd3fc66e57",
+      "load_segment_alignment": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "version_string": "Mesa 27.0.0-devel (git-f28352d117)",
+      "strong_libc_r_imports": [
+        "call_once@LIBC_R",
+        "mtx_lock@LIBC_R",
+        "mtx_unlock@LIBC_R"
+      ],
+      "needed_libraries": [
+        "libhardware.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libm.so",
+        "libz.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "mesh_ring_literal_present": false,
+      "kgsl_ib_cache_environment_literal_present": false
+    },
+    {
+      "browser_download_url": "https://github.com/StevenMXZ/Adreno-Tools-Drivers/releases/download/v27.0.0-R1/Turnip_v27.0.0-R1.zip",
+      "digest": "sha256:07938ef843a73dd47ebb88ba9c2d3bca011667bd2b657e3b4a75d9ba8ed591a0",
+      "name": "Turnip_v27.0.0-R1.zip",
+      "size": 2765466,
+      "sha256_matches_github": true,
+      "metadata": {
+        "schemaVersion": 1,
+        "name": "Turnip v27.0.0-R1",
+        "description": "27.0.0-1 for a6xx/a7xx",
+        "author": "StevenMXZ",
+        "vendor": "Mesa",
+        "driverVersion": "Vulkan 1.4.363",
+        "minApi": 28,
+        "libraryName": "libvulkan_freedreno.so"
+      },
+      "library_bytes": 13487456,
+      "library_sha256": "65c95c05122a3c0528b8d5c9148633776a26eb9cde1c3440df1f9c66bcf6e6c8",
+      "load_segment_alignment": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "version_string": "Mesa 27.0.0-devel (git-f28352d117)",
+      "strong_libc_r_imports": [
+        "call_once@LIBC_R",
+        "mtx_lock@LIBC_R",
+        "mtx_unlock@LIBC_R"
+      ],
+      "needed_libraries": [
+        "libhardware.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libm.so",
+        "libz.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "mesh_ring_literal_present": false,
+      "kgsl_ib_cache_environment_literal_present": false
+    }
+  ],
+  "android_symbol_floor": {
+    "metadata_min_api": 28,
+    "aosp_map_url": "https://android.googlesource.com/platform/bionic/+/refs/heads/main/libc/libc.map.txt",
+    "aosp_map_sha256": "a3baec1c7204236538a5c30fbcf42663aaa35b190c65fc2c0affb4970b75f7fe",
+    "version_block": "LIBC_R { # introduced=30",
+    "ndk_stub_checks": [
+      {
+        "api": 28,
+        "call_once_export": false,
+        "mtx_lock_export": false
+      },
+      {
+        "api": 29,
+        "call_once_export": false,
+        "mtx_lock_export": false
+      },
+      {
+        "api": 30,
+        "call_once_export": true,
+        "mtx_lock_export": true
+      },
+      {
+        "api": 35,
+        "call_once_export": true,
+        "mtx_lock_export": true
+      }
+    ],
+    "inference": "These strong symbol dependencies require at least API 30 under the stock Android loader. API 30 sufficiency is not established; the library was not loaded on a device."
+  },
+  "local_source_files": [
+    {
+      "path": "app/src/main/runtime/system/AutomaticGraphics.kt",
+      "sha256": "ef9e600b5bfe69307ab1a92aabc276efb7df0adf5c438cd5db62020580fabdc2"
+    },
+    {
+      "path": "app/src/main/runtime/system/GraphicsDriverCatalog.kt",
+      "sha256": "c2635e89747e3dff4024c0939dba9bf71c9927e65b50f53a63bac897a52d8dc2"
+    },
+    {
+      "path": "app/src/main/runtime/content/DriverPackages.java",
+      "sha256": "85b0b7432822b5b981584b96aa3b9d54d8a52b621cf5eebd6284dc33ad518055"
+    },
+    {
+      "path": "app/src/main/runtime/container/Container.java",
+      "sha256": "e92105a7fbf424be0b8edce79d009ccf16407c79cc6daf64b31f880f63fba0cb"
+    },
+    {
+      "path": "app/src/main/runtime/display/XServerDisplayActivity.java",
+      "sha256": "c8c91c22bf82525c7a941b8de29bcc679682a1d3d6d1cc8ce93d73f469eff05c"
+    },
+    {
+      "path": "app/src/main/cpp/winlator/vulkan.c",
+      "sha256": "cd3e8557a0daea5443fc6a78fb9b5ecf3eb37834412f881439067c44fc980e30"
+    },
+    {
+      "path": "app/src/main/res/values/arrays.xml",
+      "sha256": "73eceb498de242b8ed806ba198fbc7443e24fc18e382a4c076d995590db2b666"
+    },
+    {
+      "path": "tools/turnip/README.md",
+      "sha256": "75b8f757f1ecd167263f0c641cd7f76c7391002a1c1204390676d643d2c80350"
+    }
+  ],
+  "selected_upstream_source_files": [
+    {
+      "file": ".github__workflows__build_turnip.yml",
+      "sha256": "cf0a4fe01858984daac50f5ad4b8b7aca4a0ade60743869a4e401dc7b787bf9d"
+    },
+    {
+      "file": "README.md",
+      "sha256": "d1ee04cc8832a48e70f7b3bada55cf71d1640fd9b5add28fb4db0cfea9761195"
+    },
+    {
+      "file": "build_turnip.sh",
+      "sha256": "e6b1e3ad370f217a0a7d696e2459d1e86a55484c99e2f189cbf297534b51eb9d"
+    },
+    {
+      "file": "patches__force_sysmem_no_autotuner.patch",
+      "sha256": "e79775ebf0bd396fa685d45d6903233cf23e61e6b74671dbdd994aa2a18191ec"
+    },
+    {
+      "file": "patches__patchs1__0001-tu-Emulate-VK_EXT_mesh_shader-with-compute.patch",
+      "sha256": "32e8adb5b86de06e385f44c8aa7d2f402fe8147107708fee5778050b1783b36f"
+    },
+    {
+      "file": "patches__patchs1__0002-tu-ir3-Support-a-required-subgroup-size-of-half-a-wa.patch",
+      "sha256": "926a9796a5ab52eab21c0b7a537223cad96146eec58e74c16fed9acf9c06fae2"
+    },
+    {
+      "file": "patches__patchs1__0005-tu-kgsl-Fetch-A8XX-command-streams-through-a-virtual.patch",
+      "sha256": "887c2888eb75b3ac922fed258b93deb34407b180b73858ec41251bd95c94d756"
+    },
+    {
+      "file": "patches__patchs1__0006-tu-kgsl-Cache-retired-A8XX-IB-storage.patch",
+      "sha256": "06c80913e38068bce6e73a43de3f151017cb955508ddd5d30a15ec8c3e8bef60"
+    },
+    {
+      "file": "patches__patchs1__README.md",
+      "sha256": "fccaaac802593c1bacafaf4cd9d7d045624cbe52770e6b96028186bad59c2743"
+    },
+    {
+      "file": "patches__patchs2__a840v2.py",
+      "sha256": "9a5f0e32e23ae2c8434e6057fbb2324b0f7986e884c28ce337afc3457b92b612"
+    },
+    {
+      "file": "patches__patchs2__common__apply_common.sh",
+      "sha256": "9de65bdfc034512494d4c9e19b2a9c5e14ce86ac7571213753bbf957b7151b86"
+    }
+  ],
+  "findings": [
+    {
+      "owner": "AutomaticGraphics.prepare",
+      "observed": "Candidate driver pool is the configured driver plus System, rather than every installed driver. Payload hashes and capability identities already invalidate remembered routes.",
+      "proposed": "After qualification, include a small known-good installed driver set in the existing automatic route planner; retain explicit choices and four-attempt bound."
+    },
+    {
+      "owner": "Container.DEFAULT_ENV_VARS",
+      "observed": "TU_DEBUG=noconform,sysmem is the container default.",
+      "proposed": "Measure normal Turnip mode against forced sysmem per supported GPU/game; retain required GPU workarounds."
+    },
+    {
+      "owner": "vulkan.c probeCapabilitiesNative",
+      "observed": "The feature probe creates an instance and inspects a physical device; it does not create a logical device, submit work or present via the final Wine/wrapper/translator path.",
+      "proposed": "Qualify the effective driver, wrapper and translator together; treat current feature checks as a minimum filter."
+    },
+    {
+      "owner": "DriverPackages.install",
+      "observed": "The two A6xx/A7xx archives declare the same meta.name; install keys the directory by name and rejects an existing directory. minApi is trusted but understated by these archives.",
+      "proposed": "Preserve distinct variant identity and explain loader incompatibility; retain existing archive bounds and Android/Linux discrimination."
+    },
+    {
+      "owner": "Upstream patchs1 source",
+      "observed": "Mesh shaders are emulated via compute and a device-wide ring; those render passes use sysmem. A separate retired-IB cache patch caps idle storage at 256 MiB, but its literal is absent from the released libraries.",
+      "proposed": "Do not assume every recipe patch shipped or that feature emulation increases FPS. Rebuild from pinned inputs before making source-to-binary or memory claims."
+    }
+  ],
+  "qualification": {
+    "archive_hash_checks": "4/4 match GitHub asset digests",
+    "elf_load_segment_alignment": "4/4 libraries have all LOAD segments aligned at 0x4000",
+    "device_loading": "not tested",
+    "gameplay_performance": "not tested",
+    "vulkan_feature_conformance": "not tested",
+    "exact_source_to_release_reproduction": "not established",
+    "onimusha_fix": "not established",
+    "android_16kb_runtime": "not tested; ELF segment alignment is static evidence only",
+    "app_runtime_defaults_changed": false,
+    "apk_rebuilt_for_this_review": false
+  },
+  "resolved_mesa_base": {
+    "commit": "f28352d1179a4a85b4be286a883747bae2d3786b",
+    "committed_date": "2026-10-19T07:40:58.000+00:00",
+    "resolution": "GitLab Mesa commit API resolved embedded binary Git prefix. Applied downstream patches and exact release reproduction remain unestablished."
+  }
+}

@@ -1,12 +1,34 @@
 # Vapor: UI and app work first
 
-Updated 20 October 2026. Home and the Library carousel now share a native cover shelf,
+Updated 21 October 2026. Home and the Library carousel now share a native cover shelf,
 with selection and game actions in place. Store search suppresses repeated spelling prompts
 and preserves the current results during connection recovery. Branding uses the same artwork in the standard
 APK and native shell. The preceding passes improve page navigation, Home,
 Downloads and Quick Access with consistent spacing and reachable large-text actions. Steam remains
 the main experience; optional storefronts remain in Settings → More stores. Gameplay reports and
 account qualification remain separately recorded in [QUALIFICATION.md](QUALIFICATION.md).
+
+## Community reports — 21 October 2026
+
+Steam Library game pages and Steam catalog details now offer **Community reports**.
+The action opens a native, scrollable EmuReady modal. It shows report device/SoC,
+emulator, reported rating, date and vote counts. **View reported settings** loads
+only the values recorded in that report; it never applies them. **Read original
+report** and **Browse on EmuReady** open an external browser, keeping the external
+service separate from Steam's authenticated web panel.
+
+No request runs while opening the game page. Closing cancels in-flight work; a
+page-local snapshot is reused on reopening, and leaving the game page discards it.
+Failures offer explicit retry, while missing/ambiguous Windows entries have their
+own message. Console ports are excluded, title-only matches are labeled, and
+external ratings do not become Vapor compatibility badges.
+
+The dialog retains a reachable close action and source button while reports scroll.
+Narrow/large-text and short-landscape layouts have Compose coverage; Android
+instrumentation covers controller B dismissal as well as touch actions. Physical
+controllers and TalkBack remain separate acceptance checks.
+
+See [qualification and screenshots](QUALIFICATION.md#emuready-community-reports--21-october-2026).
 
 ## Parent-runner fixture capture — 20 October 2026
 

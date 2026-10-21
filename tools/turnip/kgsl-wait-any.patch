@@ -1,0 +1,122 @@
+--- a/src/freedreno/vulkan/tu_knl_kgsl.cc
++++ b/src/freedreno/vulkan/tu_knl_kgsl.cc
+@@ -20,7 +20,7 @@
+ #include "util/os_file.h"
+ #include "util/timespec.h"
+ #include "util/u_debug.h"
+-#include "util/u_vector.h"
++#include "util/stack_array.h"
+ #include "vk_util.h"
+ 
+ #include "tu_cmd_buffer.h"
+@@ -991,27 +991,22 @@
+    else if (count == 1)
+       return kgsl_syncobj_wait(device, syncobjs[0], abs_timeout_ns);
+ 
+-   uint32_t num_fds = 0;
++   uint32_t num_fds = 0, num_ts = 0;
+    struct tu_queue *queue = NULL;
+    struct kgsl_syncobj *sync = NULL;
+-
+-   /* Simple case, we already have a signal one */
+-   kgsl_syncobj_foreach_state(syncobjs, KGSL_SYNCOBJ_STATE_SIGNALED)
+-      return VK_SUCCESS;
+-
+-   kgsl_syncobj_foreach_state(syncobjs, KGSL_SYNCOBJ_STATE_FD)
+-      num_fds++;
+-
+-   /* If we have TS from different queues we cannot compare them and would
+-    * have to convert them into FDs
+-    */
+    bool convert_ts_to_fd = false;
+-   kgsl_syncobj_foreach_state(syncobjs, KGSL_SYNCOBJ_STATE_TS) {
+-      if (queue != NULL && sync->queue != queue) {
+-         convert_ts_to_fd = true;
+-         break;
+-      }
+-      queue = sync->queue;
++
++   for (uint32_t i = 0; i < count && (sync = syncobjs[i]); i++) {
++      if (sync->state == KGSL_SYNCOBJ_STATE_SIGNALED)
++         return VK_SUCCESS;
++      if (sync->state == KGSL_SYNCOBJ_STATE_FD)
++         num_fds++;
++      if (sync->state == KGSL_SYNCOBJ_STATE_TS) {
++         num_ts++;
++         if (queue != NULL && sync->queue != queue)
++            convert_ts_to_fd = true;
++         queue = sync->queue;
++      }
+    }
+ 
+    /* If we have no FD nor TS syncobjs then we can return immediately */
+@@ -1020,17 +1015,20 @@
+ 
+    VkResult result = VK_TIMEOUT;
+ 
+-   struct u_vector poll_fds = { 0 };
++   const uint32_t poll_capacity = num_fds +
++      (convert_ts_to_fd ? num_ts : (num_fds && queue ? 1 : 0));
++   STACK_ARRAY(struct pollfd, poll_fds, poll_capacity);
++   if (!poll_fds)
++      return vk_error(device, VK_ERROR_OUT_OF_HOST_MEMORY);
++
++   uint32_t num_poll_fds = 0;
+    uint32_t lowest_timestamp = 0;
+-
+-   if (convert_ts_to_fd || num_fds > 0)
+-      u_vector_init(&poll_fds, 4, sizeof(struct pollfd));
+ 
+    uint32_t owned_fds = 0;
+ 
+    if (convert_ts_to_fd) {
+       kgsl_syncobj_foreach_state(syncobjs, KGSL_SYNCOBJ_STATE_TS) {
+-         struct pollfd *poll_fd = static_cast<struct pollfd *>(u_vector_add(&poll_fds));
++         struct pollfd *poll_fd = &poll_fds[num_poll_fds++];
+          poll_fd->fd = timestamp_to_fd(sync->queue, sync->timestamp);
+          if (poll_fd->fd < 0) {
+             result = kgsl_sync_error(device, "timestamp fence creation", errno);
+@@ -1050,7 +1048,7 @@
+       }
+ 
+       if (num_fds && queue) {
+-         struct pollfd *poll_fd = static_cast<struct pollfd *>(u_vector_add(&poll_fds));
++         struct pollfd *poll_fd = &poll_fds[num_poll_fds++];
+          poll_fd->fd = timestamp_to_fd(queue, lowest_timestamp);
+          if (poll_fd->fd < 0) {
+             result = kgsl_sync_error(device, "timestamp fence creation", errno);
+@@ -1063,19 +1061,19 @@
+ 
+    if (num_fds) {
+       kgsl_syncobj_foreach_state(syncobjs, KGSL_SYNCOBJ_STATE_FD) {
+-         struct pollfd *poll_fd = static_cast<struct pollfd *>(u_vector_add(&poll_fds));
++         struct pollfd *poll_fd = &poll_fds[num_poll_fds++];
+          poll_fd->fd = sync->fd;
+          poll_fd->events = POLLIN;
+       }
+    }
+ 
+-   if (u_vector_length(&poll_fds) == 0) {
++   if (num_poll_fds == 0) {
+       result = wait_timestamp_safe(device, queue->msm_queue_id, lowest_timestamp, MIN2(abs_timeout_ns, INT64_MAX));
+    } else {
+       int ret, i;
+ 
+-      struct pollfd *fds = static_cast<struct pollfd *>(poll_fds.data);
+-      uint32_t fds_count = u_vector_length(&poll_fds);
++      struct pollfd *fds = poll_fds;
++      uint32_t fds_count = num_poll_fds;
+       do {
+          ret = poll(fds, fds_count, get_relative_ms(abs_timeout_ns));
+          if (ret > 0) {
+@@ -1106,8 +1104,8 @@
+ 
+ finish:
+    for (uint32_t i = 0; i < owned_fds; i++)
+-      close(((struct pollfd *) poll_fds.data)[i].fd);
+-   u_vector_finish(&poll_fds);
++      close(poll_fds[i].fd);
++   STACK_ARRAY_FINISH(poll_fds);
+    return result;
+ }
+ 

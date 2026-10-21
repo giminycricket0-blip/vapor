@@ -1,0 +1,814 @@
+{
+  "date": "2026-10-21",
+  "scope": "Direct component source refactoring: Turnip KGSL wait-any, Vulkan-wrapper image ownership and disabled trace gating. Complete Android component builds; no app routing/default changes.",
+  "base_commit": "07e3026fee8700e3424c30cc8e969b3eb6b7c646",
+  "turnip": {
+    "source_url": "https://gitlab.freedesktop.org/mesa/mesa/-/blob/f28352d1179a4a85b4be286a883747bae2d3786b/src/freedreno/vulkan/tu_knl_kgsl.cc",
+    "source_commit": "f28352d1179a4a85b4be286a883747bae2d3786b",
+    "archive_bytes": 134338825,
+    "archive_sha256": "0e1068773f16d89f6836969d4ff1b9188769fbb8cf1454b6c6a88db648e150f8",
+    "upstream_main_wait_any_matches_reviewed_base": true,
+    "upstream_main_sample": {
+      "commit": "c90ff433291a5c3ff5cea9913bbebeef9cd4e885",
+      "sampled": "2026-10-21",
+      "file": "src/freedreno/vulkan/tu_knl_kgsl.cc",
+      "file_sha256": "fa10fcfbacda442ece75e487ee431431574caab80690ad8def2a080e514e8455",
+      "matches_reviewed_base_file": true
+    },
+    "patch": "tools/turnip/kgsl-wait-any.patch",
+    "patch_sha256": "5c19a8fb151aabfcfface3598753ee7d439301df2c3715f6fccb4d693288bf8f",
+    "checks": [
+      {
+        "phase": "before",
+        "source_sha256": "fa10fcfbacda442ece75e487ee431431574caab80690ad8def2a080e514e8455",
+        "exit_code": 0,
+        "output": "METRIC fds=2 allocations=1 copied_bytes=0\nMETRIC fds=8 allocations=2 copied_bytes=32\nMETRIC fds=9 allocations=3 copied_bytes=96\nMETRIC fds=32 allocations=4 copied_bytes=224\nMETRIC fds=64 allocations=5 copied_bytes=480\ncases=30 failures=0\n",
+        "sanitizer_output": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wait-any-tests/before.cpp:191:39: runtime error: division by zero\nSUMMARY: UndefinedBehaviorSanitizer: undefined-behavior /Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wait-any-tests/before.cpp:191:39 \n",
+        "oom_exit_code": -6,
+        "oom_output": "",
+        "oom_detected_invalid_access": true
+      },
+      {
+        "phase": "after",
+        "source_sha256": "a2337ea50c06ec509ce0893f2dd9e09b2ce5e5ad2dd766a860030b0312ff12b9",
+        "exit_code": 0,
+        "output": "METRIC fds=2 allocations=0 copied_bytes=0\nMETRIC fds=8 allocations=0 copied_bytes=0\nMETRIC fds=9 allocations=1 copied_bytes=0\nMETRIC fds=32 allocations=1 copied_bytes=0\nMETRIC fds=64 allocations=1 copied_bytes=0\ncases=37 failures=0\n",
+        "sanitizer_output": "",
+        "oom_exit_code": 0,
+        "oom_output": "oom_result=-1 live=0\n",
+        "oom_detected_invalid_access": false
+      }
+    ],
+    "baseline_and_candidate_build_succeeded": true,
+    "outputs": {
+      "baseline.so": {
+        "bytes": 15635376,
+        "sha256": "57ba350f0f740adedf6cf721e690cf169c7bf53f5c43c1e141ee006f551ce9ae",
+        "load_alignments": [
+          "0x4000",
+          "0x4000",
+          "0x4000",
+          "0x4000"
+        ],
+        "needed": [
+          "libhardware.so",
+          "liblog.so",
+          "libnativewindow.so",
+          "libsync.so",
+          "libm.so",
+          "libz.so",
+          "libdl.so",
+          "libc.so"
+        ]
+      },
+      "candidate.so": {
+        "bytes": 15635016,
+        "sha256": "fe72244305aef643e4ff2be6aade3d1f77373b561bb3f0f1f26ad94e04549ece",
+        "load_alignments": [
+          "0x4000",
+          "0x4000",
+          "0x4000",
+          "0x4000"
+        ],
+        "needed": [
+          "libhardware.so",
+          "liblog.so",
+          "libnativewindow.so",
+          "libsync.so",
+          "libm.so",
+          "libz.so",
+          "libdl.so",
+          "libc.so"
+        ]
+      }
+    },
+    "same_global_exported_symbols": true,
+    "global_export_count": 1,
+    "allocation_observations": [
+      {
+        "input_syncs": 2,
+        "baseline_allocations": 1,
+        "candidate_allocations": 0,
+        "baseline_growth_copy_bytes": 0,
+        "candidate_growth_copy_bytes": 0
+      },
+      {
+        "input_syncs": 8,
+        "baseline_allocations": 2,
+        "candidate_allocations": 0,
+        "baseline_growth_copy_bytes": 32,
+        "candidate_growth_copy_bytes": 0
+      },
+      {
+        "input_syncs": 9,
+        "baseline_allocations": 3,
+        "candidate_allocations": 1,
+        "baseline_growth_copy_bytes": 96,
+        "candidate_growth_copy_bytes": 0
+      },
+      {
+        "input_syncs": 32,
+        "baseline_allocations": 4,
+        "candidate_allocations": 1,
+        "baseline_growth_copy_bytes": 224,
+        "candidate_growth_copy_bytes": 0
+      },
+      {
+        "input_syncs": 64,
+        "baseline_allocations": 5,
+        "candidate_allocations": 1,
+        "baseline_growth_copy_bytes": 480,
+        "candidate_growth_copy_bytes": 0
+      }
+    ],
+    "faults_reproduced": [
+      "Division by zero in u_vector_length for the timestamp-only same-queue route",
+      "Invalid memory access after scratch allocation failure"
+    ],
+    "candidate_archive": {
+      "path": "Vapor-Turnip-f28352d1-wait-any-experimental.zip",
+      "bytes": 2839098,
+      "sha256": "e10e5743d628b6c4d43d203dc536bf45b9cc81f10327158d69c7ce5a5cd9b5ab",
+      "library_sha256": "d407b11f5c9c51802ebad895699a4ad54b9c8ded95d46243e77a20df1f47c4f4",
+      "min_api": 34,
+      "activation": "manual experimental import only; not installed or bundled",
+      "distribution": "local build artifact; release/provenance review remains separate"
+    },
+    "build_log_sha256": {
+      "configure-complete.log": "af8c50b57384eaf243ae45369bfa1a706b475d2ff676931bb08a1944c6f92270",
+      "build-baseline.log": "14487138b94761f1bc08d67452897a3c7de033e760ab0bf7157171d77f73a12f",
+      "build-candidate.log": "2015f55ad07db11bb20d8e757151c145403429f15de9cafc1deda5b522fc158f",
+      "android-patch.log": "cce7e15cf69507c17af98dce4fd9c4f9694329d3f31b2b56fbcf147430b68150",
+      "refactor-patch.log": "f37e1c0475b0988a830d738f6dc453a5749199a12c3a676ebd36dd3b0480a47a"
+    },
+    "classification": "One pass; capacity uses actual polled descriptors, including same-queue timestamp collapsing and unresolved inputs.",
+    "mixed_wait_observations": [
+      {
+        "input_syncs": 64,
+        "case": "63 same-queue timestamps plus one FD",
+        "actual_polled_fds": 2,
+        "baseline_allocations": 1,
+        "candidate_allocations": 0
+      },
+      {
+        "input_syncs": 64,
+        "case": "62 unresolved syncs plus two FDs",
+        "actual_polled_fds": 2,
+        "baseline_allocations": 1,
+        "candidate_allocations": 0
+      }
+    ],
+    "exported_symbols": [
+      {
+        "name": "HMI",
+        "type": "OBJECT",
+        "binding": "GLOBAL",
+        "visibility": "DEFAULT"
+      }
+    ],
+    "previous_timestamp_regression": [
+      {
+        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/kgsl-before.cc",
+        "phase": "before",
+        "exit_code": 1,
+        "output": "FAIL zero-pending-is-poll waits=1 polls=0 forbidden_zero_waits=1\nFAIL zero-complete-is-poll waits=1 polls=0 forbidden_zero_waits=1\nFAIL timestamp-wrap-complete waits=1 polls=0 forbidden_zero_waits=1\nFAIL timestamp-wrap-pending waits=1 polls=0 forbidden_zero_waits=1\nFAIL expired-deadline-is-poll waits=1 polls=0 forbidden_zero_waits=1\nFAIL interrupted-deadline-pending waits=1 polls=0 forbidden_zero_waits=0\nFAIL retry-deadline-complete waits=1 polls=0 forbidden_zero_waits=0\nFAIL poll-error-not-success waits=1 polls=0 forbidden_zero_waits=1\ncases=14 failures=8\n"
+      },
+      {
+        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/after.cc",
+        "phase": "after",
+        "exit_code": 0,
+        "output": "cases=14 failures=0\n"
+      }
+    ]
+  },
+  "wrapper": {
+    "source_repository": "https://github.com/leegao/bionic-vulkan-wrapper",
+    "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+    "source_path": "src/vulkan/wrapper/wrapper_image.c",
+    "patch": "tools/vulkan-wrapper/image-create.patch",
+    "patch_sha256": "f085ea3cfbdf3a5fd8463836564c495e310fc5ecb5cdd064bbbe79af645737bd",
+    "checks": [
+      {
+        "phase": "before",
+        "source_sha256": "558073224a2da816adb76888b7c21f48ed46df0e2aed35317c2604a050f69c74",
+        "exit_code": 1,
+        "output": "METRIC ordinary temporary_allocations=2 mask_reads=1\nFAIL caller-format-list-preserved\nFAIL caller-chain-preserved\nFAIL empty-format-list-preserved\ncases=22 failures=3\n",
+        "sanitizer_output": "../turnip-refactor-qualification/wrapper-build/image-tests/before.c:111:28: runtime error: shift exponent 4294967202 is too large for 32-bit type 'int'\nSUMMARY: UndefinedBehaviorSanitizer: undefined-behavior ../turnip-refactor-qualification/wrapper-build/image-tests/before.c:111:28 \n",
+        "readonly_exit_code": -6,
+        "readonly_output": "",
+        "readonly_detected_invalid_write": true
+      },
+      {
+        "phase": "after",
+        "source_sha256": "db8e393fac9f77ae2b5b06c7df64e5efaf804bd170df7e99aef257dc3765fda8",
+        "exit_code": 0,
+        "output": "METRIC ordinary temporary_allocations=0 mask_reads=0\ncases=26 failures=0\n",
+        "sanitizer_output": "",
+        "readonly_exit_code": 0,
+        "readonly_output": "readonly-format-list=preserved\n",
+        "readonly_detected_invalid_write": false
+      }
+    ],
+    "source_patch_replay": "Both patches apply without fuzz; final image/generator/Meson bytes match the compiled source.",
+    "observations": [
+      "Ordinary image scratch allocations 2 to 0 in the host fixture; real object allocation is not eliminated.",
+      "Original writes to caller-owned BC format lists; protected read-only input crashes. Candidate preserves caller data.",
+      "An unknown-size chain prefix needing rewriting returns VK_ERROR_FORMAT_NOT_SUPPORTED; unknown tails and untouched chains pass through.",
+      "Three generated calls with 64-buffer/32-submit inputs: tracing off changes log-file lookups 175 to 0 and printer calls 34 to 0.",
+      "Explicit tracing and Vulkan results are preserved in seven generated-call cases.",
+      "Meson omitted the imported local vk_entrypoints.py; the patched dependency regenerates the actual compiled header."
+    ],
+    "qualification_limits": [
+      "Full reproduction of the packaged release binary and source identities of the other wrapper variants",
+      "Android native loading and complete dependency availability in the production runtime",
+      "BC decoding, reference-image correctness and effective GPU execution",
+      "Staging-buffer lifetime and concurrent command submission",
+      "Game frame-time, CPU time, resident RAM, power or download-performance benefit",
+      "16 KB kernel execution",
+      "Distribution or app asset/default promotion",
+      "Host source checks mock driver/format/registry-size/bookkeeping boundaries; generated tracing checks stub Vulkan execution and structure printers."
+    ],
+    "trace_patch": "tools/vulkan-wrapper/trace-gate.patch",
+    "trace_patch_sha256": "9cd2bd0e5a693dcc2278334bac51d92e3b93f14b226158765078d868e6ae6273",
+    "trace_checks": [
+      {
+        "phase": "before",
+        "generator_sha256": "8cea499cba3ed510ab1f8861275a84c58f3ec75ca27e74b18858c601be2b2dd0",
+        "log_macros_sha256": "1663f991a04101fcc50a424051aee69dc534914ed2a4ebcca552d3b9924eff73",
+        "generated_source_sha256": "795e62996f8185c41c67606e16f03741044b064e29fe528fab1af45b7a51d030",
+        "exit_code": 1,
+        "output": "METRIC off getters=175 printers=34 log_bytes=0 driver_calls=3\nMETRIC names-only getters=178 printers=34 log_bytes=7033 driver_calls=3\nMETRIC trace-disabled getters=191 printers=34 log_bytes=7033 driver_calls=3\nMETRIC trace-enabled getters=191 printers=34 log_bytes=7205 driver_calls=3\nMETRIC missing-output getters=186 printers=34 log_bytes=0 driver_calls=3\nMETRIC driver-error-traced getters=191 printers=34 log_bytes=7215 driver_calls=3\nMETRIC driver-error-off getters=175 printers=34 log_bytes=0 driver_calls=3\ncases=7 failures=5\n",
+        "sanitizer_output": ""
+      },
+      {
+        "phase": "after",
+        "generator_sha256": "f6b99cde9951a84a82a720eb03a0935983db8de847e63882525f12b244fa33b3",
+        "log_macros_sha256": "1663f991a04101fcc50a424051aee69dc534914ed2a4ebcca552d3b9924eff73",
+        "generated_source_sha256": "8422604359a7fdda9e91ce8ba6ad3b461d5cc16c28958cc6646f51379050c1f7",
+        "exit_code": 0,
+        "output": "METRIC off getters=0 printers=0 log_bytes=0 driver_calls=3\nMETRIC names-only getters=0 printers=0 log_bytes=0 driver_calls=3\nMETRIC trace-disabled getters=3 printers=0 log_bytes=0 driver_calls=3\nMETRIC trace-enabled getters=191 printers=34 log_bytes=7205 driver_calls=3\nMETRIC missing-output getters=3 printers=0 log_bytes=0 driver_calls=3\nMETRIC driver-error-traced getters=191 printers=34 log_bytes=7215 driver_calls=3\nMETRIC driver-error-off getters=0 printers=0 log_bytes=0 driver_calls=3\ncases=7 failures=0\n",
+        "sanitizer_output": ""
+      }
+    ],
+    "source_archive": {
+      "url": "https://codeload.github.com/leegao/bionic-vulkan-wrapper/tar.gz/3abf48704a4d9303967a0811c0dc8ff8567d613b",
+      "commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+      "bytes": 47251711,
+      "sha256": "fe1f7e32f0c4b151f74b252ffda3f3561d56df96e3b17863f66c89b01b698f3d",
+      "omitted_absolute_links": [
+        {
+          "path": "bionic-vulkan-wrapper-3abf48704a4d9303967a0811c0dc8ff8567d613b/src/freedreno/vulkan/vulkan",
+          "target": "/home/leegao/meh/termux-packages/mesa_bionic/src/freedreno/vulkan"
+        },
+        {
+          "path": "bionic-vulkan-wrapper-3abf48704a4d9303967a0811c0dc8ff8567d613b/src/vulkan/vulkan",
+          "target": "/home/leegao/meh/termux-packages/mesa_bionic/src/vulkan"
+        },
+        {
+          "path": "bionic-vulkan-wrapper-3abf48704a4d9303967a0811c0dc8ff8567d613b/src/vulkan/wrapper/wrapper",
+          "target": "/home/leegao/meh/termux-packages/mesa_bionic/src/vulkan/wrapper"
+        }
+      ]
+    },
+    "packaged_variants": [
+      {
+        "variant": "wrapper",
+        "archive_sha256": "718b6b22647d1246da5cd524c4b1c41933b44a71cbe41e5ab19f43ad22850ce9",
+        "library_bytes": 19146576,
+        "library_sha256": "ff43589bd34c236a048f93f0beb0af0ff0cbb5c8a0ecfe4227bacd5db7d2ba7a"
+      },
+      {
+        "variant": "wrapper-leegao",
+        "archive_sha256": "3eabf6fc53f3b738eb80e7f80e3b28f761a8cebaa62b7e6c1f05e0e1228a969d",
+        "library_bytes": 8709528,
+        "library_sha256": "520ec0ba1b5a404b12282d18f863761a44703012be6e2421b0f5adcb9d47be11"
+      },
+      {
+        "variant": "wrapper-gamenative",
+        "archive_sha256": "e38683ac1d382dc875d97fcae763f56d411655e56c1d1f43c743f57a58b605bc",
+        "library_bytes": 2705856,
+        "library_sha256": "25e8010444dca69a448fa8bbd145b650e8283e329228fc7b7d1b70b79e63d1f3"
+      }
+    ],
+    "default_variant": "wrapper",
+    "release_mapping": {
+      "tag": "v0.0.5r5",
+      "tag_commit": "c8baafbd4f4835ca103acb55ec3ac13642b6b7e3",
+      "published_at": "2025-08-22T11:16:05Z",
+      "binary_sha256": "520ec0ba1b5a404b12282d18f863761a44703012be6e2421b0f5adcb9d47be11",
+      "same_reviewed_source_files": true,
+      "reviewed_files": [
+        "wrapper_image.c",
+        "vk_entrypoints.py",
+        "vk_wrapper_trampolines_gen.py",
+        "vk_unwrapper_gen.py"
+      ],
+      "complete_released_binary_reproduced": false,
+      "default_and_gamenative_source_identity_established": false,
+      "reviewed_file_sha256": {
+        "wrapper_image.c": "558073224a2da816adb76888b7c21f48ed46df0e2aed35317c2604a050f69c74",
+        "vk_entrypoints.py": "8cea499cba3ed510ab1f8861275a84c58f3ec75ca27e74b18858c601be2b2dd0",
+        "vk_wrapper_trampolines_gen.py": "9cccd5e486fd773694f677dadbae31cd35d594f9aca092baa944abf68ebd30b7",
+        "vk_unwrapper_gen.py": "8ca3db9d9eb5a88c2f9fc2d3348e42e8e32e20060dc786864d9991c8f2d1ac31"
+      }
+    },
+    "full_android_baseline_and_candidate_build_succeeded": true,
+    "binary_checks": {
+      "outputs": {
+        "baseline": {
+          "bytes": 131379648,
+          "sha256": "73598d7083e195bac06322b76cb760fa90e5be363d93bca946c4e89921e5405b",
+          "load_alignments": [
+            "0x4000",
+            "0x4000",
+            "0x4000",
+            "0x4000"
+          ],
+          "needed": [
+            "libadrenotools.so",
+            "libandroid-shmem.so",
+            "libc++_shared.so",
+            "libcutils.so",
+            "liblog.so",
+            "libnativewindow.so",
+            "libsync.so",
+            "libz.so.1",
+            "libm.so",
+            "libzstd.so.1",
+            "libxcb.so",
+            "libX11-xcb.so",
+            "libxcb-dri3.so",
+            "libxcb-present.so",
+            "libxcb-sync.so",
+            "libxcb-randr.so",
+            "libxcb-shm.so",
+            "libdrm.so",
+            "libdl.so",
+            "libc.so"
+          ],
+          "soname": [
+            "libvulkan_wrapper.so"
+          ],
+          "build_tree_runpath_present": true,
+          "export_count": 4073,
+          "exports_sha256": "52ed34a866cdc46efdb2fe6755f3423e098712cc770c4ad3cfc1bf7dcc15400f",
+          "strong_undefined_count": 434,
+          "strong_undefined_sha256": "b50658725190e297b8cad0f9e7b8eb0c89c99070113fa86e05c2a9de82a8af39",
+          "stripped": {
+            "bytes": 10698760,
+            "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c"
+          }
+        },
+        "candidate": {
+          "bytes": 131380432,
+          "sha256": "b5b29de3cfc9b666b601968703af1d45ea122af3c1813e09525a73908f7423df",
+          "load_alignments": [
+            "0x4000",
+            "0x4000",
+            "0x4000",
+            "0x4000"
+          ],
+          "needed": [
+            "libadrenotools.so",
+            "libandroid-shmem.so",
+            "libc++_shared.so",
+            "libcutils.so",
+            "liblog.so",
+            "libnativewindow.so",
+            "libsync.so",
+            "libz.so.1",
+            "libm.so",
+            "libzstd.so.1",
+            "libxcb.so",
+            "libX11-xcb.so",
+            "libxcb-dri3.so",
+            "libxcb-present.so",
+            "libxcb-sync.so",
+            "libxcb-randr.so",
+            "libxcb-shm.so",
+            "libdrm.so",
+            "libdl.so",
+            "libc.so"
+          ],
+          "soname": [
+            "libvulkan_wrapper.so"
+          ],
+          "build_tree_runpath_present": true,
+          "export_count": 4073,
+          "exports_sha256": "52ed34a866cdc46efdb2fe6755f3423e098712cc770c4ad3cfc1bf7dcc15400f",
+          "strong_undefined_count": 434,
+          "strong_undefined_sha256": "b50658725190e297b8cad0f9e7b8eb0c89c99070113fa86e05c2a9de82a8af39",
+          "stripped": {
+            "bytes": 10699464,
+            "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506"
+          }
+        }
+      },
+      "same_exports": true,
+      "same_strong_undefined_symbols": true,
+      "same_needed_libraries": true,
+      "same_needed_library_names_as_packaged_leegao": true
+    },
+    "configuration": {
+      "buildtype": "release",
+      "platforms": [
+        "x11"
+      ],
+      "vulkan-drivers": [
+        "wrapper"
+      ],
+      "gallium-drivers": [],
+      "c_args": [
+        "-D__TERMUX__",
+        "-include",
+        "fcntl.h"
+      ],
+      "cpp_args": [
+        "-D__TERMUX__",
+        "-include",
+        "fcntl.h",
+        "-Wno-c++11-narrowing"
+      ],
+      "c_link_args": [
+        "-Wl,-z,max-page-size=16384",
+        "-Wl,-z,common-page-size=16384",
+        "-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
+        "-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks",
+        "-Wl,-rpath-link=/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
+        "-ladrenotools",
+        "-landroid-shmem"
+      ],
+      "cpp_link_args": [
+        "-Wl,-z,max-page-size=16384",
+        "-Wl,-z,common-page-size=16384",
+        "-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
+        "-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks",
+        "-Wl,-rpath-link=/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
+        "-ladrenotools",
+        "-landroid-shmem",
+        "-lc++_shared"
+      ],
+      "android-stub": true,
+      "platform-sdk-version": 34,
+      "llvm": "disabled",
+      "opengl": false,
+      "glx": "disabled",
+      "egl": "disabled",
+      "gbm": "disabled",
+      "xmlconfig": "disabled"
+    },
+    "build_dependencies": {
+      "spirv_tools": {
+        "repository": "leegao/SPIRV-Tools",
+        "commit": "56db26cf58f2f1b1f70ce92fc733ae91e136094d",
+        "date": "2026-10-18T08:58:17Z",
+        "url": "https://codeload.github.com/leegao/SPIRV-Tools/tar.gz/56db26cf58f2f1b1f70ce92fc733ae91e136094d",
+        "bytes": 4292618,
+        "sha256": "bdbd8b14bc6d5de94e60724dfdb0b90ae92c18d28e8c71c483f6584a85b9628d"
+      },
+      "spirv_headers": {
+        "url": "https://codeload.github.com/KhronosGroup/SPIRV-Headers/tar.gz/97e96f9e9defeb4bba3cfbd034dec516671dd7a3",
+        "commit": "97e96f9e9defeb4bba3cfbd034dec516671dd7a3",
+        "bytes": 543065,
+        "sha256": "288835eee302fc60e6833cd04df22515bd3abaab7f209f1fbd9c287663075827"
+      },
+      "termux_sysroot_archive": {
+        "url": "https://github.com/WinNative-Emu/proton-wine/releases/download/Assets/termuxfs-aarch64.tar",
+        "bytes": 1190645760,
+        "sha256": "b088df560c9395d7c2cc797d208d8a727d1f06fc70e5ea34eef6118ef64a7e42",
+        "origin": "retained and previously checked Wine source-build input"
+      },
+      "libraries": [
+        {
+          "name": "libadrenotools.so",
+          "bytes": 47760,
+          "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks/libadrenotools.so"
+        },
+        {
+          "name": "libandroid-shmem.so",
+          "bytes": 14432,
+          "sha256": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libandroid-shmem.so"
+        },
+        {
+          "name": "libc++_shared.so",
+          "bytes": 1794776,
+          "sha256": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708",
+          "input_path": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so"
+        },
+        {
+          "name": "libz.so.1",
+          "bytes": 72880,
+          "sha256": "c47748ed4b6ca6a2ecd664bab04795f3493956ab1f5cddc4ba0efa737ef3b711",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libz.so.1"
+        },
+        {
+          "name": "libzstd.so.1",
+          "bytes": 820840,
+          "sha256": "1677d5e828c1839f111f0261697c08f99a5e4e80434659ab88e5ff859a1374f7",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libzstd.so.1"
+        },
+        {
+          "name": "libxcb.so",
+          "bytes": 136584,
+          "sha256": "13d59f33b51765e4d1444cad3f7f949ccf60a9bd34e53bdbe10cfcd787fda14c",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb.so"
+        },
+        {
+          "name": "libX11-xcb.so",
+          "bytes": 3976,
+          "sha256": "6368a55a652527addf7af769b53d16ebd5aa5986a97deb550f212bdfa8315819",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libX11-xcb.so"
+        },
+        {
+          "name": "libxcb-dri3.so",
+          "bytes": 14680,
+          "sha256": "46a0bcdb74795fafcf62181439bb62d69568f0c6c0c652655002923dd02178a8",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-dri3.so"
+        },
+        {
+          "name": "libxcb-present.so",
+          "bytes": 9976,
+          "sha256": "3914002f479e29cb9796045de542b091cd592e2347ec84272da3bbce57326c07",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-present.so"
+        },
+        {
+          "name": "libxcb-sync.so",
+          "bytes": 22224,
+          "sha256": "3940e8236e0ead4696e2f09c4d297fa629cca0859243b73d33fcf11535e335ba",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-sync.so"
+        },
+        {
+          "name": "libxcb-randr.so",
+          "bytes": 53896,
+          "sha256": "0c2bfe3c4c8150a913bc7a24bdbeca6d379a388de9f50228bd746d0bf14c6c0e",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-randr.so"
+        },
+        {
+          "name": "libxcb-shm.so",
+          "bytes": 9368,
+          "sha256": "dbd474ea05afb27c33269aa1cf26a62edc08e7fb79a2f8459aebc4cb370cf1bb",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-shm.so"
+        },
+        {
+          "name": "libdrm.so",
+          "bytes": 75792,
+          "sha256": "1394274be3dd43f07429b10ca28aded82c7f2d84906ed7084827d27ca10f0dbf",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libdrm.so"
+        },
+        {
+          "name": "SPIRV-Tools-opt",
+          "bytes": 241329312,
+          "sha256": "29f201bef4920013049d19cce334cce915196feb6c8e386641f02def8ec5eebd",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build/source/opt/libSPIRV-Tools-opt.a"
+        },
+        {
+          "name": "SPIRV-Tools",
+          "bytes": 64530758,
+          "sha256": "f71b46d46110cf1d894a81faac47188aa4cdec4366217c2f41b7646788512dcf",
+          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build/source/libSPIRV-Tools.a"
+        }
+      ]
+    },
+    "build_commands": {
+      "configure": {
+        "command": [
+          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson",
+          "setup",
+          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
+          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source",
+          "--cross-file",
+          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/android.ini",
+          "--native-file",
+          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/native.ini",
+          "--buildtype",
+          "release",
+          "--prefix=/usr",
+          "-Dplatforms=x11",
+          "-Dplatform-sdk-version=34",
+          "-Dandroid-stub=true",
+          "-Dvulkan-drivers=wrapper",
+          "-Dgallium-drivers=",
+          "-Dglx=disabled",
+          "-Degl=disabled",
+          "-Dgbm=disabled",
+          "-Dllvm=disabled",
+          "-Dopengl=false",
+          "-Dandroid-libbacktrace=disabled",
+          "-Dxmlconfig=disabled"
+        ],
+        "environment": {
+          "PATH": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/host-tools/bin:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin:/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin:/Applications/ChatGPT.app/Contents/Resources/codex-cli/codex-path:/Users/cheng/.codex/tmp/arg0-macos/codex-arg0Dl0zlz:/Users/cheng/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/override:/Users/cheng/.grok/bin:/Users/cheng/.mavis/bin:/Users/cheng/.local/share/mise/installs/node/24.15.0/bin:/Users/cheng/.bun/bin:/Users/cheng/.opencode/bin:/Users/cheng/.local/share/mise/installs/bun/1.3.13/bin:/Users/cheng/.local/share/mise/installs/java/17/bin:/Users/cheng/.local/share/mise/installs/ruby/3.4.9/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/cheng/.local/bin:/Users/cheng/Library/pnpm:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/cheng/.local/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/opt/homebrew/bin:/Users/cheng/.grok/bin:/Users/cheng/.mavis/bin:/Users/cheng/.local/share/mise/installs/node/24.15.0/bin:/Users/cheng/.bun/bin:/Users/cheng/.opencode/bin:/Users/cheng/Library/Android/sdk/platform-tools:/Users/cheng/Library/Android/sdk/emulator:/Users/cheng/Library/Android/sdk/cmdline-tools/latest/bin:/Users/cheng/.local/share/mise/shims:/Users/cheng/.gem/ruby/3.4.0/bin:/Users/cheng/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback:/Applications/ChatGPT.app/Contents/Resources:/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS",
+          "PKG_CONFIG_LIBDIR": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/pkgconfig",
+          "PKG_CONFIG_SYSROOT_DIR": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64"
+        }
+      },
+      "defines": [
+        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson",
+        "configure",
+        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
+        "-Dc_args=['-D__TERMUX__', '-include', 'fcntl.h']",
+        "-Dcpp_args=['-D__TERMUX__', '-include', 'fcntl.h', '-Wno-c++11-narrowing']"
+      ],
+      "link_libraries": [
+        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson",
+        "configure",
+        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
+        "-Dc_link_args=['-Wl,-z,max-page-size=16384', '-Wl,-z,common-page-size=16384', '-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks', '-Wl,-rpath-link=/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-ladrenotools', '-landroid-shmem']",
+        "-Dcpp_link_args=['-Wl,-z,max-page-size=16384', '-Wl,-z,common-page-size=16384', '-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks', '-Wl,-rpath-link=/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-ladrenotools', '-landroid-shmem', '-lc++_shared']"
+      ],
+      "build": [
+        "/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+        "-C",
+        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
+        "-j4",
+        "src/vulkan/wrapper/libvulkan_wrapper.so"
+      ],
+      "spirv_configure": [
+        "/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin/cmake",
+        "-G",
+        "Ninja",
+        "-S",
+        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-tools",
+        "-B",
+        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build",
+        "-DCMAKE_MAKE_PROGRAM=/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+        "-DCMAKE_TOOLCHAIN_FILE=/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/build/cmake/android.toolchain.cmake",
+        "-DANDROID_ABI=arm64-v8a",
+        "-DANDROID_PLATFORM=android-34",
+        "-DANDROID_STL=c++_static",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
+        "-DSPIRV_SKIP_TESTS=ON",
+        "-DSPIRV_SKIP_EXECUTABLES=ON",
+        "-DSPIRV_TOOLS_BUILD_STATIC=ON",
+        "-DSPIRV-Headers_SOURCE_DIR=/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-headers"
+      ],
+      "spirv_build": [
+        "/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin/cmake",
+        "--build",
+        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build",
+        "--target",
+        "SPIRV-Tools-opt",
+        "SPIRV-Tools-static",
+        "-j4"
+      ]
+    },
+    "generated_trace_header": {
+      "old_always_true_conditions": 1174,
+      "candidate_always_true_conditions": 0,
+      "candidate_should_print_conditions": 1174,
+      "sha256": "6032327de898b500c3affc970a706da169bfdfa27ac93ff7c57c9c3db3a3724f",
+      "incremental_generator_rebuilt_after_dependency_patch": true
+    },
+    "toolchain": {
+      "ndk": "27.3.13750724",
+      "android_api": 34,
+      "meson": "1.9.1",
+      "ninja": "1.10.2",
+      "cmake": "3.22.1",
+      "glslang": "16.6.0"
+    },
+    "build_log_sha256": {
+      "configure.log": "3ef8acb4c0719b89c5460e0bacf8ffc05d837bf183a146450366b62699abc54b",
+      "configure-defines.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "configure-link.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "build-baseline.log": "4a8cd3dc9b0b597a70c4adb509788c1bab2420ecffb7df51e2fccc3bad23207a",
+      "build-candidate.log": "373fc83628634ed839177915948c4a856a940989fd7d00921f0db8bd614da8aa",
+      "spirv-configure.log": "d7ac154af4e542d1ffb0236800f72548b4d874f808c5d4563d202e12301556ad",
+      "spirv-build.log": "50947589acbf5ffc19f5aefea0dd5b2317e193b7a57511a50b08e7406f1d5954"
+    },
+    "test_source_sha256": {
+      "tools/tests/vulkan-wrapper-image.py": "d978d1bbdf0897bf9a21dd5a4483b45c07bf1987962ce154d5de4f057d35ac0a",
+      "tools/tests/vulkan-wrapper-trace.py": "1271e3398e7fe30e9cfac5da759a81f2e3b4f4c88389e676967834cac32d240e"
+    },
+    "compiled_sources": {
+      "src/vulkan/wrapper/wrapper_image.c": {
+        "baseline_sha256": "558073224a2da816adb76888b7c21f48ed46df0e2aed35317c2604a050f69c74",
+        "candidate_sha256": "db8e393fac9f77ae2b5b06c7df64e5efaf804bd170df7e99aef257dc3765fda8"
+      },
+      "src/vulkan/wrapper/vk_entrypoints.py": {
+        "baseline_sha256": "8cea499cba3ed510ab1f8861275a84c58f3ec75ca27e74b18858c601be2b2dd0",
+        "candidate_sha256": "f6b99cde9951a84a82a720eb03a0935983db8de847e63882525f12b244fa33b3"
+      },
+      "src/vulkan/wrapper/meson.build": {
+        "baseline_sha256": "941f6fd6e8ead48625febf16db6bc67c28365da9904644a9c04b94fef8c4cfdb",
+        "candidate_sha256": "fc8ee9db148f38131c21d7c4daf991da9299fac38d7177da80b8286da55913e1"
+      }
+    }
+  },
+  "read_only_review": [
+    {
+      "repository": "HansKristian-Work/vkd3d-proton",
+      "commit": "ef9a02e873715c9e2da0d6db8a236aca8380b303",
+      "date": "2026-10-20T15:16:23Z",
+      "files": [
+        {
+          "file": "libs__vkd3d__cache.c",
+          "sha256": "5a39e73ba99dcfaf44a98f890111fe83b7bb017286b4128e3d06a29dbb19adad"
+        },
+        {
+          "file": "libs__vkd3d__command.c",
+          "sha256": "45829650b34e6cfa5b2ecb4452f429d6489d70951ee6287d358ea5888a7417cb"
+        },
+        {
+          "file": "libs__vkd3d__state.c",
+          "sha256": "f3b17fc716c6adc013dc49ad25f01f26c18f87bfea74c426dc47dcbdd52b62a5"
+        }
+      ],
+      "scope": "Selected paths only; not a whole-repository audit"
+    },
+    {
+      "repository": "doitsujin/dxvk",
+      "commit": "d713ef8748a1eee3e90d4b6d5dc2e80f5be4b519",
+      "date": "2026-10-21T07:49:26Z",
+      "files": [
+        {
+          "file": "src__dxvk__dxvk_pipemanager.cpp",
+          "sha256": "c26f9335e2742b6676895e82509539ac04ad0c8554e1c3a085d9b8ab11b761ef"
+        },
+        {
+          "file": "src__dxvk__dxvk_queue.cpp",
+          "sha256": "a7ecbf53a16c73c7b85fd6028bfb5d45dc60a445211e1bbf3817219fcc4c9879"
+        }
+      ],
+      "scope": "Selected paths only; not a whole-repository audit"
+    },
+    {
+      "repository": "leegao/bionic-vulkan-wrapper",
+      "commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+      "date": "2026-10-18T01:58:20Z",
+      "files": [
+        {
+          "file": "src__vulkan__wrapper__wrapper_device.c",
+          "sha256": "385375d67f3594747f477aa07c14dcc363bea0998467a23fb508d09ca15513b7"
+        },
+        {
+          "file": "src__vulkan__wrapper__wrapper_image.c",
+          "sha256": "558073224a2da816adb76888b7c21f48ed46df0e2aed35317c2604a050f69c74"
+        },
+        {
+          "file": "wrapper_checks.h",
+          "sha256": "63ff2cbc1319ace58e46dfa66d700dfefcd1e64ee8ce539ded684b3bc46c3528"
+        },
+        {
+          "file": "wrapper_debug.c",
+          "sha256": "b76f4cbcb6f4816cbb914fc2899b18851d0eb75030182cec2b82b3d9902d5d1a"
+        },
+        {
+          "file": "wrapper_objects.c",
+          "sha256": "83ac639b1425f15d99ba00842ae2fd204d26e5dc5db1915d30f2f4e4affab6b8"
+        },
+        {
+          "file": "wrapper_objects.h",
+          "sha256": "1b11b380d560c6e1ee10efd89871b85cd524aaa5d42949eebc558194f3b96bce"
+        },
+        {
+          "file": "wrapper_private.h",
+          "sha256": "80c11f78a7bd434023de2eeaa9302f332933cfdd7655dbfee707523f29a6b8a6"
+        }
+      ],
+      "scope": "Selected paths only; not a whole-repository audit"
+    }
+  ],
+  "emuready": {
+    "use": "public report context to choose reproducible game/device/runtime workloads; no automatic import or driver patch inferred from a report",
+    "fresh_probes": {
+      "Ghostrunner": "HTTP 403 from public games.get request",
+      "Onimusha": "HTTP 403 from public games.get request"
+    },
+    "fresh_report_contents_used": false,
+    "steam_credentials_sent": false
+  },
+  "remaining_gates": [
+    "Actual GPU loading/rendering on each supported device",
+    "Vulkan conformance and rendering correctness",
+    "Matched game CPU/frame-time/power comparison",
+    "Exact source-to-binary mapping for packaged DXVK, VKD3D, Wine and wrapper inputs",
+    "Further source review of shader/compiler, synchronization and memory paths",
+    "Public redistribution and upstream contribution policy review"
+  ],
+  "application": {
+    "defaults_changed": false,
+    "apk_rebuilt": false,
+    "driver_installed": false,
+    "steam_account_used": false,
+    "commit_or_push": false
+  },
+  "raw_evidence_directory": "../turnip-refactor-qualification/",
+  "source_test_helpers": [
+    {
+      "path": "tools/tests/turnip-kgsl-wait-any.py",
+      "sha256": "9c2ba969bdafcf93f4c6cff1935328c892b43bf42a93fa8ff61870df93442850"
+    },
+    {
+      "path": "tools/tests/vulkan-wrapper-image.py",
+      "sha256": "d978d1bbdf0897bf9a21dd5a4483b45c07bf1987962ce154d5de4f057d35ac0a"
+    },
+    {
+      "path": "tools/tests/vulkan-wrapper-trace.py",
+      "sha256": "1271e3398e7fe30e9cfac5da759a81f2e3b4f4c88389e676967834cac32d240e"
+    }
+  ]
+}

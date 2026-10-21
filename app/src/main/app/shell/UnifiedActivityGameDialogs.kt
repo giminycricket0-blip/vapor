@@ -2607,6 +2607,7 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                     }
                             }
                             LibraryGameLaunchScreen(
+                                steamAppId = app.id.takeIf { !isCustom && !isEpic && !isGog && !isRetro },
                                 appName = launchAppName,
                                 subtitle = subtitle,
                                 sourceLabel = sourceLabel,
