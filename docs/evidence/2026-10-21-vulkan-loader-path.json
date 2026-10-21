@@ -326,9 +326,8 @@
     "Total workflow runtime and the artifact upload (build/logs)."
   ],
   "not_verified_locally": [
-    "The successful CI execution itself: attempt 1 (run 39684414300) failed only at Lane A lavapipe ICD discovery; the harness build, patched mock-ICD build, profile validation and driver self-test steps passed before it.",
-    "Lane B was validated locally against a source-built validation layer 1.4.363, not the LunarG 1.4.313 package that CI installs; the checks are present in both revisions but CI confirms.",
-    "The Linux lavapipe Lane A execution (SKIP + clean validation) has not yet run successfully in CI.",
+    "The Linux lavapipe and LunarG 1.4.313 execution was not run locally on this macOS host; CI run 39686064374 is the authoritative confirmation (it passed).",
+    "Lane B was validated locally against a source-built validation layer 1.4.363, while CI uses the LunarG 1.4.313 package; both passed.",
     "No real RADV/ANV/NVK/Turnip placement semantics are tested by this lane."
   ],
   "limitations": [
@@ -341,9 +340,47 @@
     "Ubuntu 24.04 archive Vulkan packages (1.3.275) are too old for the extension, so CI depends on the pinned LunarG apt repository being reachable."
   ],
   "ci_run": {
-    "performed": false,
-    "status": "attempt-1 failed on Lane A discovery; fix committed; next run pending",
-    "note": "The Lead pushes and reports the run; this receipt will be refreshed with the successful run id/results. No CI success is claimed here."
+    "performed": true,
+    "run_id": 39686064374,
+    "url": "https://github.com/giminycricket0-blip/vapor/actions/runs/39686064374",
+    "workflow": "Vulkan loader path",
+    "workflow_sha256": "70f7b6b1821c9deebfecb6e2ec09e39ec420f96bfeb4182d7c9a6f6131292ab4",
+    "head_sha": "8cbd965f148291c6ff9e475cf0ee2c2dc57f7139",
+    "conclusion": "success",
+    "started_at_utc": "2026-10-21T22:22:55Z",
+    "completed_at_utc": "2026-10-21T22:24:52Z",
+    "lane_results": {
+      "self_test": "SELFTEST_RESULT=PASS (7/7)",
+      "lane_a_lavapipe": {
+        "expected": "SKIP",
+        "observed": "RESULT=SKIP",
+        "lane_result": "LANE_RESULT=PASS (assertion pass and second --print-all pass)",
+        "validation": "VALIDATION_AVAILABLE=1, VALIDATION_ERRORS=0, VUID_ERRORS=0",
+        "resolved_lavapipe_icd": "build/lavapipe/lvp_icd.json",
+        "lavapipe_icd_source": "LAVAPIPE_ICD_SOURCE=synthesized-from-library"
+      },
+      "lane_b_patched_mock_icd": {
+        "expected": "supported",
+        "observed": "RESULT=PASS",
+        "lane_result": "LANE_RESULT=PASS",
+        "extension_present": 1,
+        "memory_map_placed": 1,
+        "memory_map_range_placed": 1,
+        "map_placed": 1,
+        "map_range_placed": 1,
+        "placed_map_result": 0,
+        "placed_range_map_result": 0,
+        "validation": "VALIDATION_AVAILABLE=1, VALIDATION_ERRORS=0, VUID_ERRORS=0"
+      }
+    },
+    "resolved_versions": {
+      "mesa_vulkan_drivers": "25.2.8-0ubuntu0.24.04.4",
+      "libvulkan1": "1.4.313.0~rc1-1lunarg24.04-1",
+      "vulkan_headers": "1.4.313.0~rc1-1lunarg24.04-1",
+      "vulkan_validationlayers": "1.4.313.0~rc2-1lunarg24.04-1",
+      "vulkan_tools_mock_icd": "pinned tag vulkan-sdk-1.4.313.0 @ ad2f0170f9466fadd96e3fdd65fad02cd3a3739b, patched"
+    },
+    "raw_log_note": "CI logs fetched with gh run view 39686064374 --log; the lane log files are also uploaded as the vulkan-loader-path-logs artifact when available."
   },
   "raw_artifacts": {
     "scratch": "/Users/cheng/loader-path-scratch",
@@ -374,7 +411,6 @@
   "ci_attempts": [
     {
       "run_id": 39684414300,
-      "workflow": "Vulkan loader path",
       "workflow_sha256": "d040ecb75a6cba35ae4d6cb799e60b0ebed2b73ef69d79a63b880e7cc498909b",
       "head_sha": "bef7c48bfaaa44eef9098522c9a331b4ffe074dc",
       "result": "failure",
@@ -389,8 +425,11 @@
       ]
     },
     {
-      "run": null,
-      "status": "pending after Lane A discovery fix (COMMITTED_WORKFLOW_SHA 70f7b6b1821c9deebfecb6e2ec09e39ec420f96bfeb4182d7c9a6f6131292ab4)"
+      "run_id": 39686064374,
+      "workflow_sha256": "70f7b6b1821c9deebfecb6e2ec09e39ec420f96bfeb4182d7c9a6f6131292ab4",
+      "head_sha": "8cbd965f148291c6ff9e475cf0ee2c2dc57f7139",
+      "result": "success",
+      "notes": "After the Lane A discovery fix: Lane A SKIP+PASS with 0 validation errors; Lane B RESULT=PASS with MEMORY_MAP_PLACED=1 and placed/range map VK_SUCCESS; self-test 7/7."
     }
   ]
 }

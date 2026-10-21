@@ -62,11 +62,14 @@ Continue in this order:
    Adreno/KGSL phone (runbook ready); the staging-reclamation patch is now
    runtime-validated on 4 KB and 16 KB (unfenced/one-time, reset/begin,
    `vkQueueSubmit2`-with-fence, stress peak 2–16 tracked vs 512 for the
-   control), with a documented semaphore-only limitation. Remaining: the
-   placed-memory fixture, a validation-layer or loader-path run, concurrency,
-   physical-phone duration, and fixing the two suspected reference-image
-   software-emulation defects (BC_SRGB storage inconsistency, host-CPU
-   odd-extent overrun) before proposing anything upstream.
+   control), with a documented semaphore-only limitation. A no-GPU CI lane now
+   qualifies placed-memory loader plumbing and capability skip (lavapipe SKIP,
+   patched mock ICD supported, Android emulator paths documented as absent).
+   Remaining: real-driver placement semantics (RADV/ANV/NVK/Turnip), a
+   validation-layer run over the wrapper itself, concurrency, physical-phone
+   duration, and fixing the two suspected reference-image software-emulation
+   defects (BC_SRGB storage inconsistency, host-CPU odd-extent overrun) before
+   proposing anything upstream.
 3. Deepen DXVK queue/compiler and VKD3D shader/capability/descriptor review on the
    exact packaged ARM64EC bases. Measure submission cost, shader stalls, waits,
    memory and cold/warm behavior. Reuse upstream priority/cache mechanisms;

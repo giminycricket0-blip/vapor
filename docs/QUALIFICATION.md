@@ -252,6 +252,44 @@ game asset is covered. The receipt carries a one-command phone runbook
 (`--serial <PHONE> --label phone-adreno`) with controls and adjudication; no phone
 result is claimed.
 
+### Placed-memory loader path and capability skip
+
+The wrapper's placed-memory path (`VK_EXT_map_memory_placed` with
+`memoryMapPlaced`/`memoryMapRangePlaced`, which the staging review's conditional
+double-free risk depends on) needs a RADV/ANV/NVK/Turnip-class driver for real
+placement semantics, but its loader plumbing, capability reporting and skip logic
+are testable without a GPU.
+
+- **Android emulator presence:** the new `tools/tests/vulkan-map-memory-presence.c`
+  fixture loads the system loader on both emulator AVDs. The extension is absent
+  from the 49 device extensions on the API 36 4 KB llvmpipe path and the 101
+  extensions on the API 37 16 KB gfxstream path, and both feature bits read zero
+  while positive feature controls (robustBufferAccess, samplerAnisotropy,
+  textureCompressionBC) prove the query returned real data. The correct outcome is
+  `RESULT=SKIP`: the Android path does not silently claim placed-memory coverage.
+  [Presence receipt](evidence/2026-10-21-vulkan-map-memory-presence.json).
+- **No-GPU CI lane:** `tools/tests/vulkan-loader-path.c` is a loader-mediated
+  harness (it never dlopens an ICD) driven by `tools/tests/vulkan-loader-path.py`
+  in the independent `vulkan-loader-ci` workflow. Lane A on lavapipe must SKIP
+  (extension absent) with clean validation; Lane B on a pinned, patched
+  Vulkan-Tools mock ICD must report `MEMORY_MAP_PLACED=1` and complete placed and
+  range-placed `vkMapMemory2` calls with zero VUIDs. CI run **39686064374**
+  passes: Lane A `RESULT=SKIP` with 0 validation errors (lavapipe manifest
+  resolved from `libvulkan_lvp.so`), Lane B `RESULT=PASS`,
+  `MEMORY_MAP_PLACED=1`/`MEMORY_MAP_RANGE_PLACED=1`, both placed maps
+  `VK_SUCCESS`, 0 VUIDs, driver self-test 7/7. The first attempt failed only on
+  lavapipe ICD discovery, which is fixed in the same lane.
+  [Loader-path receipt](evidence/2026-10-21-vulkan-loader-path.json).
+  A Vulkan Profiles capability file for the intended mock + profiles-layer route
+  is delivered and schema-validated; the CI lane uses the documented mock-ICD
+  capability patch instead because the profiles layer needs a large
+  Vulkan-Utility-Libraries bootstrap.
+- **Limits:** this is loader/capability/validation plumbing over a mock and over
+  lavapipe, not real placement semantics. Alignment, reserve/unmap lifecycle and
+  behaviour on RADV/ANV/NVK/Turnip still need a real driver (or a phone), and
+  lavapipe's `DEVICE_LOCAL == HOST_VISIBLE` means heap-selection assumptions need
+  a discrete-GPU check.
+
 ### Remaining boundaries
 
 Neither candidate is installed or bundled. No phone, authenticated game session,

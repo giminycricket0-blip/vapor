@@ -649,6 +649,41 @@ families. Run it with `--serial emulator-5556` for the emulator, or
 `--serial <PHONE_SERIAL> --label phone-adreno` for the effective-driver pass. It
 does not modify the app or the pinned libraries.
 
+### Running the no-GPU placed-memory loader-path lane
+
+`tools/tests/vulkan-loader-path.c` is a loader-mediated harness (it never
+dlopens an ICD). Build it against the Vulkan loader, then drive lanes with
+`tools/tests/vulkan-loader-path.py`:
+
+```sh
+gcc -std=c11 -O2 -Wall -Wextra -Werror \
+  tools/tests/vulkan-loader-path.c -lvulkan -o /tmp/vulkan-loader-path
+VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json \
+  python3 tools/tests/vulkan-loader-path.py --lane lavapipe --expect skip --validation \
+  --harness /tmp/vulkan-loader-path --icd /usr/share/vulkan/icd.d/lvp_icd.json \
+  --log-dir /tmp/loader-logs --print-all
+```
+
+The CI workflow `.github/workflows/vulkan-loader-ci.yml` runs that lane on
+lavapipe — resolving the lavapipe manifest defensively, because distributions
+ship it with or without an architecture suffix and sometimes with a relative
+library path — plus a second lane on a pinned, patched Vulkan-Tools mock ICD
+(`tools/tests/mock-icd/VkICD_map_memory_placed.patch`,
+`--expect supported --validation`). The mock patch sets the placed-memory feature
+bits, the promoted `VkPhysicalDeviceVulkan11Properties` allocation size and the
+placed-map alignment that stock mock ICD builds leave unset, so validation stays
+clean. The Vulkan Profiles capability file
+(`tools/tests/mock-icd/VP_VAPOR_map_memory_placed.json`) documents the intended
+mock + profiles-layer route and is schema-validated by the lane.
+
+These lanes qualify loader/entry-point plumbing, capability reporting,
+validation cleanliness and the capability-skip decision. They do not exercise
+real placement semantics: that needs a RADV/ANV/NVK/Turnip driver or a phone. On
+such a machine, point `VK_ICD_FILENAMES` at the driver's ICD and use
+`--expect supported`; note that lavapipe reports
+`DEVICE_LOCAL == HOST_VISIBLE`, so heap-selection logic must be checked against a
+discrete GPU too.
+
 ## Android ntsync library experiment
 
 This is a library/source investigation, **not an installable Wine component**.

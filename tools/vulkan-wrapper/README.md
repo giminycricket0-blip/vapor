@@ -175,6 +175,14 @@ releases, reset/begin reclamation, `vkQueueSubmit2`-with-fence reclamation, a
 documented semaphore-only limitation, stress peaks of 16 and 2 tracked resources
 against 512 for the unpatched control, and 16 KB A/B passes. Validation layers,
 the placed-memory path, concurrency and phone-duration growth remain pending.
+A no-GPU loader-path lane now qualifies placed-memory capability reporting,
+entry-point plumbing and the skip branch (lavapipe SKIP; a pinned patched
+Vulkan-Tools mock ICD reports the feature and completes placed/range
+`vkMapMemory2` with zero VUIDs), and the Android emulator paths are confirmed to
+lack the extension. Real placement semantics still need RADV/ANV/NVK/Turnip or a
+phone. See
+[loader-path receipt](../../docs/evidence/2026-10-21-vulkan-loader-path.json) and
+[Android presence receipt](../../docs/evidence/2026-10-21-vulkan-map-memory-presence.json).
 See
 [the staging review](../../docs/evidence/2026-10-21-vulkan-wrapper-staging.json)
 and [the reclaim patch receipt](../../docs/evidence/2026-10-21-wrapper-staging-reclaim.json).
