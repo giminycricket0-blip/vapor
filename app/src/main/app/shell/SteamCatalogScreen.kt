@@ -777,7 +777,9 @@ internal fun SteamCatalogDetailsContent(
                 artwork(Modifier.fillMaxWidth())
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp), content = information)
             }
-            CommunityReportsButton(game.appId, game.name, Modifier.fillMaxWidth())
+            // EmuReady only lists Windows reports. Keep the action for Windows-capable
+            // and unknown-platform entries; hide it only when Steam says it is not Windows.
+            if (game.windows != false) CommunityReportsButton(game.appId, game.name, Modifier.fillMaxWidth())
             if (game.description.isNotBlank()) Text(game.description, color = TextPrimary)
             if (detailsFailed) {
                 Text(stringResource(R.string.vapor_store_details_error), color = TextSecondary)

@@ -17,10 +17,12 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.winlator.cmod.feature.library.EmuReady
+import com.winlator.cmod.feature.stores.steam.service.SteamCatalogItem
 import com.winlator.cmod.shared.theme.WinNativeTheme
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.awaitCancellation
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -111,6 +113,55 @@ class CommunityReportsUiTest {
         compose.setContent { WinNativeTheme { CommunityReportsButton(0, "Custom game") } }
         compose.onNodeWithText("Community reports").assertDoesNotExist()
     }
+    @Test fun aBlankSteamTitleDoesNotCreateAnAction() {
+        compose.setContent { WinNativeTheme { CommunityReportsButton(220, "   ") } }
+        compose.onNodeWithText("Community reports").assertDoesNotExist()
+    }
+    @Test fun ambiguousWindowsEntriesHaveTheirOwnWordingAndNoCompatibilityVerdict() {
+        screen({ _, _ -> EmuReady.Page(null, emptyList(), ambiguous = true) })
+        button().performClick()
+        compose.onNodeWithText("More than one Windows entry matches this title", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("No matching Windows entry found", substring = true).assertDoesNotExist()
+        compose.onNodeWithText("Browse on EmuReady").assertIsDisplayed()
+    }
+    @Test fun anUnexpectedResponseHasItsOwnWordingSeparateFromAConnectionError() {
+        screen({ _, _ -> throw EmuReady.UnexpectedResponseException("unreadable payload") })
+        button().performClick()
+        compose.onNodeWithText("returned a response this app does not understand", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Could not reach EmuReady", substring = true).assertDoesNotExist()
+        compose.onNodeWithText("Retry").assertIsDisplayed()
+    }
+    @Test fun browseUsesTheMatchedWindowsEntryTitleWhenItDiffers() {
+        val links = mutableListOf<String>()
+        screen({ _, _ -> EmuReady.Page(EmuReady.Game(report.gameId, "Half-Life 2 (Windows entry)", false), listOf(report)) },
+            source = { links += it })
+        button().performClick()
+        compose.onNodeWithText("Browse on EmuReady").performClick()
+        compose.runOnIdle {
+            assertEquals("Half-Life 2 (Windows entry)", links.single().toHttpUrl().queryParameter("search"))
+        }
+    }
+    @Test fun blankReportedFieldsFallBackToStringResources() {
+        val sparse = report.copy(performance = "", emulator = "")
+        screen({ _, _ -> EmuReady.Page(EmuReady.Game(report.gameId, "Half-Life 2", false), listOf(sparse)) })
+        button().performClick()
+        compose.onNodeWithText("Reported not specified · not specified").performScrollTo().assertIsDisplayed()
+    }
+    private fun catalog(windows: Boolean?) {
+        val item = SteamCatalogItem(220, "Half-Life 2", false, false, "", null, "", "Valve",
+            windows, false, emptyList())
+        compose.setContent { WinNativeTheme {
+            SteamCatalogDetailsContent(item, null, false, false, null, {}, {}, {}, {}, {}, {})
+        } }
+    }
+    @Test fun knownNonWindowsCatalogAppsDoNotOfferCommunityReports() {
+        catalog(windows = false)
+        compose.onNodeWithText("Community reports").assertDoesNotExist()
+    }
+    @Test fun windowsCatalogAppsOfferCommunityReports() {
+        catalog(windows = true)
+        compose.onNodeWithText("Community reports").assertExists()
+    }
     private fun layout(width: Int, height: Int, scale: Float, name: String) {
         var view: View? = null
         compose.setContent {
@@ -120,7 +171,7 @@ class CommunityReportsUiTest {
                     val root = LocalView.current
                     SideEffect { view = root }
                     Box(Modifier.size(width.dp, height.dp)) {
-                        CommunityReportsContent("Half-Life 2 · sample", page, false, false, {}, {}, {}, {}, { emptyList() })
+                        CommunityReportsContent("Half-Life 2 · sample", page, false, false, false, {}, {}, {}, {}, { emptyList() })
                     }
                 }
             }

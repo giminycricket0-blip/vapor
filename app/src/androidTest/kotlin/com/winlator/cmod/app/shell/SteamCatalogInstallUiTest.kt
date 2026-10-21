@@ -117,6 +117,22 @@ class SteamCatalogInstallUiTest {
         compose.runOnIdle { assertEquals(0, attempts) }
     }
 
+    @Test fun knownNonWindowsCatalogAppsDoNotOfferCommunityReports() {
+        compose.setContent { WinNativeTheme {
+            SteamCatalogDetailsContent(demo.copy(windows = false), null, true, false, null,
+                {}, {}, {}, {}, {}, {})
+        } }
+        compose.onNodeWithText("Community reports").assertDoesNotExist()
+    }
+
+    @Test fun windowsCatalogAppsOfferCommunityReports() {
+        compose.setContent { WinNativeTheme {
+            SteamCatalogDetailsContent(demo.copy(windows = true), null, true, false, null,
+                {}, {}, {}, {}, {}, {})
+        } }
+        compose.onNodeWithText("Community reports").assertExists()
+    }
+
     @Test fun startupOffersOnlySteamAndDoesNotAutomaticallyLaunchLogin() {
         var connects = 0; var continued = 0
         compose.setContent { WinNativeTheme {

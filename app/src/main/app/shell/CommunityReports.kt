@@ -41,12 +41,13 @@ internal fun CommunityReportsButton(
     loadSettings: suspend (EmuReady.Report) -> List<EmuReady.Setting> = { EmuReady.settings(it) },
     onSource: ((String) -> Unit)? = null,
 ) {
-    if (appId <= 0) return
+    if (appId <= 0 || gameTitle.isBlank()) return
     key(appId, gameTitle) {
         var open by remember { mutableStateOf(false) }
         var page by remember { mutableStateOf<EmuReady.Page?>(null) }
         var loading by remember { mutableStateOf(false) }
         var failed by remember { mutableStateOf(false) }
+        var unexpected by remember { mutableStateOf(false) }
         var request by remember { mutableIntStateOf(0) }
         var completed by remember { mutableIntStateOf(-1) }
         // The snapshot survives closing this modal, but never another game or process.
@@ -54,10 +55,12 @@ internal fun CommunityReportsButton(
             if (!open || request == completed) return@LaunchedEffect
             loading = true
             failed = false
+            unexpected = false
             try {
                 page = load(appId, gameTitle)
                 completed = request
             } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: EmuReady.UnexpectedResponseException) { unexpected = true; completed = request }
             catch (_: Exception) { failed = true; completed = request }
             finally { loading = false }
         }
@@ -83,9 +86,10 @@ internal fun CommunityReportsButton(
                 val nav = remember { PaneNavRegistry() }
                 CompositionLocalProvider(LocalPaneNav provides nav) {
                     DialogPaneNav(nav, onDismiss = { open = false })
-                    CommunityReportsContent(gameTitle, page, loading, failed,
+                    CommunityReportsContent(gameTitle, page, loading, failed, unexpected,
                         onClose = { open = false }, onRetry = { request++ },
-                        onBrowse = { source(EmuReady.browseUrl(gameTitle)) },
+                        // Prefer the matched EmuReady entry when it differs from the Steam title.
+                        onBrowse = { source(EmuReady.browseUrl(page?.game?.title?.takeIf { it.isNotBlank() } ?: gameTitle)) },
                         onSource = source, loadSettings = loadSettings)
                 }
             }
@@ -96,6 +100,7 @@ internal fun CommunityReportsButton(
 @Composable
 internal fun CommunityReportsContent(
     gameTitle: String, page: EmuReady.Page?, loading: Boolean, failed: Boolean,
+    unexpected: Boolean = false,
     onClose: () -> Unit, onRetry: () -> Unit, onBrowse: () -> Unit,
     onSource: (String) -> Unit,
     loadSettings: suspend (EmuReady.Report) -> List<EmuReady.Setting>,
@@ -125,9 +130,10 @@ internal fun CommunityReportsContent(
                         Text(stringResource(R.string.vapor_community_loading), color = TextSecondary)
                     }
                 }
-                if (failed) item {
+                if (failed || unexpected) item {
                     Column {
-                        Text(stringResource(R.string.vapor_community_unavailable), color = TextSecondary)
+                        Text(stringResource(if (unexpected) R.string.vapor_community_unexpected else R.string.vapor_community_unavailable),
+                            color = TextSecondary)
                         TextButton(onClick = onRetry, modifier = Modifier.heightIn(min = 48.dp).paneNavItem(onActivate = onRetry)) {
                             Text(stringResource(R.string.steam_login_retry))
                         }
@@ -139,8 +145,11 @@ internal fun CommunityReportsContent(
                             color = TextSecondary, style = MaterialTheme.typography.bodySmall)
                     }
                     if (page.reports.isEmpty()) item {
-                        Text(stringResource(if (page.game == null) R.string.vapor_community_no_game else R.string.vapor_community_empty),
-                            color = TextSecondary)
+                        Text(stringResource(when {
+                            page.game != null -> R.string.vapor_community_empty
+                            page.ambiguous -> R.string.vapor_community_ambiguous
+                            else -> R.string.vapor_community_no_game
+                        }), color = TextSecondary)
                     }
                     items(page.reports, key = { it.id }) { report ->
                         CommunityReportCard(report, onSource, loadSettings)
@@ -178,7 +187,9 @@ private fun CommunityReportCard(
             Text(report.device.ifBlank { stringResource(R.string.vapor_community_unknown_device) },
                 color = TextPrimary, style = MaterialTheme.typography.titleMedium)
             if (report.soc.isNotBlank()) Text(report.soc, color = TextSecondary, style = MaterialTheme.typography.bodySmall)
-            Text(stringResource(R.string.vapor_community_reported, report.performance.ifBlank { "—" }, report.emulator.ifBlank { "—" }),
+            val notSpecified = stringResource(R.string.vapor_community_not_specified)
+            Text(stringResource(R.string.vapor_community_reported,
+                report.performance.ifBlank { notSpecified }, report.emulator.ifBlank { notSpecified }),
                 color = Accent, style = MaterialTheme.typography.bodyMedium)
             if (report.date.isNotBlank()) Text(report.date, color = TextSecondary, style = MaterialTheme.typography.bodySmall)
             if (report.upvotes != null && report.downvotes != null) Text(

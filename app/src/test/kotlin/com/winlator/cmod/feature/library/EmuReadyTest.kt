@@ -55,10 +55,32 @@ class EmuReadyTest {
         assertNull(EmuReady.selectGame(JsonObject(game() + ("status" to JsonPrimitive("PENDING"))), 220, title))
         assertNull(EmuReady.selectGame(JsonObject(game() + ("id" to JsonPrimitive("../../elsewhere"))), 220, title))
     }
+    @Test fun aBatchRowMatchIsTrustedButStillRequiresAnApprovedWindowsEntryWithAValidId() {
+        val trusted = game(name = "Half-Life 2: Episode One")
+        assertEquals(gameId, EmuReady.selectGame(trusted, 220, title, matchedBySteamAppId = true)!!.id)
+        assertNull(EmuReady.selectGame(game(platform = "nintendo_switch"), 220, title, matchedBySteamAppId = true))
+        assertNull(EmuReady.selectGame(JsonObject(game() + ("status" to JsonPrimitive("PENDING"))), 220, title, matchedBySteamAppId = true))
+        assertNull(EmuReady.selectGame(JsonObject(game() + ("id" to JsonPrimitive("../../elsewhere"))), 220, title, matchedBySteamAppId = true))
+        // A conflicting linked AppID is still a different game, not this Steam entry.
+        assertNull(EmuReady.selectGame(game(appId = "400"), 220, title, matchedBySteamAppId = true))
+    }
     @Test fun rpcErrorsAndInvalidShapesAreNotEmptyCompatibilityResults() {
         for (payload in listOf("{}", "[]", "not json", "{\"error\":{\"message\":\"offline\"}}")) {
             assertThrows(IOException::class.java) { EmuReady.envelope(payload) }
         }
+    }
+    @Test fun shapeProblemsUseAnUnexpectedResponseTypeSeparateFromNetworkFailures() {
+        // The UI keeps "Could not reach EmuReady" for transport errors and has a distinct
+        // wording for payloads that answered but could not be read.
+        for (payload in listOf("{}", "[]", "not json")) {
+            assertThrows(EmuReady.UnexpectedResponseException::class.java) { EmuReady.envelope(payload) }
+        }
+        assertThrows(EmuReady.UnexpectedResponseException::class.java) { runBlocking {
+            EmuReady.reports(220, title) { method, _ ->
+                if (method == "games.batchBySteamAppIds") lookup() else wrap(buildJsonObject { })
+            }
+        } }
+        assertThrows(IOException::class.java) { runBlocking { EmuReady.reports(220, title) { _, _ -> throw IOException("timeout") } } }
     }
     @Test fun anExactWindowsMatchReadsTheFilteredReportListOnly() = runBlocking {
         val calls = mutableListOf<String>()
@@ -86,6 +108,34 @@ class EmuReadyTest {
         } }
         assertEquals(gameId, page.game!!.id); assertFalse(page.game!!.appIdMatch)
     }
+    @Test fun aBatchSteamAppIdMatchIsTrustedWhenTheEntryHasNoLinkedAppId() = runBlocking {
+        val calls = mutableListOf<String>()
+        val windows = game(name = "Half-Life 2: Episode One")
+        val page = EmuReady.reports(220, title) { method, _ ->
+            calls += method
+            when (method) {
+                "games.batchBySteamAppIds" -> lookup(windows)
+                "listings.get" -> listings()
+                else -> error("Unexpected request: $method")
+            }
+        }
+        assertEquals(listOf("games.batchBySteamAppIds", "listings.get"), calls)
+        assertEquals(gameId, page.game!!.id); assertTrue(page.game!!.appIdMatch)
+    }
+    @Test fun aMissingBatchRowFallsBackToTheWindowsTitleSearch() = runBlocking {
+        val calls = mutableListOf<String>()
+        val page = EmuReady.reports(220, title) { method, _ ->
+            calls += method
+            when (method) {
+                "games.batchBySteamAppIds" -> wrap(buildJsonObject { put("success", true); putJsonArray("results") { } })
+                "games.get" -> search(listOf(game()))
+                "listings.get" -> listings()
+                else -> error("Unexpected request: $method")
+            }
+        }
+        assertEquals(listOf("games.batchBySteamAppIds", "games.get", "listings.get"), calls)
+        assertEquals(gameId, page.game!!.id); assertFalse(page.game!!.appIdMatch)
+    }
     @Test fun ambiguousWindowsTitlesDoNotSelectTheFirstEdition() = runBlocking {
         val duplicate = JsonObject(game() + ("id" to JsonPrimitive("00000000-0000-0000-0000-000000000001")))
         val page = EmuReady.reports(220, title) { method, _ -> when (method) {
@@ -93,7 +143,7 @@ class EmuReadyTest {
             "games.get" -> search(listOf(game(), duplicate))
             else -> error("Ambiguous title must not request reports")
         } }
-        assertNull(page.game); assertTrue(page.reports.isEmpty())
+        assertNull(page.game); assertTrue(page.reports.isEmpty()); assertTrue(page.ambiguous)
     }
     @Test fun noMatchingEntryAndAnEntryWithoutReportsRemainDistinct() = runBlocking {
         val missing = EmuReady.reports(220, title) { method, _ ->
@@ -103,12 +153,21 @@ class EmuReadyTest {
             if (method == "games.batchBySteamAppIds") lookup() else listings(emptyList())
         }
         assertNull(missing.game); assertNotNull(empty.game)
+        assertFalse(missing.ambiguous); assertFalse(empty.ambiguous)
         assertTrue(missing.reports.isEmpty()); assertTrue(empty.reports.isEmpty())
     }
-    @Test fun lookupResponseMustBelongToTheRequestedSteamAppId() {
-        assertThrows(IOException::class.java) { runBlocking {
-            EmuReady.reports(220, title) { _, _ -> lookup().replace("\"steamAppId\":\"220\"", "\"steamAppId\":\"400\"") }
-        } }
+    @Test fun aBatchRowForAnotherAppIdIsNotTrustedAndFallsBackToTheTitleSearch() = runBlocking {
+        val calls = mutableListOf<String>()
+        val page = EmuReady.reports(220, title) { method, _ ->
+            calls += method
+            when (method) {
+                "games.batchBySteamAppIds" -> lookup().replace("\"steamAppId\":\"220\"", "\"steamAppId\":\"400\"")
+                "games.get" -> search(emptyList())
+                else -> error("Unexpected request: $method")
+            }
+        }
+        assertEquals(listOf("games.batchBySteamAppIds", "games.get"), calls)
+        assertNull(page.game); assertFalse(page.ambiguous)
     }
     @Test fun serviceFailureAndCancellationPropagateWithoutAnIncompatibleVerdict() {
         assertThrows(IOException::class.java) { runBlocking { EmuReady.reports(220, title) { _, _ -> throw IOException("timeout") } } }

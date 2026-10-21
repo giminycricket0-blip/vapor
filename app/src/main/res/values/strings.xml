@@ -3264,12 +3264,15 @@ In your hands.</string>
     <string name="vapor_community_note">From EmuReady · Reported on other setups, not verified in Vapor. Settings are shown for reference and are not applied.</string>
     <string name="vapor_community_loading">Loading reports…</string>
     <string name="vapor_community_unavailable">Could not reach EmuReady. You can still play your game. Any reports already shown are from this visit.</string>
+    <string name="vapor_community_unexpected">EmuReady returned a response this app does not understand. You can still play your game. Try again later.</string>
     <string name="vapor_community_no_game">No matching Windows entry found. This does not mean the game is incompatible.</string>
+    <string name="vapor_community_ambiguous">More than one Windows entry matches this title, so no reports are shown. Browse EmuReady to choose the right entry.</string>
     <string name="vapor_community_empty">No community reports for this Windows entry yet.</string>
     <string name="vapor_community_title_match">Matched by Windows title: %1$s. Steam edition and build are not confirmed.</string>
     <string name="vapor_community_browse">Browse on EmuReady</string>
     <string name="vapor_community_source">Read original report</string>
     <string name="vapor_community_unknown_device">Device not specified</string>
+    <string name="vapor_community_not_specified">not specified</string>
     <string name="vapor_community_reported">Reported %1$s · %2$s</string>
     <string name="vapor_community_votes">%1$d positive · %2$d negative votes</string>
     <string name="vapor_community_view_settings">View reported settings</string>

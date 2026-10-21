@@ -23,6 +23,9 @@ internal object EmuReady {
     private const val LIMIT = 20
     private val uuid = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
 
+    /** The service answered, but not in a shape this reader understands. Not a network failure. */
+    class UnexpectedResponseException(message: String, cause: Throwable? = null) : IOException(message, cause)
+
     data class Game(val id: String, val title: String, val appIdMatch: Boolean)
     data class Setting(val label: String, val value: String)
     data class Report(
@@ -32,7 +35,8 @@ internal object EmuReady {
     ) {
         val sourceUrl get() = "$ORIGIN/listings/$id"
     }
-    data class Page(val game: Game?, val reports: List<Report>, val hasMore: Boolean = false)
+    /** [ambiguous] is true when several Windows entries matched, so no single entry was selected. */
+    data class Page(val game: Game?, val reports: List<Report>, val hasMore: Boolean = false, val ambiguous: Boolean = false)
 
     fun browseUrl(title: String) = "$ORIGIN/listings".toHttpUrl().newBuilder()
         .addQueryParameter("search", title.take(200)).build().toString()
@@ -51,9 +55,11 @@ internal object EmuReady {
         if (lookup["success"] != JsonPrimitive(true)) unavailable()
         val results = lookup["results"] as? JsonArray ?: unavailable()
         val row = results.mapNotNull { it as? JsonObject }.singleOrNull { it.text("steamAppId") == appId.toString() }
-            ?: unavailable()
-        // Even an AppID lookup can return a same-title console port. Require Windows.
-        var game = (row["game"] as? JsonObject)?.let { selectGame(it, appId, title) }
+        // A missing batch row is a normal answer for an unindexed game; still try the title search.
+        // A present row is keyed by the requested AppID, so its game is that Windows entry even
+        // when the entry itself has no linked AppID or its title differs in punctuation/accent.
+        var game = row?.let { (it["game"] as? JsonObject)?.let { data -> selectGame(data, appId, title, matchedBySteamAppId = true) } }
+        var ambiguous = false
         if (game == null) {
             val search = envelope(fetch("games.get", buildJsonObject {
                 put("search", title.take(100)); put("page", 1); put("limit", LIMIT)
@@ -62,9 +68,9 @@ internal object EmuReady {
             val candidates = games.mapNotNull { (it as? JsonObject)?.let { obj -> selectGame(obj, appId, title) } }
             val exact = candidates.filter { it.appIdMatch }
             game = if (exact.size == 1) exact.single() else if (exact.isEmpty()) candidates.singleOrNull() else null
+            ambiguous = game == null && candidates.size > 1
         }
-        if (game == null) return@withContext Page(null, emptyList())
-        val selected = game
+        val selected = game ?: return@withContext Page(null, emptyList(), ambiguous = ambiguous)
         val data = envelope(fetch("listings.get", buildJsonObject {
             putJsonArray("gameIds") { add(selected.id) }; put("page", 1); put("limit", LIMIT)
         }))
@@ -97,12 +103,14 @@ internal object EmuReady {
         }.take(60)
     }
 
-    internal fun selectGame(data: JsonObject, appId: Int, title: String): Game? {
+    internal fun selectGame(data: JsonObject, appId: Int, title: String, matchedBySteamAppId: Boolean = false): Game? {
         if (data.obj("system")?.text("key") != "microsoft_windows" || data.text("status") != "APPROVED") return null
         val id = data.text("id").takeIf(uuid::matches) ?: return null
         val knownId = data.obj("metadata")?.get("steamAppId")?.let { (it as? JsonPrimitive)?.contentOrNull }
         if (knownId != null && knownId != appId.toString()) return null
-        val exact = knownId == appId.toString()
+        // Title equality is only needed for the title-search fallback. A batch row already
+        // identifies the Steam AppID, so accept its Windows game without re-matching the title.
+        val exact = matchedBySteamAppId || knownId == appId.toString()
         if (!exact && !data.text("title").trim().equals(title.trim(), ignoreCase = true)) return null
         return Game(id, data.text("title").take(200), exact)
     }
@@ -123,7 +131,7 @@ internal object EmuReady {
 
     internal fun envelope(payload: String): JsonObject = try {
         Json.parseToJsonElement(payload).jsonObject.obj("result")?.obj("data")?.obj("json") ?: unavailable()
-    } catch (e: IllegalArgumentException) { throw IOException("EmuReady response unavailable", e) }
+    } catch (e: IllegalArgumentException) { throw UnexpectedResponseException("EmuReady response unavailable", e) }
 
     internal fun requestUrl(procedure: String, input: JsonObject) = "$ORIGIN/api/mobile/trpc/$procedure".toHttpUrl().newBuilder()
         .addQueryParameter("input", buildJsonObject { put("json", input) }.toString()).build()
@@ -140,7 +148,9 @@ internal object EmuReady {
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     try {
-                        if (!it.isSuccessful) unavailable()
+                        // An HTTP error means the service did not answer us, not that its payload
+                        // was malformed; the UI keeps that wording separate.
+                        if (!it.isSuccessful) throw IOException("EmuReady request failed with HTTP ${it.code}")
                         val body = it.body ?: unavailable()
                         if (body.contentLength() > MAX_BYTES) unavailable()
                         val buffer = Buffer()
@@ -156,7 +166,7 @@ internal object EmuReady {
         })
     }
 
-    private fun unavailable(): Nothing = throw IOException("EmuReady response unavailable")
+    private fun unavailable(): Nothing = throw UnexpectedResponseException("EmuReady response unavailable")
     private fun JsonObject.obj(key: String) = get(key) as? JsonObject
     private fun JsonObject.text(key: String) = (get(key) as? JsonPrimitive)?.contentOrNull.orEmpty()
     private fun JsonObject.number(key: String) = (get(key) as? JsonPrimitive)?.intOrNull?.takeIf { it >= 0 }

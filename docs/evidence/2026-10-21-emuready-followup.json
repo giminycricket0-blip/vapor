@@ -1,0 +1,340 @@
+{
+  "date": "2026-10-21",
+  "scope": "read-only EmuReady community reports: review follow-ups (match identity, catalog gating, distinct failure/ambiguity states, blank-title guard, minor wording) plus a Gradle download portability fix needed for verification; no settings import and no game qualification",
+  "base_commit": "8c9c94764d4a706857819ffded2089defdd8a8b3",
+  "predecessor_evidence": "docs/evidence/2026-10-21-emuready.json",
+  "source_state": "local uncommitted follow-up changes on top of clean 8c9c9476; not committed and not pushed",
+  "environment": {
+    "java": "OpenJDK 17.0.2 (Oracle Corporation 17.0.2+8-86)",
+    "gradle": "8.10.2",
+    "android_gradle_plugin_ndk": "27.3.13750724",
+    "android_gradle_plugin_cmake": "3.22.1",
+    "rust_cargo": "not installed in this environment",
+    "host": "macOS arm64, 16 GiB"
+  },
+  "review_findings_addressed": [
+    {
+      "id": "medium-batch-identity",
+      "severity": "medium",
+      "finding": "EmuReady.selectGame required trimmed title equality for batch rows whose game object lacks metadata.steamAppId, so an AppID-confirmed Windows entry could be discarded for punctuation/accent differences.",
+      "files": [
+        "app/src/main/feature/library/EmuReady.kt:58-61",
+        "app/src/main/feature/library/EmuReady.kt:106-114"
+      ],
+      "change": "The games.batchBySteamAppIds row is keyed by the requested Steam AppID, so its game is selected as that Windows entry via matchedBySteamAppId=true without re-matching the title. All prior identity guards remain: APPROVED status, microsoft_windows system, UUID id, and any linked metadata.steamAppId must equal the requested AppID. Title equality remains only for the games.get title-search fallback.",
+      "tests": [
+        "EmuReadyTest.aBatchSteamAppIdMatchIsTrustedWhenTheEntryHasNoLinkedAppId",
+        "EmuReadyTest.aBatchRowMatchIsTrustedButStillRequiresAnApprovedWindowsEntryWithAValidId",
+        "EmuReadyTest.aBatchRowForAnotherAppIdIsNotTrustedAndFallsBackToTheTitleSearch",
+        "EmuReadyTest.crossPlatformBatchMatchFallsBackToAUniqueWindowsTitle"
+      ]
+    },
+    {
+      "id": "medium-nonwindows-catalog-gating",
+      "severity": "medium/low",
+      "finding": "CommunityReportsButton rendered on every Steam catalog details page, including apps Steam marks as non-Windows.",
+      "files": [
+        "app/src/main/app/shell/SteamCatalogScreen.kt:780-782"
+      ],
+      "change": "Rendered only when game.windows != false. SteamCatalogItem.windows is Boolean? from the existing include_platforms data; known non-Windows apps hide the action, while unknown platform data keeps it so an absent field does not over-hide. A comment records the intent.",
+      "tests": [
+        "CommunityReportsUiTest.knownNonWindowsCatalogAppsDoNotOfferCommunityReports",
+        "CommunityReportsUiTest.windowsCatalogAppsOfferCommunityReports",
+        "SteamCatalogInstallUiTest.knownNonWindowsCatalogAppsDoNotOfferCommunityReports (device)",
+        "SteamCatalogInstallUiTest.windowsCatalogAppsOfferCommunityReports (device)"
+      ]
+    },
+    {
+      "id": "low-ambiguous-vs-missing",
+      "severity": "low",
+      "finding": "A missing Windows entry and several equally plausible Windows entries shared one message.",
+      "files": [
+        "app/src/main/feature/library/EmuReady.kt:38-39",
+        "app/src/main/feature/library/EmuReady.kt:62-73",
+        "app/src/main/app/shell/CommunityReports.kt:147-153",
+        "app/src/main/res/values/strings.xml vapor_community_ambiguous"
+      ],
+      "change": "Page carries ambiguous:Boolean=false. It is set only when the title-search fallback returns more than one acceptable candidate and none was selected. The modal shows a distinct wording for ambiguity and keeps the no-entry wording for a genuine miss.",
+      "tests": [
+        "EmuReadyTest.ambiguousWindowsTitlesDoNotSelectTheFirstEdition",
+        "EmuReadyTest.noMatchingEntryAndAnEntryWithoutReportsRemainDistinct",
+        "CommunityReportsUiTest.ambiguousWindowsEntriesHaveTheirOwnWordingAndNoCompatibilityVerdict"
+      ]
+    },
+    {
+      "id": "low-blank-title",
+      "severity": "low",
+      "finding": "Only appId>0 was guarded; a blank Steam title made EmuReady.reports require() throw and surface as a connection error.",
+      "files": [
+        "app/src/main/app/shell/CommunityReports.kt:44"
+      ],
+      "change": "The button is not created when appId <= 0 or gameTitle.isBlank(), so the modal cannot be opened into that state.",
+      "tests": [
+        "CommunityReportsUiTest.aBlankSteamTitleDoesNotCreateAnAction",
+        "CommunityReportsUiTest.aMissingSteamIdDoesNotCreateAnAction"
+      ]
+    },
+    {
+      "id": "low-missing-batch-row",
+      "severity": "low",
+      "finding": "A missing games.batchBySteamAppIds row threw instead of continuing to the games.get title search.",
+      "files": [
+        "app/src/main/feature/library/EmuReady.kt:58-62"
+      ],
+      "change": "A missing or unmatched batch row now means 'no game from the batch lookup' and processing continues into the title-search fallback. Malformed envelope/array shapes still fail as unexpected responses.",
+      "tests": [
+        "EmuReadyTest.aMissingBatchRowFallsBackToTheWindowsTitleSearch",
+        "EmuReadyTest.noMatchingEntryAndAnEntryWithoutReportsRemainDistinct"
+      ]
+    },
+    {
+      "id": "low-hardcoded-dashes",
+      "severity": "low",
+      "finding": "CommunityReports.kt hardcoded '—' fallbacks for blank performance/emulator values.",
+      "files": [
+        "app/src/main/app/shell/CommunityReports.kt:190-193",
+        "app/src/main/res/values/strings.xml vapor_community_not_specified"
+      ],
+      "change": "The fallback text comes from the new string resource vapor_community_not_specified ('not specified'); the wording remains honest about missing report data.",
+      "tests": [
+        "CommunityReportsUiTest.blankReportedFieldsFallBackToStringResources"
+      ]
+    },
+    {
+      "id": "low-browse-title",
+      "severity": "low",
+      "finding": "Browse on EmuReady always used the Steam title, even when the matched EmuReady entry had a different title.",
+      "files": [
+        "app/src/main/app/shell/CommunityReports.kt:92"
+      ],
+      "change": "The browse URL prefers page.game.title when it is non-blank and falls back to the Steam title while loading or when no entry matched.",
+      "tests": [
+        "CommunityReportsUiTest.browseUsesTheMatchedWindowsEntryTitleWhenItDiffers"
+      ]
+    },
+    {
+      "id": "low-unexpected-response-wording",
+      "severity": "low",
+      "finding": "Parse/shape failures were surfaced with the same 'Could not reach EmuReady' wording as transport failures.",
+      "files": [
+        "app/src/main/feature/library/EmuReady.kt:26-27",
+        "app/src/main/feature/library/EmuReady.kt:134",
+        "app/src/main/feature/library/EmuReady.kt:151-153",
+        "app/src/main/feature/library/EmuReady.kt:169",
+        "app/src/main/app/shell/CommunityReports.kt:63",
+        "app/src/main/app/shell/CommunityReports.kt:135",
+        "app/src/main/res/values/strings.xml vapor_community_unexpected"
+      ],
+      "change": "Shape/parse/limit failures throw EmuReady.UnexpectedResponseException (still an IOException). HTTP status failures and transport errors remain plain IOException. The modal tracks the two states separately and shows vapor_community_unexpected ('returned a response this app does not understand') for unreadable payloads, keeping 'Could not reach EmuReady' only for unreachable-service cases. Both states keep the retry action and never claim incompatibility.",
+      "tests": [
+        "EmuReadyTest.shapeProblemsUseAnUnexpectedResponseTypeSeparateFromNetworkFailures",
+        "CommunityReportsUiTest.anUnexpectedResponseHasItsOwnWordingSeparateFromAConnectionError",
+        "CommunityReportsUiTest.aServiceErrorOffersAnExplicitRetryAndNeverSaysIncompatible"
+      ]
+    },
+    {
+      "id": "build-portability-fetch-libretrodroid",
+      "severity": "build-blocker (not a review finding)",
+      "finding": "./gradlew :app:fetchLibretroDroid failed with java.io.IOException: Server returned HTTP response code: 406 for the pinned GitHub release URL, because URL.withInputStream sends the JDK default Accept header.",
+      "files": [
+        "app/build.gradle:88-111"
+      ],
+      "change": "FetchLibretroDroidTask.download now uses HttpURLConnection with explicit Accept: */* and User-Agent headers, bounded connect/read timeouts, redirects enabled, and a 2xx status check before streaming. The existing staging file, sha256 digest check, delete-on-mismatch, and rename-to-target flow are unchanged.",
+      "verification": {
+        "command": "rm -f app/build/libretrodroid/libretrodroid.aar && ./gradlew :app:fetchLibretroDroid --rerun-tasks --max-workers=4 --console=plain --no-configuration-cache",
+        "result": "BUILD SUCCESSFUL in 2s; 1 actionable task executed",
+        "artifact": "app/build/libretrodroid/libretrodroid.aar",
+        "artifact_sha256": "9b91b766fc8920b2bfb639c58d1057ce9fbab34252ea16fdee87cf5aea42a12d",
+        "pinned_sha256": "9b91b766fc8920b2bfb639c58d1057ce9fbab34252ea16fdee87cf5aea42a12d",
+        "matches_pin": true,
+        "pin_file": "tools/libretrodroid.version"
+      }
+    }
+  ],
+  "unaddressed_items": [
+    "rememberSaveable for the reports modal snapshot was explicitly skipped in the review brief",
+    "LIMIT/string duplication cleanup was explicitly skipped in the review brief",
+    "no live EmuReady request was made during this follow-up to re-validate real remote payload shapes; tests inject payloads",
+    "settings apply/import remains out of scope; the reader is still read-only"
+  ],
+  "changed_files": {
+    "app/build.gradle": "a8c44ef8161051929d6c69f9a00c279ad329bdc18597eb5d109780140a5dd6d6",
+    "app/src/main/feature/library/EmuReady.kt": "8ff49b7a7f97ee19c286fe788bd57c6d3c1bb39a81728262b04c8b99b2120c4e",
+    "app/src/main/app/shell/CommunityReports.kt": "c1e2e41923233d1d70180607beb7e8d0597b8ed361f459c15b3a3059e900b30a",
+    "app/src/main/app/shell/SteamCatalogScreen.kt": "9e62882ccd4699448964f30e65e69e26cf5dd43625ad1fd948cd5a42cd5c5157",
+    "app/src/main/res/values/strings.xml": "05b55e80a93189b1e1c19fb32e173f4bf3046f04d89b4f6700eabfa8b46eb7cc",
+    "app/src/test/kotlin/com/winlator/cmod/feature/library/EmuReadyTest.kt": "9b3737ba12ead52d6a6ab19e0da75250d989600c6599d7130dbb5d72a96ac49a",
+    "app/src/test/kotlin/com/winlator/cmod/app/shell/CommunityReportsUiTest.kt": "685b258b137c1b3df5c56d8544059e3267ad77831b22cd049b19e2ea81447c52",
+    "app/src/androidTest/kotlin/com/winlator/cmod/app/shell/SteamCatalogInstallUiTest.kt": "e81a26d73cfd3f0bb1c26bff0303744ec92440c1754e4e5cc30e99c55dd5c79c"
+  },
+  "jvm_suites": [
+    {
+      "name": "com.winlator.cmod.feature.library.EmuReadyTest",
+      "tests": 24,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time_seconds": 0.124
+    },
+    {
+      "name": "com.winlator.cmod.app.shell.CommunityReportsUiTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time_seconds": 27.429
+    }
+  ],
+  "static_checks": {
+    "command": "./gradlew :app:spotlessKotlinCheck (init-script target limited to the three changed main Kotlin files)",
+    "result": "3 pre-existing violations only, none introduced by this change: wildcard import in CommunityReports.kt (unchanged line 6), uppercase composable function names in SteamCatalogScreen.kt (unchanged), and max-line-length in EmuReady.kt lines 83/99 (both present at HEAD). The added/changed lines keep the same style as the surrounding code.",
+    "full_scan_note": "The unrestricted :app:spotlessKotlinCheck scan did not finish within roughly nine minutes in this environment and was stopped; the repository CI workflow (.github/workflows/pr-ci.yml) does not run spotless."
+  },
+  "verification_commands": [
+    {
+      "purpose": "fresh pinned artifact download after the header fix",
+      "command": "./gradlew :app:fetchLibretroDroid --rerun-tasks --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL (2s); aar sha256 matches tools/libretrodroid.version"
+    },
+    {
+      "purpose": "focused JVM suites",
+      "command": "./gradlew :app:testStandardDebugUnitTest --tests '*EmuReadyTest' --tests '*CommunityReportsUiTest' --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL (5m 2s); EmuReadyTest 24/24, CommunityReportsUiTest 17/17, 0 failures/errors/skips",
+      "note": "Executed once against the final source state above. A later reassurance invocation ran the same command and reported UP-TO-DATE without re-executing tests; no source changed between the executed run and the final state."
+    },
+    {
+      "purpose": "full debug APK build",
+      "command": "./gradlew :app:assembleStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD FAILED; :app:configureCMakeDebug[arm64-v8a] failed because CMake could not find the Rust cargo executable (wn-steam-client/CMakeLists.txt find_program CARGO_EXECUTABLE). cargo is not installed in this environment."
+    },
+    {
+      "purpose": "Kotlin/resource-only APK rebuild with cached native outputs",
+      "command": "./gradlew :app:assembleStandardDebug -x ':app:configureCMakeDebug[arm64-v8a]' -x ':app:buildCMakeDebug[arm64-v8a]' -x :app:externalNativeBuildStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL (16s); APK packaged from the updated Kotlin/resources. The three excluded tasks are the native CMake configure/build steps; the same arm64-v8a .so outputs from the previous local build of this HEAD were reused (native submodules are unchanged). This is not a fully reproducible native rebuild."
+    },
+    {
+      "purpose": "compile the instrumented test APK including the new device tests",
+      "command": "./gradlew :app:assembleStandardDebugAndroidTest -x ':app:configureCMakeDebug[arm64-v8a]' -x ':app:buildCMakeDebug[arm64-v8a]' -x :app:externalNativeBuildStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL (20s)"
+    },
+    {
+      "purpose": "boot AVD for instrumentation",
+      "command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 3072 -cores 4",
+      "result": "booted; adb serial emulator-5556, Android 16 / SDK 36, 4096-byte page; emulator killed with adb emu kill after the runs"
+    },
+    {
+      "purpose": "report-related Android checks",
+      "command": "ANDROID_SERIAL=emulator-5556 ./gradlew :app:connectedStandardDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.winlator.cmod.app.shell.CommunityReportsDeviceTest,com.winlator.cmod.app.shell.LibraryGamePageUiTest -x ':app:configureCMakeDebug[arm64-v8a]' -x ':app:buildCMakeDebug[arm64-v8a]' -x :app:externalNativeBuildStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL (3m 18s); 17/17 tests passed (CommunityReportsDeviceTest 5, LibraryGamePageUiTest 12), 0 failed, test time 155.682s",
+      "note": "The task's suggested --tests filters are not accepted by connectedStandardDebugAndroidTest in this AGP version, so the runner class argument was used instead."
+    },
+    {
+      "purpose": "catalog gating Android checks (new device tests)",
+      "command": "ANDROID_SERIAL=emulator-5556 ./gradlew :app:connectedStandardDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.winlator.cmod.app.shell.SteamCatalogInstallUiTest -x ':app:configureCMakeDebug[arm64-v8a]' -x ':app:buildCMakeDebug[arm64-v8a]' -x :app:externalNativeBuildStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+      "result": "BUILD SUCCESSFUL (1m 47s); 14/14 tests passed (0 failed, 77.114s), including knownNonWindowsCatalogAppsDoNotOfferCommunityReports and windowsCatalogAppsOfferCommunityReports"
+    }
+  ],
+  "apk": {
+    "path": "app/build/outputs/apk/standard/debug/standard.apk",
+    "bytes": 676229286,
+    "sha256": "8fd0f9d2bd9bb34bcd5916fc69fb505dd4f7decfd2c3f80c84bf03e28386621c",
+    "built_at_local": "2026-10-21T18:12:45+0100",
+    "signing": "development/debug",
+    "package": "app.vapor.android",
+    "versionName": "0.1.0-dev",
+    "native_libs": "39 arm64-v8a .so entries, reused from the previous local build because cargo is unavailable",
+    "contains_new_strings_and_classes": true,
+    "fully_native_rebuilt": false
+  },
+  "android_test_apk": {
+    "path": "app/build/outputs/apk/androidTest/standard/debug/app-standard-debug-androidTest.apk",
+    "bytes": 3695811,
+    "sha256": "c238ec5ab8be93be31cf692f96e43262b5f4c50a43962289d2a12fa6ab8b7695",
+    "built_at_local": "2026-10-21T18:14:49+0100"
+  },
+  "android": {
+    "emulator": {
+      "avd": "Vapor_UI_API36",
+      "serial": "emulator-5556",
+      "android": "16",
+      "sdk": 36,
+      "page_size": 4096,
+      "display": "1080x2400, 420 dpi",
+      "physical_phone": false,
+      "windowless": true,
+      "gpu": "lavapipe"
+    },
+    "runs": [
+      {
+        "purpose": "report-related Android checks (CommunityReportsDeviceTest plus the LibraryGamePageUiTest reports test)",
+        "filter_syntax": "-Pandroid.testInstrumentationRunnerArguments.class=<comma-separated class list>; the connected task rejects the --tests option in this AGP version, so no --tests filter was used",
+        "class_filter": "com.winlator.cmod.app.shell.CommunityReportsDeviceTest,com.winlator.cmod.app.shell.LibraryGamePageUiTest",
+        "command": "ANDROID_SERIAL=emulator-5556 ./gradlew :app:connectedStandardDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.winlator.cmod.app.shell.CommunityReportsDeviceTest,com.winlator.cmod.app.shell.LibraryGamePageUiTest -x ':app:configureCMakeDebug[arm64-v8a]' -x ':app:buildCMakeDebug[arm64-v8a]' -x :app:externalNativeBuildStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+        "tests": 17,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "per_class": {
+          "com.winlator.cmod.app.shell.CommunityReportsDeviceTest": 5,
+          "com.winlator.cmod.app.shell.LibraryGamePageUiTest": 12
+        },
+        "wall_time": "3m 18s Gradle build/install/instrument task time; 155.682s instrumentation test time",
+        "timestamp_local": "started about 2026-10-21T18:16:39+01:00; log finished 2026-10-21T18:19:57+01:00",
+        "apk_sha256": "8fd0f9d2bd9bb34bcd5916fc69fb505dd4f7decfd2c3f80c84bf03e28386621c",
+        "android_test_apk_sha256": "c238ec5ab8be93be31cf692f96e43262b5f4c50a43962289d2a12fa6ab8b7695",
+        "artifact_note": "The connected-results XML for this run was overwritten by the later 14-test run and no longer exists. The 17 total, zero failures/errors/skips and the wall time are recorded in the raw console log; the 5/12 per-class split was observed from that run's XML at the time, before it was overwritten."
+      },
+      {
+        "purpose": "catalog gating Android checks (new device tests)",
+        "filter_syntax": "-Pandroid.testInstrumentationRunnerArguments.class=<single class>; no --tests filter",
+        "class_filter": "com.winlator.cmod.app.shell.SteamCatalogInstallUiTest",
+        "command": "ANDROID_SERIAL=emulator-5556 ./gradlew :app:connectedStandardDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.winlator.cmod.app.shell.SteamCatalogInstallUiTest -x ':app:configureCMakeDebug[arm64-v8a]' -x ':app:buildCMakeDebug[arm64-v8a]' -x :app:externalNativeBuildStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "per_class": {
+          "com.winlator.cmod.app.shell.SteamCatalogInstallUiTest": 14
+        },
+        "wall_time": "1m 47s Gradle build/install/instrument task time; 77.114s instrumentation test time",
+        "timestamp_local": "finished 2026-10-21T18:22:08+01:00; suite XML timestamp 2026-10-21T17:22:07Z",
+        "apk_sha256": "8fd0f9d2bd9bb34bcd5916fc69fb505dd4f7decfd2c3f80c84bf03e28386621c",
+        "android_test_apk_sha256": "c238ec5ab8be93be31cf692f96e43262b5f4c50a43962289d2a12fa6ab8b7695",
+        "artifacts": {
+          "connected_results_xml": "app/build/outputs/androidTest-results/connected/debug/flavors/standard/TEST-Vapor_UI_API36(AVD) - 16-_app-standard.xml",
+          "connected_results_xml_sha256": "acc23b9d2bd29fa319ad0bd1bd88f7dc4dae17c510de71860eadd494f741da6a"
+        }
+      }
+    ],
+    "raw_logs": {
+      "17_test_run": {
+        "path": "/tmp/vapor-instrumentation-20261021.log",
+        "bytes": 10809,
+        "sha256": "bf398ca182926d5af89cd5948ea9f074234f64558c164e2216cb58dd03efbf29",
+        "observed": "Starting 17 tests on Vapor_UI_API36(AVD) - 16; Finished 17 tests on Vapor_UI_API36(AVD) - 16; BUILD SUCCESSFUL in 3m 18s"
+      },
+      "14_test_run": {
+        "path": "/tmp/vapor-instrumentation-catalog-20261021.log",
+        "bytes": 10317,
+        "sha256": "f75eb5ed834de7c9852bd9ebc3cdfafcf46c7c637c19017baaecae896a388f3a",
+        "observed": "Starting 14 tests on Vapor_UI_API36(AVD) - 16; Finished 14 tests on Vapor_UI_API36(AVD) - 16; BUILD SUCCESSFUL in 1m 47s"
+      },
+      "overwritten_artifacts": "Only the 14-test connected-results XML remains in app/build/outputs/androidTest-results (sha256 above); the 17-test XML was replaced. The earlier rejected --tests attempt wrote to the same /tmp log path and was overwritten by the successful 17-test run; no copy of that log remains.",
+      "location_note": "Both raw logs are local /tmp files on the verification machine, outside the repository; they existed at the time this receipt was written and were not committed."
+    },
+    "rerun_vs_carried_over": "All Android instrumentation reported here was re-run on the rebuilt APK and the rebuilt androidTest APK; no Android result was carried over from docs/evidence/2026-10-21-emuready.json.",
+    "live_service_requests": "none; every instrumentation load used injected fake pages/settings and source callbacks",
+    "screenshots_captured": false
+  },
+  "build_blockers": [
+    "Full :app:assembleStandardDebug fails at :app:configureCMakeDebug[arm64-v8a] because the Rust cargo executable is not installed (CMake wn-steam-client/CMakeLists.txt find_program CARGO_EXECUTABLE). Installing a Rust toolchain with Android targets was out of scope here, so the only successful APK build reuses cached native .so outputs and is not a native rebuild."
+  ],
+  "remaining": [
+    "physical phone and physical gamepad/TalkBack pass on the follow-up UI states",
+    "live EmuReady service availability and payload-shape re-validation",
+    "full native APK rebuild in an environment with cargo and the Android Rust targets",
+    "byte-for-byte APK reproducibility across machines",
+    "commercial service/data reuse agreement before any commercial distribution"
+  ],
+  "no_overclaims": "This receipt records a Kotlin/resource verification pass and device UI checks with injected data only. It does not claim a clean native app rebuild, live EmuReady verification, settings application, game launch, accessibility sign-off, or physical-hardware coverage."
+}
