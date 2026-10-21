@@ -1,0 +1,640 @@
+{
+  "date": "2026-10-21",
+  "scope": "Build-only validation plus a runtime A/B check of a minimal upstream-shaped staging-reclamation patch for the Vulkan wrapper (leegao/bionic-vulkan-wrapper at source commit 3abf48704a4d9303967a0811c0dc8ff8567d613b). The patch implements the fence-gated staging GC TODO at wrapper_device.c:1674-1675, initializes the staging tracking struct (review C9), checks its allocation (C10), adds failure cleanup to CreateStagingBuffer (C8), and makes the internal staging buffer + memory raw-dispatch objects so the reclamation path does not re-enter wrapper bookkeeping (review O1/C11 class). Patch application and compilation were verified; ELF identity was compared with the recorded candidate build; the patched stripped library was then run on a freshly booted Android emulator (emulator-5556, AVD Vapor_UI_API36, arm64-v8a/API 36, 4 KB pages, llvmpipe Vulkan) with the prior native probe, A/B against the recorded candidate payload. No Vapor app code, driver routing, payload or Gradle/build file was changed, and no game/Steam/Wine process was started.",
+  "base_vapor_commit": "63a2bbb3d2154c2a79a9a7b57feccf38b41f4565",
+  "base_vapor_branch": "Vapor",
+  "shared_task": "task-6",
+  "component": {
+    "name": "vulkan-wrapper staging resources (bionic-vulkan-wrapper)",
+    "source_repository": "https://github.com/leegao/bionic-vulkan-wrapper",
+    "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+    "prior_review_receipt": "docs/evidence/2026-10-21-vulkan-wrapper-staging.json",
+    "prior_binary_checks_receipt": "docs/evidence/2026-10-21-graphics-source.json",
+    "candidate_build_tree_readonly": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+    "candidate_source_readonly": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
+    "note": "The Codex tree was read only. The patch was applied to a fresh extraction of wrapper-build/source.tar.gz in /Users/cheng/wrapper-staging-reclaim/work/source."
+  },
+  "patch": {
+    "path": "tools/vulkan-wrapper/staging-reclaim.patch",
+    "bytes": 12813,
+    "lines": 305,
+    "sha256": "c92b69ebbbf244c74d05455e1bfff3da0c0aaff94bbd8a75ab4dc4f6308a6568",
+    "base_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+    "base_tree_provenance": {
+      "archive": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source.tar.gz",
+      "archive_sha256": "fe1f7e32f0c4b151f74b252ffda3f3561d56df96e3b17863f66c89b01b698f3d",
+      "archive_bytes": 47251711,
+      "recorded_source_archive": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source-archive.json",
+      "archive_hash_matches_recorded_archive_json": true
+    },
+    "base_file_sha256": {
+      "src/vulkan/wrapper/wrapper_objects.h": "1b11b380d560c6e1ee10efd89871b85cd524aaa5d42949eebc558194f3b96bce",
+      "src/vulkan/wrapper/wrapper_objects.c": "83ac639b1425f15d99ba00842ae2fd204d26e5dc5db1915d30f2f4e4affab6b8",
+      "src/vulkan/wrapper/wrapper_device.c": "385375d67f3594747f477aa07c14dcc363bea0998467a23fb508d09ca15513b7"
+    },
+    "base_file_hashes_match_prior_review": true,
+    "patched_file_sha256": {
+      "src/vulkan/wrapper/wrapper_objects.h": "b134065c9a603b1f47db63ea6eec92d0d86b4dd97cb540d6afceccbd204a9183",
+      "src/vulkan/wrapper/wrapper_objects.c": "752586261b5e50e5ae3604956b894bcfd28a1b17f931d996cb2997202eb41bfd",
+      "src/vulkan/wrapper/wrapper_device.c": "74b5eba6404f235077348741971265970b2cbb6d3d896e0c0d2a225fe186757f"
+    },
+    "files_changed": [
+      "src/vulkan/wrapper/wrapper_objects.h",
+      "src/vulkan/wrapper/wrapper_objects.c",
+      "src/vulkan/wrapper/wrapper_device.c"
+    ],
+    "hunks": [
+      {
+        "file": "src/vulkan/wrapper/wrapper_objects.h",
+        "hunk": "@@ -127,6 +127,13 @@",
+        "post_patch_lines": "127-139",
+        "purpose": "Add wrapper_command_buffer::usage_flags so one-time-submit command buffers can be distinguished from re-submittable ones."
+      },
+      {
+        "file": "src/vulkan/wrapper/wrapper_objects.c",
+        "hunk": "@@ -87,10 +87,16 @@",
+        "post_patch_lines": "89-99",
+        "purpose": "C9/C10: allocate wrapper_staging_resources with vk_zalloc, zero initialise ready/use_vk_object, and log-instead-of-crash on allocation failure."
+      },
+      {
+        "file": "src/vulkan/wrapper/wrapper_objects.c",
+        "hunk": "@@ -128,7 +134,7 @@",
+        "post_patch_lines": "137",
+        "purpose": "Fix the unhandled-type WLOGE format call (missing argument) found while re-reading the free path."
+      },
+      {
+        "file": "src/vulkan/wrapper/wrapper_device.c",
+        "hunk": "@@ -435,17 +435,181 @@",
+        "post_patch_lines": "439-613",
+        "purpose": "Add set_staging_resources_fence() and reclaim_completed_staging_resources(); stamp the application submission fence onto one-time-submit staging resources after successful vkQueueSubmit/vkQueueSubmit2; reclaim in vkWaitForFences and vkDeviceWaitIdle; reclaim a command buffer's staging resources in vkBeginCommandBuffer and vkResetCommandBuffer."
+      },
+      {
+        "file": "src/vulkan/wrapper/wrapper_device.c",
+        "hunk": "@@ -1027,7 +1191,14 @@",
+        "post_patch_lines": "1191-1204",
+        "purpose": "Create the internal staging VkBuffer through the raw dispatch table (CHECK instead of WCHECK), with a comment explaining why wrapper bookkeeping is deliberately bypassed."
+      },
+      {
+        "file": "src/vulkan/wrapper/wrapper_device.c",
+        "hunk": "@@ -1039,12 +1210,21 @@",
+        "post_patch_lines": "1210-1230",
+        "purpose": "C8: raw AllocateMemory/BindBufferMemory for the staging memory, plus destroy-buffer on allocate failure and destroy-buffer + free-memory on bind failure."
+      },
+      {
+        "file": "src/vulkan/wrapper/wrapper_device.c",
+        "hunk": "@@ -1430,9 +1610,11 @@",
+        "post_patch_lines": "1610-1620",
+        "purpose": "Image-view staging path: track the temporary VkImageView on the recording command buffer instead of the image."
+      },
+      {
+        "file": "src/vulkan/wrapper/wrapper_device.c",
+        "hunk": "@@ -1671,11 +1853,15 @@",
+        "post_patch_lines": "1853-1867",
+        "purpose": "Buffer path: replace the TODO with command-buffer ownership and track the staging VkBuffer/VkDeviceMemory on the recording command buffer."
+      }
+    ],
+    "apply_verification": {
+      "method": "Fresh copy of the three pristine base files in /tmp/applytest/src/vulkan/wrapper, then patch(1) from the tree root.",
+      "commands": [
+        "patch -p1 --fuzz=0 --dry-run < staging-reclaim.patch",
+        "patch -p1 --fuzz=0 < staging-reclaim.patch",
+        "patch -R -p1 --fuzz=0 --dry-run < staging-reclaim.patch"
+      ],
+      "forward_dry_run_clean": true,
+      "forward_apply_clean": true,
+      "reverse_dry_run_clean": true,
+      "applied_files_identical_to_built_tree": true,
+      "log": "/Users/cheng/wrapper-staging-reclaim/apply-test.log",
+      "log_sha256": "e34453848f15cb2c22a9d63716359917326b302169e22b679b5f7e8d75b75d4c"
+    }
+  },
+  "semantics": {
+    "problem_addressed": "The prior review found that per-image BCn staging VkBuffer/VkDeviceMemory (and the image-view path's VkImageView) are tracked on wimg->staging_resources, that wrapper_staging_resources::ready is never assigned, that the fence branch in free_staging_resources_if_ready is dead because its only caller passes cleanup_everything=true, and that the intended queue-fence GC is the TODO at wrapper_device.c:1674-1675. Long-lived images therefore accumulate two resources (or one view) per upload until image/device destroy.",
+    "ownership_change": "Staging resources are now owned by the wrapper_command_buffer that records the commands referencing them (both the VkBuffer/VkDeviceMemory path and the image-view path), not by the image. The image's staging_resources list is still initialized and its destroy path still calls free_staging_resources_final, but it is now empty in both paths.",
+    "completion_gated_reclaim_points": [
+      "vkBeginCommandBuffer / vkResetCommandBuffer: Vulkan only allows these from the initial state, which requires a preceding reset, and a command buffer can only be reset once all submissions using it have completed. The command buffer's staging list is therefore freed unconditionally at these points (free_staging_resources_final / cleanup_everything=true). This is the reclaim path for re-submittable command buffers.",
+      "vkWaitForFences: after a VK_SUCCESS wait, one-time-submit command buffers whose staging resources were stamped with one of the waited fences are released via free_staging_resources_if_ready(..., cleanup_everything=false), which is the fence branch that was dead before this patch. One-time-submit command buffers can never be resubmitted, so releasing as soon as that submission's fence has signalled is safe even though the command buffer itself may still exist.",
+      "vkDeviceWaitIdle: after VK_SUCCESS all submitted work is complete, so one-time-submit command buffers that were handed a submission fence are released unconditionally (cleanup_everything=true) without dereferencing the fence, which may already have been destroyed by the application. This covers applications that submit with a fence but wait with vkDeviceWaitIdle.",
+      "wrapper_command_buffer_destroy (existing): still frees the command buffer's staging list with cleanup_everything=true on vkFreeCommandBuffers/vkDestroyCommandPool/vkDestroyDevice."
+    ],
+    "fence_assignment": "WRAPPER_QueueSubmit and WRAPPER_QueueSubmit2, after a successful submit, walk the submitted command buffers and set wrapper_staging_resources::ready to the VkFence the application passed, but only for command buffers recorded with VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT. Re-submittable command buffers are deliberately not handed to the fence because a later submission would reuse the same recorded staging handles; their resources are released from the begin/reset/destroy paths instead. Submission fences are only stored; no wrapper-owned fence or extra submit is created. Queue-submit wait/signal semaphores are not tracked.",
+    "safety_notes": [
+      "The stored fence handle is dereferenced only inside WRAPPER_WaitForFences after that call returned VK_SUCCESS, i.e. while the application's own wait call is still on the stack and the fence is valid; the device-idle path uses cleanup_everything=true and never touches the handle.",
+      "For waitAll=VK_FALSE with more than one fence the signalled fence is not knowable; such resources are left for the device-idle or command-buffer-destroy path rather than guessed.",
+      "A one-time-submit command buffer submitted without a fence keeps its resources until begin/reset/destroy; those paths are still completion-gated by Vulkan valid usage.",
+      "Free order is unchanged (list insertion order: VkBuffer before its VkDeviceMemory; forward iteration)."
+    ],
+    "review_findings_addressed": {
+      "C1/C3": "Fence-gated/command-buffer-gated reclamation replaces destroy-only retention; growth is now bounded by command-buffer lifetime instead of image lifetime (and by submission-fence completion for one-time submits). Runtime growth reduction is NOT measured.",
+      "C8": "CreateStagingBuffer failure paths now destroy the buffer / free the memory.",
+      "C9": "wrapper_staging_resources::ready and use_vk_object are zero-initialised via vk_zalloc.",
+      "C10": "add_staging_resource_to no longer dereferences an unchecked vk_alloc result; it logs and returns.",
+      "O1/C11 class": "The internal staging VkBuffer and VkDeviceMemory are now created and freed with the raw dispatch table only (CHECK/CHECKV), so they are never registered in device->buffer_map and never enter the wrapper emulated VkDeviceMemory path; raw FreeMemory is balanced in both the memoryMapPlaced-emulated and non-emulated cases. This also avoids re-entering WRAPPER_DestroyBuffer/WRAPPER_FreeMemory while device->resource_mutex is held by command-buffer teardown (which would deadlock). The O1 double-free is therefore not reachable through staging allocations after this patch, but this was not runtime-validated."
+    }
+  },
+  "build": {
+    "scratch_root": "/Users/cheng/wrapper-staging-reclaim",
+    "source_tree": "/Users/cheng/wrapper-staging-reclaim/work/source",
+    "build_tree": "/Users/cheng/wrapper-staging-reclaim/work/build",
+    "source_preparation": [
+      "Extracted wrapper-build/source.tar.gz (commit 3abf4870) into work/source.",
+      "Copied the SPIRV-Tools static libraries and headers from the candidate source tree into work/source/src/vulkan/wrapper/{lib,include} because they are not part of the downloaded tarball and the wrapper meson.build expects them there (spirv_tools_lib_dir = current_source_dir()/lib, spirv_tools_inc = include_directories('include')). The copied files are read-only inputs from the Codex candidate tree, unmodified: libSPIRV-Tools.a sha256 f71b46d46110cf1d894a81faac47188aa4cdec4366217c2f41b7646788512dcf, libSPIRV-Tools-opt.a sha256 29f201bef4920013049d19cce334cce915196feb6c8e386641f02def8ec5eebd.",
+      "Applied tools/vulkan-wrapper/staging-reclaim.patch with patch -p1 --fuzz=0."
+    ],
+    "recipe": {
+      "meson": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson (1.9.1)",
+      "ninja": "/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin/ninja (1.10.2)",
+      "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang (Android NDK r27.3.13750724, clang 18.0.4)",
+      "cross_file": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/android.ini",
+      "native_file": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/native.ini",
+      "configure": "meson setup work/build work/source --cross-file <android.ini> --native-file <native.ini> --buildtype release --prefix=/usr -Dplatforms=x11 -Dplatform-sdk-version=34 -Dandroid-stub=true -Dvulkan-drivers=wrapper -Dgallium-drivers= -Dglx=disabled -Degl=disabled -Dgbm=disabled -Dllvm=disabled -Dopengl=false -Dandroid-libbacktrace=disabled -Dxmlconfig=disabled",
+      "configure_defines": "meson configure work/build -Dc_args=['-D__TERMUX__', '-include', 'fcntl.h'] -Dcpp_args=['-D__TERMUX__', '-include', 'fcntl.h', '-Wno-c++11-narrowing']",
+      "configure_link": "meson configure work/build with the recorded 16 KB max-page-size link args, -L<hooks>, -ladrenotools -landroid-shmem and -lc++_shared for C++ (identical to docs/evidence/2026-10-21-graphics-source.json final configuration)",
+      "build": "ninja -C work/build -j4 src/vulkan/wrapper/libvulkan_wrapper.so",
+      "script": "/Users/cheng/wrapper-staging-reclaim/build.sh (sha256 460e78959d6348ff19931c4a62a3e4db71e6d594038ea1f889759035311c674f)"
+    },
+    "env": {
+      "PATH": "turnip-queue-qualification/build-venv/bin, turnip-queue-qualification/host-tools/bin, dxvk-qualification/glslang/bin, Android sdk cmake/3.22.1/bin, host PATH",
+      "PKG_CONFIG_LIBDIR": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/pkgconfig",
+      "PKG_CONFIG_SYSROOT_DIR": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64"
+    },
+    "result": "SUCCESS",
+    "ninja_progress": "471/471 targets built; linked src/vulkan/wrapper/libvulkan_wrapper.so on the first attempt after the tarball + read-only SPIRV-Tools inputs were assembled",
+    "compiler_warnings_in_touched_files": 0,
+    "compiler_warnings_total_in_build_log": 14,
+    "compiler_warnings_note": "All 14 warnings are pre-existing and come from unrelated files/headers (e.g. artifacts.cpp, wrapper_private.h, vk_render_pass.h); wrapper_device.c and wrapper_objects.c emitted none.",
+    "output": {
+      "path": "/Users/cheng/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+      "bytes": 131385216,
+      "sha256": "e8eae86bd4174b0035c04db875a0080cfaef2d1fe294b0f4bc2d0c494e62079e"
+    },
+    "logs": {
+      "setup": "/Users/cheng/wrapper-staging-reclaim/setup.log (sha256 072871e842867db50dcdef89fcfc97074143ca7568d9287f41e5cc2158c96279)",
+      "build": "/Users/cheng/wrapper-staging-reclaim/build.log (sha256 2352b86f87d456f4e7d5c68ec20d0e082e4197ae4808ef41994813973a18ad47)",
+      "final_configuration": "/Users/cheng/wrapper-staging-reclaim/final-configuration.log (sha256 c340fb09574b08e4b7751148756609dba81e5d96aaf06e0e31979def434e5432; captured with meson configure after the build, 339 lines)"
+    }
+  },
+  "elf_comparison": {
+    "method": "Android NDK 27.3.13750724 llvm-readelf --dyn-syms/--dynamic/--program-headers on the recorded candidate.so and on the newly built library; export list = defined .dynsym entries (Ndx != UND) as [Type, Bind, Vis, Name]; undefined list = UND entries. The recorded candidate values are from docs/evidence/2026-10-21-graphics-source.json binary_checks (identical to wrapper-build/binary-checks.json). The recorded exports_sha256 hash aggregation could not be reproduced from candidate-exports.json, so exact export identity is asserted via the full sorted [Type, Bind, Vis, Name] list versus candidate-exports.json and via a documented name-hash, not by re-deriving the recorded hash.",
+    "candidate_recorded": {
+      "bytes": 131380432,
+      "sha256": "b5b29de3cfc9b666b601968703af1d45ea122af3c1813e09525a73908f7423df",
+      "soname": [
+        "libvulkan_wrapper.so"
+      ],
+      "needed_count": 20,
+      "needed": [
+        "libadrenotools.so",
+        "libandroid-shmem.so",
+        "libc++_shared.so",
+        "libcutils.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libz.so.1",
+        "libm.so",
+        "libzstd.so.1",
+        "libxcb.so",
+        "libX11-xcb.so",
+        "libxcb-dri3.so",
+        "libxcb-present.so",
+        "libxcb-sync.so",
+        "libxcb-randr.so",
+        "libxcb-shm.so",
+        "libdrm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "load_alignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "build_tree_runpath_present": true,
+      "export_count": 4073,
+      "exports_sha256_recorded": "52ed34a866cdc46efdb2fe6755f3423e098712cc770c4ad3cfc1bf7dcc15400f",
+      "strong_undefined_count_recorded": 434,
+      "strong_undefined_sha256_recorded": "b50658725190e297b8cad0f9e7b8eb0c89c99070113fa86e05c2a9de82a8af39"
+    },
+    "patched_measured": {
+      "bytes": 131385216,
+      "sha256": "e8eae86bd4174b0035c04db875a0080cfaef2d1fe294b0f4bc2d0c494e62079e",
+      "soname": [
+        "libvulkan_wrapper.so"
+      ],
+      "needed_count": 20,
+      "needed": [
+        "libadrenotools.so",
+        "libandroid-shmem.so",
+        "libc++_shared.so",
+        "libcutils.so",
+        "liblog.so",
+        "libnativewindow.so",
+        "libsync.so",
+        "libz.so.1",
+        "libm.so",
+        "libzstd.so.1",
+        "libxcb.so",
+        "libX11-xcb.so",
+        "libxcb-dri3.so",
+        "libxcb-present.so",
+        "libxcb-sync.so",
+        "libxcb-randr.so",
+        "libxcb-shm.so",
+        "libdrm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "load_alignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ],
+      "build_tree_runpath_present": true,
+      "export_count": 4073,
+      "exports_sorted_by_name_sha256": "ab7bf344699f3ae606f63d6953a662b7f705fdc37391c5460dbfec92cd044073",
+      "undefined_symbol_count": 439
+    },
+    "comparison": {
+      "same_soname": true,
+      "same_needed_set_and_order": true,
+      "same_needed_count": true,
+      "same_load_alignments": true,
+      "same_export_count": true,
+      "same_export_name_list": true,
+      "patched_export_set_equals_recorded_candidate_exports_json": true,
+      "same_undefined_symbol_list_as_candidate": true,
+      "expected_binary_difference": "The new library is 4784 bytes larger (131385216 vs 131380432) and has a different sha256; this is expected because the patch adds code and the build is a fresh build of upstream 3abf4870 + this patch, whereas candidate.so also carries the pre-existing image-create and trace-gate patches. Exported ABI, dependency set and LOAD alignment are identical.",
+      "note_on_recorded_undefined_count": "The recorded strong_undefined_count=434 uses a stricter filter than this comparison's 439 UND entries (this script counts every non-LOCAL UND dynsym entry, including weak ones). The important check is that the patched library's undefined name list is identical to candidate.so's."
+    },
+    "function_symbols_nm_S": {
+      "candidate": {
+        "add_staging_resource_to": "0x60",
+        "free_staging_resources_if_ready": "0x1d8",
+        "wrapper_image_destroy": "0xc4",
+        "wrapper_command_buffer_destroy": "0x58"
+      },
+      "patched": {
+        "add_staging_resource_to": "0xc8",
+        "free_staging_resources_if_ready": "0x1e0",
+        "reclaim_completed_staging_resources": "0x16c",
+        "set_staging_resources_fence": "inlined",
+        "wrapper_BeginCommandBuffer": "0x28c",
+        "wrapper_ResetCommandBuffer": "0x264",
+        "wrapper_WaitForFences": "0x344",
+        "wrapper_DeviceWaitIdle": "0x26c",
+        "wrapper_QueueSubmit": "0x3ac",
+        "wrapper_QueueSubmit2": "0x3a8",
+        "wrapper_image_destroy": "0xc4",
+        "wrapper_command_buffer_destroy": "0x58"
+      },
+      "note": "New hooks are local hidden symbols (t), so the exported ABI is unchanged. wrapper_image_destroy and wrapper_command_buffer_destroy are byte-size identical to the candidate, i.e. their existing destroy-path logic is untouched."
+    }
+  },
+  "confirmed": [
+    "tools/vulkan-wrapper/staging-reclaim.patch applies to a pristine extraction of source commit 3abf48704a4d9303967a0811c0dc8ff8567d613b with `patch -p1 --fuzz=0` (forward dry-run, forward apply, reverse dry-run all clean); applied file hashes equal the files used for the build.",
+    "The patched tree compiles and links the full aarch64 Android wrapper library with the recorded Meson/NDK recipe (meson 1.9.1, NDK r27.3.13750724 clang 18.0.4, record link flags, 16 KB max-page-size): ninja reached 471/471 and produced libvulkan_wrapper.so. No compiler warnings or errors were emitted for wrapper_device.c or wrapper_objects.c.",
+    "The patch's intended sources are the only changed files: wrapper_objects.h (usage_flags field), wrapper_objects.c (zalloc + null check + init, WLOGE format fix), wrapper_device.c (new fence/command-buffer reclaim helpers and vkQueueSubmit/vkQueueSubmit2/vkWaitForFences/vkDeviceWaitIdle/vkBeginCommandBuffer/vkResetCommandBuffer hooks, staging allocation/failure cleanup and raw internal allocation, tracking-parent changes at both staging sites).",
+    "The new completion/reclaim hooks are present in the linked binary as local hidden symbols: wrapper_BeginCommandBuffer, wrapper_ResetCommandBuffer, wrapper_WaitForFences, wrapper_DeviceWaitIdle, wrapper_QueueSubmit, wrapper_QueueSubmit2, plus reclaim_completed_staging_resources; wrapper_image_destroy and wrapper_command_buffer_destroy sizes are unchanged, so no existing destroy logic was edited.",
+    "The built library matches the recorded candidate ELF identity for the compared properties: SONAME libvulkan_wrapper.so, the same 20 NEEDED libraries, four LOAD segments all aligned 0x4000, 4073 exported symbols whose full [Type, Bind, Vis, Name] set is identical to the recorded candidate-exports.json, and an identical undefined-symbol name list.",
+    "No existing Vapor repository file was modified and nothing was committed; the only repository additions are tools/vulkan-wrapper/staging-reclaim.patch and this receipt.",
+    "Runtime validation on emulator-5556 (AVD Vapor_UI_API36, arm64-v8a/API 36, 4 KB pages) with the prior native probe: 7 runs, all exit code 0, all pixel checks passed, 'PASS clean-exit' in every run, no wrapper staging-path errors and no probe crash/tombstone.",
+    "A/B against the recorded candidate on the same emulator/probe: control (candidate.so, USE_IMAGE_VIEW=0, 32 cycles) releases 64 staging resources in a single call at vkDestroyImage; the patched library releases the same 64 resources as 32 two-resource calls during the workload (command-buffer free), and USE_IMAGE_VIEW=1 releases 32 tracked image views as 32 one-resource calls.",
+    "Fence-gated reclamation is runtime-validated: one-time-submit command buffers with an application fence release their staging resources inside vkWaitForFences (release log lines appear between the probe's before-wait/after-wait markers), and the same resources are released inside vkDeviceWaitIdle when the application never waits the fence.",
+    "Command-buffer ownership is runtime-validated for re-submittable command buffers: even when the application passes a fence, staging resources are released inside vkFreeCommandBuffers (between after-wait and after-free-cmd markers), matching the design that such command buffers must not be handed to the submission fence."
+  ],
+  "not_validated": [
+    "vkBeginCommandBuffer/vkResetCommandBuffer reclaim and command-buffer re-record/reuse cycles were not exercised in a dedicated run (early releases observed came from vkFreeCommandBuffers, vkWaitForFences and vkDeviceWaitIdle).",
+    "The wrapper-emulated-memory / VK_EXT_map_memory_placed path was not exercised on the emulator (lavapipe does not enable it); the raw-dispatch staging allocation change and the O1 double-free fix are not runtime-proven.",
+    "Concurrency/thread-safety is not validated: staging lists are still mutated without the per-object resource_mutex and the wrapper still relies on Vulkan external synchronization.",
+    "No Khronos validation-layer run was performed, so no VUID cleanliness is claimed for the new hooks or the changed staging ownership.",
+    "No real game/streaming workload or physical phone was used, so the retention/memory-growth reduction is not quantified (only the release points are shown).",
+    "Only binary fences are handled; submit-time semaphores/timeline semaphores are not tracked.",
+    "vkQueueSubmit2 is compiled and symbol-checked but was not executed (the probe uses vkQueueSubmit).",
+    "Only 4 KB pages were used at runtime; the 16 KB-page case was not re-validated with this patch.",
+    "A one-time-submit command buffer submitted without a fence was not exercised; expected bounded retention until begin/reset/destroy is unverified."
+  ],
+  "residual_risks_not_addressed": [
+    "free_staging_resources_if_ready still ignores driver return codes (review C12) and still destroys objects through the raw dispatch table; wrapper bookkeeping for staging is avoided by construction but not asserted.",
+    "A one-time-submit command buffer submitted without a fence, or submitted with a fence the application never waits (and never calls vkDeviceWaitIdle for), keeps its staging resources until the command buffer is re-begun/reset/freed. This is bounded retention, not a leak past command-buffer destruction.",
+    "The image destroy path still calls free_staging_resources_final on wimg->staging_resources, but the image lists are now always empty. Keeping the call is deliberate to preserve the existing failure-path behavior if another tracking site is added later.",
+    "Staging views tracked on a command buffer can outlive a destroyed parent image if the application destroys the image while the command buffer still holds recorded references; this is an application valid-usage violation and the wrapper still does not detect or prevent it (prior review C2).",
+    "The patch does not move the reclamation into queue-submit itself for re-submittable command buffers; that is intentional because the application's fence cannot prove the command buffer will not be resubmitted."
+  ],
+  "next_validation": {
+    "status": "core reclamation validated on emulator-5556 on 2026-10-21; remaining fixtures below are still pending",
+    "blocker": "Port 5556 was returned after these runs (`adb emu kill`); any further run needs the emulator/port re-allocated (or a physical phone). No device is owned by this task now.",
+    "exact_fixture_needed": {
+      "device": "aarch64 Android device or emulator, API 34, Vulkan 1.3 with the wrapper library loaded as the ICD (the wrapper must be the layer doing BCn emulation), 4 KB or 16 KB page size; physical Adreno/Mali phone is preferred for the memoryMapPlaced sub-case. If an emulator is used it must run on a newly allocated port/serial (NOT 5556) and be recorded with its AVD name, GPU mode and driver version.",
+      "probe": "tools/tests/vulkan-wrapper-native.c (prior receipt identity: source sha256 03909d3d077cd49bf35bef0d31288196b8fd26d82a1bc470b63d23041a54a0f7, binary sha256 5eae550c7581bbf67eb8bf00347ec991166ad3f77df8d60cdc906778a764f0d9), rebuilt for the fixture, pushed together with the patched libvulkan_wrapper.so and its NEEDED libraries.",
+      "base_run": "LD_LIBRARY_PATH=<dir> PREFIX=<dir> WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 ./probe ./libvulkan_wrapper.so bc1 32 16",
+      "expected_checks": [
+        "32 'Tracking new staging buffer for image 0' lines as before.",
+        "'Released N staging resources' now appears before vkDestroyImage (per-cycle/at-fence) for the one-time-submit+fence variant, and the release that happens inside vkDestroyImage is 0 or much smaller than the prior single 64-resource release; total released across the run still equals the number tracked (no double free, no unreleased entries).",
+        "Repeat with USE_IMAGE_VIEW=1: 'Tracking stagingImageView' lines are released at command-buffer begin/reset or at the submission fence, not at image destroy."
+      ],
+      "additional_cases": [
+        "One-time-submit+fence case: record the BCn upload into a command buffer begun with VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, submit it with a fence, vkWaitForFences, then vkDestroyImage; require the release log line to appear after the wait and before image destroy.",
+        "DeviceWaitIdle case: submit the same one-time command buffer with a fence, never wait that fence, call vkDeviceWaitIdle, then vkDestroyImage; require the release at vkDeviceWaitIdle and no crash.",
+        "Fence-destruction case: wait the fence, destroy the fence, then call vkDeviceWaitIdle and vkDestroyImage; require no invalid-fence use (device-idle reclaim path is not supposed to dereference the stored fence).",
+        "Growth case: long-lived image, N=1000+ CmdCopyBufferToImage uploads from per-frame reset command buffers; record tracked-release counts and process RSS/VkDeviceMemory count at N=100 and N=1000; require no linear growth.",
+        "Placed-memory case: enable VK_EXT_map_memory_placed + VkPhysicalDeviceMapMemoryPlacedFeaturesEXT.memoryMapPlaced on a supporting driver, WRAPPER_LOG_MEMORY=1, do one staging upload, destroy device; require no double vkFreeMemory of the same handle and no wrapper emulated allocation for the staging buffer memory.",
+        "Validation case: all of the above with Khronos validation layers enabled; require no VUID for the new wrapper hooks or for the staging view/command-buffer lifetime."
+      ],
+      "adb_shape": "adb -s <allocated-serial> push <patched libvulkan_wrapper.so> /data/local/tmp/vapor-staging-reclaim/libvulkan_wrapper.so; adb -s <allocated-serial> push <probe> /data/local/tmp/vapor-staging-reclaim/probe; adb -s <allocated-serial> shell 'cd /data/local/tmp/vapor-staging-reclaim && LD_LIBRARY_PATH=. PREFIX=. WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 ./probe ./libvulkan_wrapper.so bc1 32 16'",
+      "remaining_cases": [
+        "Long-lived command buffer path: record into a command buffer, submit, wait, then vkResetCommandBuffer or vkResetCommandPool and re-begin; expect 'Released N' at reset/begin (current runs only covered vkFreeCommandBuffers).",
+        "One-time-submit command buffer submitted WITHOUT a fence: expect retention until begin/reset/destroy, then release; verify no growth across command-buffer destroy.",
+        "Placed-memory path: physical driver with VK_EXT_map_memory_placed + VkPhysicalDeviceMapMemoryPlacedFeaturesEXT.memoryMapPlaced, WRAPPER_LOG_MEMORY=1, one staging upload, vkDestroyDevice; expect no double vkFreeMemory and no wrapper emulated allocation for the staging memory.",
+        "Validation-layer pass over the same runs (no VUID for new hooks, view/command-buffer lifetime).",
+        "Physical phone long-running workload (N=1000+ uploads to one long-lived image, per-frame reset command buffers) measuring release counts and RSS/VkDeviceMemory count at N=100 and N=1000.",
+        "16 KB-page device run with the same patched library.",
+        "Multi-threaded recording + destroy stress (external-sync contract).",
+        "vkQueueSubmit2 variant of the one-time-submit+fence run."
+      ]
+    },
+    "already_done": [
+      "Base probe USE_IMAGE_VIEW=0 32 cycles on candidate (control) and patched library, A/B release-point comparison.",
+      "Base probe USE_IMAGE_VIEW=1 32 cycles on patched library.",
+      "probe-staging with PROBE_ONE_TIME=1 + PROBE_WAIT_MODE=fence (8 cycles): fence-gated release inside vkWaitForFences.",
+      "probe-staging with PROBE_ONE_TIME=1 + PROBE_WAIT_MODE=deviceidle (8 cycles): release inside vkDeviceWaitIdle.",
+      "probe-staging with PROBE_ONE_TIME=0 + PROBE_WAIT_MODE=fence (8 cycles): re-submittable command buffer releases at vkFreeCommandBuffers.",
+      "probe-staging with PROBE_ONE_TIME=1 + PROBE_WAIT_MODE=fence + USE_IMAGE_VIEW=1 (8 cycles): image-view release at the fence."
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "tools/vulkan-wrapper/staging-reclaim.patch",
+      "sha256": "c92b69ebbbf244c74d05455e1bfff3da0c0aaff94bbd8a75ab4dc4f6308a6568",
+      "role": "The patch under review."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+      "sha256": "e8eae86bd4174b0035c04db875a0080cfaef2d1fe294b0f4bc2d0c494e62079e",
+      "role": "Library built from the patched tree with the recorded recipe; ELF-checked against candidate.so."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/elf-report.json",
+      "role": "Machine-readable ELF comparison behind elf_comparison (same data embedded above)."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/build.log",
+      "sha256": "2352b86f87d456f4e7d5c68ec20d0e082e4197ae4808ef41994813973a18ad47",
+      "role": "Full configure+regenerate+build log of the successful build."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/apply-test.log",
+      "sha256": "e34453848f15cb2c22a9d63716359917326b302169e22b679b5f7e8d75b75d4c",
+      "role": "patch(1) forward dry-run/apply/reverse dry-run on a clean base-file copy."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/run-r0-candidate-32v0.log",
+      "sha256": "f46c8308d3165649a9b2221895fa9f28a34d6f93a7cccd38fa993ccd7ed854e4",
+      "role": "Control run: candidate.so, USE_IMAGE_VIEW=0, 32 cycles; single 64-resource release at image destroy."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/run-r1-patched-32v0.log",
+      "sha256": "c21e16a091126057d487bc042d42fe83f31c1230c4b658f3a31933b0c0f5e218",
+      "role": "Patched buffer path, 32 cycles; 32 two-resource releases during the workload."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/run-r2-patched-32v1.log",
+      "sha256": "a9ae167576460cb1cb2632ba38f8fb4d1b164baedf914f643e0b5e8b2341ada8",
+      "role": "Patched image-view path, 32 cycles; 32 one-resource releases during the workload."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/run-r3-oneshot-fence.log",
+      "sha256": "6a92d516b5cfb0e9de7961b0cb51a97fc731c02765d89b4440fbb4118206dc1b",
+      "role": "One-time-submit + fence, 8 cycles; releases inside vkWaitForFences."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/run-r4-oneshot-deviceidle.log",
+      "sha256": "da267c9090d563d28d061d263da2b135bfa7e3e2c23352c63ad997cb72dcde96",
+      "role": "One-time-submit + unfenced wait + vkDeviceWaitIdle, 8 cycles; releases inside vkDeviceWaitIdle."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/run-r5-resubmit-fence.log",
+      "sha256": "75b370494cf7452b061f85a2d28789888fc6ba0ee2b61e056a74f778ccb15f70",
+      "role": "Re-submittable command buffer + fence, 8 cycles; releases inside vkFreeCommandBuffers (fence not used for re-submittable CBs)."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/run-r6-oneshot-view1.log",
+      "sha256": "f5b032fccf06f289359431e5ab2f61bcf43bad1a376ae75b2a845c4e9b3160c9",
+      "role": "Image-view + one-time-submit + fence, 8 cycles; view releases inside vkWaitForFences."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/runtime-analysis.json",
+      "sha256": "2a75418fb3280d8a6ab129f04458dd4debc80f5fee5b66aefdda11147c5ec968",
+      "role": "Machine-readable per-run analysis (tracking, release counts, marker intervals, error scan) behind runtime_validation."
+    },
+    {
+      "path": "/Users/cheng/wrapper-staging-reclaim/emulator.log",
+      "sha256": "ca3f612fe46eb0885c27d611455f7e4cbf181609305a09d845c26899d2f2ad25",
+      "role": "Emulator boot/run log for emulator-5556 (AVD Vapor_UI_API36)."
+    }
+  ],
+  "runtime_validation": {
+    "date": "2026-10-21",
+    "summary": "The patched library was run end-to-end on a fresh Android emulator with the prior native probe. Staging resources are now released during the workload (at the submission fence, at vkDeviceWaitIdle, or when the recording command buffer is freed) instead of being retained until vkDestroyImage; all runs exited 0 with all pixel checks passing and no wrapper errors, probe crashes or tombstones.",
+    "environment": {
+      "device": "Android emulator emulator-5556, AVD Vapor_UI_API36, ro.product.cpu.abi=arm64-v8a, ro.build.version.sdk=36, PAGE_SIZE=4096",
+      "vulkan_device_reported_by_probe": "llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096",
+      "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 3072 -cores 4",
+      "boot_completed": "true (adb -s emulator-5556 shell getprop sys.boot_completed = 1 before any run)",
+      "emulator_log": "/Users/cheng/wrapper-staging-reclaim/emulator.log (sha256 ca3f612fe46eb0885c27d611455f7e4cbf181609305a09d845c26899d2f2ad25)",
+      "device_dir": "/data/local/tmp/vapor-staging-reclaim",
+      "library_under_test": "patched-stripped.so (stripped with NDK 27.3.13750724 llvm-strip from the 131,385,216-byte build at /Users/cheng/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so), bytes 10703312, sha256 08ef8247e34c0e083cede47d61112784f472fc57a503fc0402d85d0d1b9dbca6",
+      "control_library": "candidate.so (recorded candidate payload, stripped), bytes 10699464, sha256 574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+      "probe_base": "probe bytes 162504 sha256 eaabe9afc3c443ffa2de65e741f114f2a1de4b7fd23625c76983f06724af79da, built from tools/tests/vulkan-wrapper-native.c sha256 03909d3d077cd49bf35bef0d31288196b8fd26d82a1bc470b63d23041a54a0f7",
+      "probe_variant": "probe-staging bytes 21080 sha256 769ca2dfa762a639e88fecb8b8a305765237aad606906d3b3b6c6c968ef29b41; identical probe source plus MARKER prints and PROBE_ONE_TIME / PROBE_WAIT_MODE (fence|deviceidle) environment controls; no other behavior change",
+      "aux_libraries": "the pre-existing aarch64 Codex/wrapper-probe-16k aux set (libX11-xcb, libxcb, libxcb-dri3, libxcb-present, libxcb-sync, libxcb-randr, libxcb-shm, libXau, libXdmcp, libdrm, libc++_shared, libadrenotools, libandroid-shmem, libandroid-support, libz.so.1, libzstd.so.1) pushed alongside the probe; all runs used LD_LIBRARY_PATH=. and PREFIX=.",
+      "ownership_note": "Port 5556 was handed over by the Lead; the previous 'device offline' incident was a colliding session, not a probe failure. This task confirmed adb devices showed 'device' and sys.boot_completed=1 before starting. The emulator was killed with `adb -s emulator-5556 emu kill` after the runs and native-rebuild was told it is free."
+    },
+    "commands_example": "adb -s emulator-5556 shell \"cd /data/local/tmp/vapor-staging-reclaim && LD_LIBRARY_PATH=. PREFIX=. WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=<0|1> [PROBE_ONE_TIME=1 PROBE_WAIT_MODE=fence|deviceidle] ./<probe|probe-staging> ./<candidate.so|patched-stripped.so> bc1 <cycles> 16\"",
+    "runs": [
+      {
+        "name": "r0-control-candidate-32-view0",
+        "probe": "probe",
+        "library": "candidate.so",
+        "env": "USE_IMAGE_VIEW=0",
+        "cycles": 32,
+        "result": "PASS",
+        "run_exit_code": 0,
+        "log": "run-r0-candidate-32v0.log",
+        "log_bytes": 115716,
+        "log_sha256": "f46c8308d3165649a9b2221895fa9f28a34d6f93a7cccd38fa993ccd7ed854e4",
+        "tracking_buffer_lines": 32,
+        "tracking_view_lines": 0,
+        "release_calls": 1,
+        "released_total": 64,
+        "key_observation": "one 'Released 64 staging resources' call after the last 'PASS pixels cycle=31' and immediately before 'PASS clean-exit' - i.e. the pre-patch late release inside vkDestroyImage, matching the prior review"
+      },
+      {
+        "name": "r1-patched-32-view0",
+        "probe": "probe",
+        "library": "patched-stripped.so",
+        "env": "USE_IMAGE_VIEW=0",
+        "cycles": 32,
+        "result": "PASS",
+        "run_exit_code": 0,
+        "log": "run-r1-patched-32v0.log",
+        "log_bytes": 119063,
+        "log_sha256": "c21e16a091126057d487bc042d42fe83f31c1230c4b658f3a31933b0c0f5e218",
+        "tracking_buffer_lines": 32,
+        "tracking_view_lines": 0,
+        "release_calls": 32,
+        "released_total": 64,
+        "key_observation": "32 x 'Released 2 staging resources', one per cycle, inside vkFreeCommandBuffers and before that cycle's 'PASS pixels'; zero releases after the last pixel pass / during destroy"
+      },
+      {
+        "name": "r2-patched-32-view1",
+        "probe": "probe",
+        "library": "patched-stripped.so",
+        "env": "USE_IMAGE_VIEW=1",
+        "cycles": 32,
+        "result": "PASS",
+        "run_exit_code": 0,
+        "log": "run-r2-patched-32v1.log",
+        "log_bytes": 123638,
+        "log_sha256": "a9ae167576460cb1cb2632ba38f8fb4d1b164baedf914f643e0b5e8b2341ada8",
+        "tracking_buffer_lines": 0,
+        "tracking_view_lines": 32,
+        "release_calls": 32,
+        "released_total": 32,
+        "key_observation": "32 'Tracking stagingImageView' -> 32 x 'Released 1 staging resources' per cycle, before that cycle's pixel PASS; no per-upload VkBuffer/VkDeviceMemory in this path, as expected"
+      },
+      {
+        "name": "r3-oneshot-fence-8-view0",
+        "probe": "probe-staging (PROBE_ONE_TIME=1 PROBE_WAIT_MODE=fence)",
+        "library": "patched-stripped.so",
+        "env": "USE_IMAGE_VIEW=0",
+        "cycles": 8,
+        "result": "PASS",
+        "run_exit_code": 0,
+        "log": "run-r3-oneshot-fence.log",
+        "log_bytes": 74473,
+        "log_sha256": "6a92d516b5cfb0e9de7961b0cb51a97fc731c02765d89b4440fbb4118206dc1b",
+        "tracking_buffer_lines": 8,
+        "tracking_view_lines": 0,
+        "release_calls": 8,
+        "released_total": 16,
+        "key_observation": "each release of 2 resources occurs between 'MARKER before-wait cycle=N' and 'MARKER after-wait cycle=N', i.e. inside vkWaitForFences via the previously dead fence branch"
+      },
+      {
+        "name": "r4-oneshot-deviceidle-8-view0",
+        "probe": "probe-staging (PROBE_ONE_TIME=1 PROBE_WAIT_MODE=deviceidle)",
+        "library": "patched-stripped.so",
+        "env": "USE_IMAGE_VIEW=0",
+        "cycles": 8,
+        "result": "PASS",
+        "run_exit_code": 0,
+        "log": "run-r4-oneshot-deviceidle.log",
+        "log_bytes": 74590,
+        "log_sha256": "da267c9090d563d28d061d263da2b135bfa7e3e2c23352c63ad997cb72dcde96",
+        "tracking_buffer_lines": 8,
+        "tracking_view_lines": 0,
+        "release_calls": 8,
+        "released_total": 16,
+        "key_observation": "each release of 2 resources occurs between 'MARKER before-device-idle' and 'MARKER after-device-idle', i.e. inside vkDeviceWaitIdle; the fence was never waited by the probe, so this covers the device-idle reclaim path that does not dereference the stored fence"
+      },
+      {
+        "name": "r5-resubmittable-fence-8-view0",
+        "probe": "probe-staging (PROBE_ONE_TIME=0 PROBE_WAIT_MODE=fence)",
+        "library": "patched-stripped.so",
+        "env": "USE_IMAGE_VIEW=0",
+        "cycles": 8,
+        "result": "PASS",
+        "run_exit_code": 0,
+        "log": "run-r5-resubmit-fence.log",
+        "log_bytes": 74473,
+        "log_sha256": "75b370494cf7452b061f85a2d28789888fc6ba0ee2b61e056a74f778ccb15f70",
+        "tracking_buffer_lines": 8,
+        "tracking_view_lines": 0,
+        "release_calls": 8,
+        "released_total": 16,
+        "key_observation": "re-submittable command buffers are not handed to the submission fence: each release occurs between 'MARKER after-wait' and 'MARKER after-free-cmd', i.e. inside vkFreeCommandBuffers, exactly as designed"
+      },
+      {
+        "name": "r6-oneshot-view1-fence-8",
+        "probe": "probe-staging (PROBE_ONE_TIME=1 PROBE_WAIT_MODE=fence)",
+        "library": "patched-stripped.so",
+        "env": "USE_IMAGE_VIEW=1",
+        "cycles": 8,
+        "result": "PASS",
+        "run_exit_code": 0,
+        "log": "run-r6-oneshot-view1.log",
+        "log_bytes": 75616,
+        "log_sha256": "f5b032fccf06f289359431e5ab2f61bcf43bad1a376ae75b2a845c4e9b3160c9",
+        "tracking_buffer_lines": 0,
+        "tracking_view_lines": 8,
+        "release_calls": 8,
+        "released_total": 8,
+        "key_observation": "8 tracked staging image views -> 8 x 'Released 1 staging resources' between before-wait/after-wait, i.e. the image-view path also releases at the submission fence"
+      }
+    ],
+    "comparison": {
+      "control_candidate": "32 tracking events -> a single 'Released 64 staging resources' call after the last 'PASS pixels cycle=31' and immediately before 'PASS clean-exit' (vkDestroyImage). This reproduces the late-free recorded in docs/evidence/2026-10-21-vulkan-wrapper-staging.json.",
+      "patched_buffer_path": "32 tracking events -> 32 x 'Released 2 staging resources' calls, one per cycle, each before that cycle's 'PASS pixels'; zero releases between the last pixel PASS and clean exit. 64/64 resources accounted for, no double release.",
+      "patched_image_view_path": "32 'Tracking stagingImageView' -> 32 x 'Released 1 staging resources' per cycle; 32/32 views accounted for before destroy.",
+      "one_time_submit_fence": "8 tracking -> 8 x 'Released 2' calls between 'MARKER before-wait' and 'MARKER after-wait', i.e. inside vkWaitForFences via the previously dead fence branch. Confirms the submission-fence readiness assignment and the fence-gated reclaim.",
+      "one_time_submit_device_idle": "8 tracking -> 8 x 'Released 2' between 'MARKER before-device-idle' and 'MARKER after-device-idle', i.e. inside vkDeviceWaitIdle. The probe deliberately never waited the submission fence, so the device-idle reclaim path is validated and does not require a live/destroyable fence handle.",
+      "resubmittable_command_buffer_with_fence": "8 tracking -> 8 x 'Released 2' between 'MARKER after-wait' and 'MARKER after-free-cmd', i.e. inside vkFreeCommandBuffers. Confirms the design decision that re-submittable command buffers are NOT handed to the submission fence and instead release at command-buffer destruction.",
+      "image_view_plus_one_time_submit_fence": "8 views -> 8 x 'Released 1' inside vkWaitForFences; the image-view path also releases early.",
+      "arithmetic": "r0: 32x2=64 released in 1 call; r1: 32x2=64 in 32 calls; r2: 32x1=32 in 32 calls; r3/r4/r5: 8x2=16 in 8 calls; r6: 8x1=8 in 8 calls. Tracked minus released = 0 in every patched run.",
+      "timing": "the patched workload releases happen while rendering continues (either per submission or per command buffer), whereas the control holds all 64 resources until image destroy; this is the unbounded-growth behavior the patch targets."
+    },
+    "log_excerpts": [
+      {
+        "run": "r0 control (candidate.so)",
+        "excerpt": "... [002.22] Released 64 staging resources for handle 0xb400006fa3088f90 (free_staging_resources_if_ready:146) ; PASS clean-exit (after PASS pixels cycle=31)"
+      },
+      {
+        "run": "r1 patched buffer path",
+        "excerpt": "[003.30] Released 2 staging resources for handle 0xb400006eac9e87b0 (free_staging_resources_if_ready:152) ; PASS pixels cycle=0 count=256 ... last: [003.82] Released 2 ... ; PASS pixels cycle=31 count=256 ; PASS clean-exit"
+      },
+      {
+        "run": "r3 one-time-submit + fence",
+        "excerpt": "MARKER before-wait cycle=0 ; [000.53] Released 2 staging resources for handle 0xb400007053c65be0 (free_staging_resources_if_ready:152) ; MARKER after-wait cycle=0"
+      },
+      {
+        "run": "r4 one-time-submit + device idle",
+        "excerpt": "MARKER before-device-idle cycle=0 ; [002.37] Released 2 staging resources for handle 0xb40000796b661be0 (free_staging_resources_if_ready:152) ; MARKER after-device-idle cycle=0"
+      },
+      {
+        "run": "r5 re-submittable + fence",
+        "excerpt": "MARKER before-wait cycle=0 ; MARKER after-wait cycle=0 ; [002.81] Released 2 staging resources for handle 0xb40000769b2927b0 (free_staging_resources_if_ready:152) ; MARKER after-free-cmd cycle=0"
+      },
+      {
+        "run": "r6 image-view + one-time-submit + fence",
+        "excerpt": "MARKER before-wait cycle=0 ; [001.69] Released 1 staging resources for handle 0xb40000765d686380 (free_staging_resources_if_ready:152) ; MARKER after-wait cycle=0"
+      }
+    ],
+    "error_checks": {
+      "all_runs_exit_code_0": true,
+      "pixel_checks": "32/32 (r0,r1,r2) and 8/8 (r3,r4,r5,r6) 'PASS pixels' lines; no 'FAIL stage=' lines",
+      "clean_exit": "'PASS clean-exit' present in all 7 runs (plus both smoke runs)",
+      "wrapper_errors": "only the known benign wrapper banner '[ERROR] WARNING: this wrapper may not be compatible for non-dxvk game engines' appears once per log; no WLOGE lines from the staging/free paths and no 'Staging resource of type ... is not handled'",
+      "probe_crash_or_tombstone": "none for the probe processes; adb logcat crash buffer has no probe/libvulkan_wrapper entries. The single tombstone_09 in the crash buffer is the emulator's Google Bluetooth stack (com.google.android.bluetooth), unrelated to this work.",
+      "double_free_or_leak_signature": "no crash in vkDestroyDevice/vkDestroyImage and tracking sum equals released sum in every run (see arithmetic)"
+    },
+    "what_is_now_validated": [
+      "The patch's reclamation actually happens at runtime: per-submission-fence (one-time-submit CBs), per-vkDeviceWaitIdle (one-time-submit CBs submitted with a fence the app never waited), and per-command-buffer-free (re-submittable CBs) instead of only at vkDestroyImage.",
+      "The previously dead fence branch in free_staging_resources_if_ready is now exercised and releases the expected resources only when the waited fence has signalled.",
+      "The image-view staging path (default USE_IMAGE_VIEW=1) tracks and releases its temporary VkImageView(s) early, and the buffer path releases VkBuffer+VkDeviceMemory pairs early.",
+      "The A/B difference against the recorded candidate is exactly the intended behavior change: control releases 64 resources in one call at image destroy; patched releases 64 resources across 32 calls during the workload (and 32 image views across 32 calls in view mode).",
+      "No error or crash was observed in the probe: all runs exited 0, all pixel checks passed, no wrapper staging-path errors, no probe crashes/tombstones."
+    ],
+    "what_is_still_pending": [
+      "The vkBeginCommandBuffer / vkResetCommandBuffer reclaim path was not isolated in a dedicated run; the observed early releases came from vkFreeCommandBuffers, vkWaitForFences and vkDeviceWaitIdle. A run that resets a long-lived command buffer (or vkResetCommandPool) and re-begins it is still needed.",
+      "The conditional double-free risk on the wrapper-emulated-memory path (VK_EXT_map_memory_placed + VkPhysicalDeviceMapMemoryPlacedFeaturesEXT.memoryMapPlaced) was not exercised; the emulator lavapipe does not enable it. The raw-dispatch staging allocation change removed staging from that path by construction, but this is not runtime-proven.",
+      "Concurrency/thread-safety (multi-threaded recording + destroys) was not tested.",
+      "Khronos validation layers were not enabled, so no VUID cleanliness is claimed for the new hooks or the changed ownership.",
+      "No real game/streaming workload or physical phone was used; memory growth reduction was not measured (only the release-point change is shown).",
+      "Submit-time semaphores/timeline semaphores are not tracked, and vkQueueSubmit2 (only vkQueueSubmit was used by the probe) was not executed.",
+      "PAGE_SIZE on this run was 4096; the 16 KB-page behavior was not re-validated with this patch.",
+      "A one-time-submit command buffer submitted without any fence was not exercised (it is expected to retain resources until begin/reset/destroy)."
+    ]
+  }
+}

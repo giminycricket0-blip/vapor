@@ -65,6 +65,7 @@ dist/
 !tools/tests/turnip-kgsl-wait.py
 !tools/tests/turnip-kgsl-wait-any.py
 !tools/tests/vulkan-wrapper-image.py
+!tools/tests/vulkan-wrapper-reference.py
 !tools/tests/vulkan-wrapper-trace.py
 !tools/tests/wayland-fences.py
 

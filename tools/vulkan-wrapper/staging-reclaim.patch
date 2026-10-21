@@ -1,0 +1,305 @@
+--- a/src/vulkan/wrapper/wrapper_objects.h
++++ b/src/vulkan/wrapper/wrapper_objects.h
+@@ -127,6 +127,13 @@
+ 
+    VkCommandPool pool;
+ 
++   // VkCommandBufferBeginInfo::flags of the current recording.  Used to tell
++   // one-time-submit command buffers (which cannot be submitted again, and can
++   // therefore hand their staging resources over to the submission fence) from
++   // re-submittable ones (whose staging resources must live until the command
++   // buffer is reset or freed).
++   VkCommandBufferUsageFlags usage_flags;
++
+    // VkCommandBuffer bcnBuffer;
+    // VkFence bcnBufferFinished;
+    // VkSemaphore bcnBufferFinishedSemaphore;
+--- a/src/vulkan/wrapper/wrapper_objects.c
++++ b/src/vulkan/wrapper/wrapper_objects.c
+@@ -87,10 +87,16 @@
+    void* handle,
+    void* parent) {
+    struct wrapper_staging_resources *obj =
+-         vk_alloc(&device->vk.alloc, sizeof(struct wrapper_staging_resources), 8, VK_SYSTEM_ALLOCATION_SCOPE_OBJECT);
++         vk_zalloc(&device->vk.alloc, sizeof(struct wrapper_staging_resources), 8, VK_SYSTEM_ALLOCATION_SCOPE_OBJECT);
++   if (!obj) {
++      WLOGE("Failed to allocate tracking for staging resource type %d", type);
++      return;
++   }
+    obj->type = type;
+    obj->handle = handle;
+    obj->parent = parent;
++   obj->ready = VK_NULL_HANDLE;
++   obj->use_vk_object = false;
+    list_addtail(&obj->link_in_parent, staging_resources);
+ }
+ 
+@@ -128,7 +134,7 @@
+             FREE_STAGING_RESOURCE(BUFFER, Buffer)
+             FREE_STAGING_RESOURCE_(DEVICE_MEMORY, DeviceMemory, FreeMemory)
+             default:
+-                WLOGE("Staging resource of type %d is not handled");
++                WLOGE("Staging resource of type %d is not handled", resource->type);
+                 break;
+             }
+ 
+--- a/src/vulkan/wrapper/wrapper_device.c
++++ b/src/vulkan/wrapper/wrapper_device.c
+@@ -435,17 +435,181 @@
+    VK_FROM_HANDLE(wrapper_device, device, _device);
+    return vk_device_get_proc_addr(&device->vk, pName);
+ }
++
++/* Staging resources are owned by the command buffer that recorded the commands
++ * referencing them and are released from three completion-gated points:
++ *
++ *  - vkBeginCommandBuffer / vkResetCommandBuffer: Vulkan only allows these in
++ *    the initial state, which requires a preceding reset, and a command buffer
++ *    can only be reset once all submissions using it have completed.  The
++ *    staging resources of a command buffer that may still be submitted again
++ *    therefore never outlive the recorded commands that reference them.
++ *  - vkWaitForFences: for one-time-submit command buffers the application's own
++ *    submission fence is stored in wrapper_staging_resources::ready, so once
++ *    that fence is known to be signalled the resources are not referenced by
++ *    any pending submission any more.  A one-time-submit command buffer can
++ *    never be submitted (or recorded) again, which is what makes this early
++ *    release safe; re-submittable command buffers must not be handed to the
++ *    fence.
++ *  - vkDeviceWaitIdle: same for one-time-submit command buffers that were
++ *    submitted with a fence the application never waited on.
++ *
++ * The fence handle stored in ::ready is only dereferenced while the
++ * application's own vkWaitForFences call that named it is still on the stack,
++ * and never on the device-idle path, so a destroyed fence cannot be observed.
++ */
+ 
++static void
++set_staging_resources_fence(struct wrapper_command_buffer *wcb, VkFence fence)
++{
++   if (fence == VK_NULL_HANDLE ||
++       !(wcb->usage_flags & VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT))
++      return;
++
++   list_for_each_entry(struct wrapper_staging_resources, resource,
++                       &wcb->staging_resources, link_in_parent) {
++      resource->ready = fence;
++   }
++}
++
++static void
++reclaim_completed_staging_resources(struct wrapper_device *device,
++                                    bool device_idle,
++                                    uint32_t fenceCount,
++                                    const VkFence *pFences,
++                                    VkBool32 waitAll)
++{
++   list_for_each_entry(struct wrapper_command_buffer, wcb,
++                       &device->command_buffer_list, link) {
++      if (!(wcb->usage_flags & VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) ||
++          list_is_empty(&wcb->staging_resources))
++         continue;
++
++      struct wrapper_staging_resources *resource =
++         list_first_entry(&wcb->staging_resources,
++                          struct wrapper_staging_resources, link_in_parent);
++
++      /* The submission fence is only recorded for one-time-submit command
++       * buffers that were submitted with a fence. */
++      if (resource->ready == VK_NULL_HANDLE)
++         continue;
++
++      bool completed = false;
++      if (device_idle) {
++         completed = true;
++      } else if (waitAll) {
++         for (uint32_t i = 0; i < fenceCount; i++) {
++            if (pFences[i] == resource->ready) {
++               completed = true;
++               break;
++            }
++         }
++      } else if (fenceCount == 1) {
++         /* waitAny with a single fence: VK_SUCCESS means that fence signalled. */
++         completed = pFences[0] == resource->ready;
++      } else {
++         /* waitAny over several fences: we cannot tell which one signalled. */
++         completed = false;
++      }
++
++      if (!completed)
++         continue;
++
++      if (device_idle) {
++         /* The application may already have destroyed the fence; the device
++          * being idle is sufficient, so release without touching the handle. */
++         free_staging_resources_final(device, wcb, &wcb->staging_resources);
++      } else {
++         /* Re-check the fence before releasing; resources whose fence has not
++          * signalled yet are left for a later pass. */
++         free_staging_resources_if_ready(device, wcb,
++                                         &wcb->staging_resources, false);
++      }
++   }
++}
++
+ WRAPPER_QueueSubmit(VkQueue _queue, uint32_t submitCount,
+                     const VkSubmitInfo* pSubmits, VkFence fence)
+ {
+-   return CHECK(QueueSubmit(_queue, submitCount, pSubmits, fence));
++   VkResult result = CHECK(QueueSubmit(_queue, submitCount, pSubmits, fence));
++   if (result != VK_SUCCESS)
++      return result;
++
++   for (uint32_t i = 0; i < submitCount; i++) {
++      for (uint32_t j = 0; j < pSubmits[i].commandBufferCount; j++) {
++         VK_FROM_HANDLE(wrapper_command_buffer, wcb, pSubmits[i].pCommandBuffers[j]);
++         if (wcb)
++            set_staging_resources_fence(wcb, fence);
++      }
++   }
++   return result;
+ }
+ 
+ WRAPPER_QueueSubmit2(VkQueue _queue, uint32_t submitCount,
+                      const VkSubmitInfo2* pSubmits, VkFence fence)
+ {
+-   return CHECK(QueueSubmit2(_queue, submitCount, pSubmits, fence));
++   VkResult result = CHECK(QueueSubmit2(_queue, submitCount, pSubmits, fence));
++   if (result != VK_SUCCESS)
++      return result;
++
++   for (uint32_t i = 0; i < submitCount; i++) {
++      for (uint32_t j = 0; j < pSubmits[i].commandBufferInfoCount; j++) {
++         VK_FROM_HANDLE(wrapper_command_buffer, wcb,
++                        pSubmits[i].pCommandBufferInfos[j].commandBuffer);
++         if (wcb)
++            set_staging_resources_fence(wcb, fence);
++      }
++   }
++   return result;
++}
++
++WRAPPER_WaitForFences(VkDevice _device, uint32_t fenceCount,
++                      const VkFence* pFences, VkBool32 waitAll, uint64_t timeout)
++{
++   VkResult result = CHECK(WaitForFences(_device, fenceCount, pFences, waitAll, timeout));
++   if (result == VK_SUCCESS) {
++      VK_FROM_HANDLE(wrapper_device, device, _device);
++      reclaim_completed_staging_resources(device, false, fenceCount, pFences, waitAll);
++   }
++   return result;
++}
++
++WRAPPER_DeviceWaitIdle(VkDevice _device)
++{
++   VkResult result = CHECK(DeviceWaitIdle(_device));
++   if (result == VK_SUCCESS) {
++      VK_FROM_HANDLE(wrapper_device, device, _device);
++      reclaim_completed_staging_resources(device, true, 0, NULL, VK_TRUE);
++   }
++   return result;
++}
++
++WRAPPER_BeginCommandBuffer(VkCommandBuffer commandBuffer,
++                           const VkCommandBufferBeginInfo* pBeginInfo)
++{
++   VK_FROM_HANDLE(wrapper_command_buffer, wcb, commandBuffer);
++   VkResult result = CHECK(BeginCommandBuffer(commandBuffer, pBeginInfo));
++   if (result != VK_SUCCESS)
++      return result;
++
++   /* Initial state requires a previous reset, which in turn requires that no
++    * submission using this command buffer is pending any more. */
++   free_staging_resources_final(wcb->device, wcb, &wcb->staging_resources);
++   wcb->usage_flags = pBeginInfo->flags;
++   return result;
++}
++
++WRAPPER_ResetCommandBuffer(VkCommandBuffer commandBuffer,
++                           VkCommandBufferResetFlags flags)
++{
++   VK_FROM_HANDLE(wrapper_command_buffer, wcb, commandBuffer);
++   VkResult result = CHECK(ResetCommandBuffer(commandBuffer, flags));
++   if (result != VK_SUCCESS)
++      return result;
++
++   free_staging_resources_final(wcb->device, wcb, &wcb->staging_resources);
++   wcb->usage_flags = 0;
++   return result;
+ }
+ 
+ WRAPPER_CmdExecuteCommands(VkCommandBuffer commandBuffer,
+@@ -1027,7 +1191,14 @@
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+ 
+-   result = WCHECK(CreateBuffer(device, &bufferInfo, NULL, buffer));
++   // The staging buffer and its memory are wrapper-internal temporaries and are
++   // deliberately created and freed through the raw dispatch table rather than
++   // through the wrapper's object bookkeeping.  The staging reclamation path can
++   // run while device->resource_mutex is held (command buffer teardown), where
++   // re-entering WRAPPER_DestroyBuffer/WRAPPER_FreeMemory would deadlock, and
++   // freeing a wrapper-emulated VkDeviceMemory out of band would leave a
++   // wrapper_device_memory entry behind that vkDestroyDevice frees a second time.
++   result = CHECK(CreateBuffer(device, &bufferInfo, NULL, buffer));
+    if (result != VK_SUCCESS)
+       return result;
+ 
+@@ -1039,12 +1210,21 @@
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = FindMemoryType((VkPhysicalDevice) physicalDevice, memRequirements.memoryTypeBits, properties);
+ 
+-   result = WCHECK(AllocateMemory(device, &allocInfo, NULL, bufferMemory));
++   result = CHECK(AllocateMemory(device, &allocInfo, NULL, bufferMemory));
+    if (result != VK_SUCCESS) {
++      CHECKV(DestroyBuffer(device, *buffer, NULL));
++      *buffer = VK_NULL_HANDLE;
+       return result;
+    }
+ 
+-   return WCHECK(BindBufferMemory(device, *buffer, *bufferMemory, 0));
++   result = CHECK(BindBufferMemory(device, *buffer, *bufferMemory, 0));
++   if (result != VK_SUCCESS) {
++      CHECKV(DestroyBuffer(device, *buffer, NULL));
++      CHECKV(FreeMemory(device, *bufferMemory, NULL));
++      *buffer = VK_NULL_HANDLE;
++      *bufferMemory = VK_NULL_HANDLE;
++   }
++   return result;
+ }
+ 
+ static int FindComputeQueueFamilies(struct wrapper_physical_device* physical_device) {
+@@ -1430,9 +1610,11 @@
+          return;
+       }
+ 
+-      // Track this image view so it can be cleaned up when the image is cleaned up
++      // Track this image view on the command buffer that references it, so it
++      // is reclaimed together with the rest of that command buffer's staging
++      // resources (rather than pinning it to the image until image destroy).
+       WLOGD("Tracking stagingImageView (%p) for %d", dstImageView, wimg->obj_id);
+-      TRACK_STAGING(_device, IMAGE_VIEW, dstImageView, wimg);
++      TRACK_STAGING(_device, IMAGE_VIEW, dstImageView, _commandBuffer);
+ 
+       dstImageInfo.imageView = dstImageView;
+       dstImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+@@ -1671,11 +1853,15 @@
+             return;
+          }
+ 
+-         // TODO: track these using the fence/semaphore for the submitted queue
+-         // This should be safe to do now with the queue synchronization, check with vvl
++         // The staging buffer + memory are referenced by the copies recorded in
++         // this command buffer, so that command buffer owns them.  They are
++         // reclaimed when it is reset/freed, or - for one-time-submit command
++         // buffers - as soon as the submission fence the application passed to
++         // vkQueueSubmit/vkQueueSubmit2 signals (see
++         // reclaim_completed_staging_resources).
+          WLOGD("Tracking new staging buffer for image %d", wimg->obj_id);
+-         TRACK_STAGING(_device, BUFFER, stagingBuffer, wimg);
+-         TRACK_STAGING(_device, DEVICE_MEMORY, stagingBufferMemory, wimg);
++         TRACK_STAGING(_device, BUFFER, stagingBuffer, wcb);
++         TRACK_STAGING(_device, DEVICE_MEMORY, stagingBufferMemory, wcb);
+       }
+ 
+       if (use_compute_shader) {
