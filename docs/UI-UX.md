@@ -19,8 +19,8 @@ service separate from Steam's authenticated web panel.
 
 No request runs while opening the game page. Closing cancels in-flight work; a
 page-local snapshot is reused on reopening, and leaving the game page discards it.
-Failures offer explicit retry, while missing/ambiguous Windows entries have their
-own message. Console ports are excluded, title-only matches are labeled, and
+Failures offer explicit retry, while missing or ambiguous Windows entries get a
+dedicated message. Console ports are excluded, title-only matches are labeled, and
 external ratings do not become Vapor compatibility badges.
 
 The dialog retains a reachable close action and source button while reports scroll.

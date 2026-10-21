@@ -90,6 +90,62 @@ local `vk_entrypoints.py`. The patch adds it to the existing generator's
 all 1,174 faulty conditions with the intended gate. A build that recompiles only
 the image file does not qualify the tracing change.
 
+## Native loading and BC probe
+
+[`tools/tests/vulkan-wrapper-native.c`](../tests/vulkan-wrapper-native.c) is an
+offscreen probe; it starts no Steam, Wine, window or game. It dlopens the system
+loader or a wrapper library, creates an instance and device, creates an image
+with a caller-owned format list, uploads BC1/BC3 blocks through
+`vkCmdCopyBufferToImage`, reads the image back and checks the decoded RGBA
+pixels. A read-only caller format list exercises the original write that the
+source patch removes. Build it with the recorded NDK r27d (27.3.13750724) command
+and 16 KB link flags; the receipt records the exact command and binary hashes.
+
+| Emulator | Guest | Page size | Result |
+| --- | --- | ---: | --- |
+| `Vapor_UI_API36` | Android 16/API 36, arm64-v8a | 4096 | 47 runs: system, baseline and candidate rgba pass; baseline and candidate BC1/BC3 pass with `FORCE_BCN_EMULATION=1`; baseline readonly crashes 2/2 (expected control), candidate readonly passes 2/2 |
+| `Vapor_API_37_16KB` | Android 17/API 37, 16 KB image | 16384 | 132 runs, every run `page_size=16384`: candidate rgba/bc1/bc3/readonly 36/36 and `USE_IMAGE_VIEW=1` 12/12; baseline rgba/bc1/bc3 27/27 and readonly SIGSEGV 9/9 (expected control); system-loader BC pixel checks fail as described below |
+
+The wrapper libraries and every auxiliary dependency dlopen with `RTLD_NOW` on
+the 16 KB guest; all staged libraries have `0x4000` `LOAD` alignment and none
+failed to load. On the 16 KB AVD the guest's Goldfish GFXStream device reports
+`textureCompressionBC` but returns undecoded BC block bytes for native
+buffer-image copies; the same failure occurs against the system loader with no
+wrapper loaded, so it is an emulator limitation, not a wrapper or page-size
+regression. BC runs therefore force the wrapper's emulation path, matching the
+4 KB matrix. The two AVDs differ in API level and GPU backend, so they are two
+qualifications, not a matched differential.
+
+Receipts: [4 KB runs](../../docs/evidence/2026-10-21-vulkan-wrapper-native-4k.json),
+[16 KB runs](../../docs/evidence/2026-10-21-vulkan-wrapper-native-16k.json).
+These results cover software Vulkan (llvmpipe) in an emulator only. They do not
+qualify an Adreno/KGSL driver, a physical phone, game rendering, image quality or
+performance, and the probe inputs are synthetic.
+
+## Staging lifetime
+
+The wrapper tracks staging storage per BCn-emulated region in
+`wimg->staging_resources` (two objects per upload: `VkBuffer` and
+`VkDeviceMemory`; the image-view path tracks one `VkImageView`). The source review
+finds no fence-gated reclamation in effect: `ready` is never assigned, the fence
+branch is unreachable because the only caller hard-codes `cleanup_everything`,
+and the intended queue-fence cleanup remains a TODO. Resources are freed
+unconditionally at image destroy or device destroy.
+
+That is safe for the probe's waited submissions, but a long-lived image
+accumulates two tracked resources plus its staging bytes per upload until
+destroy: 32 probe uploads produced 64 tracked entries, released in one
+`vkDestroyImage` call. The review records this as inherited upstream behavior;
+the candidate's patches do not touch the staging files, which are byte-identical
+to the pinned source. An open conditional risk is also recorded: if an
+application enables `VK_EXT_map_memory_placed` with `memoryMapPlaced`, staging
+memory allocated on the wrapper's emulated-memory path is freed through the raw
+trampoline, leaving a wrapper entry that `vkDestroyDevice` can free again. No
+probe path enables those features; the receipt states the fixture needed to
+settle it and does not claim a defect.
+
+[Staging review receipt](../../docs/evidence/2026-10-21-vulkan-wrapper-staging.json).
+
 ## Android build and limits
 
 Build the baseline before applying both patches with `patch -p1 --fuzz=0`, then
@@ -119,10 +175,12 @@ cross file and the options shown in the
 [build instructions](../../docs/BUILDING.md#vulkan-wrapper-source-build--21-october-2026).
 Build `src/vulkan/wrapper/libvulkan_wrapper.so`; keep stubs as build inputs only.
 
-No app asset, runtime selection or release changes. Native loading, reference
-image/BC decoding, staging lifetime, concurrency, GPU execution/performance and
-16 KB kernel behavior remain unqualified. Build-tree libraries are not packaged
-replacements for Vapor's shipped wrapper.
+No app asset, runtime selection or release changes. Native loading and BC decoding
+pass the emulator probe above, but an effective physical driver (Adreno/KGSL),
+reference-image/depth correctness, retention behavior under streaming workloads,
+concurrency, GPU execution/performance and 16 KB kernel behavior on a device
+remain unqualified. Build-tree libraries are not packaged replacements for Vapor's
+shipped wrapper.
 
 See [qualification](../../docs/QUALIFICATION.md#graphics-component-source-refactors--21-october-2026)
 and [the source/build receipt](../../docs/evidence/2026-10-21-graphics-source.json).

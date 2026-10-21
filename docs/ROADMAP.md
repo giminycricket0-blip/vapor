@@ -34,7 +34,10 @@ wrapper tracing have source changes; both components' baseline/candidate Android
 libraries build. The candidates pass 37 Turnip cases, 26 wrapper image cases and
 seven generated-call cases with clean sanitizers, plus the separate allocation
 and read-only-memory checks. Meson's generator dependency is corrected. Original
-controls expose the recorded faults. No APK/default or physical performance result.
+controls expose the recorded faults. The wrapper also passes an offscreen native
+load and BC probe on the 4 KB API 36 and 16 KB API 37 emulators, and a staging
+lifetime review records the upstream late-free/growth behavior plus one
+conditional open risk. No APK/default or physical performance result.
 [Qualification](QUALIFICATION.md#graphics-component-source-refactors--21-october-2026).
 
 Continue in this order:
@@ -43,12 +46,14 @@ Continue in this order:
    rendering. Compare the baseline and candidate built from identical inputs;
    count how often the changed path is reached before inferring a game benefit.
    Preserve the working driver and ordinary Steam/Cloud teardown.
-2. Complete wrapper native-load and released-binary reproduction checks; the
-   optional Leegao release and its reviewed source paths are mapped, while the
-   default/GameNative wrapper source identities remain open. Image/pNext ownership
-   and disabled tracing now have source checks and complete Android builds.
-   Continue the staging lifetime review and test BC/native formats and depth
-   paths against reference images on the effective driver.
+2. Continue wrapper verification: reproduce the released binary and the
+   default/GameNative source identities, and test BC/native formats plus depth
+   paths against reference images on the effective Adreno driver. Native loading
+   and synthetic BC decode now pass on 4 KB and 16 KB emulators (software
+   Vulkan), and the staging lifetime review is complete; follow-ups are
+   fence/semaphore reclamation of staging resources, streaming-growth
+   measurement on a device, and a placed-memory fixture for the recorded
+   conditional double-free risk.
 3. Deepen DXVK queue/compiler and VKD3D shader/capability/descriptor review on the
    exact packaged ARM64EC bases. Measure submission cost, shader stalls, waits,
    memory and cold/warm behavior. Reuse upstream priority/cache mechanisms;

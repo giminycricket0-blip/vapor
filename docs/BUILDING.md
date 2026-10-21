@@ -592,6 +592,35 @@ between baseline and candidate. Build-tree RUNPATHs and dependency/runtime
 availability still require packaging and native-load qualification. This is not
 an APK build, installed runtime, reproduced release binary or GPU result.
 
+### Running the offscreen native probe
+
+`tools/tests/vulkan-wrapper-native.c` is an offscreen Android probe; it starts no
+Steam, Wine, window or game. Build it with the recorded NDK r27d release and the
+16 KB page-size flags, using the include directory from the wrapper source tree
+described in the receipt:
+
+```sh
+"$ANDROID_HOME/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang" \
+  -std=c11 -O2 -g -Wall -Wextra -Werror -D_GNU_SOURCE \
+  -I../turnip-refactor-qualification/wrapper-build/source/include \
+  tools/tests/vulkan-wrapper-native.c -ldl \
+  -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 -o /tmp/vapor-probe/probe
+```
+
+Stage the probe, the stripped baseline/candidate wrapper builds and their
+auxiliary libraries in one directory, push it to `/data/local/tmp/`, and run with
+`LD_LIBRARY_PATH`, `PREFIX`, `WRAPPER_LOG_LEVEL=none`,
+`WRAPPER_CMD_LOG_LEVEL=none`, `FORCE_BCN_EMULATION=1` and `USE_IMAGE_VIEW=0`.
+Arguments are `LIBRARY rgba|bc1|bc3|readonly [CYCLES] [EDGE]`. The expected
+controls are: baseline readonly crashes, candidate readonly passes, and
+baseline/candidate rgba/bc1/bc3 exit zero. Use the 4 KB AVD (`Vapor_UI_API36`,
+`-gpu lavapipe`) or the 16 KB AVD (`Vapor_API_37_16KB`); confirm the guest page
+size with `getconf PAGE_SIZE` and the probe's printed `page_size`. The BC paths
+need forced emulation on these emulators because the virtual device's native BC
+buffer-image copy is unreliable; see the
+[wrapper notes](../tools/vulkan-wrapper/README.md#native-loading-and-bc-probe)
+and the two receipts.
+
 ## Android ntsync library experiment
 
 This is a library/source investigation, **not an installable Wine component**.

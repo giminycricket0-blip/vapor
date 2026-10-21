@@ -1,0 +1,2504 @@
+{
+ "date": "2026-10-21",
+ "scope": "16 KB-page Android emulator native qualification of the Vulkan-wrapper candidate and its unpatched baseline: rebuild the repo probe, stage the pinned Android ARM64 wrapper builds and auxiliary libraries, and run the offscreen create-image/BC-decode/read-only-caller-data probe against the system loader, baseline and candidate. No app, APK, driver install or game run.",
+ "base_vapor_commit": "07e3026fee8700e3424c30cc8e969b3eb6b7c646",
+ "probe_source": {
+  "path": "tools/tests/vulkan-wrapper-native.c",
+  "sha256": "03909d3d077cd49bf35bef0d31288196b8fd26d82a1bc470b63d23041a54a0f7",
+  "matches_4k_probe_identity_source_sha256": true
+ },
+ "probe_binary": {
+  "sha256": "eaabe9afc3c443ffa2de65e741f114f2a1de4b7fd23625c76983f06724af79da",
+  "bytes": 162504,
+  "matches_4k_probe_identity_binary_sha256": false,
+  "rebuild_command": [
+   "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+   "-std=c11",
+   "-O2",
+   "-g",
+   "-Wall",
+   "-Wextra",
+   "-Werror",
+   "-D_GNU_SOURCE",
+   "-I/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/include",
+   "/Users/cheng/vapor/tools/tests/vulkan-wrapper-native.c",
+   "-ldl",
+   "-Wl,-z,max-page-size=16384",
+   "-Wl,-z,common-page-size=16384",
+   "-o",
+   "/Users/cheng/wrapper-probe-16k/run/probe"
+  ],
+  "rebuild_reproducible": "Two independent executions of the rebuild command from the same source path produced the identical binary sha256 eaabe9afc3c443ffa2de65e741f114f2a1de4b7fd23625c76983f06724af79da.",
+  "why_binary_differs_from_4k": "The 4 KB pass compiled from /Users/cheng/Documents/Codex/2026-10-13/82379689/work/vapor/tools/tests/vulkan-wrapper-native.c, a tree that no longer exists. That path was embedded in DWARF debug info. Copies of both binaries with debug sections removed are byte-identical (sha256 51d127211e12e054e4a2d443446abdad76aa2bfdf9dc8ca5dba9de5a3c896d0d), so the only difference is the recorded source path.",
+  "stripped_debug_sha256_identical_to_4k_probe": "51d127211e12e054e4a2d443446abdad76aa2bfdf9dc8ca5dba9de5a3c896d0d",
+  "load_alignments": [
+   "0x4000",
+   "0x4000",
+   "0x4000",
+   "0x4000"
+  ]
+ },
+ "wrapper_builds": {
+  "baseline": {
+   "staged_path": "/Users/cheng/wrapper-probe-16k/run/baseline.so",
+   "origin": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so (stripped Android ARM64 output of the same pinned wrapper build tree used by the 4 KB pass)",
+   "bytes": 10698760,
+   "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+   "matches_4k_native_probe_staging": true,
+   "matches_4k_graphics_source_evidence_stripped_output": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ],
+   "needed": [
+    "libadrenotools.so",
+    "libandroid-shmem.so",
+    "libc++_shared.so",
+    "libcutils.so",
+    "liblog.so",
+    "libnativewindow.so",
+    "libsync.so",
+    "libz.so.1",
+    "libm.so",
+    "libzstd.so.1",
+    "libxcb.so",
+    "libX11-xcb.so",
+    "libxcb-dri3.so",
+    "libxcb-present.so",
+    "libxcb-sync.so",
+    "libxcb-randr.so",
+    "libxcb-shm.so",
+    "libdrm.so",
+    "libdl.so",
+    "libc.so"
+   ]
+  },
+  "candidate": {
+   "staged_path": "/Users/cheng/wrapper-probe-16k/run/candidate.so",
+   "origin": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so (stripped Android ARM64 output of the same pinned wrapper build tree used by the 4 KB pass)",
+   "bytes": 10699464,
+   "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+   "matches_4k_native_probe_staging": true,
+   "matches_4k_graphics_source_evidence_stripped_output": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ],
+   "needed": [
+    "libadrenotools.so",
+    "libandroid-shmem.so",
+    "libc++_shared.so",
+    "libcutils.so",
+    "liblog.so",
+    "libnativewindow.so",
+    "libsync.so",
+    "libz.so.1",
+    "libm.so",
+    "libzstd.so.1",
+    "libxcb.so",
+    "libX11-xcb.so",
+    "libxcb-dri3.so",
+    "libxcb-present.so",
+    "libxcb-sync.so",
+    "libxcb-randr.so",
+    "libxcb-shm.so",
+    "libdrm.so",
+    "libdl.so",
+    "libc.so"
+   ]
+  }
+ },
+ "auxiliary_libraries": [
+  {
+   "name": "libadrenotools.so",
+   "bytes": 47760,
+   "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libandroid-shmem.so",
+   "bytes": 14432,
+   "sha256": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libc++_shared.so",
+   "bytes": 1794776,
+   "sha256": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libz.so.1",
+   "bytes": 72880,
+   "sha256": "c47748ed4b6ca6a2ecd664bab04795f3493956ab1f5cddc4ba0efa737ef3b711",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libzstd.so.1",
+   "bytes": 820840,
+   "sha256": "1677d5e828c1839f111f0261697c08f99a5e4e80434659ab88e5ff859a1374f7",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libxcb.so",
+   "bytes": 136584,
+   "sha256": "13d59f33b51765e4d1444cad3f7f949ccf60a9bd34e53bdbe10cfcd787fda14c",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libX11-xcb.so",
+   "bytes": 3976,
+   "sha256": "6368a55a652527addf7af769b53d16ebd5aa5986a97deb550f212bdfa8315819",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libxcb-dri3.so",
+   "bytes": 14680,
+   "sha256": "46a0bcdb74795fafcf62181439bb62d69568f0c6c0c652655002923dd02178a8",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libxcb-present.so",
+   "bytes": 9976,
+   "sha256": "3914002f479e29cb9796045de542b091cd592e2347ec84272da3bbce57326c07",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libxcb-sync.so",
+   "bytes": 22224,
+   "sha256": "3940e8236e0ead4696e2f09c4d297fa629cca0859243b73d33fcf11535e335ba",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libxcb-randr.so",
+   "bytes": 53896,
+   "sha256": "0c2bfe3c4c8150a913bc7a24bdbeca6d379a388de9f50228bd746d0bf14c6c0e",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libxcb-shm.so",
+   "bytes": 9368,
+   "sha256": "dbd474ea05afb27c33269aa1cf26a62edc08e7fb79a2f8459aebc4cb370cf1bb",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libdrm.so",
+   "bytes": 75792,
+   "sha256": "1394274be3dd43f07429b10ca28aded82c7f2d84906ed7084827d27ca10f0dbf",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libXau.so",
+   "bytes": 9904,
+   "sha256": "e820c412bac544d28d4288f50f7b6dee046e2f32cc7cfc82e203c642fbaa42bf",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libXdmcp.so",
+   "bytes": 18920,
+   "sha256": "fca2b4d37620a90b9e97ff5ef24b4b7f438fcce6a837db152705348c95379ef8",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  },
+  {
+   "name": "libandroid-support.so",
+   "bytes": 20736,
+   "sha256": "739cf829511d71dafd6c67fdbb70f3f0c6048642ea2e1967790ee961fde14430",
+   "matches_4k_dependencies_json_sha256": true,
+   "load_alignments": [
+    "0x4000",
+    "0x4000",
+    "0x4000",
+    "0x4000"
+   ]
+  }
+ ],
+ "avd": {
+  "name": "Vapor_API_37_16KB",
+  "ini": "/Users/cheng/.android/avd/Vapor_API_37_16KB.ini",
+  "avd_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/emulator/Vapor_API_37_16KB.avd",
+  "image_sysdir": "system-images/android-37.0/google_apis_ps16k/arm64-v8a",
+  "image_tag_ids": [
+   "google_apis",
+   "page_size_16kb"
+  ],
+  "image_tag_display": "Google APIs, 16 KB Page Size",
+  "image_source_properties": {
+   "Pkg.Desc": "System Image Page Size 16k arm64-v8a with Google APIs.",
+   "Pkg.Revision": "7",
+   "Pkg.Dependencies": "emulator#36.6.11",
+   "AndroidVersion.ApiLevel": "37.0",
+   "AndroidVersion.ExtensionLevel": "22",
+   "SystemImage.Abi": "arm64-v8a",
+   "SystemImage.TagId": "google_apis,page_size_16kb",
+   "SystemImage.TagDisplay": "Google APIs, 16 KB Page Size",
+   "SystemImage.GpuSupport": "true"
+  },
+  "config_ini_selected_fields": {
+   "abi.type": "arm64-v8a",
+   "hw.cpu.arch": "arm64",
+   "hw.cpu.ncore": "4",
+   "hw.ramSize": "2G",
+   "hw.gpu.enabled": "no",
+   "hw.gpu.mode": "auto",
+   "PlayStore.enabled": "no",
+   "image.sysdir.1": "system-images/android-37.0/google_apis_ps16k/arm64-v8a/",
+   "tag.id": "google_apis",
+   "tag.ids": "google_apis,page_size_16kb",
+   "tag.displaynames": "Google APIs,16 KB Page Size"
+  },
+  "launch_command": [
+   "/Users/cheng/Library/Android/sdk/emulator/emulator",
+   "-avd",
+   "Vapor_API_37_16KB",
+   "-port",
+   "5556",
+   "-no-window",
+   "-no-audio",
+   "-no-snapshot-load",
+   "-no-snapshot-save",
+   "-gpu",
+   "lavapipe",
+   "-no-boot-anim",
+   "-memory",
+   "3072",
+   "-cores",
+   "4"
+  ],
+  "previous_recorded_launch_params": [
+   "-avd",
+   "Vapor_API_37_16KB",
+   "-port",
+   "5556",
+   "-no-snapshot",
+   "-no-boot-anim",
+   "-gpu",
+   "swiftshader_indirect",
+   "-memory",
+   "4096",
+   "-cores",
+   "4",
+   "-no-audio"
+  ],
+  "launch_note": "This pass replaced the previously recorded swiftshader_indirect GPU backend with lavapipe, matching the 4 KB pass launch parameters, so a Vulkan device is present. adb devices was empty before launch and port 5556 was free.",
+  "emulator_binary": "/Users/cheng/Library/Android/sdk/emulator/emulator",
+  "emulator_version": "Android emulator version 37.2.12.0 (build_id 16428233) (CL:N/A)",
+  "boot_completed_ms": 63804,
+  "emulator_log_facts": [
+   "INFO         | Vulkan 1.4 is not supported for the guest and won't be enabled",
+   "INFO         | initIcdPaths: ICD set to 'lavapipe', using Lavapipe ICD",
+   "INFO         | Added library: /Users/cheng/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/libvulkan.dylib",
+   "INFO         | Boot completed in 63804 ms"
+  ],
+  "host": {
+   "os": "macOS 27.0.1 (build 26A434)",
+   "arch": "arm64"
+  }
+ },
+ "guest": {
+  "kernel_page_size_getconf": 16384,
+  "probe_reported_page_size": 16384,
+  "build_version_sdk": "37",
+  "build_version_release": "17",
+  "product_cpu_abi": "arm64-v8a",
+  "product_name": "sdk_gphone16k_arm64",
+  "product_model": "sdk_gphone16k_arm64",
+  "build_fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CE2A.260420.050/16231978:userdebug/dev-keys",
+  "build_version_security_patch": "2026-08-05",
+  "uname": "Linux localhost 6.12.81-android16-6-g4f69fc7b210c-ab16167562 #1 SMP PREEMPT Tue Aug 25 07:36:40 UTC 2026 aarch64 Toybox",
+  "ro_hardware_vulkan": "ranchu",
+  "vulkan_icd_library": "/vendor/lib64/hw/vulkan.ranchu.so",
+  "vulkan_device_name_from_probe": "Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits))",
+  "vulkan_device_vendor_id": "0x10005",
+  "vulkan_device_device_id": "0x0",
+  "vulkan_api_version_from_probe": "1.3.0 (VK_API_VERSION_1_2 requested by the probe)",
+  "page_size_note": "getconf PAGE_SIZE and the probe's sysconf(_SC_PAGESIZE) both report 16384 inside the guest; no result is relabeled from a 4 KB boot."
+ },
+ "staging": {
+  "host_directory": "/Users/cheng/wrapper-probe-16k/run",
+  "device_directory": "/data/local/tmp/vapor-wrapper-native-16k-20261021",
+  "file_count": 19,
+  "transfer": "adb push of every staged file to /data/local/tmp/vapor-wrapper-native-16k-20261021; chmod 755 probe",
+  "adb_push_commands": [
+   [
+    "/Users/cheng/Library/Android/sdk/platform-tools/adb",
+    "shell",
+    "rm -rf /data/local/tmp/vapor-wrapper-native-16k-20261021"
+   ],
+   [
+    "/Users/cheng/Library/Android/sdk/platform-tools/adb",
+    "shell",
+    "mkdir -p /data/local/tmp/vapor-wrapper-native-16k-20261021"
+   ],
+   [
+    "/Users/cheng/Library/Android/sdk/platform-tools/adb",
+    "push",
+    "/Users/cheng/wrapper-probe-16k/run/.",
+    "/data/local/tmp/vapor-wrapper-native-16k-20261021/"
+   ],
+   [
+    "/Users/cheng/Library/Android/sdk/platform-tools/adb",
+    "shell",
+    "chmod 755 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe"
+   ]
+  ],
+  "device_sha256_matches_host": true,
+  "device_sha256_check": "19 device files compared with the host staging hashes; 0 mismatches.",
+  "device_sha256_command": "adb shell 'cd /data/local/tmp/vapor-wrapper-native-16k-20261021 && sha256sum *'",
+  "device_sha256_capture": "/Users/cheng/wrapper-probe-16k/logs/guest-facts.txt",
+  "files": [
+   {
+    "name": "baseline.so",
+    "bytes": 10698760,
+    "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c"
+   },
+   {
+    "name": "candidate.so",
+    "bytes": 10699464,
+    "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506"
+   },
+   {
+    "name": "libX11-xcb.so",
+    "bytes": 3976,
+    "sha256": "6368a55a652527addf7af769b53d16ebd5aa5986a97deb550f212bdfa8315819"
+   },
+   {
+    "name": "libXau.so",
+    "bytes": 9904,
+    "sha256": "e820c412bac544d28d4288f50f7b6dee046e2f32cc7cfc82e203c642fbaa42bf"
+   },
+   {
+    "name": "libXdmcp.so",
+    "bytes": 18920,
+    "sha256": "fca2b4d37620a90b9e97ff5ef24b4b7f438fcce6a837db152705348c95379ef8"
+   },
+   {
+    "name": "libadrenotools.so",
+    "bytes": 47760,
+    "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c"
+   },
+   {
+    "name": "libandroid-shmem.so",
+    "bytes": 14432,
+    "sha256": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731"
+   },
+   {
+    "name": "libandroid-support.so",
+    "bytes": 20736,
+    "sha256": "739cf829511d71dafd6c67fdbb70f3f0c6048642ea2e1967790ee961fde14430"
+   },
+   {
+    "name": "libc++_shared.so",
+    "bytes": 1794776,
+    "sha256": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708"
+   },
+   {
+    "name": "libdrm.so",
+    "bytes": 75792,
+    "sha256": "1394274be3dd43f07429b10ca28aded82c7f2d84906ed7084827d27ca10f0dbf"
+   },
+   {
+    "name": "libxcb-dri3.so",
+    "bytes": 14680,
+    "sha256": "46a0bcdb74795fafcf62181439bb62d69568f0c6c0c652655002923dd02178a8"
+   },
+   {
+    "name": "libxcb-present.so",
+    "bytes": 9976,
+    "sha256": "3914002f479e29cb9796045de542b091cd592e2347ec84272da3bbce57326c07"
+   },
+   {
+    "name": "libxcb-randr.so",
+    "bytes": 53896,
+    "sha256": "0c2bfe3c4c8150a913bc7a24bdbeca6d379a388de9f50228bd746d0bf14c6c0e"
+   },
+   {
+    "name": "libxcb-shm.so",
+    "bytes": 9368,
+    "sha256": "dbd474ea05afb27c33269aa1cf26a62edc08e7fb79a2f8459aebc4cb370cf1bb"
+   },
+   {
+    "name": "libxcb-sync.so",
+    "bytes": 22224,
+    "sha256": "3940e8236e0ead4696e2f09c4d297fa629cca0859243b73d33fcf11535e335ba"
+   },
+   {
+    "name": "libxcb.so",
+    "bytes": 136584,
+    "sha256": "13d59f33b51765e4d1444cad3f7f949ccf60a9bd34e53bdbe10cfcd787fda14c"
+   },
+   {
+    "name": "libz.so.1",
+    "bytes": 72880,
+    "sha256": "c47748ed4b6ca6a2ecd664bab04795f3493956ab1f5cddc4ba0efa737ef3b711"
+   },
+   {
+    "name": "libzstd.so.1",
+    "bytes": 820840,
+    "sha256": "1677d5e828c1839f111f0261697c08f99a5e4e80434659ab88e5ff859a1374f7"
+   },
+   {
+    "name": "probe",
+    "bytes": 162504,
+    "sha256": "eaabe9afc3c443ffa2de65e741f114f2a1de4b7fd23625c76983f06724af79da"
+   }
+  ]
+ },
+ "protocol": {
+  "probe_invocation": "<probe> <library> rgba|bc1|bc3|readonly [CYCLES] [EDGE]",
+  "base_environment": {
+   "LD_LIBRARY_PATH": "/data/local/tmp/vapor-wrapper-native-16k-20261021",
+   "PREFIX": "/data/local/tmp/vapor-wrapper-native-16k-20261021",
+   "WRAPPER_LOG_LEVEL": "none",
+   "WRAPPER_CMD_LOG_LEVEL": "none"
+  },
+  "env_variants": {
+   "protocol": "base environment plus FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0, matching the environment recorded for every run of the 4 KB matrix. Required on this emulator because the guest Vulkan device advertises textureCompressionBC but its native BC1/BC3 buffer-image copy returns undecoded block bytes (see bc_native_path_observation).",
+   "protocol_image_view_1": "same, with USE_IMAGE_VIEW=1; only baseline/candidate bc1/bc3 at cycles 8, edges 4/5/16.",
+   "task_env": "the task-specified minimal environment only (no FORCE_BCN_EMULATION, no USE_IMAGE_VIEW); 3 targets x 4 modes at cycles 8 edge 4 as an environment control."
+  },
+  "matrix": "3 targets (system /system/lib64/libvulkan.so, baseline.so, candidate.so) x 4 modes (rgba, bc1, bc3, readonly) x 3 cycles (1, 8, 32) x 3 edges (4, 5, 16) = 108 protocol runs, plus 12 USE_IMAGE_VIEW=1 runs and 12 task_env control runs: 132 captured runs total.",
+  "launch_environment_note": "Every command was executed as 'cd <device dir> && <command>' through /Users/cheng/Library/Android/sdk/platform-tools/adb shell; exit_code is the value adb returned for the remote process."
+ },
+ "predeclared_expected_controls": [
+  {
+   "id": "system-rgba",
+   "expectation": "PASS: system loader + the guest's Vulkan device must load and complete the rgba create/copy/read round-trip.",
+   "outcome": "met: 9/9 protocol runs exit 0."
+  },
+  {
+   "id": "baseline-rgba",
+   "expectation": "PASS: the unpatched wrapper's ordinary-image path must load and complete.",
+   "outcome": "met: 9/9 exit 0."
+  },
+  {
+   "id": "baseline-bc1-bc3-forced-emulation",
+   "expectation": "PASS: with forced wrapper BCn emulation the unpatched wrapper decodes BC1/BC3 correctly.",
+   "outcome": "met: 9/9 bc1 and 9/9 bc3 exit 0."
+  },
+  {
+   "id": "baseline-readonly",
+   "expectation": "FAIL/CRASH: the unpatched wrapper casts away const and writes into the caller's read-only format list; expected SIGSEGV (exit 139) during vkCreateImage on the read-only page.",
+   "outcome": "met: 9/9 SIGSEGV, exit 139, output stops after 'PASS device' and before 'PASS image-and-caller-data'."
+  },
+  {
+   "id": "candidate-readonly",
+   "expectation": "PASS: the patched wrapper keeps its rewritten format list on the stack and must not touch the caller's read-only data.",
+   "outcome": "met: 9/9 exit 0 including 'PASS image-and-caller-data' and all pixel cycles."
+  },
+  {
+   "id": "candidate-rgba-bc1-bc3",
+   "expectation": "PASS: the patched wrapper must keep the ordinary and forced-BCn paths working.",
+   "outcome": "met: 27/27 exit 0."
+  },
+  {
+   "id": "baseline-readonly-if-passes-is-red-flag",
+   "expectation": "A baseline readonly pass on this 16 KB emulator would be a red flag.",
+   "outcome": "not a pass on this run: baseline readonly crashed 9/9 with the forced-BCn protocol environment. Without FORCE_BCN_EMULATION the unpatched wrapper does not enter the rewriting path at all and baseline readonly does not crash (see task_env runs and bc_native_path_observation)."
+  }
+ ],
+ "runs": [
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4767 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/000-baseline-bc1-protocol_image_view_1-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "rgba",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so rgba 1 4",
+   "exit_code": 0,
+   "output": "PROBE pid=3936 mode=rgba cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/000-system-rgba-protocol-c1-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so rgba 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4824 mode=rgba cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/000-system-rgba-task_env-c8-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4770 mode=bc1 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/001-baseline-bc1-protocol_image_view_1-c8-e5.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc1 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4827 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/001-system-bc1-task_env-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "rgba",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so rgba 1 5",
+   "exit_code": 0,
+   "output": "PROBE pid=3943 mode=rgba cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/001-system-rgba-protocol-c1-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4777 mode=bc1 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/002-baseline-bc1-protocol_image_view_1-c8-e16.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc3 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4830 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/002-system-bc3-task_env-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "rgba",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so rgba 1 16",
+   "exit_code": 0,
+   "output": "PROBE pid=3948 mode=rgba cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/002-system-rgba-protocol-c1-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4780 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/003-baseline-bc3-protocol_image_view_1-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so readonly 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4834 mode=readonly cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/003-system-readonly-task_env-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so rgba 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=3952 mode=rgba cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/003-system-rgba-protocol-c8-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4783 mode=bc3 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/004-baseline-bc3-protocol_image_view_1-c8-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so rgba 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4837 mode=rgba cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/004-baseline-rgba-task_env-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so rgba 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=3964 mode=rgba cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/004-system-rgba-protocol-c8-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4840 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/005-baseline-bc1-task_env-c8-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4786 mode=bc3 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/005-baseline-bc3-protocol_image_view_1-c8-e16.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so rgba 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=3974 mode=rgba cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/005-system-rgba-protocol-c8-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4844 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/006-baseline-bc3-task_env-c8-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4792 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/006-candidate-bc1-protocol_image_view_1-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "rgba",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so rgba 32 4",
+   "exit_code": 0,
+   "output": "PROBE pid=3980 mode=rgba cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS pixels cycle=8 count=16\nPASS pixels cycle=9 count=16\nPASS pixels cycle=10 count=16\nPASS pixels cycle=11 count=16\nPASS pixels cycle=12 count=16\nPASS pixels cycle=13 count=16\nPASS pixels cycle=14 count=16\nPASS pixels cycle=15 count=16\nPASS pixels cycle=16 count=16\nPASS pixels cycle=17 count=16\nPASS pixels cycle=18 count=16\nPASS pixels cycle=19 count=16\nPASS pixels cycle=20 count=16\nPASS pixels cycle=21 count=16\nPASS pixels cycle=22 count=16\nPASS pixels cycle=23 count=16\nPASS pixels cycle=24 count=16\nPASS pixels cycle=25 count=16\nPASS pixels cycle=26 count=16\nPASS pixels cycle=27 count=16\nPASS pixels cycle=28 count=16\nPASS pixels cycle=29 count=16\nPASS pixels cycle=30 count=16\nPASS pixels cycle=31 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/006-system-rgba-protocol-c32-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so readonly 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4847 mode=readonly cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/007-baseline-readonly-task_env-c8-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4804 mode=bc1 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/007-candidate-bc1-protocol_image_view_1-c8-e5.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "rgba",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so rgba 32 5",
+   "exit_code": 0,
+   "output": "PROBE pid=3986 mode=rgba cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS pixels cycle=8 count=25\nPASS pixels cycle=9 count=25\nPASS pixels cycle=10 count=25\nPASS pixels cycle=11 count=25\nPASS pixels cycle=12 count=25\nPASS pixels cycle=13 count=25\nPASS pixels cycle=14 count=25\nPASS pixels cycle=15 count=25\nPASS pixels cycle=16 count=25\nPASS pixels cycle=17 count=25\nPASS pixels cycle=18 count=25\nPASS pixels cycle=19 count=25\nPASS pixels cycle=20 count=25\nPASS pixels cycle=21 count=25\nPASS pixels cycle=22 count=25\nPASS pixels cycle=23 count=25\nPASS pixels cycle=24 count=25\nPASS pixels cycle=25 count=25\nPASS pixels cycle=26 count=25\nPASS pixels cycle=27 count=25\nPASS pixels cycle=28 count=25\nPASS pixels cycle=29 count=25\nPASS pixels cycle=30 count=25\nPASS pixels cycle=31 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/007-system-rgba-protocol-c32-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4808 mode=bc1 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/008-candidate-bc1-protocol_image_view_1-c8-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so rgba 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4854 mode=rgba cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/008-candidate-rgba-task_env-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "rgba",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so rgba 32 16",
+   "exit_code": 0,
+   "output": "PROBE pid=3997 mode=rgba cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS pixels cycle=8 count=256\nPASS pixels cycle=9 count=256\nPASS pixels cycle=10 count=256\nPASS pixels cycle=11 count=256\nPASS pixels cycle=12 count=256\nPASS pixels cycle=13 count=256\nPASS pixels cycle=14 count=256\nPASS pixels cycle=15 count=256\nPASS pixels cycle=16 count=256\nPASS pixels cycle=17 count=256\nPASS pixels cycle=18 count=256\nPASS pixels cycle=19 count=256\nPASS pixels cycle=20 count=256\nPASS pixels cycle=21 count=256\nPASS pixels cycle=22 count=256\nPASS pixels cycle=23 count=256\nPASS pixels cycle=24 count=256\nPASS pixels cycle=25 count=256\nPASS pixels cycle=26 count=256\nPASS pixels cycle=27 count=256\nPASS pixels cycle=28 count=256\nPASS pixels cycle=29 count=256\nPASS pixels cycle=30 count=256\nPASS pixels cycle=31 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/008-system-rgba-protocol-c32-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4857 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/009-candidate-bc1-task_env-c8-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4815 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/009-candidate-bc3-protocol_image_view_1-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc1",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc1 1 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4016 mode=bc1 cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/009-system-bc1-protocol-c1-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4818 mode=bc3 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/010-candidate-bc3-protocol_image_view_1-c8-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4860 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/010-candidate-bc3-task_env-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc1",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc1 1 5",
+   "exit_code": 1,
+   "output": "PROBE pid=4019 mode=bc1 cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/010-system-bc1-protocol-c1-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol_image_view_1",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4821 mode=bc3 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/011-candidate-bc3-protocol_image_view_1-c8-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "task_env",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so readonly 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4863 mode=readonly cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/011-candidate-readonly-task_env-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc1",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc1 1 16",
+   "exit_code": 1,
+   "output": "PROBE pid=4025 mode=bc1 cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/011-system-bc1-protocol-c1-e16.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc1 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4057 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/012-system-bc1-protocol-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc1 8 5",
+   "exit_code": 1,
+   "output": "PROBE pid=4068 mode=bc1 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/013-system-bc1-protocol-c8-e5.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc1 8 16",
+   "exit_code": 1,
+   "output": "PROBE pid=4108 mode=bc1 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/014-system-bc1-protocol-c8-e16.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc1",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc1 32 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4111 mode=bc1 cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/015-system-bc1-protocol-c32-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc1",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc1 32 5",
+   "exit_code": 1,
+   "output": "PROBE pid=4115 mode=bc1 cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/016-system-bc1-protocol-c32-e5.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc1",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc1 32 16",
+   "exit_code": 1,
+   "output": "PROBE pid=4118 mode=bc1 cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/017-system-bc1-protocol-c32-e16.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc3",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc3 1 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4126 mode=bc3 cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/018-system-bc3-protocol-c1-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc3",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc3 1 5",
+   "exit_code": 1,
+   "output": "PROBE pid=4135 mode=bc3 cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/019-system-bc3-protocol-c1-e5.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc3",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc3 1 16",
+   "exit_code": 1,
+   "output": "PROBE pid=4138 mode=bc3 cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/020-system-bc3-protocol-c1-e16.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc3 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4141 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/021-system-bc3-protocol-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc3 8 5",
+   "exit_code": 1,
+   "output": "PROBE pid=4148 mode=bc3 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/022-system-bc3-protocol-c8-e5.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc3 8 16",
+   "exit_code": 1,
+   "output": "PROBE pid=4154 mode=bc3 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/023-system-bc3-protocol-c8-e16.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc3",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc3 32 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4159 mode=bc3 cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/024-system-bc3-protocol-c32-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc3",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc3 32 5",
+   "exit_code": 1,
+   "output": "PROBE pid=4171 mode=bc3 cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/025-system-bc3-protocol-c32-e5.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "bc3",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so bc3 32 16",
+   "exit_code": 1,
+   "output": "PROBE pid=4175 mode=bc3 cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=255,0,0,0\n",
+   "log_file": "logs/runs/026-system-bc3-protocol-c32-e16.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "readonly",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so readonly 1 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4186 mode=readonly cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/027-system-readonly-protocol-c1-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "readonly",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so readonly 1 5",
+   "exit_code": 1,
+   "output": "PROBE pid=4192 mode=readonly cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/028-system-readonly-protocol-c1-e5.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "readonly",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so readonly 1 16",
+   "exit_code": 1,
+   "output": "PROBE pid=4195 mode=readonly cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/029-system-readonly-protocol-c1-e16.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so readonly 8 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4199 mode=readonly cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/030-system-readonly-protocol-c8-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so readonly 8 5",
+   "exit_code": 1,
+   "output": "PROBE pid=4202 mode=readonly cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/031-system-readonly-protocol-c8-e5.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so readonly 8 16",
+   "exit_code": 1,
+   "output": "PROBE pid=4205 mode=readonly cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/032-system-readonly-protocol-c8-e16.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "readonly",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so readonly 32 4",
+   "exit_code": 1,
+   "output": "PROBE pid=4208 mode=readonly cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/033-system-readonly-protocol-c32-e4.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "readonly",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so readonly 32 5",
+   "exit_code": 1,
+   "output": "PROBE pid=4211 mode=readonly cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/034-system-readonly-protocol-c32-e5.log"
+  },
+  {
+   "phase": "system",
+   "target": "/system/lib64/libvulkan.so",
+   "mode": "readonly",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /system/lib64/libvulkan.so readonly 32 16",
+   "exit_code": 1,
+   "output": "PROBE pid=4214 mode=readonly cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\n",
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "log_file": "logs/runs/035-system-readonly-protocol-c32-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "rgba",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so rgba 1 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4218 mode=rgba cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/036-baseline-rgba-protocol-c1-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "rgba",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so rgba 1 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4221 mode=rgba cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/037-baseline-rgba-protocol-c1-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "rgba",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so rgba 1 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4233 mode=rgba cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/038-baseline-rgba-protocol-c1-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so rgba 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4236 mode=rgba cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/039-baseline-rgba-protocol-c8-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so rgba 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4241 mode=rgba cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/040-baseline-rgba-protocol-c8-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so rgba 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4244 mode=rgba cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/041-baseline-rgba-protocol-c8-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "rgba",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so rgba 32 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4252 mode=rgba cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS pixels cycle=8 count=16\nPASS pixels cycle=9 count=16\nPASS pixels cycle=10 count=16\nPASS pixels cycle=11 count=16\nPASS pixels cycle=12 count=16\nPASS pixels cycle=13 count=16\nPASS pixels cycle=14 count=16\nPASS pixels cycle=15 count=16\nPASS pixels cycle=16 count=16\nPASS pixels cycle=17 count=16\nPASS pixels cycle=18 count=16\nPASS pixels cycle=19 count=16\nPASS pixels cycle=20 count=16\nPASS pixels cycle=21 count=16\nPASS pixels cycle=22 count=16\nPASS pixels cycle=23 count=16\nPASS pixels cycle=24 count=16\nPASS pixels cycle=25 count=16\nPASS pixels cycle=26 count=16\nPASS pixels cycle=27 count=16\nPASS pixels cycle=28 count=16\nPASS pixels cycle=29 count=16\nPASS pixels cycle=30 count=16\nPASS pixels cycle=31 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/042-baseline-rgba-protocol-c32-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "rgba",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so rgba 32 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4256 mode=rgba cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS pixels cycle=8 count=25\nPASS pixels cycle=9 count=25\nPASS pixels cycle=10 count=25\nPASS pixels cycle=11 count=25\nPASS pixels cycle=12 count=25\nPASS pixels cycle=13 count=25\nPASS pixels cycle=14 count=25\nPASS pixels cycle=15 count=25\nPASS pixels cycle=16 count=25\nPASS pixels cycle=17 count=25\nPASS pixels cycle=18 count=25\nPASS pixels cycle=19 count=25\nPASS pixels cycle=20 count=25\nPASS pixels cycle=21 count=25\nPASS pixels cycle=22 count=25\nPASS pixels cycle=23 count=25\nPASS pixels cycle=24 count=25\nPASS pixels cycle=25 count=25\nPASS pixels cycle=26 count=25\nPASS pixels cycle=27 count=25\nPASS pixels cycle=28 count=25\nPASS pixels cycle=29 count=25\nPASS pixels cycle=30 count=25\nPASS pixels cycle=31 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/043-baseline-rgba-protocol-c32-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "rgba",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so rgba 32 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4259 mode=rgba cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS pixels cycle=8 count=256\nPASS pixels cycle=9 count=256\nPASS pixels cycle=10 count=256\nPASS pixels cycle=11 count=256\nPASS pixels cycle=12 count=256\nPASS pixels cycle=13 count=256\nPASS pixels cycle=14 count=256\nPASS pixels cycle=15 count=256\nPASS pixels cycle=16 count=256\nPASS pixels cycle=17 count=256\nPASS pixels cycle=18 count=256\nPASS pixels cycle=19 count=256\nPASS pixels cycle=20 count=256\nPASS pixels cycle=21 count=256\nPASS pixels cycle=22 count=256\nPASS pixels cycle=23 count=256\nPASS pixels cycle=24 count=256\nPASS pixels cycle=25 count=256\nPASS pixels cycle=26 count=256\nPASS pixels cycle=27 count=256\nPASS pixels cycle=28 count=256\nPASS pixels cycle=29 count=256\nPASS pixels cycle=30 count=256\nPASS pixels cycle=31 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/044-baseline-rgba-protocol-c32-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 1 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4263 mode=bc1 cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/045-baseline-bc1-protocol-c1-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 1 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4269 mode=bc1 cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/046-baseline-bc1-protocol-c1-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 1 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4273 mode=bc1 cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/047-baseline-bc1-protocol-c1-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4276 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/048-baseline-bc1-protocol-c8-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4280 mode=bc1 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/049-baseline-bc1-protocol-c8-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4283 mode=bc1 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/050-baseline-bc1-protocol-c8-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 32 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4286 mode=bc1 cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS pixels cycle=8 count=16\nPASS pixels cycle=9 count=16\nPASS pixels cycle=10 count=16\nPASS pixels cycle=11 count=16\nPASS pixels cycle=12 count=16\nPASS pixels cycle=13 count=16\nPASS pixels cycle=14 count=16\nPASS pixels cycle=15 count=16\nPASS pixels cycle=16 count=16\nPASS pixels cycle=17 count=16\nPASS pixels cycle=18 count=16\nPASS pixels cycle=19 count=16\nPASS pixels cycle=20 count=16\nPASS pixels cycle=21 count=16\nPASS pixels cycle=22 count=16\nPASS pixels cycle=23 count=16\nPASS pixels cycle=24 count=16\nPASS pixels cycle=25 count=16\nPASS pixels cycle=26 count=16\nPASS pixels cycle=27 count=16\nPASS pixels cycle=28 count=16\nPASS pixels cycle=29 count=16\nPASS pixels cycle=30 count=16\nPASS pixels cycle=31 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/051-baseline-bc1-protocol-c32-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 32 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4289 mode=bc1 cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS pixels cycle=8 count=25\nPASS pixels cycle=9 count=25\nPASS pixels cycle=10 count=25\nPASS pixels cycle=11 count=25\nPASS pixels cycle=12 count=25\nPASS pixels cycle=13 count=25\nPASS pixels cycle=14 count=25\nPASS pixels cycle=15 count=25\nPASS pixels cycle=16 count=25\nPASS pixels cycle=17 count=25\nPASS pixels cycle=18 count=25\nPASS pixels cycle=19 count=25\nPASS pixels cycle=20 count=25\nPASS pixels cycle=21 count=25\nPASS pixels cycle=22 count=25\nPASS pixels cycle=23 count=25\nPASS pixels cycle=24 count=25\nPASS pixels cycle=25 count=25\nPASS pixels cycle=26 count=25\nPASS pixels cycle=27 count=25\nPASS pixels cycle=28 count=25\nPASS pixels cycle=29 count=25\nPASS pixels cycle=30 count=25\nPASS pixels cycle=31 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/052-baseline-bc1-protocol-c32-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc1",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 32 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4292 mode=bc1 cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS pixels cycle=8 count=256\nPASS pixels cycle=9 count=256\nPASS pixels cycle=10 count=256\nPASS pixels cycle=11 count=256\nPASS pixels cycle=12 count=256\nPASS pixels cycle=13 count=256\nPASS pixels cycle=14 count=256\nPASS pixels cycle=15 count=256\nPASS pixels cycle=16 count=256\nPASS pixels cycle=17 count=256\nPASS pixels cycle=18 count=256\nPASS pixels cycle=19 count=256\nPASS pixels cycle=20 count=256\nPASS pixels cycle=21 count=256\nPASS pixels cycle=22 count=256\nPASS pixels cycle=23 count=256\nPASS pixels cycle=24 count=256\nPASS pixels cycle=25 count=256\nPASS pixels cycle=26 count=256\nPASS pixels cycle=27 count=256\nPASS pixels cycle=28 count=256\nPASS pixels cycle=29 count=256\nPASS pixels cycle=30 count=256\nPASS pixels cycle=31 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/053-baseline-bc1-protocol-c32-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 1 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4296 mode=bc3 cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/054-baseline-bc3-protocol-c1-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 1 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4299 mode=bc3 cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/055-baseline-bc3-protocol-c1-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 1 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4302 mode=bc3 cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/056-baseline-bc3-protocol-c1-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4305 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/057-baseline-bc3-protocol-c8-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4308 mode=bc3 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/058-baseline-bc3-protocol-c8-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4311 mode=bc3 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/059-baseline-bc3-protocol-c8-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 32 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4314 mode=bc3 cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS pixels cycle=8 count=16\nPASS pixels cycle=9 count=16\nPASS pixels cycle=10 count=16\nPASS pixels cycle=11 count=16\nPASS pixels cycle=12 count=16\nPASS pixels cycle=13 count=16\nPASS pixels cycle=14 count=16\nPASS pixels cycle=15 count=16\nPASS pixels cycle=16 count=16\nPASS pixels cycle=17 count=16\nPASS pixels cycle=18 count=16\nPASS pixels cycle=19 count=16\nPASS pixels cycle=20 count=16\nPASS pixels cycle=21 count=16\nPASS pixels cycle=22 count=16\nPASS pixels cycle=23 count=16\nPASS pixels cycle=24 count=16\nPASS pixels cycle=25 count=16\nPASS pixels cycle=26 count=16\nPASS pixels cycle=27 count=16\nPASS pixels cycle=28 count=16\nPASS pixels cycle=29 count=16\nPASS pixels cycle=30 count=16\nPASS pixels cycle=31 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/060-baseline-bc3-protocol-c32-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 32 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4317 mode=bc3 cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS pixels cycle=8 count=25\nPASS pixels cycle=9 count=25\nPASS pixels cycle=10 count=25\nPASS pixels cycle=11 count=25\nPASS pixels cycle=12 count=25\nPASS pixels cycle=13 count=25\nPASS pixels cycle=14 count=25\nPASS pixels cycle=15 count=25\nPASS pixels cycle=16 count=25\nPASS pixels cycle=17 count=25\nPASS pixels cycle=18 count=25\nPASS pixels cycle=19 count=25\nPASS pixels cycle=20 count=25\nPASS pixels cycle=21 count=25\nPASS pixels cycle=22 count=25\nPASS pixels cycle=23 count=25\nPASS pixels cycle=24 count=25\nPASS pixels cycle=25 count=25\nPASS pixels cycle=26 count=25\nPASS pixels cycle=27 count=25\nPASS pixels cycle=28 count=25\nPASS pixels cycle=29 count=25\nPASS pixels cycle=30 count=25\nPASS pixels cycle=31 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/061-baseline-bc3-protocol-c32-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "bc3",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc3 32 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4321 mode=bc3 cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS pixels cycle=8 count=256\nPASS pixels cycle=9 count=256\nPASS pixels cycle=10 count=256\nPASS pixels cycle=11 count=256\nPASS pixels cycle=12 count=256\nPASS pixels cycle=13 count=256\nPASS pixels cycle=14 count=256\nPASS pixels cycle=15 count=256\nPASS pixels cycle=16 count=256\nPASS pixels cycle=17 count=256\nPASS pixels cycle=18 count=256\nPASS pixels cycle=19 count=256\nPASS pixels cycle=20 count=256\nPASS pixels cycle=21 count=256\nPASS pixels cycle=22 count=256\nPASS pixels cycle=23 count=256\nPASS pixels cycle=24 count=256\nPASS pixels cycle=25 count=256\nPASS pixels cycle=26 count=256\nPASS pixels cycle=27 count=256\nPASS pixels cycle=28 count=256\nPASS pixels cycle=29 count=256\nPASS pixels cycle=30 count=256\nPASS pixels cycle=31 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/062-baseline-bc3-protocol-c32-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "readonly",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so readonly 1 4",
+   "exit_code": 139,
+   "output": "PROBE pid=4329 mode=readonly cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\n",
+   "error": "Segmentation fault \n",
+   "log_file": "logs/runs/063-baseline-readonly-protocol-c1-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "readonly",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so readonly 1 5",
+   "exit_code": 139,
+   "output": "PROBE pid=4339 mode=readonly cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\n",
+   "error": "Segmentation fault \n",
+   "log_file": "logs/runs/064-baseline-readonly-protocol-c1-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "readonly",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so readonly 1 16",
+   "exit_code": 139,
+   "output": "PROBE pid=4353 mode=readonly cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\n",
+   "error": "Segmentation fault \n",
+   "log_file": "logs/runs/065-baseline-readonly-protocol-c1-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so readonly 8 4",
+   "exit_code": 139,
+   "output": "PROBE pid=4367 mode=readonly cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\n",
+   "error": "Segmentation fault \n",
+   "log_file": "logs/runs/066-baseline-readonly-protocol-c8-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so readonly 8 5",
+   "exit_code": 139,
+   "output": "PROBE pid=4398 mode=readonly cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\n",
+   "error": "Segmentation fault \n",
+   "log_file": "logs/runs/067-baseline-readonly-protocol-c8-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so readonly 8 16",
+   "exit_code": 139,
+   "output": "PROBE pid=4422 mode=readonly cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\n",
+   "error": "Segmentation fault \n",
+   "log_file": "logs/runs/068-baseline-readonly-protocol-c8-e16.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "readonly",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so readonly 32 4",
+   "exit_code": 139,
+   "output": "PROBE pid=4433 mode=readonly cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\n",
+   "error": "Segmentation fault \n",
+   "log_file": "logs/runs/069-baseline-readonly-protocol-c32-e4.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "readonly",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so readonly 32 5",
+   "exit_code": 139,
+   "output": "PROBE pid=4448 mode=readonly cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\n",
+   "error": "Segmentation fault \n",
+   "log_file": "logs/runs/070-baseline-readonly-protocol-c32-e5.log"
+  },
+  {
+   "phase": "baseline",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so",
+   "mode": "readonly",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so readonly 32 16",
+   "exit_code": 139,
+   "output": "PROBE pid=4462 mode=readonly cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\n",
+   "error": "Segmentation fault \n",
+   "log_file": "logs/runs/071-baseline-readonly-protocol-c32-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "rgba",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so rgba 1 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4473 mode=rgba cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/072-candidate-rgba-protocol-c1-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "rgba",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so rgba 1 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4479 mode=rgba cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/073-candidate-rgba-protocol-c1-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "rgba",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so rgba 1 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4483 mode=rgba cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/074-candidate-rgba-protocol-c1-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so rgba 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4488 mode=rgba cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/075-candidate-rgba-protocol-c8-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so rgba 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4492 mode=rgba cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/076-candidate-rgba-protocol-c8-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "rgba",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so rgba 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4499 mode=rgba cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/077-candidate-rgba-protocol-c8-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "rgba",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so rgba 32 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4508 mode=rgba cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS pixels cycle=8 count=16\nPASS pixels cycle=9 count=16\nPASS pixels cycle=10 count=16\nPASS pixels cycle=11 count=16\nPASS pixels cycle=12 count=16\nPASS pixels cycle=13 count=16\nPASS pixels cycle=14 count=16\nPASS pixels cycle=15 count=16\nPASS pixels cycle=16 count=16\nPASS pixels cycle=17 count=16\nPASS pixels cycle=18 count=16\nPASS pixels cycle=19 count=16\nPASS pixels cycle=20 count=16\nPASS pixels cycle=21 count=16\nPASS pixels cycle=22 count=16\nPASS pixels cycle=23 count=16\nPASS pixels cycle=24 count=16\nPASS pixels cycle=25 count=16\nPASS pixels cycle=26 count=16\nPASS pixels cycle=27 count=16\nPASS pixels cycle=28 count=16\nPASS pixels cycle=29 count=16\nPASS pixels cycle=30 count=16\nPASS pixels cycle=31 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/078-candidate-rgba-protocol-c32-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "rgba",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so rgba 32 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4518 mode=rgba cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS pixels cycle=8 count=25\nPASS pixels cycle=9 count=25\nPASS pixels cycle=10 count=25\nPASS pixels cycle=11 count=25\nPASS pixels cycle=12 count=25\nPASS pixels cycle=13 count=25\nPASS pixels cycle=14 count=25\nPASS pixels cycle=15 count=25\nPASS pixels cycle=16 count=25\nPASS pixels cycle=17 count=25\nPASS pixels cycle=18 count=25\nPASS pixels cycle=19 count=25\nPASS pixels cycle=20 count=25\nPASS pixels cycle=21 count=25\nPASS pixels cycle=22 count=25\nPASS pixels cycle=23 count=25\nPASS pixels cycle=24 count=25\nPASS pixels cycle=25 count=25\nPASS pixels cycle=26 count=25\nPASS pixels cycle=27 count=25\nPASS pixels cycle=28 count=25\nPASS pixels cycle=29 count=25\nPASS pixels cycle=30 count=25\nPASS pixels cycle=31 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/079-candidate-rgba-protocol-c32-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "rgba",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so rgba 32 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4523 mode=rgba cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS pixels cycle=8 count=256\nPASS pixels cycle=9 count=256\nPASS pixels cycle=10 count=256\nPASS pixels cycle=11 count=256\nPASS pixels cycle=12 count=256\nPASS pixels cycle=13 count=256\nPASS pixels cycle=14 count=256\nPASS pixels cycle=15 count=256\nPASS pixels cycle=16 count=256\nPASS pixels cycle=17 count=256\nPASS pixels cycle=18 count=256\nPASS pixels cycle=19 count=256\nPASS pixels cycle=20 count=256\nPASS pixels cycle=21 count=256\nPASS pixels cycle=22 count=256\nPASS pixels cycle=23 count=256\nPASS pixels cycle=24 count=256\nPASS pixels cycle=25 count=256\nPASS pixels cycle=26 count=256\nPASS pixels cycle=27 count=256\nPASS pixels cycle=28 count=256\nPASS pixels cycle=29 count=256\nPASS pixels cycle=30 count=256\nPASS pixels cycle=31 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/080-candidate-rgba-protocol-c32-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 1 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4526 mode=bc1 cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/081-candidate-bc1-protocol-c1-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 1 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4529 mode=bc1 cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/082-candidate-bc1-protocol-c1-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 1 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4532 mode=bc1 cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/083-candidate-bc1-protocol-c1-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4535 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/084-candidate-bc1-protocol-c8-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4541 mode=bc1 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/085-candidate-bc1-protocol-c8-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4544 mode=bc1 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/086-candidate-bc1-protocol-c8-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 32 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4547 mode=bc1 cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS pixels cycle=8 count=16\nPASS pixels cycle=9 count=16\nPASS pixels cycle=10 count=16\nPASS pixels cycle=11 count=16\nPASS pixels cycle=12 count=16\nPASS pixels cycle=13 count=16\nPASS pixels cycle=14 count=16\nPASS pixels cycle=15 count=16\nPASS pixels cycle=16 count=16\nPASS pixels cycle=17 count=16\nPASS pixels cycle=18 count=16\nPASS pixels cycle=19 count=16\nPASS pixels cycle=20 count=16\nPASS pixels cycle=21 count=16\nPASS pixels cycle=22 count=16\nPASS pixels cycle=23 count=16\nPASS pixels cycle=24 count=16\nPASS pixels cycle=25 count=16\nPASS pixels cycle=26 count=16\nPASS pixels cycle=27 count=16\nPASS pixels cycle=28 count=16\nPASS pixels cycle=29 count=16\nPASS pixels cycle=30 count=16\nPASS pixels cycle=31 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/087-candidate-bc1-protocol-c32-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 32 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4550 mode=bc1 cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS pixels cycle=8 count=25\nPASS pixels cycle=9 count=25\nPASS pixels cycle=10 count=25\nPASS pixels cycle=11 count=25\nPASS pixels cycle=12 count=25\nPASS pixels cycle=13 count=25\nPASS pixels cycle=14 count=25\nPASS pixels cycle=15 count=25\nPASS pixels cycle=16 count=25\nPASS pixels cycle=17 count=25\nPASS pixels cycle=18 count=25\nPASS pixels cycle=19 count=25\nPASS pixels cycle=20 count=25\nPASS pixels cycle=21 count=25\nPASS pixels cycle=22 count=25\nPASS pixels cycle=23 count=25\nPASS pixels cycle=24 count=25\nPASS pixels cycle=25 count=25\nPASS pixels cycle=26 count=25\nPASS pixels cycle=27 count=25\nPASS pixels cycle=28 count=25\nPASS pixels cycle=29 count=25\nPASS pixels cycle=30 count=25\nPASS pixels cycle=31 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/088-candidate-bc1-protocol-c32-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc1",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc1 32 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4553 mode=bc1 cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS pixels cycle=8 count=256\nPASS pixels cycle=9 count=256\nPASS pixels cycle=10 count=256\nPASS pixels cycle=11 count=256\nPASS pixels cycle=12 count=256\nPASS pixels cycle=13 count=256\nPASS pixels cycle=14 count=256\nPASS pixels cycle=15 count=256\nPASS pixels cycle=16 count=256\nPASS pixels cycle=17 count=256\nPASS pixels cycle=18 count=256\nPASS pixels cycle=19 count=256\nPASS pixels cycle=20 count=256\nPASS pixels cycle=21 count=256\nPASS pixels cycle=22 count=256\nPASS pixels cycle=23 count=256\nPASS pixels cycle=24 count=256\nPASS pixels cycle=25 count=256\nPASS pixels cycle=26 count=256\nPASS pixels cycle=27 count=256\nPASS pixels cycle=28 count=256\nPASS pixels cycle=29 count=256\nPASS pixels cycle=30 count=256\nPASS pixels cycle=31 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/089-candidate-bc1-protocol-c32-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 1 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4572 mode=bc3 cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/090-candidate-bc3-protocol-c1-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 1 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4579 mode=bc3 cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/091-candidate-bc3-protocol-c1-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 1 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4588 mode=bc3 cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/092-candidate-bc3-protocol-c1-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4597 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/093-candidate-bc3-protocol-c8-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4602 mode=bc3 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/094-candidate-bc3-protocol-c8-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4610 mode=bc3 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/095-candidate-bc3-protocol-c8-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 32 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4613 mode=bc3 cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS pixels cycle=8 count=16\nPASS pixels cycle=9 count=16\nPASS pixels cycle=10 count=16\nPASS pixels cycle=11 count=16\nPASS pixels cycle=12 count=16\nPASS pixels cycle=13 count=16\nPASS pixels cycle=14 count=16\nPASS pixels cycle=15 count=16\nPASS pixels cycle=16 count=16\nPASS pixels cycle=17 count=16\nPASS pixels cycle=18 count=16\nPASS pixels cycle=19 count=16\nPASS pixels cycle=20 count=16\nPASS pixels cycle=21 count=16\nPASS pixels cycle=22 count=16\nPASS pixels cycle=23 count=16\nPASS pixels cycle=24 count=16\nPASS pixels cycle=25 count=16\nPASS pixels cycle=26 count=16\nPASS pixels cycle=27 count=16\nPASS pixels cycle=28 count=16\nPASS pixels cycle=29 count=16\nPASS pixels cycle=30 count=16\nPASS pixels cycle=31 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/096-candidate-bc3-protocol-c32-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 32 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4630 mode=bc3 cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS pixels cycle=8 count=25\nPASS pixels cycle=9 count=25\nPASS pixels cycle=10 count=25\nPASS pixels cycle=11 count=25\nPASS pixels cycle=12 count=25\nPASS pixels cycle=13 count=25\nPASS pixels cycle=14 count=25\nPASS pixels cycle=15 count=25\nPASS pixels cycle=16 count=25\nPASS pixels cycle=17 count=25\nPASS pixels cycle=18 count=25\nPASS pixels cycle=19 count=25\nPASS pixels cycle=20 count=25\nPASS pixels cycle=21 count=25\nPASS pixels cycle=22 count=25\nPASS pixels cycle=23 count=25\nPASS pixels cycle=24 count=25\nPASS pixels cycle=25 count=25\nPASS pixels cycle=26 count=25\nPASS pixels cycle=27 count=25\nPASS pixels cycle=28 count=25\nPASS pixels cycle=29 count=25\nPASS pixels cycle=30 count=25\nPASS pixels cycle=31 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/097-candidate-bc3-protocol-c32-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "bc3",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so bc3 32 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4635 mode=bc3 cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS pixels cycle=8 count=256\nPASS pixels cycle=9 count=256\nPASS pixels cycle=10 count=256\nPASS pixels cycle=11 count=256\nPASS pixels cycle=12 count=256\nPASS pixels cycle=13 count=256\nPASS pixels cycle=14 count=256\nPASS pixels cycle=15 count=256\nPASS pixels cycle=16 count=256\nPASS pixels cycle=17 count=256\nPASS pixels cycle=18 count=256\nPASS pixels cycle=19 count=256\nPASS pixels cycle=20 count=256\nPASS pixels cycle=21 count=256\nPASS pixels cycle=22 count=256\nPASS pixels cycle=23 count=256\nPASS pixels cycle=24 count=256\nPASS pixels cycle=25 count=256\nPASS pixels cycle=26 count=256\nPASS pixels cycle=27 count=256\nPASS pixels cycle=28 count=256\nPASS pixels cycle=29 count=256\nPASS pixels cycle=30 count=256\nPASS pixels cycle=31 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/098-candidate-bc3-protocol-c32-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "readonly",
+   "cycles": 1,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so readonly 1 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4646 mode=readonly cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/099-candidate-readonly-protocol-c1-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "readonly",
+   "cycles": 1,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so readonly 1 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4649 mode=readonly cycles=1 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/100-candidate-readonly-protocol-c1-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "readonly",
+   "cycles": 1,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so readonly 1 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4652 mode=readonly cycles=1 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/101-candidate-readonly-protocol-c1-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so readonly 8 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4655 mode=readonly cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/102-candidate-readonly-protocol-c8-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so readonly 8 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4661 mode=readonly cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/103-candidate-readonly-protocol-c8-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "readonly",
+   "cycles": 8,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so readonly 8 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4667 mode=readonly cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/104-candidate-readonly-protocol-c8-e16.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "readonly",
+   "cycles": 32,
+   "edge": 4,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so readonly 32 4",
+   "exit_code": 0,
+   "output": "PROBE pid=4673 mode=readonly cycles=32 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS pixels cycle=8 count=16\nPASS pixels cycle=9 count=16\nPASS pixels cycle=10 count=16\nPASS pixels cycle=11 count=16\nPASS pixels cycle=12 count=16\nPASS pixels cycle=13 count=16\nPASS pixels cycle=14 count=16\nPASS pixels cycle=15 count=16\nPASS pixels cycle=16 count=16\nPASS pixels cycle=17 count=16\nPASS pixels cycle=18 count=16\nPASS pixels cycle=19 count=16\nPASS pixels cycle=20 count=16\nPASS pixels cycle=21 count=16\nPASS pixels cycle=22 count=16\nPASS pixels cycle=23 count=16\nPASS pixels cycle=24 count=16\nPASS pixels cycle=25 count=16\nPASS pixels cycle=26 count=16\nPASS pixels cycle=27 count=16\nPASS pixels cycle=28 count=16\nPASS pixels cycle=29 count=16\nPASS pixels cycle=30 count=16\nPASS pixels cycle=31 count=16\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/105-candidate-readonly-protocol-c32-e4.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "readonly",
+   "cycles": 32,
+   "edge": 5,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so readonly 32 5",
+   "exit_code": 0,
+   "output": "PROBE pid=4677 mode=readonly cycles=32 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS pixels cycle=8 count=25\nPASS pixels cycle=9 count=25\nPASS pixels cycle=10 count=25\nPASS pixels cycle=11 count=25\nPASS pixels cycle=12 count=25\nPASS pixels cycle=13 count=25\nPASS pixels cycle=14 count=25\nPASS pixels cycle=15 count=25\nPASS pixels cycle=16 count=25\nPASS pixels cycle=17 count=25\nPASS pixels cycle=18 count=25\nPASS pixels cycle=19 count=25\nPASS pixels cycle=20 count=25\nPASS pixels cycle=21 count=25\nPASS pixels cycle=22 count=25\nPASS pixels cycle=23 count=25\nPASS pixels cycle=24 count=25\nPASS pixels cycle=25 count=25\nPASS pixels cycle=26 count=25\nPASS pixels cycle=27 count=25\nPASS pixels cycle=28 count=25\nPASS pixels cycle=29 count=25\nPASS pixels cycle=30 count=25\nPASS pixels cycle=31 count=25\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/106-candidate-readonly-protocol-c32-e5.log"
+  },
+  {
+   "phase": "candidate",
+   "target": "/data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so",
+   "mode": "readonly",
+   "cycles": 32,
+   "edge": 16,
+   "env_variant": "protocol",
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/candidate.so readonly 32 16",
+   "exit_code": 0,
+   "output": "PROBE pid=4684 mode=readonly cycles=32 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS pixels cycle=8 count=256\nPASS pixels cycle=9 count=256\nPASS pixels cycle=10 count=256\nPASS pixels cycle=11 count=256\nPASS pixels cycle=12 count=256\nPASS pixels cycle=13 count=256\nPASS pixels cycle=14 count=256\nPASS pixels cycle=15 count=256\nPASS pixels cycle=16 count=256\nPASS pixels cycle=17 count=256\nPASS pixels cycle=18 count=256\nPASS pixels cycle=19 count=256\nPASS pixels cycle=20 count=256\nPASS pixels cycle=21 count=256\nPASS pixels cycle=22 count=256\nPASS pixels cycle=23 count=256\nPASS pixels cycle=24 count=256\nPASS pixels cycle=25 count=256\nPASS pixels cycle=26 count=256\nPASS pixels cycle=27 count=256\nPASS pixels cycle=28 count=256\nPASS pixels cycle=29 count=256\nPASS pixels cycle=30 count=256\nPASS pixels cycle=31 count=256\nPASS clean-exit\n",
+   "error": "",
+   "log_file": "logs/runs/107-candidate-readonly-protocol-c32-e16.log"
+  }
+ ],
+ "additional_captured_runs": [
+  {
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 1 4",
+   "exit_code": 1,
+   "output_probe_lines": [
+    "PROBE pid=4909 mode=bc1 cycles=1 edge=4",
+    "PASS dlopen",
+    "PASS instance",
+    "DEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384",
+    "PASS device",
+    "PASS image-and-caller-data"
+   ],
+   "error": "FAIL stage=pixels cycle=0 pixel=0 rgba=0,248,0,0\n",
+   "selected_wrapper_log_lines": [
+    "[000.03] bc1 support: \t (enumerate_physical_device:260)",
+    "[000.03] bc4 support: \t (enumerate_physical_device:263)"
+   ],
+   "full_capture": "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.stdout",
+   "logcat_capture": "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.logcat"
+  },
+  {
+   "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 1 4",
+   "exit_code": 0,
+   "output_probe_lines": [
+    "PROBE pid=4917 mode=bc1 cycles=1 edge=4",
+    "PASS dlopen",
+    "PASS instance",
+    "DEVICE name=Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384",
+    "PASS device",
+    "PASS image-and-caller-data",
+    "PASS pixels cycle=0 count=16",
+    "PASS clean-exit"
+   ],
+   "error": "",
+   "selected_wrapper_log_lines": [
+    "[000.04] Forcing BCn emulation (disable by setting FORCE_BCN_EMULATION=0) \t (enumerate_physical_device:271)"
+   ],
+   "full_capture": "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.stdout",
+   "logcat_capture": "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.logcat"
+  }
+ ],
+ "page_size_observed": {
+  "getconf PAGE_SIZE": 16384,
+  "probe sysconf(_SC_PAGESIZE) in every run": 16384,
+  "guest_16kb_confirmed": true,
+  "relabeled": false
+ },
+ "summary": {
+  "total_captured_runs": 132,
+  "protocol_runs": 108,
+  "system_rgba_protocol": "9/9 exit 0",
+  "baseline_rgba_protocol": "9/9 exit 0",
+  "baseline_bc1_protocol": "9/9 exit 0",
+  "baseline_bc3_protocol": "9/9 exit 0",
+  "baseline_readonly_protocol": "9/9 SIGSEGV (exit 139)",
+  "candidate_rgba_protocol": "9/9 exit 0",
+  "candidate_bc1_protocol": "9/9 exit 0",
+  "candidate_bc3_protocol": "9/9 exit 0",
+  "candidate_readonly_protocol": "9/9 exit 0",
+  "system_bc1_bc3_readonly_protocol": "27/27 exit 1; vkCreateImage and the read-only caller-data check pass, the probe's pixel check fails because the guest Vulkan device does not decode native BC1/BC3 buffer-image copies (environment, not wrapper)",
+  "baseline_candidate_image_view_1_bc1_bc3": "12/12 exit 0",
+  "task_env_rgba": "3/3 exit 0 (all targets)",
+  "task_env_bc1_bc3_readonly": "9/9 exit 1 pixel mismatch (all targets, including the system loader; no wrapper code involved for the system target)",
+  "all_runs_reported_guest_page_size_16384": true,
+  "expected_controls_met": true,
+  "any_16kb_specific_load_failure": false
+ },
+ "findings": [
+  {
+   "id": "16kb-native-loading",
+   "result": "PASS",
+   "detail": "The rebuilt probe, both stripped wrapper libraries and all 16 auxiliary libraries load with RTLD_NOW on a guest whose kernel/page size and process sysconf both report 16384. Every wrapper run printed 'PASS dlopen' and its DEVICE line reported page_size=16384. No dependency failed to load and no 16 KB alignment load error was observed; every staged library has LOAD segments aligned to 0x4000 and each wrapper has four LOAD segments at 0x4000."
+  },
+  {
+   "id": "caller-data-control",
+   "result": "PASS",
+   "detail": "The read-only caller-data control reproduces on 16 KB: baseline readonly SIGSEGV 9/9 (exit 139, before 'PASS image-and-caller-data'); candidate readonly passes 9/9 including all pixel cycles."
+  },
+  {
+   "id": "create-image-and-copy-round-trip",
+   "result": "PASS",
+   "detail": "candidate rgba/bc1/bc3 pass 27/27 protocol runs and 12/12 USE_IMAGE_VIEW=1 runs at edges 4/5/16 and cycles 1/8/32; baseline rgba/bc1/bc3 pass 27/27 protocol runs. Pixel round-trip and staging lifetime complete with clean exits."
+  },
+  {
+   "id": "native-bc-path-not-qualified",
+   "result": "ENVIRONMENT_LIMITATION",
+   "detail": "Without forced wrapper emulation the guest's Goldfish GFXStream Vulkan device (host lavapipe) claims textureCompressionBC but returns undecoded BC block bytes for buffer-image copies. This affects the system loader target (no wrapper) equally, so it is not a wrapper or page-size regression; it means BC1/BC3 qualification on this AVD is only meaningful with FORCE_BCN_EMULATION=1, which is what the 4 KB pass also used."
+  }
+ ],
+ "bc_native_path_observation": {
+  "question": "Why do BC1/BC3 modes need FORCE_BCN_EMULATION=1 on this 16 KB emulator?",
+  "commands": [
+   "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 1 4",
+   "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 1 4"
+  ],
+  "exit_codes": [
+   1,
+   0
+  ],
+  "observed": "Without FORCE_BCN_EMULATION the wrapper logs 'bc1 support:' / 'bc4 support:' but neither 'Forcing BCn emulation' nor 'Faking feature support for textureCompressionBC'; the image is left in its native format and the probe pixel check fails with rgba=0,248,0,0, i.e. the raw first BC block bytes rather than decoded red. With FORCE_BCN_EMULATION=1 the wrapper logs 'Forcing BCn emulation (disable by setting FORCE_BCN_EMULATION=0)' and 'Faking feature support for textureCompressionBC', and the pixel check passes. 'Forcing BCn emulation' is only logged when the underlying device reports textureCompressionBC, so this guest reports BCn support but its native BC buffer-image copy does not decode.",
+  "system_target_control": "The same native-path failure occurs against /system/lib64/libvulkan.so with no wrapper loaded (9/9 system bc1/bc3 protocol runs and 3 task_env runs exit 1 on the pixel check while image creation passes), so it is a property of the emulator's Vulkan device, not of either wrapper build.",
+  "logcat_captures": [
+   "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.logcat",
+   "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.logcat"
+  ]
+ },
+ "reference_4k": {
+  "reference_evidence_file": "docs/evidence/2026-10-21-graphics-source.json",
+  "reference_raw_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/",
+  "reference_native_probe_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
+  "rerun_in_this_pass": false,
+  "reference_4k_launch_params": [
+   "-avd",
+   "Vapor_UI_API36",
+   "-port",
+   "5556",
+   "-no-window",
+   "-no-audio",
+   "-no-snapshot-load",
+   "-no-snapshot-save",
+   "-gpu",
+   "lavapipe",
+   "-no-boot-anim",
+   "-memory",
+   "3072",
+   "-cores",
+   "4"
+  ],
+  "hashes": {
+   "probe_source_sha256_matched": true,
+   "probe_source_sha256": "03909d3d077cd49bf35bef0d31288196b8fd26d82a1bc470b63d23041a54a0f7",
+   "probe_binary_sha256_4k": "5eae550c7581bbf67eb8bf00347ec991166ad3f77df8d60cdc906778a764f0d9",
+   "probe_binary_sha256_rebuilt": "eaabe9afc3c443ffa2de65e741f114f2a1de4b7fd23625c76983f06724af79da",
+   "auxiliary_libraries_all_match_dependencies_json": true,
+   "auxiliary_library_count_checked": 16,
+   "wrapper_builds_match_4k_stripped_outputs": true,
+   "baseline_stripped_sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+   "candidate_stripped_sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+   "probe_binary_difference_explained": "DWARF-embedded source path only; stripped-debug byte-identical to the 4 KB binary."
+  },
+  "referenced_results_not_reproduced": [
+   "matrix-4k-results.json: 35 runs on the 4 KB AVD, page_size=4096, device llvmpipe (LLVM 21.1.4, 128 bits)",
+   "matrix-results.json: 12 baseline/candidate runs at cycles 8 edge 4",
+   "rgba-results.json: 3 system/baseline/candidate rgba runs",
+   "staging-observation.json: candidate bc1 32 16 with WRAPPER_LOG_LEVEL=debug staging-buffer log evidence"
+  ],
+  "cross_checks": "The 4 KB pass reported page_size=4096 on Vapor_UI_API36 with llvmpipe; its staged baseline.so/candidate.so and all 16 auxiliary libraries are the same files and hashes used here. Its baseline readonly control crashed (exit 139, 'Segmentation fault') and its candidate readonly run passed, matching this pass's outcome.",
+  "did_not_claim": "This pass did not rerun the 4 KB AVD, its matrix, its staging observation or its sanitizer/source fixtures; those results are referenced, not reproducer-verified here."
+ },
+ "limitations": [
+  "llvmpipe software Vulkan inside the Android emulator via the guest Goldfish GFXStream device (host lavapipe, LLVM 21.1.4), not Adreno/KGSL and not a physical GPU.",
+  "No game launch: this probe starts no Steam, Wine, window or game; no game frame is rendered.",
+  "No performance/FPS measurement; cycles count synchronous probe iterations, not frame time or throughput.",
+  "The probe exercises only Vulkan create-image, BC1/BC3 decode through buffer-image copy, the read-only caller format-list path and a copy round-trip; it does not cover drawing, sampling, presentation, staging lifetime under concurrency or image quality.",
+  "Inputs are hidden/synthetic probe buffers and pixels generated by tools/tests/vulkan-wrapper-native.c, not game assets.",
+  "The candidate and baseline are build-tree libraries; the wrapper is not packaged or installed by Vapor and no app asset, runtime selection or release output changed.",
+  "BC1/BC3 results depend on FORCE_BCN_EMULATION=1 because the emulator's native BC buffer-image copy is wrong; no claim about native BC on a physical GPU follows.",
+  "The 4 KB AVD was not rerun; its results are referenced, with hash/identity cross-checks, not reproduced.",
+  "Only 16 KB page size was exercised in this pass; no matched 4 KB-vs-16 KB differential was produced here, and the 16 KB AVD uses a different Android version (17/API 37) and GPU backend than the 4 KB AVD (Android 16/API 36).",
+  "USE_IMAGE_VIEW=1 was only sampled for baseline/candidate bc1/bc3 at cycles 8, edges 4/5/16.",
+  "Emulator was cold-booted with -no-snapshot-load/-no-snapshot-save on port 5556 with -gpu lavapipe and -memory 3072; results are tied to that launch."
+ ],
+ "application": {
+  "defaults_changed": false,
+  "apk_rebuilt": false,
+  "driver_installed": false,
+  "steam_account_used": false,
+  "commit_or_push": false
+ },
+ "raw_evidence": {
+  "host_scratch_root": "/Users/cheng/wrapper-probe-16k",
+  "per_run_logs": "/Users/cheng/wrapper-probe-16k/logs/runs/",
+  "canonical_run_dataset": "/Users/cheng/wrapper-probe-16k/logs/matrix-runs.json",
+  "note": "Each run object's raw_log field points at the exact captured stdout/stderr file for that run."
+ },
+ "files_created": {
+  "repo_file": "docs/evidence/2026-10-21-vulkan-wrapper-native-16k.json",
+  "scratch_directories": [
+   "/Users/cheng/wrapper-probe-16k",
+   "/Users/cheng/wrapper-probe-16k/run",
+   "/Users/cheng/wrapper-probe-16k/logs",
+   "/Users/cheng/wrapper-probe-16k/logs/runs (132 per-run stdout/stderr logs)"
+  ],
+  "scratch_files": [
+   "/Users/cheng/wrapper-probe-16k/run-matrix.py (matrix harness; note: it rewrote its own JSON between suites, so the canonical dataset was reconstructed from logs/runs/*.log)",
+   "/Users/cheng/wrapper-probe-16k/logs/matrix-runs.json",
+   "/Users/cheng/wrapper-probe-16k/logs/staged-sha256.txt",
+   "/Users/cheng/wrapper-probe-16k/logs/guest-facts.txt",
+   "/Users/cheng/wrapper-probe-16k/logs/emulator-stdout.log",
+   "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.stdout",
+   "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.stderr",
+   "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.logcat",
+   "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.stdout",
+   "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.stderr",
+   "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.logcat",
+   "/Users/cheng/wrapper-probe-16k/logs/probe-4k-stripped-debug.dbgcopy",
+   "/Users/cheng/wrapper-probe-16k/logs/probe-16k-stripped-debug.dbgcopy"
+  ],
+  "device_directory": "/data/local/tmp/vapor-wrapper-native-16k-20261021"
+ }
+}

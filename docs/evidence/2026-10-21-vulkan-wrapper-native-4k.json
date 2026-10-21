@@ -1,0 +1,707 @@
+{
+  "date": "2026-10-21",
+  "scope": "4 KB-page Android 16 emulator native qualification of the Vulkan-wrapper candidate and its unpatched baseline using the offscreen probe: create image with caller-owned format list, upload/decode BC1/BC3 through buffer-image copy, read back pixels, and the read-only caller-data control. No app, APK, driver install or game run.",
+  "base_commit": "07e3026fee8700e3424c30cc8e969b3eb6b7c646",
+  "probe_source": {
+    "path": "tools/tests/vulkan-wrapper-native.c",
+    "sha256": "03909d3d077cd49bf35bef0d31288196b8fd26d82a1bc470b63d23041a54a0f7"
+  },
+  "probe_binary": {
+    "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/probe",
+    "sha256": "5eae550c7581bbf67eb8bf00347ec991166ad3f77df8d60cdc906778a764f0d9",
+    "bytes": 162600
+  },
+  "wrapper_builds": {
+    "baseline_stripped_sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+    "candidate_stripped_sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+    "same_exports": true,
+    "same_strong_undefined_symbols": true,
+    "same_needed_libraries": true
+  },
+  "auxiliary_libraries": [
+    {
+      "name": "libadrenotools.so",
+      "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c",
+      "bytes": 47760
+    },
+    {
+      "name": "libandroid-shmem.so",
+      "sha256": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731",
+      "bytes": 14432
+    },
+    {
+      "name": "libc++_shared.so",
+      "sha256": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708",
+      "bytes": 1794776
+    },
+    {
+      "name": "libz.so.1",
+      "sha256": "c47748ed4b6ca6a2ecd664bab04795f3493956ab1f5cddc4ba0efa737ef3b711",
+      "bytes": 72880
+    },
+    {
+      "name": "libzstd.so.1",
+      "sha256": "1677d5e828c1839f111f0261697c08f99a5e4e80434659ab88e5ff859a1374f7",
+      "bytes": 820840
+    },
+    {
+      "name": "libxcb.so",
+      "sha256": "13d59f33b51765e4d1444cad3f7f949ccf60a9bd34e53bdbe10cfcd787fda14c",
+      "bytes": 136584
+    },
+    {
+      "name": "libX11-xcb.so",
+      "sha256": "6368a55a652527addf7af769b53d16ebd5aa5986a97deb550f212bdfa8315819",
+      "bytes": 3976
+    },
+    {
+      "name": "libxcb-dri3.so",
+      "sha256": "46a0bcdb74795fafcf62181439bb62d69568f0c6c0c652655002923dd02178a8",
+      "bytes": 14680
+    },
+    {
+      "name": "libxcb-present.so",
+      "sha256": "3914002f479e29cb9796045de542b091cd592e2347ec84272da3bbce57326c07",
+      "bytes": 9976
+    },
+    {
+      "name": "libxcb-sync.so",
+      "sha256": "3940e8236e0ead4696e2f09c4d297fa629cca0859243b73d33fcf11535e335ba",
+      "bytes": 22224
+    },
+    {
+      "name": "libxcb-randr.so",
+      "sha256": "0c2bfe3c4c8150a913bc7a24bdbeca6d379a388de9f50228bd746d0bf14c6c0e",
+      "bytes": 53896
+    },
+    {
+      "name": "libxcb-shm.so",
+      "sha256": "dbd474ea05afb27c33269aa1cf26a62edc08e7fb79a2f8459aebc4cb370cf1bb",
+      "bytes": 9368
+    },
+    {
+      "name": "libdrm.so",
+      "sha256": "1394274be3dd43f07429b10ca28aded82c7f2d84906ed7084827d27ca10f0dbf",
+      "bytes": 75792
+    },
+    {
+      "name": "libXau.so",
+      "sha256": "e820c412bac544d28d4288f50f7b6dee046e2f32cc7cfc82e203c642fbaa42bf",
+      "bytes": 9904
+    },
+    {
+      "name": "libXdmcp.so",
+      "sha256": "fca2b4d37620a90b9e97ff5ef24b4b7f438fcce6a837db152705348c95379ef8",
+      "bytes": 18920
+    },
+    {
+      "name": "libandroid-support.so",
+      "sha256": "739cf829511d71dafd6c67fdbb70f3f0c6048642ea2e1967790ee961fde14430",
+      "bytes": 20736
+    }
+  ],
+  "avd": {
+    "name": "Vapor_UI_API36",
+    "image_sysdir": "system-images/android-36/google_apis/arm64-v8a/",
+    "abi": "arm64-v8a",
+    "android_sdk": "36",
+    "launch_params": [
+      "-avd",
+      "Vapor_UI_API36",
+      "-port",
+      "5556",
+      "-no-window",
+      "-no-audio",
+      "-no-snapshot-load",
+      "-no-snapshot-save",
+      "-gpu",
+      "lavapipe",
+      "-no-boot-anim",
+      "-memory",
+      "3072",
+      "-cores",
+      "4"
+    ],
+    "emulator_version": "37.2.12.0 (build_id 16428233)"
+  },
+  "device": {
+    "name": "llvmpipe (LLVM 21.1.4, 128 bits)",
+    "vendor_id": "0x10005",
+    "device_id": "0x0",
+    "api": "1.3.0",
+    "page_size": 4096
+  },
+  "protocol": {
+    "env": "LD_LIBRARY_PATH=<dir> PREFIX=<dir> WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0",
+    "targets": [
+      "/system/lib64/libvulkan.so",
+      "<dir>/baseline.so",
+      "<dir>/candidate.so"
+    ],
+    "modes": [
+      "rgba",
+      "bc1",
+      "bc3",
+      "readonly"
+    ],
+    "cycles": [
+      1,
+      8
+    ],
+    "edges": [
+      4,
+      5,
+      16
+    ]
+  },
+  "expected_controls": [
+    {
+      "control": "baseline readonly (caller-owned format list must not be written)",
+      "expected": "crash/SIGSEGV",
+      "observed": "exit 139 SIGSEGV 2/2"
+    }
+  ],
+  "summary": {
+    "total_runs": 47,
+    "all_runs_page_size_4096": true,
+    "system_rgba": "3/3 exit 0",
+    "baseline_rgba": "4/4 exit 0",
+    "baseline_bc1": "8/8 exit 0",
+    "baseline_bc3": "8/8 exit 0",
+    "baseline_readonly": "2/2 SIGSEGV (exit 139) - expected control",
+    "candidate_rgba": "4/4 exit 0",
+    "candidate_bc1": "8/8 exit 0",
+    "candidate_bc3": "8/8 exit 0",
+    "candidate_readonly": "2/2 exit 0",
+    "note": "Edge 4/5/16 and cycles 1/8; BC modes force the wrapper's emulation path because the emulator's native BC buffer-image copy is unreliable in this environment."
+  },
+  "runs": [
+    {
+      "phase": "baseline",
+      "mode": "bc1",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc1 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4321 mode=bc1 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc1",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc1 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4330 mode=bc1 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc1",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc1 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4315 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc1",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc1 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4324 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc1",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc1 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4318 mode=bc1 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc1",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc1 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4327 mode=bc1 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc1",
+      "image_view": 0,
+      "cycles": 8,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc1 8",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc1",
+      "image_view": 1,
+      "cycles": 8,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc1 8",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc3",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc3 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4339 mode=bc3 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc3",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc3 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4348 mode=bc3 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc3",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc3 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4333 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc3",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc3 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4342 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc3",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc3 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4336 mode=bc3 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc3",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc3 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4345 mode=bc3 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc3",
+      "image_view": 0,
+      "cycles": 8,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc3 8",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "bc3",
+      "image_view": 1,
+      "cycles": 8,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so bc3 8",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "readonly",
+      "image_view": 0,
+      "cycles": 1,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so readonly 1 4",
+      "exit_code": 139,
+      "output": "PROBE pid=4351 mode=readonly cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\n",
+      "error": "Segmentation fault \n"
+    },
+    {
+      "phase": "baseline",
+      "mode": "readonly",
+      "image_view": 0,
+      "cycles": 1,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so readonly 1",
+      "exit_code": 139,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\n",
+      "error": "Segmentation fault \n"
+    },
+    {
+      "phase": "baseline",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so rgba 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4312 mode=rgba cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so rgba 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4306 mode=rgba cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so rgba 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4309 mode=rgba cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "baseline",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/baseline.so rgba 8",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc1",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc1 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4379 mode=bc1 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc1",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc1 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4388 mode=bc1 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc1",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc1 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4373 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc1",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc1 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4382 mode=bc1 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc1",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc1 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4376 mode=bc1 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc1",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc1 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4385 mode=bc1 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc1",
+      "image_view": 0,
+      "cycles": 8,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc1 8",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc1",
+      "image_view": 1,
+      "cycles": 8,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc1 8",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc3",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc3 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4397 mode=bc3 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc3",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc3 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4406 mode=bc3 cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc3",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc3 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4391 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc3",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc3 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4400 mode=bc3 cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc3",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc3 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4394 mode=bc3 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc3",
+      "image_view": 1,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc3 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4403 mode=bc3 cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc3",
+      "image_view": 0,
+      "cycles": 8,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc3 8",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "bc3",
+      "image_view": 1,
+      "cycles": 8,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=1 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc3 8",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "readonly",
+      "image_view": 0,
+      "cycles": 1,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so readonly 1 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4409 mode=readonly cycles=1 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "readonly",
+      "image_view": 0,
+      "cycles": 1,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so readonly 1",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so rgba 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4370 mode=rgba cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so rgba 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4361 mode=rgba cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so rgba 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4367 mode=rgba cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "candidate",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so rgba 8",
+      "exit_code": 0,
+      "output": "PASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "system",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 16,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /system/lib64/libvulkan.so rgba 8 16",
+      "exit_code": 0,
+      "output": "PROBE pid=4303 mode=rgba cycles=8 edge=16\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=256\nPASS pixels cycle=1 count=256\nPASS pixels cycle=2 count=256\nPASS pixels cycle=3 count=256\nPASS pixels cycle=4 count=256\nPASS pixels cycle=5 count=256\nPASS pixels cycle=6 count=256\nPASS pixels cycle=7 count=256\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "system",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 4,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /system/lib64/libvulkan.so rgba 8 4",
+      "exit_code": 0,
+      "output": "PROBE pid=4297 mode=rgba cycles=8 edge=4\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=16\nPASS pixels cycle=1 count=16\nPASS pixels cycle=2 count=16\nPASS pixels cycle=3 count=16\nPASS pixels cycle=4 count=16\nPASS pixels cycle=5 count=16\nPASS pixels cycle=6 count=16\nPASS pixels cycle=7 count=16\nPASS clean-exit\n",
+      "error": ""
+    },
+    {
+      "phase": "system",
+      "mode": "rgba",
+      "image_view": 0,
+      "cycles": 8,
+      "edge": 5,
+      "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=none WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /system/lib64/libvulkan.so rgba 8 5",
+      "exit_code": 0,
+      "output": "PROBE pid=4300 mode=rgba cycles=8 edge=5\nPASS dlopen\nPASS instance\nDEVICE name=llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096\nPASS device\nPASS image-and-caller-data\nPASS pixels cycle=0 count=25\nPASS pixels cycle=1 count=25\nPASS pixels cycle=2 count=25\nPASS pixels cycle=3 count=25\nPASS pixels cycle=4 count=25\nPASS pixels cycle=5 count=25\nPASS pixels cycle=6 count=25\nPASS pixels cycle=7 count=25\nPASS clean-exit\n",
+      "error": ""
+    }
+  ],
+  "limitations": [
+    "llvmpipe software Vulkan inside the Android 16 emulator, not Adreno/KGSL and not a physical GPU.",
+    "No Steam, Wine, window or game is started; no frame is rendered.",
+    "No performance/FPS measurement; cycles are synthetic synchronous probe iterations.",
+    "No validation layers; pixels are synthetic probe buffers, not game assets.",
+    "The wrapper is a build-tree library and is not packaged, installed or selected by Vapor.",
+    "The 16 KB AVD/API 37 results are separate (docs/evidence/2026-10-21-vulkan-wrapper-native-16k.json); this 4 KB pass was not repeated during the 16 KB session, and the two AVDs differ in API level and GPU backend, so no matched differential is claimed.",
+    "Raw logs and per-run artifacts for this 4 KB pass live outside the checkout at wrapper-build/native-probe under the Codex work directory recorded in docs/evidence/2026-10-21-graphics-source.json."
+  ],
+  "raw_evidence_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
+  "related_evidence": [
+    "docs/evidence/2026-10-21-graphics-source.json",
+    "docs/evidence/2026-10-21-vulkan-wrapper-native-16k.json",
+    "docs/evidence/2026-10-21-vulkan-wrapper-staging.json"
+  ],
+  "application": {
+    "app_changes": false,
+    "defaults_or_assets_changed": false,
+    "driver_installed": false,
+    "game_launched": false,
+    "commit_made_by_this_pass": false
+  }
+}

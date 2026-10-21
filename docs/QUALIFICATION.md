@@ -10,8 +10,9 @@ persistence and repeat-launch checks remain separate.
 
 ## Graphics component source refactors — 21 October 2026
 
-**Checkpoint: Turnip and Vulkan-wrapper source changes build for Android;
-no physical-GPU or game-performance comparison.** These are changes to
+**Checkpoint: Turnip and Vulkan-wrapper source changes build for Android; the
+wrapper's native loading and BC decode pass an offscreen emulator probe; no
+physical-GPU or game-performance comparison.** These are changes to
 Turnip and the Vulkan wrapper themselves. Guided runtime selections, APK assets,
 game settings and the existing EmuReady feature remain unchanged.
 
@@ -111,15 +112,57 @@ The optional packaged Leegao binary matches release `v0.0.5r5`, whose tag resolv
 to `c8baafbd4f4835ca103acb55ec3ac13642b6b7e3`. Its four reviewed image/generator
 files match the current source base. Vapor's default and GameNative wrapper
 payloads differ and are not established as builds of this source. Reproducing
-the complete released binary, native loading, BC decoding, staging lifetime,
-concurrency and GPU image-quality/performance checks remain separate.
+the complete released binary, effective-driver image quality, concurrency and
+GPU/phone performance checks remain separate.
+
+### Wrapper native loading and BC probe
+
+`tools/tests/vulkan-wrapper-native.c` offscreen-loads the system loader or a built
+wrapper, creates a device, uploads BC1/BC3 blocks and checks decoded pixels, and
+passes the caller a read-only format list. On the Android 16/API 36 4 KB emulator,
+47 captured runs include system, baseline and candidate rgba passes and
+baseline/candidate BC1/BC3 passes with forced emulation; the baseline crashes 2/2
+on read-only caller data (expected control) and the candidate passes. On the
+Android 17/API 37 16 KB emulator 132 runs report `page_size=16384`: the
+candidate passes rgba/bc1/bc3/readonly 36/36 plus 12/12 image-view runs, the
+baseline passes 27/27 and crashes 9/9 on the read-only control, and both
+wrappers plus all 16 auxiliary libraries load with `RTLD_NOW` and `0x4000`
+alignment.
+
+The 16 KB guest advertises `textureCompressionBC` but does not decode native BC
+buffer-image copies; the system loader fails identically with no wrapper, so this
+is an emulator limitation. The probe therefore uses the wrapper's emulation path
+as the 4 KB matrix does, and the two AVDs differ in API level and GPU backend, so
+no matched differential is claimed. Both devices are software Vulkan (llvmpipe)
+inside the emulator: this does not qualify an Adreno/KGSL driver, a physical
+phone, game rendering, image quality or performance.
+[4 KB receipt](evidence/2026-10-21-vulkan-wrapper-native-4k.json),
+[16 KB receipt](evidence/2026-10-21-vulkan-wrapper-native-16k.json).
+
+### Wrapper staging lifetime
+
+Source review found that staging storage tracked per BCn upload is freed only at
+image destroy or device destroy: the `ready` fence is never assigned and the fence
+branch is unreachable, while the intended reclamation is a TODO. The design is
+safe for waited submissions but grows without bound on long-lived images (two
+tracked objects plus staging bytes per upload; 32 probe uploads produced 64
+entries, released once at `vkDestroyImage`). Those files are byte-identical to
+the pinned source and the candidate's patches do not change them, so this is
+inherited upstream behavior, not a candidate regression. One conditional risk is
+recorded as open: staging memory allocated on the wrapper's emulated-memory path
+(`VK_EXT_map_memory_placed` with `memoryMapPlaced`) is freed through the raw
+trampoline, so a later device destroy can free the same memory again. The probe
+does not enable those features; a dedicated fixture is required to settle it and
+no defect is claimed. [Staging receipt](evidence/2026-10-21-vulkan-wrapper-staging.json).
 
 ### Remaining boundaries
 
 Neither candidate is installed or bundled. No phone, authenticated game session,
-Cloud synchronization or emulator game run was performed in this component pass.
-Matched GPU loading, Vulkan correctness, actual game frame times/power, 16 KB
-kernel execution and release/distribution review remain separate gates. Selected
+Cloud synchronization or game run was performed. Native loading and BC decode
+were exercised only through the synthetic emulator probe on software Vulkan.
+Matched Adreno/KGSL loading, reference-image/depth correctness, actual game frame
+times/power, physical 16 KB-device execution and release/distribution review
+remain separate gates. Selected
 DXVK queue/compiler and VKD3D queue/cache paths were read at pinned revisions;
 they were not changed or exhaustively audited. Wine/FEX retain their earlier
 component records and open gates.

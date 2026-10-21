@@ -1,0 +1,625 @@
+{
+  "date": "2026-10-21",
+  "scope": "Read-only source review of the patched Vulkan wrapper's BCn-emulation staging-resource lifetime (VkBuffer + VkDeviceMemory + VkImageView tracked per image), plus explanation of the one existing native probe observation (32 tracking events, 64 released resources). No wrapper rebuild, no patch application, no re-run of the wrapper; no app/routing changes.",
+  "base_vapor_commit": "07e3026fee8700e3424c30cc8e969b3eb6b7c646",
+  "component": {
+    "name": "vulkan-wrapper staging resources (bionic-vulkan-wrapper)",
+    "source_repository": "https://github.com/leegao/bionic-vulkan-wrapper",
+    "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+    "candidate_tree": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
+    "baseline_reference": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/head/src__vulkan__wrapper__wrapper_image.c (upstream source copy used for patch replay)",
+    "build_artifacts": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build (baseline.so, candidate.so, build logs, patch logs)",
+    "runtime_artifacts": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
+    "probe_source": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-native.c"
+  },
+  "reference_roots": {
+    "candidate_source": {
+      "root": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/",
+      "files": [
+        "wrapper_objects.h",
+        "wrapper_objects.c",
+        "wrapper_device.c",
+        "wrapper_image.c",
+        "wrapper_device_memory.c",
+        "wrapper_checks.h",
+        "wrapper_log.h",
+        "wrapper_log.c",
+        "wrapper_debug.c",
+        "wrapper_debug.h",
+        "wrapper_private.h",
+        "vk_entrypoints.py",
+        "meson.build"
+      ]
+    },
+    "baseline_source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/head/",
+    "runtime_artifacts": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/",
+    "probe_source": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-native.c",
+    "note": "All file:line references below are relative to these roots; line numbers are from the reviewed candidate tree (source commit 3abf4870 plus replayable patches) and from the read-only probe source in the Vapor checkout."
+  },
+  "source": {
+    "reviewed_files": [
+      {
+        "path": "wrapper_objects.h",
+        "bytes": 7629,
+        "sha256": "1b11b380d560c6e1ee10efd89871b85cd524aaa5d42949eebc558194f3b96bce",
+        "matches_upstream_source_commit": true
+      },
+      {
+        "path": "wrapper_objects.c",
+        "bytes": 6693,
+        "sha256": "83ac639b1425f15d99ba00842ae2fd204d26e5dc5db1915d30f2f4e4affab6b8",
+        "matches_upstream_source_commit": true
+      },
+      {
+        "path": "wrapper_device.c",
+        "bytes": 78320,
+        "sha256": "385375d67f3594747f477aa07c14dcc363bea0998467a23fb508d09ca15513b7",
+        "matches_upstream_source_commit": true
+      },
+      {
+        "path": "wrapper_device_memory.c",
+        "bytes": 18902,
+        "sha256": "f10495cc406145932450c086f7a48eb0b304a991c29bfb455950cd93afbc0abd",
+        "matches_upstream_source_commit": true
+      },
+      {
+        "path": "wrapper_image.c",
+        "bytes": 7651,
+        "sha256": "db8e393fac9f77ae2b5b06c7df64e5efaf804bd170df7e99aef257dc3765fda8",
+        "matches_upstream_source_commit": false,
+        "note": "Patched by tools/vulkan-wrapper/image-create.patch (CreateImage create-info/format-list ownership); baseline/upstream copy is 6504 bytes, sha256 558073224a2da816adb76888b7c21f48ed46df0e2aed35317c2604a050f69c74 (wrapper-build/head/src__vulkan__wrapper__wrapper_image.c, identical to the upstream raw file). The patch does not touch wrapper_image.c DestroyImage or any staging code."
+      },
+      {
+        "path": "wrapper_checks.h",
+        "bytes": 2533,
+        "sha256": "63ff2cbc1319ace58e46dfa66d700dfefcd1e64ee8ce539ded684b3bc46c3528",
+        "matches_upstream_source_commit": true
+      },
+      {
+        "path": "wrapper_log.c",
+        "bytes": 9579,
+        "sha256": "618e05a53039fee8a0e96c11740d5846ba845e2a792b45d07cff28bb020960b9",
+        "matches_upstream_source_commit": true
+      }
+    ],
+    "upstream_identity_check": {
+      "method": "Fetched the seven hashed files listed in source.reviewed_files from raw.githubusercontent.com at commit 3abf48704a4d9303967a0811c0dc8ff8567d613b during this review and compared SHA-256 with the candidate tree; wrapper_log.h, wrapper_debug.c/h, wrapper_private.h, vk_entrypoints.py and meson.build were read in-tree but not re-hashed against upstream.",
+      "result": "wrapper_objects.c, wrapper_objects.h, wrapper_device.c and wrapper_device_memory.c are byte-identical to the upstream commit. wrapper_image.c is the only patched file that touches image creation (CreateImage only); DestroyImage/CreateImageView are unchanged.",
+      "url_template": "https://raw.githubusercontent.com/leegao/bionic-vulkan-wrapper/3abf48704a4d9303967a0811c0dc8ff8567d613b/src/vulkan/wrapper/<file>"
+    }
+  },
+  "patch_scope": {
+    "patches_in_this_build": [
+      {
+        "name": "image-create",
+        "files": [
+          "src/vulkan/wrapper/wrapper_image.c"
+        ],
+        "log": "wrapper-build/image-create.patch.log (\"patching file 'src/vulkan/wrapper/wrapper_image.c'\"), wrapper-build/image-create.patch-final-replay.log",
+        "summary": "WRAPPER_CreateImage no longer shallow-copies a TEMP_OBJECT over caller-owned VkImageCreateInfo, no longer mutates the caller's VkImageFormatListCreateInfo/pViewFormats in place, and no longer writes through a read-only caller chain; it deep-copies the chain prefix before substituting the format list and frees that copy at out. Wrapper image object tracking is unchanged."
+      },
+      {
+        "name": "trace-gate",
+        "files": [
+          "src/vulkan/wrapper/vk_entrypoints.py",
+          "src/vulkan/wrapper/meson.build"
+        ],
+        "log": "wrapper-build/trace-gate.patch.log, wrapper-build/trace-gate.patch-final-replay.log, wrapper-build/meson-after.build",
+        "summary": "Generated wrapper code gates command-parameter printing on should_print instead of should_log (vk_entrypoints.py diff, identical to wrapper-build/trace-before.py -> trace-after.py), and meson.build adds vk_entrypoints.py to the generator depend_files. Rebuilds the generated entrypoint header from the patched generator (wrapper-build/binary-checks.json: candidate build succeeded, same exports/strong-undefined symbols as baseline)."
+      }
+    ],
+    "staging_behavior_differs_between_baseline_and_candidate": false,
+    "evidence": [
+      "Staging files are byte-identical to upstream commit 3abf4870 (see source.reviewed_files / source.upstream_identity_check).",
+      "The only wrapper_image.c change is inside WRAPPER_CreateImage (wrapper_image.c:18-130); WRAPPER_DestroyImage and CreateImageView are unchanged, and no TRACK_STAGING/free call site is touched.",
+      "Binary check: function sizes are identical in baseline.so and candidate.so for the staging lifetime functions: add_staging_resource_to 0x60 bytes, free_staging_resources_if_ready 0x1d8 bytes, wrapper_image_destroy 0xc4 bytes (nm -S). Normalized disassembly of free_staging_resources_if_ready and wrapper_image_destroy differs only in absolute addresses/branch targets (address-layout shift from the regenerated entrypoints), and add_staging_resource_to normalizes to identical instructions.",
+      "Consequence: the late-free/no-fence-gating/growth behavior found here is inherited from upstream commit 3abf4870 and is neither introduced nor fixed by the reviewed patches. The candidate-only benefit observed elsewhere (readonly BC1 image-create case: baseline exit 139, candidate exit 0 in wrapper-build/native-probe/matrix-results.json and matrix-4k-results.json) belongs to the image-create patch and is unrelated to staging lifetime."
+    ]
+  },
+  "answers": {
+    "1_where_staging_resources_are_created_tracked_and_freed": {
+      "created": [
+        "Per BCn-emulated VkBufferImageCopy region, inside the region loop: wrapper_device.c:1621 (for each region), wrapper_device.c:1662-1668 (CreateStagingBuffer call), helper wrapper_device.c:1013-1048.",
+        "Staging buffer size requested = region->imageExtent.width * region->imageExtent.height * get_bc_target_size(...) (wrapper_device.c:1665); usage VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT (wrapper_device.c:1666); memory VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT (wrapper_device.c:1667). get_bc_target_size returns 4 for R8G8B8A8_UNORM/SNORM and 8 for R16G16B16A16_SFLOAT (wrapper_private.h:245-258).",
+        "VkBuffer is created through WCHECK(CreateBuffer) (wrapper_device.c:1030), which routes to WRAPPER_CreateBuffer (wrapper_device.c:737-752; entrypoint table wrapper_device_entrypoints.CreateBuffer = wrapper_CreateBuffer in the generated build/src/vulkan/wrapper/wrapper_entrypoints.c:17140-17177).",
+        "Image-view mode (no staging buffer/memory): one VkImageView per region per call at wrapper_device.c:1412-1435 (CreateImageView at 1428, TRACK at 1435)."
+      ],
+      "tracked": [
+        "Tracking macro TRACK_STAGING: wrapper_objects.h:191, expanding to add_staging_resource_to(device, &parent->staging_resources, ...).",
+        "Call sites (only three in the whole wrapper): wrapper_device.c:1677 (VK_OBJECT_TYPE_BUFFER, parent wimg), wrapper_device.c:1678 (VK_OBJECT_TYPE_DEVICE_MEMORY, parent wimg), wrapper_device.c:1435 (VK_OBJECT_TYPE_IMAGE_VIEW, parent wimg). No TRACK to a queue or command-buffer list.",
+        "Owner/list: per wrapper_image COMMON_FIELDS staging_resources, wrapper_objects.h:59-64; list initialised in wrapper_image_create (wrapper_objects.c:18-34, list_inithead at 26); wrapper_image struct wrapper_objects.h:217-227.",
+        "Struct wrapper_staging_resources { link_in_parent, type, use_vk_object, handle, parent, ready } wrapper_objects.h:177-189; add_staging_resource_to allocates it (vk_alloc, not zeroing: wrapper_objects.c:89-94, vk_alloc definition wrapper-build/source/src/vulkan/util/vk_alloc.h:43-49) and list_addtail at wrapper_objects.c:94.",
+        "Queue and command-buffer staging lists are initialised (wrapper_device.c:179; wrapper_objects.c:163) but never receive entries, because all TRACK_STAGING call sites use wimg."
+      ],
+      "freed": [
+        "Only on parent destroy: free_staging_resources_final -> free_staging_resources_if_ready(list, cleanup_everything=true) (wrapper_objects.h:206-210; implementation wrapper_objects.c:97-147).",
+        "Image destroy path: wrapper_image.c:132-146 -> wrapper_image_destroy (MAKE_DESTROY_FUNCTION wrapper_objects.c:36-44; image instantiation wrapper_objects.c:52-54) -> free at wrapper_objects.c:38.",
+        "Device destroy path: wrapper_device.c:605-651; image_map foreach calls wrapper_image_destroy (wrapper_device.c:622-626), so images still alive at vkDestroyDevice free their staging resources there. Images already destroyed were removed from image_map (wrapper_objects.c:40-42), so they are not visited twice.",
+        "Command-buffer destroy frees its own list (wrapper_objects.c:175-181, free at 177), but that list is always empty (no TRACK to wcb).",
+        "Free switch handles IMAGE_VIEW, BUFFER, DEVICE_MEMORY (wrapper_objects.c:119-133); order in the list is insertion order, i.e. VkBuffer before its VkDeviceMemory (wrapper_device.c:1677 then 1678; list_addtail wrapper_objects.c:94; forward iteration wrapper_objects.c:105), which is the correct destroy order."
+      ]
+    },
+    "2_free_condition": {
+      "short_answer": "There is no fence gate in effect. Every tracked staging resource is freed unconditionally when its parent wrapper_image is destroyed (vkDestroyImage or vkDestroyDevice), never earlier.",
+      "details": [
+        "The only caller of free_staging_resources_if_ready is free_staging_resources_final, which hard-codes cleanup_everything=true (wrapper_objects.h:206-210). No call site anywhere in the tree passes false (grep over source: definition wrapper_objects.c:97 and header wrapper_objects.h:200/209 only).",
+        "The fence branch (wrapper_objects.c:110-117) therefore never runs; the only GetFenceStatus call is wrapper_objects.c:114.",
+        "The ready VkFence field (wrapper_objects.h:188) is never assigned anywhere in the wrapper (grep: only reads at wrapper_objects.c:111 and 114). Because add_staging_resource_to uses vk_alloc (not vk_zalloc) and sets only type/handle/parent (wrapper_objects.c:89-94; vk_alloc.h:43-49), ready (and use_vk_object) are indeterminate values; the non-final branch would be unsafe if it were ever reached.",
+        "No fence or semaphore is created for staging resources; the intended queue-fence tracking is a TODO at wrapper_device.c:1674-1675 (\"TODO: track these using the fence/semaphore for the submitted queue\"). CreateBcnCommandBuffer (which creates a fence) is defined at wrapper_device.c:1506 but has no caller.",
+        "The wrapper does not hook QueueWaitIdle/DeviceWaitIdle/QueueSubmit for reclaim: WRAPPER_QueueSubmit/WRAPPER_QueueSubmit2 only forward (wrapper_device.c:439-449)."
+      ]
+    },
+    "3_lifetime_safety": {
+      "summary": "Safe in the observed probe and for compliant applications; the wrapper has no independent synchronization or protection and would expose use-after-free for a spec-violating destroy. No leak-forever on destroy (frees are unconditional); the real issue is unbounded accumulation until destroy.",
+      "scenarios": [
+        {
+          "scenario": "Image destroyed after vkDeviceWaitIdle (the probe)",
+          "verdict": "Safe (late-free).",
+          "evidence": "Probe waits vkDeviceWaitIdle (tools/tests/vulkan-wrapper-native.c:242) before vkDestroyCommandPool/DestroyBuffer/FreeMemory (243-245), vkDestroyImage (246), vkDestroyDevice (248); the wrapper then frees the 64 staging resources after the underlying DestroyImage (wrapper_image.c:137 before 145). All GPU work is complete, so the late free cannot race the device."
+        },
+        {
+          "scenario": "Image destroyed while commands referencing it are in flight",
+          "verdict": "UAF exposure, but only under an application spec violation; the wrapper does not detect or prevent it.",
+          "evidence": "WRAPPER_DestroyImage performs no wait and no fence check: it calls DestroyImage first (wrapper_image.c:137) then frees staging resources (145 -> wrapper_objects.c:38/97-147). The staging VkBuffer/VkDeviceMemory are referenced by the submitted CmdCopyBufferToImage/compute commands recorded earlier (wrapper_device.c:1735-1760). Destroying the image while those commands execute is illegal for the application (Vulkan destroy-valid-usage), but the wrapper would be the component whose freed staging memory the GPU reads. No wrapper-side safety net."
+        },
+        {
+          "scenario": "Command-buffer reset / free",
+          "verdict": "No UAF from wrapper bookkeeping (staging is not attached to command buffers), and no early reclaim either.",
+          "evidence": "Command-buffer staging list is empty (wrapper_objects.c:163 init; no TRACK to wcb; wrapper_objects.c:175-181 frees nothing). Staging resources stay in the image list until image/device destroy."
+        },
+        {
+          "scenario": "Queue-submit failure",
+          "verdict": "No double free; resources stay tracked until image destroy (extra retention, copy silently not executed).",
+          "evidence": "WRAPPER_QueueSubmit forwards and returns the driver result (wrapper_device.c:439-443); nothing is reclaimed or rolled back on failure. Tracked staging resources are freed later at image destroy, so the failed submit's staging resources are retained but not leaked past image destruction."
+        },
+        {
+          "scenario": "Allocation failure mid-loop",
+          "verdict": "No partially tracked pair for the failing iteration, but CreateStagingBuffer leaks its own driver objects on failure and the whole call is abandoned (remaining regions of the same CmdCopyBufferToImage are dropped).",
+          "evidence": "CreateStagingBuffer returns on failure at wrapper_device.c:1030-1047 without destroying the VkBuffer when AllocateMemory fails (1042-1045) and without destroying buffer+memory when BindBufferMemory fails (1047). The caller returns immediately on failure (wrapper_device.c:1669-1672) before TRACK_STAGING, so nothing is tracked for that iteration; because it is a return (not continue), subsequent regions of the same call are not processed. Post-tracking failures (SubmitOneTimeCommands 1706-1720, HostSideDecompression 1721-1727) leave the already-tracked entries on the list until image destroy (no untracked leak).",
+          "note": "The probe did not hit any of these paths (0 FAIL/error lines in the debug log other than the wrapper banner at staging-native.log:1001)."
+        },
+        {
+          "scenario": "Read-only caller create-info / format-list path (image-create patch)",
+          "verdict": "No staging-lifetime difference; same staging code records the copies for these images.",
+          "evidence": "Patch is confined to WRAPPER_CreateImage (wrapper_image.c:18-130); staging files are upstream-identical (patch_scope). Runtime: candidate readonly bc1 case exits 0 where baseline exits 139 (matrix-results.json: \"readonly view 0\" baseline exit 139 vs candidate exit 0), i.e. the image-create fix removes the crash, not a staging split."
+        },
+        {
+          "scenario": "Long-lived image with many uploads",
+          "verdict": "Bounded only by image lifetime; unsafe only in the resource-exhaustion/growth sense (see finding C3).",
+          "evidence": "No early free path (§2); two list entries per upload in the buffer path, one per upload in the image-view path."
+        }
+      ],
+      "leak_forever_on_destroy": false,
+      "leak_requires_image_not_destroyed": true
+    },
+    "4_bcn_emulation_specifics": {
+      "per_region_granularity": "One VkBuffer + VkDeviceMemory per BCn region, allocated inside the region loop (wrapper_device.c:1621, 1662-1678). A CmdCopyBufferToImage with regionCount N creates 2N tracked resources in the buffer path (N image views in the image-view path). There is no single staging allocation covering all regions of one call, and no reuse across regions or across calls.",
+      "size_and_offset": [
+        "Requested buffer size = imageExtent.width * imageExtent.height * target_size (wrapper_device.c:1665), i.e. tightly packed RGBA target texels of the region (not the BCn block size). For BC1/BC4 target_size 4, for BC6/BC7 target 4 or 8 depending on unpacked format (wrapper_private.h:245-258).",
+        "The actual VkDeviceMemory allocation uses the driver's VkMemoryRequirements.size for that buffer (wrapper_device.c:1034-1040), so the requested byte count above is not necessarily the allocated byte count; actual requirements were not logged in the probe (open).",
+        "The copy uses bufferOffset=0, bufferRowLength=0, bufferImageHeight=0 for the staging side (wrapper_device.c:1755-1760), consistent with one packed staging buffer per region. The CPU fallback writes the same tightly packed output and maps exactly width*height*target_size bytes (wrapper_device.c:1193-1200).",
+        "Uses: compute-shader output as a storage buffer (descriptor write wrapper_device.c:1442-1446), or CPU decompression into the mapped memory (wrapper_device.c:1170-1234), then VkBuffer -> VkImage copy (wrapper_device.c:1735-1760)."
+      ],
+      "one_buffer_covers_all_regions": false,
+      "image_view_path": [
+        "When use_image_view is true, no staging buffer/memory is created (wrapper_device.c:1662 guards the allocation) and a fresh VkImageView is created and tracked per region per call (wrapper_device.c:1412-1435).",
+        "The image-view path is on by default: static bool g_use_image_view = true (wrapper_debug.c:350); USE_IMAGE_VIEW=0/1 env override at wrapper_debug.c:360-369; the call-site predicate additionally requires compute-shader mode, no host decoding, and no validate/dump masks (wrapper_device.c:1601).",
+        "Reachability: candidate bc1/bc3 USE_IMAGE_VIEW=1 runs pass in the 4 KB-page matrix (wrapper-build/native-probe/matrix-4k-results.json: candidate bc1 view 1 and bc3 view 1, edges 4/5/16, exit 0) and in the first matrix (matrix-results.json: candidate bc1/bc3 view 1, cycles 8, exit 0).",
+        "The observed staging run forced USE_IMAGE_VIEW=0 (staging-observation.json command), so no image view was tracked in it (0 \"Tracking stagingImageView\" lines in staging-native.log). Image-view list growth was therefore not observed (open)."
+      ],
+      "per_view_staging_tracked": true
+    },
+    "5_growth_behavior": {
+      "code_guarantee": "Traced resources for one image are appended to wimg->staging_resources on every BCn upload and are removed only when that image is destroyed (or the device is destroyed). There is no fence-gated reclamation, no reuse, no cap, and no deduplication.",
+      "quantified_from_probe": {
+        "uploads_in_run": 32,
+        "cycles_reported_passed": 32,
+        "tracked_entries": 64,
+        "released_in_one_call": 64,
+        "tracking_log_lines": 32,
+        "resources_per_upload_buffer_path": 2,
+        "requested_staging_bytes_per_16x16_bc1_region": 1024,
+        "requested_staging_bytes_total_if_all_live": 32768,
+        "note": "1024 B is the requested size (16*16*4 with get_bc_target_size=4); driver memory requirements/overhead were not logged, so actual allocated bytes are unknown."
+      },
+      "is_this_a_real_concern": "Yes for long-lived images that receive repeated uploads (streaming/video/dynamic textures): memory and object/allocation counts grow without bound until image destroy. It is not a memory-safety defect; it is an unbounded-retention/resource-growth defect. One-time uploads (mip/array uploads during load) are bounded by their upload count, which is the benign case.",
+      "what_a_game_case_needs": [
+        "A real workload with per-frame or frequent CmdCopyBufferToImage into the same long-lived BCn-emulated image, to measure VkDeviceMemory count, devices' maxMemoryAllocationCount pressure, and process/Vulkan memory.",
+        "The probe cannot show this: 32 one-shot uploads to one 16x16 image, and llvmpipe reports maxMemoryAllocationCount = 0xffffffff (staging-native.log:877), so allocation-count exhaustion is not observable on this software device."
+      ],
+      "growth_per_upload_formula": "buffer path: 2 tracked resources + one driver VkDeviceMemory of at least extent.w*extent.h*get_bc_target_size bytes per region; image-view path: 1 tracked VkImageView per region (driver view allocation, no device memory)."
+    },
+    "6_release_timing_image_or_device_destroy": {
+      "observed_release": "image destroy (vkDestroyImage), not device destroy; it is a late free.",
+      "log_context": [
+        "staging-native.log:1979 = 32nd/32 \"Tracking new staging buffer for image 0\" line.",
+        "staging-native.log:1981 = \"PASS pixels cycle=31 count=256\" (last probe cycle verified).",
+        "staging-native.log:1982 = \"[001.85] Released 64 staging resources for handle 0xb400007a41c8d0f0 \\t (free_staging_resources_if_ready:146)\".",
+        "staging-native.log:1983 = \"PASS clean-exit\" (printed by the probe after vkDestroyDevice, tools/tests/vulkan-wrapper-native.c:248-249)."
+      ],
+      "call_chain": [
+        "probe: vkDestroyImage(device, image, NULL) at tools/tests/vulkan-wrapper-native.c:246 (after vkDeviceWaitIdle at 242).",
+        "WRAPPER_DestroyImage wrapper_image.c:132-146.",
+        "DestroyImage on the underlying handle wrapper_image.c:137, then wrapper_image_destroy wrapper_image.c:145.",
+        "wrapper_image_destroy = MAKE_DESTROY_FUNCTION (wrapper_objects.c:36-44; instantiation 52-54) calls free_staging_resources_final(device, obj, &obj->staging_resources) wrapper_objects.c:38.",
+        "free_staging_resources_final (wrapper_objects.h:206-210) calls free_staging_resources_if_ready(..., true) (wrapper_objects.c:97-147); the WLOGD at wrapper_objects.c:145-146 prints the count."
+      ],
+      "why_not_device_destroy": "The image was removed from device->image_map by the image destroy macro (wrapper_objects.c:40-42), so the vkDestroyDevice image_map loop (wrapper_device.c:622-626) cannot find that image and cannot free its list; the log contains exactly one \"Released ...\" line for the whole run (also exactly one in staging-native-logcat.log, line 372).",
+      "handle_interpretation": "The printed handle 0xb400007a41c8d0f0 is the free_staging_resources_final obj argument, i.e. the wrapper_image allocation pointer (MAKE_DESTROY_FUNCTION passes obj, wrapper_objects.c:38), not the application-visible VkImage handle (the probe's dstImage raw handle in the same log is 0xb400007ab1c90a90, e.g. staging-native.log:1957).",
+      "why_late_free_is_safe_here": "The probe waits each cycle's own fence (tools/tests/vulkan-wrapper-native.c:223-228) and then vkDeviceWaitIdle (242) before destroying the image, so no GPU work references the freed staging objects. The wrapper itself performs no such wait (see finding C2).",
+      "bug_or_safe": "Safe in this run, but it demonstrates the design's only reclaim point: 64 resources stayed live for the whole 32-cycle run even though every cycle's GPU work was fence-completed before the next cycle."
+    },
+    "7_recovery_and_safety_checks": {
+      "missing_error_checks": [
+        "add_staging_resource_to: vk_alloc result is not checked before dereference (wrapper_objects.c:89-91); OOM at this point would NULL-dereference instead of returning an error.",
+        "add_staging_resource_to: ready and use_vk_object are never initialised (wrapper_objects.c:89-94; struct wrapper_objects.h:177-189); benign only because the only free path ignores them. If a non-final cleanup is ever wired up, it will call GetFenceStatus on an indeterminate handle (wrapper_objects.c:111-114).",
+        "CreateStagingBuffer: failure paths leak driver objects; no cleanup of the created VkBuffer on AllocateMemory failure, and no cleanup of buffer+memory on BindBufferMemory failure (wrapper_device.c:1030-1047).",
+        "WRAPPER_CreateBuffer (used for the staging buffer): if wrapper_buffer_create fails it returns VK_ERROR_OUT_OF_HOST_MEMORY without destroying the raw VkBuffer it just created (wrapper_device.c:745-753).",
+        "free_staging_resources_if_ready: CHECKV is defined as a bare call with no result check or logging (wrapper_checks.h:12,18; wrapper_objects.c:119-133). If DestroyBuffer/FreeMemory/DestroyImageView fails, bookkeeping is still removed and the handle forgotten (wrapper_objects.c:138-141), so the failure is silent and tracking is lost.",
+        "free_staging_resources_if_ready: no locking around the staging list. add_staging_resource_to runs during command recording, while free (image destroy) does not take wimg->resource_mutex; app-side external synchronization is assumed (see open O5)."
+      ],
+      "assertions_in_staging_path": "None. The only assertion nearby is assert(mem->dmabuf_fd >= 0 || mem->ahardware_buffer != NULL) in the emulated MapMemory path (wrapper_device_memory.c:459), not in the staging create/free code.",
+      "ordering": [
+        "Buffer destroyed before its bound memory: list insertion order (wrapper_device.c:1677 then 1678; list_addtail wrapper_objects.c:94) and forward iteration (wrapper_objects.c:105) give DestroyBuffer then FreeMemory, which is the required order.",
+        "At image destroy the underlying VkImage is destroyed before the wrapper-owned staging resources (wrapper_image.c:137 vs 145); correctness relies on the application's guarantee that no submitted command references the image. For staging buffer/memory this is the same guarantee as the image copy; for wrapper-owned staging VkImageViews in the image-view path the image is destroyed first (ordering not validated, see open O7).",
+        "At vkDestroyDevice, staging resources are freed during the image_map foreach (wrapper_device.c:622-626) before the raw driver DestroyDevice (wrapper_device.c:644-647); the wrapper does not wait for queue idle first, again relying on the application's vkDestroyDevice valid usage."
+      ]
+    }
+  },
+  "findings": {
+    "severity_scale": {
+      "high": "memory-safety/robustness defect reachable in a compliant or common path",
+      "medium": "unbounded retention/resource exhaustion risk in real workloads, or late-free by design",
+      "low": "error-path, latent, bookkeeping or ordering issue",
+      "informational": "verified behavior statement, no defect implied"
+    },
+    "confirmed": [
+      {
+        "id": "C1",
+        "severity": "medium",
+        "type": "late-free",
+        "title": "Staging resources have no fence/semaphore reclamation; they are freed only when the image is destroyed",
+        "statement": "Every BCn staging VkBuffer/VkDeviceMemory/image-view is tracked on wimg->staging_resources and freed only by the parent-destroy path with cleanup_everything=true. The ready fence field is never set, the fence-check branch is unreachable, and no QueueSubmit/WaitIdle hook reclaims anything.",
+        "evidence": [
+          "wrapper_objects.h:177-210",
+          "wrapper_objects.c:83-147",
+          "wrapper_device.c:1674-1678",
+          "wrapper_device.c:1412-1435",
+          "wrapper_image.c:132-146",
+          "wrapper_device.c:622-626",
+          "wrapper_device.c:439-449",
+          "wrapper_objects.c:175-181"
+        ]
+      },
+      {
+        "id": "C2",
+        "severity": "low",
+        "type": "UAF-exposure",
+        "title": "No wrapper-side safety if the app destroys an image/device while commands are in flight",
+        "statement": "WRAPPER_DestroyImage performs no wait and no fence check, destroying the image before freeing its staging resources; correctness depends entirely on the app's destroy valid usage. In the probe the app waits for each fence and for device idle, so the observed free is safe and late.",
+        "evidence": [
+          "wrapper_image.c:132-146",
+          "wrapper_device.c:1735-1760",
+          "tools/tests/vulkan-wrapper-native.c:223-228",
+          "tools/tests/vulkan-wrapper-native.c:242-246"
+        ]
+      },
+      {
+        "id": "C3",
+        "severity": "medium",
+        "type": "resource-growth",
+        "title": "Tracked list grows without bound per image until image destroy",
+        "statement": "Each BCn upload appends 2 resources (buffer path: VkBuffer + VkDeviceMemory) or 1 resource (image-view path: VkImageView); no entry is ever removed early, so a long-lived image receiving N uploads holds 2N (or N) resources until destroyed. This is unbounded retention, not a leak past destroy, and not memory-unsafe. Real risk is device-memory/allocation-count exhaustion for streaming textures.",
+        "evidence": [
+          "wrapper_device.c:1621",
+          "wrapper_device.c:1662-1678",
+          "wrapper_objects.c:94",
+          "wrapper_objects.c:104-143",
+          "staging-native.log:1110-1979",
+          "staging-native.log:1982"
+        ]
+      },
+      {
+        "id": "C4",
+        "severity": "informational",
+        "type": "observed-release",
+        "title": "Observed 64-resource release is one image-destroy call, safe because the probe waited for idle",
+        "statement": "32 buffer allocations x 2 tracked object types = 64 entries; all are freed in a single call from vkDestroyImage after vkDeviceWaitIdle. Attribution is code-derived (image_map removal prevents a later device-destroy visit) and matches the single release log line.",
+        "evidence": [
+          "staging-native.log:1981-1983",
+          "wrapper_objects.c:36-44",
+          "wrapper_objects.c:52-54",
+          "wrapper_device.c:622-626",
+          "tools/tests/vulkan-wrapper-native.c:242-249"
+        ]
+      },
+      {
+        "id": "C5",
+        "severity": "informational",
+        "type": "granularity",
+        "title": "One buffer+memory per region, not per CmdCopyBufferToImage",
+        "statement": "Staging allocation is inside the per-region loop, so regionCount N yields 2N tracked resources; there is no shared staging buffer for multiple regions and no reuse across calls.",
+        "evidence": [
+          "wrapper_device.c:1621",
+          "wrapper_device.c:1662-1678",
+          "wrapper_device.c:1030-1047",
+          "wrapper_device.c:1755-1760",
+          "wrapper_private.h:245-258"
+        ]
+      },
+      {
+        "id": "C6",
+        "severity": "informational",
+        "type": "image-view-path",
+        "title": "Image-view mode is the default BCn output path and tracks one VkImageView per region per upload",
+        "statement": "g_use_image_view defaults to true; the env variable can disable it, and validate/dump masks also disable it. In this mode no staging buffer/memory is allocated; a new view is created and tracked per region, and is freed only at image destroy. The observed staging run forced the buffer path with USE_IMAGE_VIEW=0.",
+        "evidence": [
+          "wrapper_debug.c:350",
+          "wrapper_debug.c:360-369",
+          "wrapper_device.c:1601",
+          "wrapper_device.c:1412-1435",
+          "wrapper_device.c:1662",
+          "wrapper-build/native-probe/matrix-4k-results.json (candidate bc1/bc3 view 1, exit 0)"
+        ]
+      },
+      {
+        "id": "C7",
+        "severity": "informational",
+        "type": "provenance",
+        "title": "Staging lifetime code is identical in baseline and candidate; defects are upstream-inherited",
+        "statement": "The reviewed patches change image create-info ownership (wrapper_image.c) and generated trace gating (vk_entrypoints.py/meson.build) only. Staging source files are byte-identical to upstream commit 3abf4870, and the compiled staging functions have identical sizes / relocation-only differences in baseline.so and candidate.so. Neither patch introduces or fixes this lifetime behavior.",
+        "evidence": [
+          "wrapper-build/source/src/vulkan/wrapper/wrapper_objects.c (sha256 83ac63...)",
+          "wrapper-build/source/src/vulkan/wrapper/wrapper_device.c (sha256 385375...)",
+          "wrapper-build/head/src__vulkan__wrapper__wrapper_image.c (sha256 558073..., upstream)",
+          "wrapper-build/source/src/vulkan/wrapper/wrapper_image.c (sha256 db8e39..., patched)",
+          "wrapper-build/image-create.patch.log, wrapper-build/trace-gate.patch.log",
+          "wrapper-build/baseline.so vs candidate.so nm -S: add_staging_resource_to 0x60, free_staging_resources_if_ready 0x1d8, wrapper_image_destroy 0xc4 in both"
+        ]
+      },
+      {
+        "id": "C8",
+        "severity": "low",
+        "type": "error-path-leak",
+        "title": "CreateStagingBuffer leaks driver objects on its own failure paths",
+        "statement": "If AllocateMemory fails the created VkBuffer is not destroyed; if BindBufferMemory fails neither buffer nor memory is destroyed. The caller returns before tracking, so these objects are not on any wrapper list; they are only reclaimed implicitly by the driver at vkDestroyDevice.",
+        "evidence": [
+          "wrapper_device.c:1030-1047",
+          "wrapper_device.c:1669-1672"
+        ]
+      },
+      {
+        "id": "C9",
+        "severity": "low",
+        "type": "latent-defect",
+        "title": "wrapper_staging_resources.ready/use_vk_object are uninitialised",
+        "statement": "add_staging_resource_to uses non-zeroing vk_alloc and initialises only type/handle/parent; ready and use_vk_object contain indeterminate values. This is currently benign only because the sole free call passes cleanup_everything=true (fence check skipped) and use_vk_object is never read; it becomes a garbage-handle GetFenceStatus call if fence-based GC is ever enabled.",
+        "evidence": [
+          "wrapper_objects.c:89-94",
+          "wrapper_objects.h:177-189",
+          "wrapper_objects.c:110-117",
+          "vk_alloc definition wrapper-build/source/src/vulkan/util/vk_alloc.h:43-49"
+        ]
+      },
+      {
+        "id": "C10",
+        "severity": "low",
+        "type": "missing-check",
+        "title": "TRACK_STAGING allocation failure is unchecked",
+        "statement": "add_staging_resource_to dereferences the vk_alloc result without a NULL check, and TRACK_STAGING is used in a void context; an OOM during tracking would crash instead of degrading.",
+        "evidence": [
+          "wrapper_objects.c:89-91",
+          "wrapper_objects.h:191",
+          "wrapper_device.c:1677-1678"
+        ]
+      },
+      {
+        "id": "C11",
+        "severity": "low",
+        "type": "bookkeeping",
+        "title": "Staging VkBuffer is also registered in device->buffer_map but is freed through the raw trampoline, leaving its wrapper_buffer entry behind",
+        "statement": "WCHECK(CreateBuffer) routes to WRAPPER_CreateBuffer, which inserts a wrapper_buffer into device->buffer_map; the staging free path calls the raw trampoline DestroyBuffer (CHECKV -> wrapper_device_trampolines), so the map entry is never removed. It stays until vkDestroyDevice's buffer_map sweep, i.e. host memory and a map entry are retained per upload until device destroy. No UAF from this: Mesa hash_table_insert replaces an existing entry for a reused handle (wrapper-build/source/src/util/hash_table.c:494-505).",
+        "evidence": [
+          "wrapper_device.c:1030",
+          "wrapper_device.c:737-752",
+          "wrapper_objects.c:18-34",
+          "wrapper_objects.c:119-133",
+          "wrapper_checks.h:12,18",
+          "wrapper-build/source/src/util/hash_table.c:494-505",
+          "wrapper_device.c:628-632"
+        ]
+      },
+      {
+        "id": "C12",
+        "severity": "low",
+        "type": "silent-failure",
+        "title": "Free path ignores VkResult and drops tracking regardless",
+        "statement": "CHECKV is a bare call with no result handling; after the switch, the bookkeeping entry is removed and the handle cleared even if the driver call failed, so a failed destroy/free is never retried or reported.",
+        "evidence": [
+          "wrapper_checks.h:12",
+          "wrapper_checks.h:18",
+          "wrapper_objects.c:119-141"
+        ]
+      },
+      {
+        "id": "C13",
+        "severity": "informational",
+        "type": "unused-lists",
+        "title": "Queue and command-buffer staging lists are initialised but never populated",
+        "statement": "Only the per-image list is used (all three TRACK sites target wimg); the queue list and command-buffer list are dead storage. Therefore command-buffer reset/free cannot and does not reclaim BCn staging resources.",
+        "evidence": [
+          "wrapper_device.c:179",
+          "wrapper_objects.c:163",
+          "wrapper_objects.c:175-181",
+          "wrapper_objects.h:191"
+        ]
+      }
+    ],
+    "open": [
+      {
+        "id": "O1",
+        "severity": "high-if-triggered",
+        "type": "double-free/UAF (conditional)",
+        "title": "If a staging allocation used the wrapper's emulated device-memory path, the free path bypasses wrapper bookkeeping and vkDestroyDevice can free the same VkDeviceMemory again",
+        "why_open": "CreateStagingBuffer allocates through WCHECK(AllocateMemory) (wrapper_device.c:1042), which reaches WRAPPER_AllocateMemory (wrapper_device_memory.c:296). When its emulation is active (HOST_VISIBLE + app-enabled memoryMapPlaced feature + VK_EXT_map_memory_placed + no import/export structs; wrapper_device_memory.c:312-332) the allocation is added to device->device_memory_list (wrapper_device_memory.c:264) and the returned VkDeviceMemory is tracked. The staging free path, however, calls the raw trampoline FreeMemory (wrapper_objects.c:129 via CHECKV/wrapper_checks.h:18), not WRAPPER_FreeMemory (wrapper_device_memory.c:403), leaving a wrapper_device_memory entry with a dangling dispatch_handle. vkDestroyDevice then walks device_memory_list (wrapper_device.c:615-618) and wrapper_device_memory_reset calls FreeMemory on that already-freed handle (wrapper_device_memory.c:244-247) - a double free of the driver object (plus duplicate dmabuf/AHB teardown risk).",
+        "why_not_observed": "The probe's device enables no extensions and only three features (tools/tests/vulkan-wrapper-native.c:137-144), so device->vk.enabled_features.memoryMapPlaced and enabled_extensions.EXT_map_memory_placed are false and WRAPPER_AllocateMemory takes the raw fallback (wrapper_device_memory.c:316-332, 374-378). No WRAPPER_LOG_MEMORY debug output was captured either.",
+        "evidence_to_settle": "A run/fixture that enables VK_EXT_map_memory_placed + VkPhysicalDeviceMapMemoryPlacedFeaturesEXT.memoryMapPlaced on a supporting driver, with WRAPPER_LOG_MEMORY=1, a staging upload, then vkDestroyDevice under Vulkan validation (and/or ASAN/driver-side fault injection)."
+      },
+      {
+        "id": "O2",
+        "severity": "low",
+        "type": "driver-handle-reuse",
+        "title": "Whether recycled VkBuffer handles can collide with the stale staging buffer_map entry in practice",
+        "why_open": "The staging VkBuffer is freed by the raw trampoline while its wrapper_buffer entry remains in buffer_map (C11). Mesa's insert replaces an existing entry (wrapper-build/source/src/util/hash_table.c:494-505), so a later app buffer that reuses the handle is tracked correctly but the stale wrapper_buffer host object is leaked; if a lookup happens before the new insert, it would return the stale entry (wrong memory/pools). Handle reuse by a specific driver was not observed or instrumented.",
+        "evidence_to_settle": "Instrument VkBuffer handle values and buffer_map lookups around image destruction + subsequent buffer creation on a real driver, or run with ASAN/validation in a workload that destroys and recreates images."
+      },
+      {
+        "id": "O3",
+        "severity": "medium",
+        "type": "evidence-gap",
+        "title": "Real-device growth limits are unmeasured",
+        "why_open": "The probe is one llvmpipe software device reporting maxMemoryAllocationCount = 0xffffffff (staging-native.log:877); no physical GPU, no Android driver, no allocation-count/VRAM pressure measurement. The magnitude of the growth risk on production hardware is therefore not established.",
+        "evidence_to_settle": "Long-running native probe or game on a physical Adreno/Mali device: repeated BCn uploads to one long-lived image, record VkDeviceMemory count/size, maxMemoryAllocationCount, RSS, and any CreateStagingBuffer failure logs."
+      },
+      {
+        "id": "O4",
+        "severity": "low",
+        "type": "unobserved-path",
+        "title": "Image-view staging list growth was not observed in logs",
+        "why_open": "The default image-view path (wrapper_debug.c:350) was exercised only as output-correctness matrix runs (matrix-results.json, matrix-4k-results.json exit 0) with logging off; the only debug-log observation forced USE_IMAGE_VIEW=0. The claimed 1 VkImageView tracked per region per upload is code-derived (wrapper_device.c:1412-1435), not log-counted.",
+        "evidence_to_settle": "WRAPPER_LOG_LEVEL=debug run with USE_IMAGE_VIEW=1: count \"Tracking stagingImageView\" lines and the corresponding \"Released N staging resources\" value at image destroy."
+      },
+      {
+        "id": "O5",
+        "severity": "medium",
+        "type": "concurrency",
+        "title": "No concurrency/thread-safety stress test; staging list is mutated without locks",
+        "why_open": "add_staging_resource_to runs during command recording (wrapper_objects.c:83-95) while wrapper_image_destroy frees the same list without taking wimg->resource_mutex (wrapper_objects.c:36-44); the wrapper relies on Vulkan external synchronization. No multi-threaded recording/destroy test was run.",
+        "evidence_to_settle": "Multi-threaded command recording + image destroy/create stress under validation/TSan, or a source review that establishes the intended external-sync contract."
+      },
+      {
+        "id": "O6",
+        "severity": "low",
+        "type": "unexercised-input",
+        "title": "regionCount > 1 is not exercised by the probe",
+        "why_open": "The probe always records one region per CmdCopyBufferToImage (tools/tests/vulkan-wrapper-native.c:212-213, regionCount 1). The per-region allocation/growth claims are code-derived only.",
+        "evidence_to_settle": "A probe variant (or trace fixture) with regionCount 2-4 and debug logging, counting tracking lines and release count."
+      },
+      {
+        "id": "O7",
+        "severity": "low",
+        "type": "ordering-unvalidated",
+        "title": "Image-view staging path destroys the parent VkImage before the wrapper-owned staging views",
+        "why_open": "WRAPPER_DestroyImage destroys the underlying VkImage first (wrapper_image.c:137) and only then frees tracked staging resources, including staging VkImageViews created from that image in the image-view path (wrapper_image.c:145 -> wrapper_objects.c:38/119-133). The probe used USE_IMAGE_VIEW=0 and validation layers were not enabled, so this ordering was neither exercised nor validated.",
+        "evidence_to_settle": "USE_IMAGE_VIEW=1 probe run with Vulkan validation layers enabled to check for VUID/ICD complaints about destroying views after their image."
+      },
+      {
+        "id": "O8",
+        "severity": "low",
+        "type": "unknown-quantity",
+        "title": "Actual staging memory requirements vs requested size are unknown",
+        "why_open": "Requested size is extent.w*extent.h*target_size (wrapper_device.c:1665) but the allocation uses VkMemoryRequirements (1034-1040). Driver alignment/overhead, and therefore the byte-level growth rate, were not logged.",
+        "evidence_to_settle": "Debug log of VkMemoryRequirements per staging buffer, or a run measuring process memory while growing the tracked list."
+      }
+    ]
+  },
+  "observation": {
+    "artifacts": [
+      {
+        "path": "wrapper-build/native-probe/staging-observation.json",
+        "bytes": 4095,
+        "sha256": "303cff7e900f10e4e53e4110ad39c8400310377d538cad0fc9a9820732db4306",
+        "role": "Machine-readable summary of the single candidate staging run (command, exit code, selected log lines, counts)."
+      },
+      {
+        "path": "wrapper-build/native-probe/staging-native.log",
+        "bytes": 115716,
+        "lines": 1983,
+        "sha256": "a417e1995fbe5728d6dc3e2aac34d6a860812fd777ec919454b1af0607c7d645",
+        "role": "Full wrapper debug log for the same run; stdout fallback of the wrapper logger (wrapper_log.c:122-128), which prefixes each line with [seconds] and appends ' \\t (function:line)' at the log call site (wrapper_log.h:41-46)."
+      },
+      {
+        "path": "wrapper-build/native-probe/staging-native-logcat.log",
+        "bytes": 43756,
+        "lines": 372,
+        "sha256": "b4494ec9aaed6ce0ecafe5b1e749d0ab8c4ba45fb6bfa31406f1e7a6dd3e3cc3",
+        "role": "Android logcat capture for the same pid (4445); contains the same 32 tracking lines and the single release line (line 372), but not probe stdout."
+      },
+      {
+        "path": "wrapper-build/native-probe/probe-identity.json",
+        "role": "Probe source/binary identity: source tools/tests/vulkan-wrapper-native.c sha256 03909d3d077cd49bf35bef0d31288196b8fd26d82a1bc470b63d23041a54a0f7, binary sha256 5eae550c7581bbf67eb8bf00347ec991166ad3f77df8d60cdc906778a764f0d9."
+      }
+    ],
+    "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-20261021 WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-20261021/probe /data/local/tmp/vapor-wrapper-native-20261021/candidate.so bc1 32 16",
+    "environment": {
+      "device": "llvmpipe (LLVM 21.1.4, 128 bits), Mesa 26.0.0-devel (git-3fc652a060), Vulkan api 1.3.0, 4096-byte pages (staging-native.log:1013)",
+      "mode": "bc1 (VK_FORMAT_BC1_RGBA_UNORM_BLOCK, log format id 133), 32 cycles, image extent 16x16, one persistent image, regionCount 1 per copy (tools/tests/vulkan-wrapper-native.c:150, 160-168, 212-213)",
+      "exit_code": 0,
+      "probe_stdout_passes": "32 x 'PASS pixels cycle=N count=256' (staging-native.log:1113-1981 region) plus 'PASS clean-exit' (1983); 0 FAIL lines, no device-lost/timeout/SEGV text",
+      "validation_layers": "Not enabled by the probe (VkInstanceCreateInfo carries no layer list, tools/tests/vulkan-wrapper-native.c:105); no VUID/validation messages appear in either log, which is expected and NOT evidence of correctness."
+    },
+    "counts": {
+      "tracking_log_lines": 32,
+      "tracked_object_types_per_upload": 2,
+      "tracked_entries_total": 64,
+      "released_resources": 64,
+      "release_calls": 1,
+      "image_view_tracking_lines": 0,
+      "images_created": 1,
+      "region_count_per_copy": 1,
+      "pixel_cycles_passed": 32,
+      "observed_exceptions": "1 benign wrapper banner at staging-native.log:1001 ('[ERROR] WARNING: this wrapper may not be compatible for non-dxvk game engines, use at your own risks'); no other ERROR/FAIL/VUID/device-lost/timeout lines."
+    },
+    "why_32_tracking_events_but_64_released_resources": {
+      "explanation": "The count printed at release is the number of list entries freed, not the number of uploads. For each BCn upload in the buffer path, the wrapper allocates one VkBuffer and one VkDeviceMemory and then calls TRACK_STAGING twice on the same image list - once for the buffer (wrapper_device.c:1677) and once for the device memory (wrapper_device.c:1678). The debug line 'Tracking new staging buffer for image N' is emitted once per allocation, immediately before those two TRACK calls (wrapper_device.c:1676). Therefore 32 allocations produce 32 log lines but 64 tracked resources. The image-view path would instead add one VkImageView per region (wrapper_device.c:1435), but USE_IMAGE_VIEW=0 in this run, so 0 image views were tracked. There is no deduplication and no reuse: every upload creates a fresh buffer+memory pair.",
+      "arithmetic": "32 uploads x (1 VkBuffer + 1 VkDeviceMemory) = 64 tracked entries; one free_staging_resources_if_ready call frees all 64 and prints 'Released 64 staging resources' (wrapper_objects.c:103, 122, 145-146).",
+      "cycle_count": "The probe's 32 cycles each record exactly one CmdCopyBufferToImage with regionCount=1 (tools/tests/vulkan-wrapper-native.c:183-241, 212-213), so uploads = cycles = 32.",
+      "release_timing": "The single release happens after the last cycle, via vkDestroyImage (see answers.6), not at vkDestroyDevice; every cycle's GPU work had already been fence-waited (probe line 228) and the device was idle (242) before the free, yet none of the 64 resources was reclaimed early."
+    },
+    "log_excerpts": [
+      "staging-native.log:1  PROBE pid=4445 mode=bc1 cycles=32 edge=16",
+      "staging-native.log:1083  [000.95] Emulate BCn: Changing image (16x16) format from bcn texture: 133 to 37 \\t (__wrapper_CreateImage:57)",
+      "staging-native.log:1109  [001.02] use_compute_shader=1, use_image_view=0 \\t (__wrapper_CmdCopyBufferToImage:1658)",
+      "staging-native.log:1110  [001.04] Tracking new staging buffer for image 0 \\t (__wrapper_CmdCopyBufferToImage:1676)   [first of 32]",
+      "staging-native.log:1979  [001.85] Tracking new staging buffer for image 0 \\t (__wrapper_CmdCopyBufferToImage:1676)   [last of 32]",
+      "staging-native.log:1981  PASS pixels cycle=31 count=256",
+      "staging-native.log:1982  [001.85] Released 64 staging resources for handle 0xb400007a41c8d0f0 \\t (free_staging_resources_if_ready:146)",
+      "staging-native.log:1983  PASS clean-exit",
+      "staging-native.log:877  .maxMemoryAllocationCount: uint32_t = 0xffffffff   [llvmpipe device limit; no allocation-count pressure in this environment]",
+      "staging-native-logcat.log:372  E/VkWrapper( 4445): Released 64 staging resources for handle 0xb400007a41c8d0f0 \\t (free_staging_resources_if_ready:146)"
+    ],
+    "log_verification_notes": [
+      "Counted from the full 115,716-byte log: 32 'Tracking new staging buffer' lines, 1 'Released' line, 0 'Tracking stagingImageView' lines, 32 'Emulate BCn' lines, 32 'CmdComputeShaderForDecompression' lines, 32 'PASS pixels cycle' lines.",
+      "The log's '(function:line)' suffix is the WLOGD call site (wrapper_log.h:41-46, WLOGD at 51), so '(free_staging_resources_if_ready:146)' locates the WLOGD inside the free function (wrapper_objects.c:146), not the caller; caller attribution is code-derived (answers.6).",
+      "No fence waits are performed by the wrapper for staging; the only fences in this run are the probe's own per-cycle VkFence (tools/tests/vulkan-wrapper-native.c:223-228), destroyed each cycle (238). Wrapper-side CreateFence/WaitForFences appear only in the helper SubmitOneTimeCommands (wrapper_device.c:1144, 1156) and the uncalled CreateBcnCommandBuffer (wrapper_device.c:1530)."
+    ]
+  },
+  "limitations": [
+    "This is a source-level review plus an explanation of one already-captured runtime observation; the wrapper was not modified, rebuilt or re-run, and no patch was applied during this review.",
+    "The runtime observation is a single synthetic offscreen probe run (32 one-shot 16x16 BC1 uploads to one image) on llvmpipe software Vulkan inside the Android emulator with 4 KB pages; it is not a game, not a physical GPU, and not a concurrency stress test.",
+    "No performance, frame-time, CPU-time, RAM, power or download claim is made; growth findings are retention/risk arguments, not measured production behavior.",
+    "Vulkan validation layers were not enabled in the probe, so the absence of VUID/validation messages is not evidence of correctness; several ordering/valid-usage questions are marked open.",
+    "No heap/ASAN instrumentation was available; leaks, double-free risk and handle-reuse behavior are derived from code and lists, not from sanitizer output.",
+    "The probe does not exercise multi-region copies (regionCount always 1), USE_IMAGE_VIEW=1 tracking logs, mip/array uploads, streaming textures, command-buffer resets, submit failures or allocation failures.",
+    "Staging allocation byte counts are requested sizes (extent.w*extent.h*target size); driver VkMemoryRequirements/alignment and per-allocation overhead were not logged.",
+    "The emulated-device-memory double-free risk (O1) is conditional on an application enabling VK_EXT_map_memory_placed plus the memoryMapPlaced feature; that configuration was not run.",
+    "The image-create and trace-gate patches were reviewed only far enough to establish that they do not change staging code; their own correctness was qualified elsewhere (docs/evidence/2026-10-21-graphics-source.json).",
+    "Baseline/candidate binary comparison is limited to staging-function sizes and normalized disassembly; a full binary diff of the 131 MB shared objects was not performed.",
+    "The Codex source/build directories were read only; the only file written by this review is docs/evidence/2026-10-21-vulkan-wrapper-staging.json."
+  ],
+  "related_evidence": [
+    {
+      "path": "docs/evidence/2026-10-21-graphics-source.json",
+      "relationship": "Prior source/build qualification for the same wrapper; it lists 'Staging-buffer lifetime and concurrent command submission' as a qualification limit, which this file addresses at the source-review level."
+    }
+  ],
+  "verdict": {
+    "real_defect_vs_safe_but_growable": "Safe-but-growable behavior is the confirmed picture: no fence-gated reclamation and unbounded per-image retention until destroy (C1/C3), with UAF only if the application violates Vulkan destroy valid usage (C2). The one potentially serious memory-safety issue (O1, double free of staging device memory at vkDestroyDevice) is conditional on the wrapper's emulated-memory path and therefore open, not confirmed.",
+    "recommended_follow_ups": [
+      "Add a validation-layer run with USE_IMAGE_VIEW=1 (view tracking + image/view destroy ordering, O4/O7).",
+      "Run a real-device streaming-texture probe to quantify growth and maxMemoryAllocationCount pressure (O3).",
+      "Settle O1 with a placed-memory-enabled fixture (WRAPPER_LOG_MEMORY=1 + validation/ASAN).",
+      "If upstream fixes are proposed, initialize wrapper_staging_resources (C9/C10), add staging-resource cleanup on CreateStagingBuffer failure (C8), and reclaim staging resources from the submitted fence/semaphore the TODO at wrapper_device.c:1674-1675 describes."
+    ]
+  }
+}
