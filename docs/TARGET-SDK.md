@@ -42,6 +42,25 @@ libraries rely on.
 | proot, proot-loader (Linux runtime) | `nativeLibraryDir` | packaged as `lib*.so` | already compatible |
 | PulseAudio | `nativeLibraryDir` plus app-data modules | executable plus loaded modules | already compatible |
 
+### Component inventory (22 October 2026)
+
+The components the guided setup and Prepare Vapor download from WinNative-Components,
+classified from the actual release assets:
+
+| Component | Native code | Executables | W^X route |
+| --- | --- | --- | --- |
+| Proton 11.0-2 ARM64EC (Prepare Vapor runtime) | 31 shared libraries | `wine`, `wineserver`: dynamic bionic (`linker64`); `wine-preloader`: static | `linker64` for both; preloader needs a decision |
+| Proton 9.0 ARM64EC (bundled) | shared libraries | same three as above | same |
+| Box64 0.4.2 | — | `box64`: dynamic bionic (`linker64`) | `linker64` |
+| FEXCore 2610 unix | `libarm64ecfex.so`, `libwow64fex.so` | none (loaded by Wine) | unaffected |
+| FEX 2605, Wowbox64 | Windows DLLs only | none | unaffected |
+| DXVK, VKD3D-Proton | Windows DLLs only | none | unaffected |
+
+The only executable the `linker64` route cannot run is the static `wine-preloader`. The
+other static or non-bionic risk is any future component built that way. The inventory
+step of the plan below is therefore done for the guided-setup set; the user-installable
+catalog still needs the same check.
+
 Launches go through `GuestProgramLauncherComponent` (`ProcessHelper.exec` of
 `.../usr/bin/box64` or the Wine launcher), `LinuxProgramLauncherComponent`,
 `PulseAudioComponent` and `ComponentInstaller`.
@@ -68,8 +87,8 @@ those `execve` calls hits the same rule. The established approach is Termux's:
 
 ## Plan
 
-1. Inventory the downloadable components (Box64, FEX, Wine/Proton variants, drivers):
-   ELF type, interpreter, and any static executables. No phone needed.
+1. Inventory the downloadable components: **done for the guided-setup set** (table
+   above). Extend it to the rest of the user-installable catalog. No phone needed.
 2. Build the exec shim with a JVM/NDK test suite. On the emulator, run it against the
    real `wine`/`wineserver` and the scripts at target 35, using `ExecPolicyDeviceTest`
    as the baseline.
