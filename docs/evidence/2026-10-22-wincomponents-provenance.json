@@ -88,5 +88,36 @@
     "Decide per component: keep (with terms), replace (e.g. Wine's own implementations), or drop from the shipped product.",
     "Same mapping for proton-9.0-arm64ec.txz and imagefs.tzst (source and license per package)."
   ],
-  "open": "This closes the identification half of distribution blocker 2. Source mapping and license bundling remain open."
+  "open": "This closes the identification half of distribution blocker 2. Source mapping and license bundling remain open.",
+  "runtime_behaviour": {
+    "applied_by": "WinComponentSetup.applyWinComponents, called from XServerDisplayActivity at first session start (not during Prepare Vapor)",
+    "default_setting": "Container.DEFAULT_WINCOMPONENTS = \"direct3d=1,directsound=0,directmusic=0,directshow=0,directplay=0,xaudio=0,dinput8=1,vcrun2010=1\"",
+    "observed_api36_emulator": {
+      "before_first_session": "system32 holds Proton 11.0-2 Wine builtins (msvcr100 md5 78e70f8965dae42a85619834ae23bca8)",
+      "after_first_session": "msvcr100 md5 366fd6f3a451351b5df2d7c4ecf4c73a = byte-identical to wincomponents/vcrun2010.tzst system32 payload; d3dx9_43 7160fc226391c0b50c85571fa1a546e5, d3dcompiler_43 ada0c39d4eacdc81fd84163a95d62079 from direct3d.tzst"
+    },
+    "open_alternative_verified": {
+      "action": "set direct3d=0, dinput8=0, vcrun2010=0 in the container .container",
+      "result": "restoreWineBuiltinDllFiles copies Proton 11.0-2 Wine builtins back; session starts normally (13 processes)",
+      "after": {
+        "msvcr100.dll": "78e70f8965dae42a85619834ae23bca8 (Wine)",
+        "d3dx9_43.dll": "3bf157f5aa4b56f2431dd23e5878d6c7 (Wine)",
+        "d3dcompiler_43.dll": "39d3014ec91b3ee3fc217be951b4414b (Wine)"
+      },
+      "wine_builtin_sizes_not_stubs": {
+        "d3dx9_43.dll": 1703936,
+        "d3dcompiler_43.dll": 602112,
+        "msvcr100.dll": 1896448,
+        "quartz.dll": 2150400,
+        "dsound.dll": 901120
+      },
+      "modules_wine_does_not_implement": [
+        "d3dcsx_42.dll",
+        "d3dcsx_43.dll",
+        "d3dx10.dll"
+      ],
+      "note": "restoreOneWineDll deletes the target when no Wine builtin exists, so those three are lost when the component is switched off; games needing them still require the Microsoft payload."
+    },
+    "what_wine_supplies": "The bundled Proton implements 46 of 49 direct3d modules, 10/10 directmusic, 6/6 directshow, 7/8 directplay, 35/43 xaudio, 1/1 directsound, 1/1 dinput8 and 4/4 vcrun2010 (confirmed by filename in lib/wine/aarch64-windows and ntdll imports; real sizes, not stubs)."
+  }
 }

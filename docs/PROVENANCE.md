@@ -549,6 +549,40 @@ files) contains no `LICENSE`/`COPYING`/`NOTICE`, and `imagefs.tzst` carries
 per-package licenses for only 5 of its packages (`pcre2`, `libjpeg-turbo`, `lzo`,
 `tiff`, `zimg`).
 
+### When they reach a container, and the open alternative
+
+`wincomponents` is a per-container setting (`Container.DEFAULT_WINCOMPONENTS =
+"direct3d=1,dinput8=1,vcrun2010=1,..."`), applied by `WinComponentSetup` at **first
+session start** (`XServerDisplayActivity`), not during Prepare Vapor. Verified on the
+API 36 emulator: before the first session the container holds Proton's own builtins;
+after it, `system32/msvcr100.dll` is md5 `366fd6f3…`, the byte-for-byte Microsoft
+file from `wincomponents/vcrun2010.tzst`, and `d3dx9_43.dll`/`d3dcompiler_43.dll`
+likewise come from `direct3d.tzst`. So by default every container does end up with
+the Microsoft `direct3d`, `dinput8` and `vcrun2010` payload.
+
+**The open alternative works and was verified.** The bundled Proton ships real Wine
+implementations of these modules (not stubs — `d3dx9_43` 1.7 MB, `msvcr100` 1.9 MB,
+`quartz` 2.2 MB, importing `ntdll.dll` like every Wine builtin). Setting the three
+default-on components to `0` makes `WinComponentSetup.restoreWineBuiltinDllFiles`
+copy those builtins back in. Measured on the same container:
+
+| `system32` file | default (`=1`) | switched to Wine (`=0`) |
+| --- | --- | --- |
+| `msvcr100.dll` | `366fd6f3…` (Microsoft) | `78e70f89…` (Wine, Proton 11.0-2) |
+| `d3dx9_43.dll` | `7160fc22…` (Microsoft) | `3bf157f5…` (Wine) |
+| `d3dcompiler_43.dll` | `ada0c39d…` (Microsoft) | `39d3014e…` (Wine) |
+
+The session starts normally afterwards (13 Wine/Windows processes). The only cost is
+three modules Wine does not implement — `d3dcsx_42.dll`, `d3dcsx_43.dll` and
+`d3dx10.dll` (DirectX Effects and the D3DX10 helper) — which are deleted when the
+component is switched off. Games that need those three would still require the
+Microsoft payload.
+
+So a build can drop the Microsoft `direct3d`/`dinput8`/`vcrun2010` archives at the cost
+of those three DLLs; the other five components already default to Wine builtins.
+Whether to ship that way is the owner's call, and per-component rights review is still
+required for whatever is kept.
+
 ## Public distribution blockers
 
 1. **Valve client binaries:** `app/src/main/assets/wnsteam/bionic/valve-steam-x86_64.tzst` and other genuine Steam assets are inherited. Their presence in a public upstream is not redistribution permission. Establish a supported acquisition route and applicable terms before publishing an APK containing them.
