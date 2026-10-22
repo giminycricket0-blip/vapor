@@ -212,6 +212,8 @@ app, `splitCommand` and the shim's `sh -c 'exec "$0" "$@"'` wrapper all preserve
 exactly. Pass Windows paths through a device-side script (single-quoted) when driving
 these intents.
 
+[Run receipt](evidence/2026-10-22-target35-windows-run.json).
+
 ## The real work
 
 Rewriting Vapor's own launch commands is not enough. Wine and the translators spawn
