@@ -16,6 +16,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    # Without a bound, a hung toolchain download occupies a runner for GitHub's
+    # 6-hour default and the lane never reports. Bound it and retry the downloads.
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v6
         with:
@@ -29,12 +32,25 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - name: Install native toolchains
         run: |
+          set -euo pipefail
           vapor_sdkmanager="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' -print -quit)"
           test -x "$vapor_sdkmanager"
-          "$vapor_sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
+          # These two fetches are the only network-bound setup here and have hung
+          # runners silently (three times on 22 October). Bound each attempt and
+          # retry, so a slow mirror fails the step visibly instead of sitting there.
+          vapor_fetch() {
+            for attempt in 1 2 3; do
+              echo "fetch attempt $attempt: $*"
+              if timeout 600 "$@"; then return 0; fi
+              echo "fetch attempt $attempt failed or timed out"
+              sleep 10
+            done
+            return 1
+          }
+          vapor_fetch "$vapor_sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
           rustup show
-          sudo apt-get update
-          sudo apt-get install -y make perl g++-mingw-w64-x86-64-posix g++-mingw-w64-i686-posix
+          vapor_fetch sudo apt-get update
+          vapor_fetch sudo apt-get install -y make perl g++-mingw-w64-x86-64-posix g++-mingw-w64-i686-posix
       - name: Rebuild Steam hosts from source
         run: bash app/src/main/cpp/wn-steam-launcher/build.sh
       - name: Check cloud-conflict answers
