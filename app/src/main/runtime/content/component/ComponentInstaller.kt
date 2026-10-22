@@ -206,8 +206,10 @@ class ComponentInstaller(
         args.add(destDir.absolutePath)
         args.add(cab.absolutePath)
 
-        val pb = ProcessBuilder(args)
-        pb.environment()["LD_LIBRARY_PATH"] = File(rootDir, "usr/lib").absolutePath + ":/system/lib64"
+        val env = mutableMapOf("LD_LIBRARY_PATH" to File(rootDir, "usr/lib").absolutePath + ":/system/lib64")
+        // cabextract lives in the system image in app storage; above target SDK 28 it needs the exec shim.
+        val pb = ProcessBuilder(com.winlator.cmod.runtime.system.ExecShim.prepare(context, args, env))
+        pb.environment().putAll(env)
         val devNull = File("/dev/null")
         pb.redirectOutput(ProcessBuilder.Redirect.to(devNull))
         pb.redirectError(ProcessBuilder.Redirect.to(devNull))

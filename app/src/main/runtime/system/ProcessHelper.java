@@ -346,7 +346,9 @@ public abstract class ProcessHelper {
     int pid = -1;
     try {
       if (PRINT_DEBUG) Log.d("ProcessHelper", "Splitting command: " + command);
-      String[] splitCommand = splitCommand(command);
+      // Above target SDK 28 the guest program may need the exec shim for its own first exec.
+      String[] splitCommand = com.winlator.cmod.runtime.system.ExecShim.launchArgv(
+          splitCommand(command), EnvironmentManager.getEnvVars().get("LD_PRELOAD"));
       if (PRINT_DEBUG)
         Log.d("ProcessHelper", "Split command result: " + Arrays.toString(splitCommand));
       if (PRINT_DEBUG) Log.d("ProcessHelper", "Starting process...");

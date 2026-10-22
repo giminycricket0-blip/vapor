@@ -396,6 +396,9 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
       envVars.put("LD_PRELOAD", ldPreload.toString());
       Log.d("GuestLauncher", "execShellCommand LD_PRELOAD=" + ldPreload.toString());
     }
+    // Above target SDK 28, W^X denies exec of app-storage programs; the shim reroutes them.
+    String shellPreload = com.winlator.cmod.runtime.system.ExecShim.withShim(context, envVars.get("LD_PRELOAD"));
+    if (!shellPreload.isEmpty()) envVars.put("LD_PRELOAD", shellPreload);
     if (!"1".equals(envVars.get("PROTON_NO_ESYNC"))) envVars.put("WINEESYNC_WINLATOR", "1");
     mergeExternalEnvVars(
         envVars,
@@ -428,10 +431,14 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
     }
     try {
       Log.d("GuestProgramLauncherComponent", "Shell command is " + finalCommand);
+      // Same tokenisation as Runtime.exec(String); above target SDK 28 the shim wraps the launch.
+      java.util.StringTokenizer tokens = new java.util.StringTokenizer(finalCommand);
+      String[] shellArgv = new String[tokens.countTokens()];
+      for (int i = 0; i < shellArgv.length; i++) shellArgv[i] = tokens.nextToken();
       final java.lang.Process process =
           Runtime.getRuntime()
               .exec(
-                  finalCommand,
+                  com.winlator.cmod.runtime.system.ExecShim.launchArgv(shellArgv, envVars.get("LD_PRELOAD")),
                   envVars.toStringArray(),
                   workingDir != null ? workingDir : imageFs.getRootDir());
 
@@ -1265,6 +1272,8 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
       }
     }
 
+    // Above target SDK 28, W^X denies exec of app-storage programs; the shim reroutes them.
+    ld_preload = com.winlator.cmod.runtime.system.ExecShim.withShim(context, ld_preload);
     Log.d("GuestLauncher", "Final LD_PRELOAD: " + ld_preload);
     envVars.put("LD_PRELOAD", ld_preload);
 
