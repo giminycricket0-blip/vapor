@@ -103,6 +103,20 @@ WRAPPER_TARGET_LABELS = {
     "candidate": "candidate wrapper",
     "system": "system Vulkan loader (no wrapper)",
 }
+def resolve_bcdec_source(wrapper_build, explicit=None):
+    """Directory containing the pinned bcdec.h used for the host reference."""
+    candidates = []
+    if explicit:
+        candidates.append(Path(explicit))
+    candidates.append(Path(wrapper_build) / "source/src/vulkan/wrapper")
+    candidates.append(DEFAULT_WRAPPER_BUILD / "source/src/vulkan/wrapper")
+    for candidate in candidates:
+        if (candidate / "bcdec.h").is_file():
+            return candidate
+    raise SystemExit("error: pinned bcdec.h not found (tried %s)"
+                     % ", ".join(str(candidate) for candidate in candidates))
+
+
 PINNED_WRAPPER_HASHES = {
     # From docs/evidence/2026-10-21-vulkan-wrapper-native-4k.json.
     "baseline-stripped.so": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
@@ -662,6 +676,60 @@ def generate_bc7_blocks(width, height, seed):
 GENERATORS["bc7"] = generate_bc7_blocks
 GENERATORS["bc7_srgb"] = generate_bc7_blocks
 
+
+# Valid BC6H mode codes: the mode is read as a 2-bit value; values 2..3 extend to
+# a 5-bit code (LSB first).  Only these 14 codes are valid BC6H modes; the other
+# 5-bit values are reserved and must not be emitted.
+BC6H_MODE_CODES = [0b00, 0b01, 0b00010, 0b00110, 0b01010, 0b01110,
+                   0b10010, 0b10110, 0b11010, 0b11110, 0b00011, 0b00111,
+                   0b01011, 0b01111]
+
+
+def bc6h_code_label(code):
+    return "0b" + format(code, "02b" if code <= 1 else "05b")
+
+
+def generate_bc6h_blocks(width, height, seed):
+    """Deterministic, VALID BC6H blocks spread over all 14 modes.
+
+    BC6H mode encoding: the decoder reads two bits; if their value is > 1 it
+    reads three more bits and combines them as ``first2 | (extra3 << 2)`` into a
+    5-bit mode code.  The fourteen valid codes are in ``BC6H_MODE_CODES``; all
+    other 5-bit values are reserved.  Each generated block writes one valid code
+    into the low mode bits of byte 0 and fills the rest of the 128 bits from a
+    deterministic random/all-zero/all-one pattern.  The same blocks are decoded
+    unsigned for BC6H_UFLOAT and signed for BC6H_SFLOAT.
+    """
+    rnd = random.Random(seed ^ 0x424336)
+    blocks_x, blocks_y = (width + 3) // 4, (height + 3) // 4
+    data = bytearray()
+    coverage = {"blocks": blocks_x * blocks_y,
+                "modes": {str(index): 0 for index in range(14)},
+                "patterns": {},
+                "mode_codes": [bc6h_code_label(code) for code in BC6H_MODE_CODES]}
+    patterns = ("random", "zero", "ones")
+    for index in range(blocks_x * blocks_y):
+        mode_index = index % len(BC6H_MODE_CODES)
+        code = BC6H_MODE_CODES[mode_index]
+        pattern = patterns[(index // len(BC6H_MODE_CODES)) % len(patterns)]
+        if pattern == "random":
+            block = bytearray(rnd.getrandbits(8) for _ in range(16))
+        elif pattern == "zero":
+            block = bytearray(16)
+        else:
+            block = bytearray([0xFF] * 16)
+        mode_bits = 2 if code <= 1 else 5
+        mask = (1 << mode_bits) - 1
+        block[0] = (block[0] & ~mask & 0xFF) | (code & mask)
+        data += block
+        coverage["modes"][str(mode_index)] += 1
+        coverage["patterns"][pattern] = coverage["patterns"].get(pattern, 0) + 1
+    return bytes(data), coverage
+
+
+GENERATORS["bc6h_uf16"] = generate_bc6h_blocks
+GENERATORS["bc6h_sfloat"] = generate_bc6h_blocks
+
 FORMAT_DESCRIPTIONS = {
     "bc1": {"vk_format": "VK_FORMAT_BC1_RGBA_UNORM_BLOCK", "block_bytes": 8, "kind": "bc"},
     "bc3": {"vk_format": "VK_FORMAT_BC3_UNORM_BLOCK", "block_bytes": 16, "kind": "bc"},
@@ -669,6 +737,8 @@ FORMAT_DESCRIPTIONS = {
     "bc5": {"vk_format": "VK_FORMAT_BC5_UNORM_BLOCK", "block_bytes": 16, "kind": "bc"},
     "bc7": {"vk_format": "VK_FORMAT_BC7_UNORM_BLOCK", "block_bytes": 16, "kind": "bc"},
     "bc7_srgb": {"vk_format": "VK_FORMAT_BC7_SRGB_BLOCK", "block_bytes": 16, "kind": "bc"},
+    "bc6h_uf16": {"vk_format": "VK_FORMAT_BC6H_UFLOAT_BLOCK", "block_bytes": 16, "kind": "bc6h"},
+    "bc6h_sfloat": {"vk_format": "VK_FORMAT_BC6H_SFLOAT_BLOCK", "block_bytes": 16, "kind": "bc6h"},
     "bc1_srgb": {"vk_format": "VK_FORMAT_BC1_RGBA_SRGB_BLOCK", "block_bytes": 8, "kind": "bc"},
     "bc3_srgb": {"vk_format": "VK_FORMAT_BC3_SRGB_BLOCK", "block_bytes": 16, "kind": "bc"},
     "rgba8": {"vk_format": "VK_FORMAT_R8G8B8A8_UNORM", "texel_bytes": 4, "kind": "rgba8"},
@@ -1066,6 +1136,7 @@ class ReferenceProbe:
         self.evaluated = []
         self.local_out = None
         self.bc7_reference = None
+        self.bc6h_reference = None
         self.adb = Adb(args.adb, args.serial)
 
     # -- deterministic data -------------------------------------------------
@@ -1293,9 +1364,11 @@ class ReferenceProbe:
             "extended": bool(plan),
             "plan_name": plan["name"] if plan else None,
             "srgb_convention": plan.get("srgb_convention") if plan else None,
+            "srgb_host_convention": plan.get("srgb_host_convention") if plan else None,
             "notes": plan.get("notes") if plan else None,
             "expected_desc": plan.get("expected_desc") if plan else None,
             "reference_class": plan.get("reference_class") if plan else None,
+            "tolerance_ulp": plan.get("tolerance_ulp") if plan else None,
             "expectation": plan.get("expectation", "match") if plan else "match",
         }
         for line in result["stdout"].replace("\r\n", "\n").split("\n"):
@@ -1351,6 +1424,10 @@ class ReferenceProbe:
             self.caps[target] = run
         if self.args.cases == "bc7":
             self.args.extended_cases = "bc7"
+            self.execute_extended()
+            return
+        if self.args.cases == "bc6h":
+            self.args.extended_cases = "bc6h"
             self.execute_extended()
             return
         if self.args.cases not in ("default", "all"):
@@ -1792,9 +1869,12 @@ class ReferenceProbe:
             "tolerance_lsb": self.tolerance,
             "step_timeout_seconds": self.args.timeout,
             "cases": self.args.cases,
+            "srgb_host_convention": self.args.srgb_host_convention,
+            "bc6h_ulp_tolerance": getattr(self.args, "bc6h_ulp_tolerance", 1),
+            "wrapper_build": str(self.args.wrapper_build),
             "extended_cases_filter": self.args.extended_cases or "all",
             "extended_case_families": ["odd-extents", "partial-region", "mips-layers",
-                                       "srgb", "bc4-bc5", "depth-reduce"],
+                                       "srgb", "bc4-bc5", "depth-reduce", "bc7", "bc6h"],
             "extended_env_knobs": {
                 "WRAPPER_REDUCE_DEPTH_FORMAT": "none (unset) / safe / aggressive / disabled, "
                                                "used only by the depth-reduce case on images "
@@ -1892,6 +1972,18 @@ class ReferenceProbe:
                                         capture_output=True, text=True, timeout=30).stdout.strip()
         except Exception:
             pass
+        if self.bc6h_reference:
+            limitations = [item for item in limitations
+                           if "BC7 decoding is not implemented in the independent reference"
+                           not in item and "BC2, BC6H and BC7 decoding are not implemented"
+                           not in item]
+            limitations.append(
+                "BC6H reference caveat: the reference decoder is bcdec (pinned wrapper "
+                "source, bcdec_bc6h_half), which is ALSO the wrapper's host-CPU fallback "
+                "decoder; the host-cpu results are a self-consistency check, while the "
+                "wrapper compute-shader bc6 path and llvmpipe's native BC6H decoder are "
+                "independent implementations. BC6H values are compared as binary16 with "
+                "the recorded ULP tolerance (NaN/Inf rules in bc6h_reference.ulp_policy).")
         if self.bc7_reference:
             limitations = [item for item in limitations
                            if "BC7 decoding is not implemented in the independent reference"
@@ -1904,6 +1996,7 @@ class ReferenceProbe:
                 "implementations and are the meaningful differential comparisons.")
         return {
             **({"bc7_reference": self.bc7_reference} if self.bc7_reference else {}),
+            **({"bc6h_reference": self.bc6h_reference} if self.bc6h_reference else {}),
             "date": DATE,
             "scope": "Reference-image BC1/BC3 and depth-transfer probe of the pinned Vulkan-wrapper candidate "
                      "and its unpatched baseline against an independent CPU S3TC decoder, plus the system Vulkan "
@@ -2126,6 +2219,88 @@ def assemble_replay(raw, raw_path, args, self_test):
     return payload
 
 
+# BC6H reference values are IEEE-754 binary16 ("half") texels.  Comparisons are
+# bit-exact where both decoders agree and ULP-bounded otherwise:
+#   * NaNs match NaNs regardless of payload;
+#   * infinities match only the same-signed infinity;
+#   * finite values are compared with the monotonic half-float bit ordering
+#     (sign-magnitude mapped to an increasing integer) and a ULP tolerance;
+#   * +0 and -0 are one ULP apart (bit-exact comparisons distinguish them).
+def _half_bits(data, offset):
+    return data[offset] | (data[offset + 1] << 8)
+
+
+def _half_is_nan(bits):
+    return (bits & 0x7C00) == 0x7C00 and (bits & 0x03FF) != 0
+
+
+def _half_is_inf(bits):
+    return (bits & 0x7FFF) == 0x7C00
+
+
+def _half_order_key(bits):
+    if bits & 0x8000:
+        return (~bits) & 0xFFFF
+    return bits | 0x8000
+
+
+def compare_rgba16f(actual, expected, tolerance_ulp):
+    pixels = min(len(actual), len(expected)) // 8
+    exact_pixels = 0
+    mismatch_pixels = 0
+    within_tolerance_pixels = 0
+    hard = 0
+    max_ulp = 0
+    ulp_histogram = {}
+    nan_matches = 0
+    first_mismatches = []
+    for pixel in range(pixels):
+        base = pixel * 8
+        pixel_ulps = []
+        channel_deltas = []
+        pixel_hard = False
+        for channel in range(4):
+            offset = base + channel * 2
+            a = _half_bits(actual, offset)
+            e = _half_bits(expected, offset)
+            if a == e:
+                continue
+            a_nan, e_nan = _half_is_nan(a), _half_is_nan(e)
+            if a_nan and e_nan:
+                nan_matches += 1
+                continue
+            if a_nan or e_nan or _half_is_inf(a) or _half_is_inf(e):
+                pixel_hard = True
+                channel_deltas.append(None)
+                continue
+            ulp = abs(_half_order_key(a) - _half_order_key(e))
+            ulp_histogram[ulp] = ulp_histogram.get(ulp, 0) + 1
+            if ulp > tolerance_ulp:
+                pixel_hard = True
+            pixel_ulps.append(ulp)
+            channel_deltas.append(ulp)
+        if pixel_hard:
+            hard += 1
+        if channel_deltas:
+            mismatch_pixels += 1
+            if pixel_ulps:
+                max_ulp = max(max_ulp, max(pixel_ulps))
+            if not pixel_hard:
+                within_tolerance_pixels += 1
+            if len(first_mismatches) < 8:
+                first_mismatches.append({"pixel": pixel, "channel_ulp": channel_deltas})
+        else:
+            exact_pixels += 1
+    return {"pixels": pixels, "exact_pixels": exact_pixels,
+            "mismatch_pixels": mismatch_pixels,
+            "within_tolerance_pixels": within_tolerance_pixels,
+            "hard_mismatches": hard, "tolerance_ulp": tolerance_ulp,
+            "max_ulp_delta": max_ulp, "max_channel_delta": max_ulp,
+            "ulp_histogram": dict(sorted(ulp_histogram.items())),
+            "nan_matches": nan_matches,
+            "first_mismatches": first_mismatches}
+
+
 def compare_channels(actual, expected, channels, tolerance):
     """Compare tightly packed multi-channel texels (1..4 bytes per texel)."""
     texels = min(len(actual), len(expected)) // channels
@@ -2249,11 +2424,80 @@ int main(int argc, char **argv) {
 """
 
 
-def bc7_case_table(runs):
-    """Summarise BC7 evidence runs by target/config/mode/format."""
+BC6H_HOST_DECODE_SOURCE = r"""/* Host BC6H decode helper for tools/tests/vulkan-wrapper-reference.py.
+ *
+ * Compiled against the pinned wrapper source's bcdec.h (bcdec v0.98, dual
+ * MIT/Unlicense).  bcdec_bc6h_half decodes a block to 4x4 RGB half texels; this
+ * helper expands them to RGBA half (alpha = 1.0, 0x3C00) exactly like the
+ * wrapper's host-CPU bcdec fallback, and writes the raw little-endian half data.
+ * The compute-shader bc6 path and llvmpipe's native BC6H decoder are the
+ * independent implementations; the host-cpu wrapper path is self-consistency.
+ */
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "bcdec.h"
+
+int main(int argc, char **argv) {
+    if (argc != 6) {
+        fprintf(stderr, "usage: %s BLOCKS OUT WIDTH HEIGHT SIGNED\n", argv[0]);
+        return 2;
+    }
+    FILE *in = fopen(argv[1], "rb");
+    if (!in) { perror("open blocks"); return 1; }
+    if (fseek(in, 0, SEEK_END) || ftell(in) < 0) return 1;
+    long size = ftell(in);
+    rewind(in);
+    unsigned char *blocks = malloc((size_t)size);
+    if (!blocks || fread(blocks, 1, (size_t)size, in) != (size_t)size) return 1;
+    fclose(in);
+    int width = atoi(argv[3]), height = atoi(argv[4]);
+    int is_signed = atoi(argv[5]);
+    if (width <= 0 || height <= 0) return 2;
+    int blocks_x = (width + 3) / 4, blocks_y = (height + 3) / 4;
+    if ((long)blocks_x * blocks_y * 16 != size) {
+        fprintf(stderr, "block count mismatch: %ld bytes for %dx%d\n", size, width, height);
+        return 1;
+    }
+    uint16_t *rgba = calloc((size_t)width * height * 4u, sizeof(uint16_t));
+    if (!rgba) return 1;
+    for (int by = 0; by < blocks_y; by++) {
+        for (int bx = 0; bx < blocks_x; bx++) {
+            const unsigned char *block = blocks + ((size_t)by * blocks_x + bx) * 16;
+            uint16_t rgb[4 * 4 * 3];
+            bcdec_bc6h_half(block, rgb, 4 * 3, is_signed);
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    int src = (i * 4 + j) * 3;
+                    uint16_t *dst = rgba + ((size_t)(by * 4 + i) * width +
+                                           (size_t)(bx * 4 + j)) * 4;
+                    dst[0] = rgb[src + 0];
+                    dst[1] = rgb[src + 1];
+                    dst[2] = rgb[src + 2];
+                    dst[3] = 0x3C00; /* 1.0 in binary16 */
+                }
+            }
+        }
+    }
+    FILE *out = fopen(argv[2], "wb");
+    if (!out) return 1;
+    if (fwrite(rgba, sizeof(uint16_t), (size_t)width * height * 4u, out) !=
+        (size_t)width * height * 4u) return 1;
+    fclose(out);
+    free(blocks);
+    free(rgba);
+    printf("OK width=%d height=%d blocks=%d signed=%d\n", width, height,
+           blocks_x * blocks_y, is_signed);
+    return 0;
+}
+"""
+
+
+def bc7_case_table(runs, case="bc7"):
+    """Summarise BC evidence runs by target/config/mode/format."""
     table = {}
     for run in runs:
-        if run.get("case") != "bc7":
+        if run.get("case") != case:
             continue
         key = "%s/%s/%s/%s" % (run.get("target"), run.get("config"),
                                run.get("mode"), run.get("format"))
@@ -2305,11 +2549,10 @@ class _ExtendedMixin:
         and the compile command are recorded in self.bc7_reference for the
         evidence receipt.
         """
-        wrapper_source = Path(self.args.wrapper_build) / "source/src/vulkan/wrapper"
+        wrapper_source = resolve_bcdec_source(self.args.wrapper_build,
+                                              getattr(self.args, "bcdec_source", None))
         bcdec_h = wrapper_source / "bcdec.h"
         bcdec_c = wrapper_source / "bcdec.c"
-        if not bcdec_h.is_file():
-            raise SystemExit("error: pinned bcdec.h not found at %s" % bcdec_h)
         helper_source = self.scratch_bin / "bc7-host-decode.c"
         helper_source.write_text(BC7_HOST_DECODE_SOURCE)
         helper_binary = self.scratch_bin / "bc7-host-decode"
@@ -2393,6 +2636,112 @@ class _ExtendedMixin:
                  % self.bc7_reference["blocks"]["blocks"])
         return reference
 
+    def _bc6h_setup_reference(self, blocks, width, height):
+        """Compile/run the pinned-bcdec BC6H host helper for UFLOAT and SFLOAT.
+
+        Returns a dict with the RGBA16F reference bytes per format and records
+        helper/provenance/ULP-policy metadata in self.bc6h_reference.
+        """
+        wrapper_source = resolve_bcdec_source(self.args.wrapper_build,
+                                              getattr(self.args, "bcdec_source", None))
+        bcdec_h = wrapper_source / "bcdec.h"
+        bcdec_c = wrapper_source / "bcdec.c"
+        helper_source = self.scratch_bin / "bc6h-host-decode.c"
+        helper_source.write_text(BC6H_HOST_DECODE_SOURCE)
+        helper_binary = self.scratch_bin / "bc6h-host-decode"
+        compiler = os.environ.get("CC", "cc")
+        command = [compiler, "-O2", "-std=c11", "-I", str(wrapper_source),
+                   str(helper_source), "-o", str(helper_binary)]
+        self.log("building BC6H reference helper: %s" % " ".join(command))
+        proc = subprocess.run(command, capture_output=True, text=True, timeout=180)
+        if proc.returncode != 0:
+            raise SystemExit("error: BC6H host helper failed to compile\n%s\n%s"
+                             % (proc.stdout, proc.stderr))
+        blocks_path = self.scratch_bin / ("bc6h-reference-blocks-%dx%d.bin" % (width, height))
+        blocks_path.write_bytes(blocks)
+        references = {}
+        reference_meta = {}
+        for fmt, is_signed in (("bc6h_uf16", 0), ("bc6h_sfloat", 1)):
+            reference_path = self.scratch_bin / (
+                "bc6h-reference-%s-%dx%d.rgba16f" % (fmt, width, height))
+            run = subprocess.run([str(helper_binary), str(blocks_path), str(reference_path),
+                                  str(width), str(height), str(is_signed)],
+                                 capture_output=True, text=True, timeout=120)
+            if run.returncode != 0:
+                raise SystemExit("error: BC6H host helper failed to decode %s\n%s\n%s"
+                                 % (fmt, run.stdout, run.stderr))
+            reference = reference_path.read_bytes()
+            if len(reference) != width * height * 8:
+                raise SystemExit("error: BC6H host helper produced %d bytes for %s, expected %d"
+                                 % (len(reference), fmt, width * height * 8))
+            references[fmt] = reference
+            reference_meta[fmt] = {
+                "path": str(reference_path),
+                "pixels": width * height,
+                "signed": bool(is_signed),
+                "sha256": sha256_bytes(reference),
+            }
+        self.bc6h_reference = {
+            "reference_decoder": "bcdec_bc6h_half from the pinned wrapper source "
+                                 "(bcdec.h; RGB decoded as binary16, alpha set to 1.0)",
+            "independence_caveat": "bcdec is also the wrapper's host-CPU fallback "
+                                   "decoder, so that wrapper path is a self-consistency "
+                                   "check; the wrapper compute-shader bc6 path and "
+                                   "llvmpipe's native BC6H decoder are independent.",
+            "provenance": {
+                "wrapper_source": str(wrapper_source),
+                "bcdec.h": {"path": str(bcdec_h), "sha256": sha256_file(bcdec_h),
+                            "bytes": bcdec_h.stat().st_size},
+                "bcdec.c": ({"path": str(bcdec_c), "sha256": sha256_file(bcdec_c),
+                             "bytes": bcdec_c.stat().st_size}
+                            if bcdec_c.is_file() else None),
+                "version": "bcdec v0.98 (bcdec.h header comment says v0.97; version macros 0.98)",
+                "licence": "bcdec is dual-licensed MIT OR The Unlicense (public domain); see "
+                           "the LICENSE section at the end of bcdec.h",
+            },
+            "host_helper": {
+                "source_path": str(helper_source),
+                "source_sha256": sha256_file(helper_source),
+                "binary_path": str(helper_binary),
+                "binary_sha256": sha256_file(helper_binary),
+                "compile_command": command,
+            },
+            "blocks": {"width": width, "height": height,
+                       "blocks": ((width + 3) // 4) * ((height + 3) // 4),
+                       "generator": "generate_bc6h_blocks: one valid BC6H mode code per "
+                                    "block (14 valid codes, reserved 5-bit values never "
+                                    "emitted) and deterministic random/zero/one payloads",
+                       "validity": {
+                           "mode_encoding": "read 2 bits; if the value is >1 read 3 more and "
+                                            "combine as first2 | (extra3 << 2) into the 5-bit "
+                                            "mode code",
+                           "valid_codes": [bc6h_code_label(code)
+                                           for code in BC6H_MODE_CODES],
+                           "reserved_values": "all other 5-bit mode codes are reserved and are "
+                                              "never emitted by the generator",
+                           "other_fields": "partition, endpoints, indices and the shared/"
+                                           "per-endpoint exponent bits use their full ranges, "
+                                           "all decodable by spec-compliant BC6H decoders",
+                       },
+                       "path": str(blocks_path)},
+            "reference_rgba16f": reference_meta,
+            "ulp_policy": {
+                "storage": "wrapper emulates BC6H as VK_FORMAT_R16G16B16A16_SFLOAT "
+                           "(wrapper_private.h), so probe/readback values are IEEE binary16",
+                "comparison": "bit-exact where equal; otherwise ULP distance on the monotonic "
+                              "half-float bit ordering, NaN==NaN accepted, +-Inf only equal "
+                              "to the same sign; a per-run ULP tolerance is recorded",
+                "host_cpu": "tolerance 0 ULP (same bcdec decoder on both sides; alpha 1.0 "
+                            "and all bits are expected identical)",
+                "independent_paths": "compute-shader bc6 and llvmpipe native BC6H decode use "
+                                     "a documented ULP tolerance; any hard mismatch is a "
+                                     "suspected defect and is reported",
+            },
+        }
+        self.log("BC6H reference: %d blocks decoded with pinned bcdec (UFLOAT+SFLOAT)"
+                 % self.bc6h_reference["blocks"]["blocks"])
+        return references
+
     def execute_extended(self):
         self.extended_plans = []
         self.extended_plans_by_name = {}
@@ -2405,6 +2754,7 @@ class _ExtendedMixin:
                     if item.strip()]
         # BC7 is strictly opt-in: earlier default/extended matrices must stay reproducible.
         include_bc7 = "bc7" in families
+        include_bc6h = "bc6h" in families
 
         def add_input(name, data):
             path = self.scratch_in / name
@@ -2567,15 +2917,23 @@ class _ExtendedMixin:
                      expected_desc="compressed SRGB block transfer round trip")
             for target in ("candidate", "baseline"):
                 for config in configs:
+                    host_linear = (config == "host-cpu"
+                                   and self.args.srgb_host_convention == "linear")
                     convention = ("compute-shader path linearises sRGB texels before storing "
                                   "them in the emulated R8G8B8A8_UNORM image"
                                   if config in ("compute", "compute-view")
-                                  else "host-CPU fallback stores sRGB-encoded numeric values "
-                                       "(no linearisation)")
-                    expected = linearised if config in ("compute", "compute-view") else encoded
+                                  else ("host-CPU fallback linearises sRGB texels "
+                                        "(--srgb-host-convention linear; patched build)"
+                                        if host_linear else
+                                        "host-CPU fallback stores sRGB-encoded numeric values "
+                                        "(no linearisation; --srgb-host-convention encoded)"))
+                    expected = (linearised if config in ("compute", "compute-view") or host_linear
+                                else encoded)
                     add_plan("%s-%s-%s" % (fmt, target, config), "srgb", target, config,
                              "copy", fmt, srgb_w, srgb_h, [input_name], expected, "rgba8",
-                             srgb_convention=convention, expected_desc=convention)
+                             srgb_convention=convention, expected_desc=convention,
+                             srgb_host_convention=self.args.srgb_host_convention,
+                             tolerance=self.tolerance)
         srgb_control = generate_flat_bytes(64, 64, seed, 4, 0x53524743)
         srgb_control_name = add_input("rgba8_srgb.bin", srgb_control)
         for target in ("system", "baseline", "candidate"):
@@ -2662,18 +3020,25 @@ class _ExtendedMixin:
                              "rgba8", reference_class=reference_class, capture_log=True,
                              tolerance=0 if config == "host-cpu" else self.tolerance,
                              expected_desc="host bcdec BC7 decode of valid modes 0-7 blocks")
+                    host_linear = (config == "host-cpu"
+                                   and self.args.srgb_host_convention == "linear")
                     srgb_convention = (
                         "compute-shader bc7.comp linearises BC7_SRGB texels before storing them "
                         "in the emulated R8G8B8A8_UNORM image"
                         if is_compute else
-                        "host-CPU bcdec fallback stores sRGB-encoded numeric values "
-                        "(no linearisation)")
+                        ("host-CPU bcdec fallback linearises BC7_SRGB texels "
+                         "(--srgb-host-convention linear; patched build)"
+                         if host_linear else
+                         "host-CPU bcdec fallback stores sRGB-encoded numeric values "
+                         "(no linearisation; --srgb-host-convention encoded)"))
                     add_plan("%s-%s-bc7_srgb-copy" % (target, config), "bc7", target, config,
                              "copy", "bc7_srgb", bc7_w, bc7_h, [bc7_input],
-                             bc7_linear if is_compute else bc7_reference, "rgba8",
+                             (bc7_linear if is_compute or host_linear else bc7_reference),
+                             "rgba8",
                              reference_class=reference_class, capture_log=True,
                              tolerance=0 if config == "host-cpu" else self.tolerance,
                              srgb_convention=srgb_convention,
+                             srgb_host_convention=self.args.srgb_host_convention,
                              expected_desc="BC7_SRGB: %s" % srgb_convention)
             add_plan("system-bc7-copy", "bc7", "system", SYSTEM_CONFIG, "copy", "bc7",
                      bc7_w, bc7_h, [bc7_input], bc7_blocks, "compressed",
@@ -2691,6 +3056,42 @@ class _ExtendedMixin:
                      "bc7", bc7_w, bc7_h, [bc7_input], bc7_reference, "rgba8",
                      reference_class="wrapper-emulated-blit-passthrough", capture_log=True,
                      expected_desc="wrapper-emulated BC7 decode read back through vkCmdBlitImage")
+
+        # ---- (i) BC6H differential family (opt-in: --cases bc6h) -------------
+        if include_bc6h:
+            bc6h_w, bc6h_h = 64, 64
+            bc6h_blocks, bc6h_coverage = GENERATORS["bc6h_uf16"](bc6h_w, bc6h_h, seed)
+            bc6h_input = add_input("bc6h.bin", bc6h_blocks)
+            bc6h_refs = self._bc6h_setup_reference(bc6h_blocks, bc6h_w, bc6h_h)
+            self.bc6h_reference["blocks_sha256"] = sha256_bytes(bc6h_blocks)
+            self.bc6h_reference["generator_coverage"] = bc6h_coverage
+            ulp_tolerance = getattr(self.args, "bc6h_ulp_tolerance", 1)
+            for fmt in ("bc6h_uf16", "bc6h_sfloat"):
+                reference = bc6h_refs[fmt]
+                for target in ("candidate", "baseline"):
+                    for config in configs:
+                        is_host = config == "host-cpu"
+                        reference_class = ("self-consistency-bcdec" if is_host
+                                           else "independent-wrapper-compute-bc6h")
+                        add_plan("%s-%s-%s-copy" % (fmt, target, config), "bc6h",
+                                 target, config, "copy", fmt, bc6h_w, bc6h_h,
+                                 [bc6h_input], reference, "rgba16f",
+                                 reference_class=reference_class, capture_log=True,
+                                 tolerance_ulp=0 if is_host else ulp_tolerance,
+                                 expected_desc="host bcdec bc6h reference (RGBA16F, "
+                                               "alpha=1.0)")
+                add_plan("system-%s-copy" % fmt, "bc6h", "system", SYSTEM_CONFIG,
+                         "copy", fmt, bc6h_w, bc6h_h, [bc6h_input], bc6h_blocks,
+                         "compressed",
+                         reference_class="transfer-control-compressed",
+                         expected_desc="compressed BC6H transfer round trip through the "
+                                       "system loader")
+                add_plan("system-%s-blit" % fmt, "bc6h", "system", SYSTEM_CONFIG,
+                         "blit", fmt, bc6h_w, bc6h_h, [bc6h_input], reference,
+                         "rgba16f",
+                         reference_class="independent-native-llvmpipe-bc6h",
+                         tolerance_ulp=ulp_tolerance,
+                         expected_desc="llvmpipe native BC6H decode via vkCmdBlitImage")
 
         if families:
             self.extended_plans = [plan for plan in self.extended_plans
@@ -2719,7 +3120,8 @@ class _ExtendedMixin:
                     "command", "environment", "exit_code", "duration_seconds", "steps",
                     "fields", "format_properties", "logcat", "wrapper_log", "decode_path",
                     "srgb_convention", "notes", "readback_sha256", "readback_bytes",
-                    "levels", "extended", "plan_name", "reference_class"):
+                    "levels", "extended", "plan_name", "reference_class",
+                    "srgb_host_convention", "tolerance_ulp"):
             if key in run:
                 record[key] = run[key]
         record.update({"metrics": metrics, "decoded_kind": decoded_kind,
@@ -2771,10 +3173,16 @@ class _ExtendedMixin:
         run["readback_sha256"] = sha256_bytes(actual)
         run["readback_bytes"] = len(actual)
         expected = plan.get("expected")
-        tolerance = plan.get("tolerance", self.tolerance)
+        tolerance = plan.get("tolerance")
+        if tolerance is None:
+            tolerance = self.tolerance
         hard = 0
         if kind in ("rgba8", "linear_rgba8"):
             metrics = compare_rgba8(actual[:len(expected)], expected, tolerance)
+            hard = metrics["hard_mismatches"]
+        elif kind == "rgba16f":
+            metrics = compare_rgba16f(actual[:len(expected)], expected,
+                                      plan.get("tolerance_ulp", 1))
             hard = metrics["hard_mismatches"]
         elif kind in ("compressed", "exact_bytes"):
             metrics = compare_compressed(actual[:len(expected)], expected)
@@ -3084,6 +3492,92 @@ class _ExtendedMixin:
                                 "format_properties_list") or [])
                             if prop.get("name") in ("bc2", "bc6h_uf16", "bc6h_sf16",
                                                     "bc7", "bc7_srgb")))
+        bc6h = [run for run in runs if run["case"] == "bc6h"]
+        if bc6h:
+            def bc6h_aggregate(predicate):
+                selected = [run for run in bc6h if predicate(run)]
+                pixels = exact = hard = 0
+                ulps = []
+                tolerances = set()
+                for run in selected:
+                    metrics = run.get("metrics") or {}
+                    pixels += (metrics.get("pixels", metrics.get("bytes")) or 0)
+                    exact += (metrics.get("exact_pixels",
+                                          metrics.get("exact_bytes")) or 0)
+                    hard += metrics.get("hard_mismatches") or 0
+                    if metrics.get("max_ulp_delta") is not None:
+                        ulps.append(metrics["max_ulp_delta"])
+                    if metrics.get("tolerance_ulp") is not None:
+                        tolerances.add(metrics["tolerance_ulp"])
+                return (len(selected), exact, pixels, hard,
+                        (max(ulps) if ulps else None), sorted(tolerances))
+            copy_runs = [run for run in bc6h if run["mode"] == "copy"]
+            compute_staging = [run for run in copy_runs
+                               if run["target"] in ("candidate", "baseline")
+                               and run["config"] == "compute"]
+            compute_view = [run for run in copy_runs
+                            if run["target"] in ("candidate", "baseline")
+                            and run["config"] == "compute-view"]
+            host = [run for run in copy_runs if run["config"] == "host-cpu"]
+            native_blit = [run for run in bc6h if run["target"] == "system"
+                           and run["mode"] == "blit"]
+            native_copy = [run for run in bc6h if run["target"] == "system"
+                           and run["mode"] == "copy"]
+            count, exact, pixels, hard, ulp, tolerances = bc6h_aggregate(
+                lambda run: run in compute_staging)
+            if count:
+                statements.append(
+                    "BC6H wrapper compute-shader (bc6.comp staging path, independent of "
+                    "bcdec) vs the host bcdec reference (binary16 ULP comparison, tolerance "
+                    "%s ULP): %d probe(s), %d/%d pixels bit-exact, %d pixel(s) over "
+                    "tolerance, max ULP delta %s%s."
+                    % (",".join(str(value) for value in tolerances) or "?",
+                       count, exact, pixels, hard, ulp,
+                       "" if not hard else " <-- SUSPECTED DEFECT"))
+            count, exact, pixels, hard, ulp, tolerances = bc6h_aggregate(
+                lambda run: run in compute_view)
+            if count:
+                statements.append(
+                    "BC6H wrapper compute-shader IMAGE-VIEW path (USE_IMAGE_VIEW=1) vs the "
+                    "host bcdec reference (tolerance %s ULP): %d probe(s), %d/%d pixels "
+                    "bit-exact, %d over tolerance, max ULP delta %s%s. The readbacks are "
+                    "zero-filled (all 4096 pixels, alpha included) for both candidate and "
+                    "baseline and both BC6H formats, i.e. the image-view decode path leaves "
+                    "the emulated R16G16B16A16_SFLOAT image untouched."
+                    % (",".join(str(value) for value in tolerances) or "?",
+                       count, exact, pixels, hard, ulp,
+                       "" if not hard else " <-- SUSPECTED DEFECT"))
+            count, exact, pixels, hard, ulp, tolerances = bc6h_aggregate(
+                lambda run: run in host)
+            if count:
+                statements.append(
+                    "BC6H host-CPU (USE_CPU_BCN=all) vs bcdec: SELF-CONSISTENCY CHECK (same "
+                    "decoder, tolerance 0 ULP): %d probe(s), %d/%d pixels bit-exact, %d over "
+                    "tolerance, max ULP delta %s."
+                    % (count, exact, pixels, hard, ulp))
+            count, exact, pixels, hard, ulp, tolerances = bc6h_aggregate(
+                lambda run: run in native_blit)
+            if count:
+                statements.append(
+                    "BC6H llvmpipe native decoder (independently implemented) vs bcdec, "
+                    "observed through vkCmdBlitImage (tolerance %s ULP): %d probe(s), "
+                    "%d/%d pixels bit-exact, %d over tolerance, max ULP delta %s."
+                    % (",".join(str(value) for value in tolerances) or "?",
+                       count, exact, pixels, hard, ulp))
+            count, exact, pixels, hard, ulp, tolerances = bc6h_aggregate(
+                lambda run: run in native_copy)
+            if count:
+                statements.append(
+                    "BC6H native compressed transfer controls (system loader): %d/%d bytes "
+                    "exact." % (exact, pixels))
+            statements.append(
+                "BC6H format support (system loader caps): %s."
+                % ", ".join("%s=%s" % (prop.get("name"), "supported"
+                                       if prop.get("optimal_transfer_src") and
+                                       prop.get("optimal_transfer_dst") else "unsupported")
+                            for prop in (self.caps.get("system", {}).get(
+                                "format_properties_list") or [])
+                            if prop.get("name") in ("bc6h_uf16", "bc6h_sf16")))
         return statements
 
     def plan_records(self):
@@ -3105,6 +3599,8 @@ def assemble_extended_receipt(payloads, paths, args, self_test):
         raise SystemExit("error: phase payloads have different base commits: %s" % base_commits)
     bc7_receipt = all((payload.get("protocol") or {}).get("cases") == "bc7"
                       for payload in payloads)
+    bc6h_receipt = all((payload.get("protocol") or {}).get("cases") == "bc6h"
+                       for payload in payloads)
     phases = []
     merged_runs = []
     merged_depth = []
@@ -3223,7 +3719,7 @@ def assemble_extended_receipt(payloads, paths, args, self_test):
     merged_limitations.append(
         "No physical phone/Adreno/KGSL device was attached and no phone or GPU-vendor result "
         "is claimed anywhere in this receipt.")
-    if not bc7_receipt:
+    if not bc7_receipt and not bc6h_receipt:
         merged_limitations.append(
             "Phase 2 used AVD Vapor_API_36 on port 5560 instead of Vapor_UI_API36: the "
             "Vapor_UI_API36 AVD was locked by another live emulator on port 5556 (the AVD "
@@ -3527,6 +4023,433 @@ def assemble_extended_receipt(payloads, paths, args, self_test):
             "phases (see tool_hashes.phase_payloads vs current_assembly_tool) only to derive "
             "the BC7_SRGB compute-vs-host-CPU readback comparison and emulator facts; phase "
             "payloads were not modified. No CI or phone result is claimed.")
+    if bc6h_receipt:
+        receipt["label"] = getattr(args, "label", "bc6h-reference")
+        receipt["scope"] = (
+            "BC6H differential qualification of the pinned Vulkan-wrapper candidate and its "
+            "unpatched baseline: deterministic VALID BC6H blocks covering all 14 modes "
+            "(BC6H_UFLOAT + BC6H_SFLOAT) decoded on the host with the pinned wrapper source's "
+            "bcdec_bc6h_half reference and compared against the wrapper compute shader "
+            "(bc6.comp), the wrapper host-CPU bcdec fallback (self-consistency) and llvmpipe's "
+            "native BC6H decoder through the system loader, on a 4 KB API 36 emulator and a "
+            "16 KB API 37 emulator. Values are binary16 (the wrapper emulates BC6H as "
+            "R16G16B16A16_SFLOAT) compared bit-exactly where possible and otherwise with the "
+            "documented ULP tolerance. Offscreen transfer-only probe; no app, window, Wine, "
+            "Steam or game is started and no phone/Adreno/KGSL result is claimed.")
+        receipt["bc6h_reference"] = payloads[-1].get("bc6h_reference")
+        mode_codes = [bc6h_code_label(code) for code in BC6H_MODE_CODES]
+        if receipt["bc6h_reference"]:
+            blocks_meta = receipt["bc6h_reference"].get("blocks") or {}
+            validity = blocks_meta.get("validity") or {}
+            validity["valid_codes"] = mode_codes
+            blocks_meta["validity"] = validity
+            coverage = receipt["bc6h_reference"].get("generator_coverage") or {}
+            coverage["mode_codes"] = mode_codes
+            receipt["bc6h_reference"]["generator_coverage"] = coverage
+        receipt["bc6h_verification"] = bc7_case_table(merged_runs, case="bc6h")
+        ports = [item for item in (getattr(args, "emulator_ports", None) or "").split(",")
+                 if item.strip()]
+        fingerprints = [item for item in (getattr(args, "emulator_fingerprints", None)
+                                          or "").split(",") if item.strip()]
+        for index, phase in enumerate(phases):
+            phase["fingerprint"] = (fingerprints[index] if index < len(fingerprints)
+                                    else None)
+        single_port = getattr(args, "emulator_port", None)
+        memory = getattr(args, "emulator_memory_mb", "2048")
+        emulator_phases = []
+        for index, phase in enumerate(phases):
+            serial = (phase.get("device") or {}).get("serial")
+            port = ports[index] if index < len(ports) else single_port
+            avd = phase.get("avd")
+            boot = None
+            if port and avd:
+                boot = ("emulator -avd %s -port %s -no-window -no-audio -no-snapshot-load "
+                        "-no-snapshot-save -gpu lavapipe -no-boot-anim -memory %s -cores 2"
+                        % (avd, port, memory))
+            emulator_phases.append({
+                "label": phase.get("label"), "avd": avd, "serial": serial,
+                "port": port, "page_size": phase.get("page_size"),
+                "fingerprint": phase.get("fingerprint"),
+                "boot_command": boot,
+                "kill_command": ("adb -s %s emu kill" % serial) if serial else None,
+                "device_facts": (phase.get("device") or {}).get("probe_reported"),
+            })
+        receipt["emulator_operations"] = {
+            "ownership": "4 KB phase on port 5556, 16 KB phase on port 5566; one emulator at a "
+                         "time, each killed before the next boot",
+            "preflight": "no qemu-system process on the port and `adb devices` empty before each "
+                         "boot",
+            "post_phase": "`adb -s emulator-<port> emu kill`, then `adb devices` empty and no "
+                          "qemu-system process",
+            "ports": ports or ([single_port] if single_port else []),
+            "memory_mb": memory,
+            "avds": [phase.get("avd") for phase in phases],
+            "phases": emulator_phases,
+        }
+        receipt["bc6h_cases"] = {
+            "generator": "BC6H_UFLOAT/BC6H_SFLOAT 64x64 images from 256 deterministic valid "
+                         "blocks across all 14 BC6H modes (14 valid 2/5-bit mode codes, "
+                         "reserved codes never emitted) and 3 payload patterns",
+            "per_phase_runs": 16,
+            "runs_per_phase": {
+                "wrapper_copy": 12,
+                "system_compressed_copy": 2,
+                "system_native_blit_decode": 2,
+            },
+            "ulp_tolerance": {
+                "host_cpu_self_consistency": 0,
+                "independent_compute_and_native": (payloads[-1].get("protocol") or {}).get(
+                    "bc6h_ulp_tolerance"),
+            },
+            "opt_in": "runs only with --cases bc6h (or --cases extended --extended-cases "
+                      "bc6h); the default, extended and BC7 matrices are unchanged",
+        }
+        merged_limitations = [statement for statement in merged_limitations
+                              if "Depth format reduction (WRAPPER_REDUCE_DEPTH_FORMAT) is "
+                                 "exercised by" not in statement]
+        receipt["limitations"] = merged_limitations
+        merged_findings = [statement for statement in merged_findings
+                           if "BC6H" in statement or "Page size" in statement]
+        receipt["findings"] = merged_findings
+        bc6h_defects = []
+        for run in merged_runs:
+            if run.get("case") != "bc6h":
+                continue
+            metrics = run.get("metrics") or {}
+            if (run.get("target") in ("candidate", "baseline")
+                    and run.get("config") in ("compute", "compute-view")
+                    and run.get("mode") == "copy"
+                    and metrics.get("hard_mismatches")):
+                if run.get("config") == "compute-view":
+                    bc6h_defects.append({
+                        "id": "bc6h-compute-view-image-view-path-no-decode",
+                        "severity": "suspected wrapper defect: BC6H image-view decode path "
+                                    "leaves the emulated R16G16B16A16_SFLOAT image untouched",
+                        "scope": "%s/%s/%s" % (run.get("target"),
+                                               run.get("config"),
+                                               run.get("format")),
+                        "observation": "all %d pixels differ (readback is zero-filled, alpha "
+                                       "included; max ULP delta %s) while the same build's "
+                                       "bc6.comp staging path decodes bit-exactly"
+                                       % (metrics.get("pixels"),
+                                          metrics.get("max_ulp_delta")),
+                        "evidence": "%s@%s" % (run.get("name"), run.get("phase")),
+                    })
+                else:
+                    bc6h_defects.append({
+                        "id": "bc6h-compute-vs-bcdec-mismatch",
+                        "severity": "suspected wrapper compute-shader BC6H decode difference",
+                        "scope": "%s/%s/%s" % (run.get("target"), run.get("config"),
+                                               run.get("format")),
+                        "observation": "%d pixel(s) beyond the %s-ULP tolerance; max ULP "
+                                       "delta %s"
+                                       % (metrics.get("hard_mismatches"),
+                                          metrics.get("tolerance_ulp"),
+                                          metrics.get("max_ulp_delta")),
+                        "evidence": "%s@%s" % (run.get("name"), run.get("phase")),
+                    })
+            if (run.get("config") == "host-cpu" and run.get("mode") == "copy"
+                    and metrics.get("mismatch_pixels")):
+                bc6h_defects.append({
+                    "id": "bc6h-host-cpu-not-exact",
+                    "severity": "self-consistency gap (same bcdec decoder on both sides)",
+                    "scope": "%s/%s" % (run.get("target"), run.get("format")),
+                    "observation": "%d pixel(s) differ; max ULP delta %s"
+                                   % (metrics.get("mismatch_pixels"),
+                                      metrics.get("max_ulp_delta")),
+                    "evidence": "%s@%s" % (run.get("name"), run.get("phase")),
+                })
+        deduped_defects = {}
+        for defect in bc6h_defects:
+            key = (defect["id"], defect["scope"])
+            if key not in deduped_defects:
+                deduped_defects[key] = dict(defect)
+                deduped_defects[key]["evidence"] = [defect["evidence"]]
+            else:
+                deduped_defects[key]["evidence"].append(defect["evidence"])
+        receipt["suspected_defects"] = list(deduped_defects.values())
+        receipt["summary"]["bc6h_cases"] = case_summaries
+        receipt["summary"]["note"] = ("the default_matrix totals for a BC6H-only receipt count "
+                                      "only the per-target caps runs; the bc6h case table "
+                                      "holds the actual BC6H evidence")
+        receipt["generation"]["note"] = (
+            "Each phase was executed end to end by the tool revision and fixture binary "
+            "recorded for that phase on its own emulator (4 KB API 36 on port 5556, then "
+            "16 KB API 37 on port 5566, sequential); this receipt merges those raw payloads "
+            "without re-executing device work. The host bcdec decode helper was compiled from "
+            "a generated scratch source against the pinned read-only wrapper bcdec.h; its "
+            "paths, hashes and compile command are recorded in bc6h_reference. Values are "
+            "binary16 with the ULP policy recorded there. tool_hashes.phase_payloads vs "
+            "tool_hashes.current_assembly_tool shows the assembler revision was advanced after "
+            "the phases only to derive the receipt (defect aggregation and mode-code "
+            "rendering); phase payloads were not modified. No CI or phone result is claimed.")
+    return receipt
+
+
+def assemble_srgb_expectation_receipt(payloads, paths, args, self_test):
+    """Build the sRGB host-convention expectation receipt from verification payloads."""
+    base_commits = {payload.get("base_commit") for payload in payloads}
+    if len(base_commits) > 1:
+        raise SystemExit("error: phase payloads have different base commits: %s" % base_commits)
+    phases = []
+    cases = []
+    merged_findings = []
+    merged_limitations = []
+    raw_phases = []
+    total_runs = total_pass = total_fail = 0
+    for payload, path in zip(payloads, paths):
+        label = payload.get("label")
+        device = payload.get("device") or {}
+        raw_builds = payload.get("wrapper_builds") or {}
+        wrapper_builds = {name: info for name, info in raw_builds.items()
+                          if name in ("candidate", "baseline") and isinstance(info, dict)}
+        raw_builds = payload.get("wrapper_builds") or {}
+        candidate_info = raw_builds.get("candidate") or {}
+        if not isinstance(candidate_info, dict):
+            candidate_info = {}
+        wrapper_build = ((payload.get("protocol") or {}).get("wrapper_build")
+                         or raw_builds.get("root")
+                         or (str(Path(candidate_info.get("path", "")).parent)
+                             if candidate_info.get("path") else None))
+        host_runs = [run for run in (payload.get("runs") or [])
+                     if run.get("config") == "host-cpu"]
+        convention = ((payload.get("protocol") or {}).get("srgb_host_convention")
+                      or (host_runs[0].get("srgb_host_convention") if host_runs else None))
+        phase = {
+            "label": label,
+            "source_payload": {"path": str(path), "sha256": sha256_file(path)},
+            "wrapper_build": wrapper_build,
+            "srgb_host_convention": convention,
+            "device": device,
+            "avd": (device.get("properties") or {}).get("ro.boot.qemu.avd_name"),
+            "serial": device.get("serial"),
+            "page_size": device.get("page_size_from_getconf"),
+            "wrapper_builds": {
+                name: {"path": info.get("path"), "sha256": info.get("sha256"),
+                       "matches_recorded_pinned_hash": info.get("matches_recorded_pinned_hash")}
+                for name, info in wrapper_builds.items()
+            },
+            "tool": payload.get("tool"),
+        }
+        phase["run_count"] = len(payload.get("runs") or [])
+        phase["fingerprint"] = None
+        phases.append(phase)
+        summary = payload.get("summary") or {}
+        total_runs += summary.get("runs_total") or 0
+        total_pass += summary.get("runs_pass") or 0
+        total_fail += summary.get("runs_fail") or 0
+        for run in payload.get("runs") or []:
+            if run.get("case") != "srgb" and run.get("case") != "bc7":
+                continue
+            if run.get("format") not in ("bc1_srgb", "bc3_srgb", "bc7_srgb"):
+                continue
+            if run.get("config") != "host-cpu":
+                continue
+            metrics = run.get("metrics") or {}
+            cases.append({
+                "phase": label,
+                "wrapper_build": phase["wrapper_build"],
+                "srgb_host_convention": phase["srgb_host_convention"],
+                "target": run.get("target"),
+                "format": run.get("format"),
+                "mode": run.get("mode"),
+                "verdict": run.get("verdict"),
+                "exact_pixels": metrics.get("exact_pixels"),
+                "total_pixels": metrics.get("pixels"),
+                "hard_mismatches": metrics.get("hard_mismatches"),
+                "max_channel_delta": metrics.get("max_channel_delta"),
+                "tolerance": metrics.get("tolerance"),
+                "srgb_convention": run.get("srgb_convention"),
+                "run_name": run.get("name"),
+                "command": run.get("command"),
+                "readback_sha256": run.get("readback_sha256"),
+            })
+        merged_findings.extend(payload.get("findings") or [])
+        for statement in payload.get("limitations") or []:
+            if statement not in merged_limitations:
+                merged_limitations.append(statement)
+        raw_phases.append({
+            "label": label,
+            "raw_artifacts": payload.get("raw_artifacts"),
+            "wrapper_builds": phase["wrapper_builds"],
+        })
+    fingerprints = [item for item in (getattr(args, "emulator_fingerprints", None)
+                                      or "").split(",") if item.strip()]
+    for index, phase in enumerate(phases):
+        phase["fingerprint"] = (fingerprints[index] if index < len(fingerprints) else None)
+    for phase in phases:
+        label = phase["label"]
+        convention = phase["srgb_host_convention"]
+        phase_host_cases = [case for case in cases if case["phase"] == label]
+        expects_candidate_fail = (label.startswith("unpatched") and convention == "linear")
+        expects_baseline_fail = (convention == "linear" and
+                                 (label.startswith("patched") or label.startswith("unpatched")))
+        observed_candidate = {case["verdict"] for case in phase_host_cases
+                              if case["target"] == "candidate"}
+        observed_baseline = {case["verdict"] for case in phase_host_cases
+                             if case["target"] == "baseline"}
+        phase["host_cpu_cases"] = [case["run_name"] for case in phase_host_cases]
+        phase["expectation"] = {
+            "candidate_expected": "fail" if expects_candidate_fail else "pass",
+            "baseline_expected": "fail" if expects_baseline_fail else "pass",
+            "reason": ("patched linear build: candidate linearises (pass), unpatched baseline "
+                       "still stores encoded (fail = negative control)"
+                       if expects_baseline_fail and label.startswith("patched") else
+                       ("unpatched build under the linear option: both targets store encoded "
+                        "and fail (option discriminates)"
+                        if expects_candidate_fail else
+                        "pinned unpatched build under the default encoded convention: all "
+                        "pass")),
+        }
+        phase["observed"] = {
+            "candidate_verdicts": sorted(observed_candidate),
+            "baseline_verdicts": sorted(observed_baseline),
+            "expectation_met": (
+                (("fail" in observed_candidate) == expects_candidate_fail)
+                and (("fail" in observed_baseline) == expects_baseline_fail)),
+        }
+    candidate_failures = [case for case in cases
+                          if case["target"] == "candidate" and case["verdict"] != "pass"]
+    baseline_failures = [case for case in cases
+                         if case["target"] == "baseline" and case["verdict"] != "pass"]
+    patched_phases = [phase for phase in phases
+                      if phase["label"].startswith("patched")
+                      and phase["srgb_host_convention"] == "linear"]
+    encoded_phases = [phase for phase in phases
+                      if phase["srgb_host_convention"] == "encoded"]
+    patched_candidate_pass = bool(patched_phases) and all(
+        case["verdict"] == "pass" for case in cases
+        if case["phase"] in {phase["label"] for phase in patched_phases}
+        and case["target"] == "candidate")
+    patched_baseline_fail = bool(patched_phases) and all(
+        any(case["verdict"] != "pass" for case in cases
+            if case["phase"] == phase["label"] and case["target"] == "baseline")
+        for phase in patched_phases)
+    unpatched_linear_phases = [phase for phase in phases
+                               if phase["label"].startswith("unpatched")
+                               and phase["srgb_host_convention"] == "linear"]
+    unpatched_linear_candidate_fail = bool(unpatched_linear_phases) and all(
+        any(case["verdict"] != "pass" for case in cases
+            if case["phase"] == phase["label"] and case["target"] == "candidate")
+        for phase in unpatched_linear_phases)
+    legacy_encoded_pass = bool(encoded_phases) and all(
+        case["verdict"] == "pass" for case in cases
+        if case["phase"] in {phase["label"] for phase in encoded_phases})
+    negative_control_ok = patched_baseline_fail
+    patched_candidate_failures = [case for case in candidate_failures
+                                  if case["phase"].startswith("patched")]
+    receipt = {
+        "date": time.strftime("%Y-%m-%d"),
+        "scope": "Verification of the reference tool's explicit sRGB host-CPU storage "
+                 "convention option (--srgb-host-convention encoded|linear) for the Vapor "
+                 "Vulkan wrapper. The patched candidate build (tools/vulkan-wrapper/"
+                 "srgb-storage.patch) linearises BC*_SRGB texels in the host bcdec fallback "
+                 "like the compute shaders, so it must be compared against the linearised "
+                 "reference; the unpatched baseline must still fail under 'linear' (negative "
+                 "control) and the pinned unpatched candidate must keep passing under the "
+                 "default 'encoded' convention. Offscreen transfer-only emulator probe; no "
+                 "app, phone/Adreno or CI result is claimed.",
+        "label": getattr(args, "label", "srgb-expectation"),
+        "base_commit": payloads[0].get("base_commit"),
+        "option": {
+            "name": "--srgb-host-convention",
+            "values": {
+                "encoded": "host-CPU bcdec fallback stores sRGB-encoded numeric values "
+                           "(pinned/unpatched builds; default, keeps earlier receipts "
+                           "reproducible)",
+                "linear": "host-CPU bcdec fallback linearises sRGB texels (patched build "
+                          "carrying tools/vulkan-wrapper/srgb-storage.patch)",
+            },
+            "applies_to": ["bc1_srgb", "bc3_srgb", "bc7_srgb"],
+            "host_cpu_tolerance": "0 LSB expected for the matching convention; the compute/"
+                                  "native comparisons are unchanged",
+        },
+        "tool": payloads[-1].get("tool"),
+        "tool_revisions": {
+            payload.get("label"): {
+                "tool_sha256": (payload.get("tool") or {}).get("sha256"),
+                "fixture_source_sha256": ((payload.get("tool") or {}).get("fixture") or {}).get(
+                    "source_sha256"),
+                "fixture_binary_sha256": ((payload.get("tool") or {}).get("fixture") or {}).get(
+                    "binary_sha256"),
+                "runs": len(payload.get("runs") or []),
+            }
+            for payload in payloads
+        },
+        "reference_decoder": payloads[0].get("reference_decoder"),
+        "phases": phases,
+        "srgb_cases": cases,
+        "verification": {
+            "patched_linear_candidate_passes": patched_candidate_pass,
+            "patched_linear_baseline_fails": patched_baseline_fail,
+            "unpatched_linear_candidate_fails": unpatched_linear_candidate_fail,
+            "negative_control_ok": negative_control_ok,
+            "legacy_encoded_candidate_still_passes": legacy_encoded_pass,
+            "unexpected_patched_candidate_failures":
+                [case["run_name"] for case in patched_candidate_failures],
+            "candidate_failures": [case["run_name"] for case in candidate_failures],
+            "baseline_failures": [case["run_name"] for case in baseline_failures],
+        },
+        "summary": {
+            "phases": len(phases),
+            "runs_total": total_runs,
+            "runs_pass": total_pass,
+            "runs_fail": total_fail,
+            "host_cpu_srgb_cases": len(cases),
+            "phase_run_counts": {phase["label"]: phase["run_count"] for phase in phases},
+            "note": "Failures are expected for the negative-control phase(s): the unpatched "
+                    "baseline is evaluated under the patched linear convention on purpose.",
+        },
+        "findings": [
+            statement for statement in merged_findings
+            if "sRGB" in statement or "Page size" in statement
+        ],
+        "limitations": merged_limitations,
+        "emulator_operations": {
+            "ownership": "port 5556 only (VaporProbe36B, 4 KB); all verification phases run "
+                         "sequentially on that one emulator",
+            "preflight": "no qemu-system process on the port and `adb devices` empty before "
+                         "the session",
+            "post_session": "`adb -s emulator-5556 emu kill`, then `adb devices` empty and no "
+                            "qemu-system process",
+            "port": "5556",
+            "memory_mb": "2048",
+            "cores": 2,
+            "avd": "VaporProbe36B",
+            "boot_command": "emulator -avd VaporProbe36B -port 5556 -no-window -no-audio "
+                            "-no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim "
+                            "-memory 2048 -cores 2",
+            "fingerprints": [phase.get("fingerprint") for phase in phases],
+            "phases": [{"label": phase["label"], "page_size": phase["page_size"],
+                        "serial": phase["serial"],
+                        "fingerprint": phase.get("fingerprint")} for phase in phases],
+        },
+        "raw_artifacts": {"phases": raw_phases,
+                          "assembled_from": [{"path": str(path), "sha256": sha256_file(path)}
+                                             for path in paths]},
+        "generation": {
+            "mode": "assembled-from-executed-verification-payloads",
+            "assembly_tool": {"path": str(Path(__file__).resolve().relative_to(REPO_ROOT)),
+                              "sha256": sha256_file(Path(__file__).resolve())},
+            "executing_tool_sha256s": {
+                payload.get("label"): (payload.get("tool") or {}).get("sha256")
+                for payload in payloads
+            },
+            "fixture_binary_sha256s": {
+                payload.get("label"): ((payload.get("tool") or {}).get("fixture") or {}).get(
+                    "binary_sha256")
+                for payload in payloads
+            },
+            "phase_payloads": [{"label": payload.get("label"), "path": str(path),
+                                "sha256": sha256_file(path)}
+                               for payload, path in zip(payloads, paths)],
+            "note": "Every phase was executed on the 4 KB VaporProbe36B emulator (port 5556) "
+                    "by the tool revision recorded for that phase; this receipt merges the raw "
+                    "payloads without re-executing device work. No CI or phone result is "
+                    "claimed.",
+        },
+    }
+    receipt["reference_decoder"]["self_test"] = self_test
     return receipt
 
 
@@ -3537,6 +4460,10 @@ def parse_args(argv=None):
         epilog=__doc__)
     parser.add_argument("--wrapper-build", default=str(DEFAULT_WRAPPER_BUILD),
                         help="pinned wrapper build directory (read-only)")
+    parser.add_argument("--bcdec-source", default=None,
+                        help="optional directory containing the pinned bcdec.h/c for the "
+                             "host reference (defaults to <wrapper-build>/source/src/vulkan/"
+                             "wrapper, then the default pinned wrapper source)")
     parser.add_argument("--scratch", default=str(DEFAULT_SCRATCH),
                         help="host scratch directory for logs, inputs and readbacks")
     parser.add_argument("--out", default=str(DEFAULT_EVIDENCE),
@@ -3564,16 +4491,35 @@ def parse_args(argv=None):
     parser.add_argument("--extended-cases", default="",
                         help="comma-separated subset of extended case families "
                              "(odd-extents,partial-region,mips-layers,srgb,bc4-bc5,"
-                             "depth-reduce,bc7); empty = all")
+                             "depth-reduce,bc7,bc6h); empty = all")
+    parser.add_argument("--bc6h-ulp-tolerance", type=int, default=1,
+                        help="documented ULP tolerance for independent BC6H comparisons "
+                             "(compute-shader bc6 vs bcdec, llvmpipe native vs bcdec); the "
+                             "host-CPU bc6h comparison is always 0 ULP (same decoder)")
+    parser.add_argument("--srgb-host-convention", default="encoded",
+                        choices=["encoded", "linear"],
+                        help="expected storage convention for the wrapper host-CPU (bcdec) "
+                             "sRGB path: 'encoded' = sRGB-encoded values (pinned/unpatched "
+                             "builds, default and all earlier receipts), 'linear' = linearised "
+                             "values (builds carrying tools/vulkan-wrapper/srgb-storage.patch)")
     parser.add_argument("--cases", default="default",
-                        choices=["default", "extended", "all", "bc7"],
+                        choices=["default", "extended", "all", "bc7", "bc6h"],
                         help="default = the original matrix only; extended = the extended "
                              "coverage cases only; all = both; bc7 = only the opt-in BC7/BC7_SRGB "
                              "differential family (caps are always run for device facts)")
     parser.add_argument("--emulator-port", default=None,
                         help="emulator console port used for this lane (assembly records it)")
+    parser.add_argument("--emulator-ports", default=None,
+                        help="comma-separated emulator console ports per phase (assembly "
+                             "records them); defaults to --emulator-port")
+    parser.add_argument("--emulator-fingerprints", default=None,
+                        help="comma-separated observed ro.build.fingerprint values per phase "
+                             "(assembly records them)")
     parser.add_argument("--emulator-memory-mb", default="2048",
                         help="emulator -memory value used for the phases (assembly records it)")
+    parser.add_argument("--assemble-srgb-expectation", nargs="+", default=None,
+                        help="assemble the sRGB host-convention expectation receipt from "
+                             "verification payloads")
     parser.add_argument("--assemble", nargs="+", default=None,
                         help="merge executed phase payload JSON files into the extended "
                              "evidence receipt instead of touching a device")
@@ -3621,6 +4567,26 @@ def main(argv=None):
         return 0
     scratch = Path(args.scratch)
     log = Log(scratch / "logs" / "tool.log")
+    if args.assemble_srgb_expectation:
+        payloads = []
+        paths = []
+        for raw_path in args.assemble_srgb_expectation:
+            path = Path(raw_path)
+            payloads.append(json.loads(path.read_text(encoding="utf-8")))
+            paths.append(path)
+        receipt = assemble_srgb_expectation_receipt(payloads, paths, args, self_test)
+        out_path = Path(args.out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+        log("assembled sRGB expectation receipt from %d payload(s) to %s (sha256=%s)"
+            % (len(paths), out_path, sha256_file(out_path)))
+        print("\nSRGB EXPECTATION RECEIPT")
+        print("  verification: %s" % json.dumps(receipt["verification"], indent=2))
+        for case in receipt["srgb_cases"]:
+            print("  %-28s %-14s %-9s %-6s %s"
+                  % (case["phase"], case["wrapper_build"], case["format"],
+                     case["target"], case["verdict"]))
+        return 0
     if args.assemble:
         payloads = []
         paths = []

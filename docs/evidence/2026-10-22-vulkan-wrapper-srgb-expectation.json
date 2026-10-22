@@ -1,0 +1,1641 @@
+{
+  "date": "2026-10-22",
+  "scope": "Verification of the reference tool's explicit sRGB host-CPU storage convention option (--srgb-host-convention encoded|linear) for the Vapor Vulkan wrapper. The patched candidate build (tools/vulkan-wrapper/srgb-storage.patch) linearises BC*_SRGB texels in the host bcdec fallback like the compute shaders, so it must be compared against the linearised reference; the unpatched baseline must still fail under 'linear' (negative control) and the pinned unpatched candidate must keep passing under the default 'encoded' convention. Offscreen transfer-only emulator probe; no app, phone/Adreno or CI result is claimed.",
+  "label": "srgb-expectation",
+  "base_commit": "c5a76582b25ffb924fea255b71101edd88d76fa6",
+  "option": {
+    "name": "--srgb-host-convention",
+    "values": {
+      "encoded": "host-CPU bcdec fallback stores sRGB-encoded numeric values (pinned/unpatched builds; default, keeps earlier receipts reproducible)",
+      "linear": "host-CPU bcdec fallback linearises sRGB texels (patched build carrying tools/vulkan-wrapper/srgb-storage.patch)"
+    },
+    "applies_to": [
+      "bc1_srgb",
+      "bc3_srgb",
+      "bc7_srgb"
+    ],
+    "host_cpu_tolerance": "0 LSB expected for the matching convention; the compute/native comparisons are unchanged"
+  },
+  "tool": {
+    "path": "tools/tests/vulkan-wrapper-reference.py",
+    "sha256": "4c3a4f63c02f312288ad7080f205d6bd29a0e1fd14ef9bc281923f1c8d6c45c0",
+    "python": "3.14.4",
+    "host_platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "fixture": {
+      "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+      "command": [
+        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+        "-std=c11",
+        "-O2",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-D_GNU_SOURCE",
+        "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.c",
+        "-ldl",
+        "-Wl,-z,max-page-size=16384",
+        "-Wl,-z,common-page-size=16384",
+        "-o",
+        "/Users/cheng/wrapper-bc6h/scratch-srgb-D/bin/probe"
+      ],
+      "source": "tools/tests/vulkan-wrapper-reference.c",
+      "source_sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664",
+      "binary": "/Users/cheng/wrapper-bc6h/scratch-srgb-D/bin/probe",
+      "binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+      "binary_bytes": 228976,
+      "elf_max_load_align": 16384,
+      "page_size_link_flags": [
+        "-Wl,-z,max-page-size=16384",
+        "-Wl,-z,common-page-size=16384"
+      ]
+    },
+    "fixture_source_rule_summary": [
+      "BC1/DXT1 block is 8 bytes: RGB565 c0, RGB565 c1 (little-endian), then 16 2-bit indices, LSB first, row-major inside the 4x4 block.",
+      "Endpoint components are UNORM: c/31 (red, blue) and c/63 (green) expanded to 8-bit with round-to-nearest.",
+      "c0 > c1: palette is [c0, c1, (2c0+c1)/3, (c0+2c1)/3]. Else: [c0, c1, (c0+c1)/2, transparent black (0,0,0,0)].",
+      "BC3/DXT5 block is 16 bytes: 8-byte alpha block, then an 8-byte BC1 colour block that ALWAYS uses the four-colour palette regardless of c0 vs c1.",
+      "BC3 alpha endpoints a0, a1 are 8-bit; a0 > a1 gives [a0, a1, (6a0+a1)/7, (5a0+2a1)/7, (4a0+3a1)/7, (3a0+4a1)/7, (2a0+5a1)/7, (a0+6a1)/7]; otherwise [a0, a1, (4a0+a1)/5, (3a0+2a1)/5, (2a0+3a1)/5, (a0+4a1)/5, 0, 255]. 16 3-bit indices, LSB first.",
+      "All palette interpolants are exact rational weighted averages scaled to 8-bit and rounded to nearest with ties to even, the Vulkan/D3D float-to-UNORM convention. This is the convention the wrapper's compute-shader decoder implements; the emulator runs match it exactly (including a 42.5 tie that resolves to 42 on the driver).",
+      "BC4_UNORM/BC5_UNORM (RGTC): a BC4 block is 8 bytes = 8-bit endpoints a0/a1 then 16 3-bit indices, LSB first; the palette is identical to the BC3 alpha palette (8 entries when a0 > a1, otherwise 6 interpolated entries plus 0 and 255). BC5 is 16 bytes: a red BC4-like block followed by a green BC4-like block (red at bytes 0-7, green at bytes 8-15), decoding to (r,g).",
+      "Wrapper storage convention for emulated BC formats: the wrapper replaces BC1/BC2/BC3/BC4/BC5/BC7 images with R8G8B8A8_UNORM and expands BC4 to (r,r,r,255) and BC5 to (r,g,0,255); this tool compares against that documented convention for the wrapper copy paths and against the native uncompressed channel data for the driver blit-decode path.",
+      "sRGB BC1/BC3: the wrapper compute-shader decode linearises sRGB texels before storing them in the emulated R8G8B8A8_UNORM image, while the host-CPU (bcdec) fallback stores the sRGB-encoded numeric values without linearisation. The tool compares each wrapper decode path against its matching reference (linearised for compute/compute-view, encoded for host-cpu) and records the convention and the observed disagreement between the two paths.",
+      "BC2/BC6/BC7 decoding is not implemented in the independent reference; BC7 format support is still recorded from the driver. No sampling or rendering pipeline is created: decoded data is observed through buffer-image copies and vkCmdBlitImage."
+    ]
+  },
+  "tool_revisions": {
+    "unpatched-default-encoded": {
+      "tool_sha256": "276d2aef8d7db2cd08b5ef4e7d4e0b7076228e86c145e7dea532d3dcc887cf86",
+      "fixture_source_sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664",
+      "fixture_binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+      "runs": 20
+    },
+    "patched-linear": {
+      "tool_sha256": "276d2aef8d7db2cd08b5ef4e7d4e0b7076228e86c145e7dea532d3dcc887cf86",
+      "fixture_source_sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664",
+      "fixture_binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+      "runs": 20
+    },
+    "patched-bc7-linear": {
+      "tool_sha256": "1a7186c68d97a55a13177978cfd1b95d4dc8716fb3de4712b35ea44057e5d565",
+      "fixture_source_sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664",
+      "fixture_binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+      "runs": 19
+    },
+    "unpatched-bc7-linear": {
+      "tool_sha256": "4c3a4f63c02f312288ad7080f205d6bd29a0e1fd14ef9bc281923f1c8d6c45c0",
+      "fixture_source_sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664",
+      "fixture_binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+      "runs": 19
+    }
+  },
+  "reference_decoder": {
+    "language": "python (pure stdlib, implemented for this tool)",
+    "provenance": "Original implementation from the S3TC/DXT1/DXT5 block-layout and palette rules documented in the Khronos Data Format / OpenGL EXT_texture_compression_s3tc family of specifications. No wrapper, bcdec or Mesa decoder code is reused; the wrapper's bcdec and compute-shader paths are the objects under test.",
+    "license": "same licence as this repository (original work)",
+    "rules": [
+      "BC1/DXT1 block is 8 bytes: RGB565 c0, RGB565 c1 (little-endian), then 16 2-bit indices, LSB first, row-major inside the 4x4 block.",
+      "Endpoint components are UNORM: c/31 (red, blue) and c/63 (green) expanded to 8-bit with round-to-nearest.",
+      "c0 > c1: palette is [c0, c1, (2c0+c1)/3, (c0+2c1)/3]. Else: [c0, c1, (c0+c1)/2, transparent black (0,0,0,0)].",
+      "BC3/DXT5 block is 16 bytes: 8-byte alpha block, then an 8-byte BC1 colour block that ALWAYS uses the four-colour palette regardless of c0 vs c1.",
+      "BC3 alpha endpoints a0, a1 are 8-bit; a0 > a1 gives [a0, a1, (6a0+a1)/7, (5a0+2a1)/7, (4a0+3a1)/7, (3a0+4a1)/7, (2a0+5a1)/7, (a0+6a1)/7]; otherwise [a0, a1, (4a0+a1)/5, (3a0+2a1)/5, (2a0+3a1)/5, (a0+4a1)/5, 0, 255]. 16 3-bit indices, LSB first.",
+      "All palette interpolants are exact rational weighted averages scaled to 8-bit and rounded to nearest with ties to even, the Vulkan/D3D float-to-UNORM convention. This is the convention the wrapper's compute-shader decoder implements; the emulator runs match it exactly (including a 42.5 tie that resolves to 42 on the driver).",
+      "BC4_UNORM/BC5_UNORM (RGTC): a BC4 block is 8 bytes = 8-bit endpoints a0/a1 then 16 3-bit indices, LSB first; the palette is identical to the BC3 alpha palette (8 entries when a0 > a1, otherwise 6 interpolated entries plus 0 and 255). BC5 is 16 bytes: a red BC4-like block followed by a green BC4-like block (red at bytes 0-7, green at bytes 8-15), decoding to (r,g).",
+      "Wrapper storage convention for emulated BC formats: the wrapper replaces BC1/BC2/BC3/BC4/BC5/BC7 images with R8G8B8A8_UNORM and expands BC4 to (r,r,r,255) and BC5 to (r,g,0,255); this tool compares against that documented convention for the wrapper copy paths and against the native uncompressed channel data for the driver blit-decode path.",
+      "sRGB BC1/BC3: the wrapper compute-shader decode linearises sRGB texels before storing them in the emulated R8G8B8A8_UNORM image, while the host-CPU (bcdec) fallback stores the sRGB-encoded numeric values without linearisation. The tool compares each wrapper decode path against its matching reference (linearised for compute/compute-view, encoded for host-cpu) and records the convention and the observed disagreement between the two paths.",
+      "BC2/BC6/BC7 decoding is not implemented in the independent reference; BC7 format support is still recorded from the driver. No sampling or rendering pipeline is created: decoded data is observed through buffer-image copies and vkCmdBlitImage."
+    ],
+    "self_test": {
+      "passed": true,
+      "cases": [
+        {
+          "name": "bc1 four-colour palette c0=red c1=blue",
+          "passed": true,
+          "expected": [
+            [
+              255,
+              0,
+              0,
+              255
+            ],
+            [
+              0,
+              0,
+              255,
+              255
+            ],
+            [
+              170,
+              0,
+              85,
+              255
+            ],
+            [
+              85,
+              0,
+              170,
+              255
+            ]
+          ],
+          "actual": [
+            [
+              255,
+              0,
+              0,
+              255
+            ],
+            [
+              0,
+              0,
+              255,
+              255
+            ],
+            [
+              170,
+              0,
+              85,
+              255
+            ],
+            [
+              85,
+              0,
+              170,
+              255
+            ]
+          ]
+        },
+        {
+          "name": "bc1 three-colour palette c0=blue c1=red (transparent index 3)",
+          "passed": true,
+          "expected": [
+            [
+              0,
+              0,
+              255,
+              255
+            ],
+            [
+              255,
+              0,
+              0,
+              255
+            ],
+            [
+              128,
+              0,
+              128,
+              255
+            ],
+            [
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "actual": [
+            [
+              0,
+              0,
+              255,
+              255
+            ],
+            [
+              255,
+              0,
+              0,
+              255
+            ],
+            [
+              128,
+              0,
+              128,
+              255
+            ],
+            [
+              0,
+              0,
+              0,
+              0
+            ]
+          ]
+        },
+        {
+          "name": "bc1 equal endpoints use three-colour mode",
+          "passed": true,
+          "expected": [
+            [
+              255,
+              255,
+              255,
+              255
+            ],
+            [
+              255,
+              255,
+              255,
+              255
+            ],
+            [
+              255,
+              255,
+              255,
+              255
+            ],
+            [
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "actual": [
+            [
+              255,
+              255,
+              255,
+              255
+            ],
+            [
+              255,
+              255,
+              255,
+              255
+            ],
+            [
+              255,
+              255,
+              255,
+              255
+            ],
+            [
+              0,
+              0,
+              0,
+              0
+            ]
+          ]
+        },
+        {
+          "name": "bc3 ignores colour endpoint order (always four-colour)",
+          "passed": true,
+          "expected": [
+            85,
+            0,
+            170,
+            255
+          ],
+          "actual": [
+            85,
+            0,
+            170,
+            255
+          ]
+        },
+        {
+          "name": "bc3 alpha palette a0=255 a1=0",
+          "passed": true,
+          "expected": [
+            255,
+            0,
+            219,
+            182,
+            146,
+            109,
+            73,
+            36
+          ],
+          "actual": [
+            255,
+            0,
+            219,
+            182,
+            146,
+            109,
+            73,
+            36
+          ]
+        },
+        {
+          "name": "bc3 alpha palette a0=0 a1=255",
+          "passed": true,
+          "expected": [
+            0,
+            255,
+            51,
+            102,
+            153,
+            204,
+            0,
+            255
+          ],
+          "actual": [
+            0,
+            255,
+            51,
+            102,
+            153,
+            204,
+            0,
+            255
+          ]
+        },
+        {
+          "name": "bc1 index order is LSB-first row-major",
+          "passed": true,
+          "expected": [
+            [
+              255,
+              0,
+              0,
+              255
+            ],
+            [
+              0,
+              0,
+              255,
+              255
+            ],
+            [
+              170,
+              0,
+              85,
+              255
+            ],
+            [
+              85,
+              0,
+              170,
+              255
+            ]
+          ],
+          "actual": [
+            [
+              255,
+              0,
+              0,
+              255
+            ],
+            [
+              0,
+              0,
+              255,
+              255
+            ],
+            [
+              170,
+              0,
+              85,
+              255
+            ],
+            [
+              85,
+              0,
+              170,
+              255
+            ]
+          ]
+        },
+        {
+          "name": "bc1 generator deterministic",
+          "passed": true,
+          "expected": {
+            "bytes": 2048,
+            "sha256": "a38d1b429a4e7999db7347f8ebd68cdbeb237ec1b0d725c0f9871f115ad4f74e"
+          },
+          "actual": {
+            "bytes": 2048,
+            "sha256": "a38d1b429a4e7999db7347f8ebd68cdbeb237ec1b0d725c0f9871f115ad4f74e"
+          }
+        },
+        {
+          "name": "bc1 generator seed-sensitive",
+          "passed": true,
+          "expected": false,
+          "actual": false
+        },
+        {
+          "name": "bc3 generator deterministic",
+          "passed": true,
+          "expected": {
+            "bytes": 4096,
+            "sha256": "98a7d78777273468ae1a5abb5b1f7f4323ba3b5ee169aa32289fdb71969fe558"
+          },
+          "actual": {
+            "bytes": 4096,
+            "sha256": "98a7d78777273468ae1a5abb5b1f7f4323ba3b5ee169aa32289fdb71969fe558"
+          }
+        },
+        {
+          "name": "bc3 generator covers both alpha modes",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        },
+        {
+          "name": "bc3 decoder round trip length",
+          "passed": true,
+          "expected": 16384,
+          "actual": 16384
+        },
+        {
+          "name": "d16 input size",
+          "passed": true,
+          "expected": 128,
+          "actual": 128
+        },
+        {
+          "name": "d24s8 buffer word size",
+          "passed": true,
+          "expected": 256,
+          "actual": 256
+        },
+        {
+          "name": "d24s8 input values fit in 24 bits",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        },
+        {
+          "name": "bc4/BC5 RGTC palette a0=255 a1=0",
+          "passed": true,
+          "expected": [
+            255,
+            0,
+            219,
+            182,
+            146,
+            109,
+            73,
+            36
+          ],
+          "actual": [
+            255,
+            0,
+            219,
+            182,
+            146,
+            109,
+            73,
+            36
+          ]
+        },
+        {
+          "name": "bc4/BC5 RGTC palette a0=0 a1=255",
+          "passed": true,
+          "expected": [
+            0,
+            255,
+            51,
+            102,
+            153,
+            204,
+            0,
+            255
+          ],
+          "actual": [
+            0,
+            255,
+            51,
+            102,
+            153,
+            204,
+            0,
+            255
+          ]
+        },
+        {
+          "name": "bc4 block index 0 decodes to the low endpoint",
+          "passed": true,
+          "expected": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "actual": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "bc5 interleaves a red block then a green block per 16-byte block",
+          "passed": true,
+          "expected": [
+            [
+              255,
+              0
+            ],
+            [
+              255,
+              0
+            ]
+          ],
+          "actual": [
+            [
+              255,
+              0
+            ],
+            [
+              255,
+              0
+            ]
+          ]
+        },
+        {
+          "name": "srgb_to_linear_u8 endpoints and midpoint",
+          "passed": true,
+          "expected": [
+            0,
+            55,
+            255
+          ],
+          "actual": [
+            0,
+            55,
+            255
+          ]
+        },
+        {
+          "name": "srgb linearisation leaves alpha untouched",
+          "passed": true,
+          "expected": {
+            "bytes": 4,
+            "sha256": "de1b4780f4dbad5a2b67948aaf1a1570c93588584655897953a8b3ead0ed8c72"
+          },
+          "actual": {
+            "bytes": 4,
+            "sha256": "de1b4780f4dbad5a2b67948aaf1a1570c93588584655897953a8b3ead0ed8c72"
+          }
+        }
+      ]
+    },
+    "generators": {
+      "algorithm": "Python random.Random(seed); block patterns cycle through four-colour, three-colour/transparent, equal-endpoint, all-black/all-white and random BC1/BC3 blocks so every palette branch and index range is exercised",
+      "seed": 20261021,
+      "coverage": {
+        "bc1": {
+          "four_colour_blocks": 60,
+          "three_colour_blocks": 69,
+          "equal_endpoint_blocks": 43,
+          "all_black_blocks": 42,
+          "all_white_blocks": 42
+        },
+        "bc3": {
+          "four_colour_blocks": 91,
+          "three_colour_blocks": 59,
+          "alpha_a0_gt_a1": 76,
+          "alpha_a0_le_a1": 78,
+          "alpha_equal_endpoints": 51,
+          "alpha_extreme_endpoints": 51,
+          "bc3_colour_with_c0_le_c1": 59
+        }
+      }
+    },
+    "inputs": {
+      "bc1": {
+        "bytes": 2048,
+        "sha256": "e723a21dd3a84349534c0773ac856278224a4a84c856977d7dc967ccc684a8c4"
+      },
+      "bc3": {
+        "bytes": 4096,
+        "sha256": "0d19d9ada79a37c24dae0b0b3f74cb294c81050787552bc1d09b5ed29f10067c"
+      },
+      "rgba8": {
+        "bytes": 16384,
+        "sha256": "400642d5763cdb9017fe723de8ebee34d1aad5f3ae9d918d92aef5a1180c7fa8"
+      },
+      "d16": {
+        "bytes": 8192,
+        "sha256": "b27fa596a848f6e0eb9bb0e79df176e02cc730ca14a134cc60ba56ce830dc471"
+      },
+      "d24s8": {
+        "bytes": 16384,
+        "sha256": "e377aedb71787a4e2e19dc1bd782f8a6eea7ad490cdbffd0d71bcac667d36eff"
+      },
+      "d32": {
+        "bytes": 16384,
+        "sha256": "6f5866c57b85ed3c6dca1593d3033f92c229df059dcd7dd006bae77fab0d5d98"
+      }
+    },
+    "reference_outputs": {
+      "bc1": {
+        "bytes": 16384,
+        "sha256": "0a21210d92b0a902aff3b9fa2faf1820ba057d5c260ee9ed2b04c1bb766b241e"
+      },
+      "bc3": {
+        "bytes": 16384,
+        "sha256": "73e9f105131db4f98a02dd1362ea0df770c01a8bf547916d9fc5d9cead62288f"
+      }
+    }
+  },
+  "phases": [
+    {
+      "label": "unpatched-default-encoded",
+      "source_payload": {
+        "path": "/Users/cheng/wrapper-bc6h/srgb-unpatched-default-encoded.json",
+        "sha256": "4dc181b2ee203e88cab6a0a84905d6557b09d9a6908be7c38deeb4450d1f537f"
+      },
+      "wrapper_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+      "srgb_host_convention": "encoded",
+      "device": {
+        "serial": "emulator-5556",
+        "is_emulator": true,
+        "properties": {
+          "ro.product.manufacturer": "Google",
+          "ro.product.model": "sdk_gphone64_arm64",
+          "ro.build.version.sdk": "36",
+          "ro.build.version.release": "16",
+          "ro.product.cpu.abi": "arm64-v8a",
+          "ro.kernel.qemu": "1",
+          "ro.hardware": "ranchu",
+          "ro.board.platform": "",
+          "ro.boot.qemu.avd_name": "VaporProbe36B",
+          "ro.boot.qemu.version": ""
+        },
+        "uname": "Linux localhost 6.6.66-android15-8-gd0c43a640eab-ab13812146-4k #1 SMP PREEMPT Mon Jul 21 17:41:13 UTC 2025 aarch64 Toybox",
+        "page_size_from_getconf": 4096,
+        "probe_reported": {
+          "device_name": "llvmpipe (LLVM 21.1.4, 128 bits)",
+          "vendor": "0x10005",
+          "device_id": "0x0000",
+          "api": "1.3.0",
+          "page_size": "4096",
+          "driver_id": "0x0000000d",
+          "driver_id_name": "MESA_LLVMPIPE",
+          "driver_name": "llvmpipe",
+          "driver_info": "Mesa 26.0.0-devel (git-3fc652a060) (LLVM 21.1.4)",
+          "driver_version": "0x06463063",
+          "device_type": "4",
+          "texture_compression_bc": "1"
+        },
+        "emulator_binary_version": "Android emulator version 37.2.12.0 (build_id 16428233) (CL:N/A)",
+        "page_size_consistent": true
+      },
+      "avd": "VaporProbe36B",
+      "serial": "emulator-5556",
+      "page_size": 4096,
+      "wrapper_builds": {
+        "candidate": {
+          "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+          "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+          "matches_recorded_pinned_hash": true
+        },
+        "baseline": {
+          "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+          "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+          "matches_recorded_pinned_hash": true
+        }
+      },
+      "tool": {
+        "path": "tools/tests/vulkan-wrapper-reference.py",
+        "sha256": "276d2aef8d7db2cd08b5ef4e7d4e0b7076228e86c145e7dea532d3dcc887cf86",
+        "python": "3.14.4",
+        "host_platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+        "fixture": {
+          "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+          "command": [
+            "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+            "-std=c11",
+            "-O2",
+            "-g",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-D_GNU_SOURCE",
+            "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.c",
+            "-ldl",
+            "-Wl,-z,max-page-size=16384",
+            "-Wl,-z,common-page-size=16384",
+            "-o",
+            "/Users/cheng/wrapper-bc6h/scratch-srgb-A/bin/probe"
+          ],
+          "source": "tools/tests/vulkan-wrapper-reference.c",
+          "source_sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664",
+          "binary": "/Users/cheng/wrapper-bc6h/scratch-srgb-A/bin/probe",
+          "binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+          "binary_bytes": 228976,
+          "elf_max_load_align": 16384,
+          "page_size_link_flags": [
+            "-Wl,-z,max-page-size=16384",
+            "-Wl,-z,common-page-size=16384"
+          ]
+        },
+        "fixture_source_rule_summary": [
+          "BC1/DXT1 block is 8 bytes: RGB565 c0, RGB565 c1 (little-endian), then 16 2-bit indices, LSB first, row-major inside the 4x4 block.",
+          "Endpoint components are UNORM: c/31 (red, blue) and c/63 (green) expanded to 8-bit with round-to-nearest.",
+          "c0 > c1: palette is [c0, c1, (2c0+c1)/3, (c0+2c1)/3]. Else: [c0, c1, (c0+c1)/2, transparent black (0,0,0,0)].",
+          "BC3/DXT5 block is 16 bytes: 8-byte alpha block, then an 8-byte BC1 colour block that ALWAYS uses the four-colour palette regardless of c0 vs c1.",
+          "BC3 alpha endpoints a0, a1 are 8-bit; a0 > a1 gives [a0, a1, (6a0+a1)/7, (5a0+2a1)/7, (4a0+3a1)/7, (3a0+4a1)/7, (2a0+5a1)/7, (a0+6a1)/7]; otherwise [a0, a1, (4a0+a1)/5, (3a0+2a1)/5, (2a0+3a1)/5, (a0+4a1)/5, 0, 255]. 16 3-bit indices, LSB first.",
+          "All palette interpolants are exact rational weighted averages scaled to 8-bit and rounded to nearest with ties to even, the Vulkan/D3D float-to-UNORM convention. This is the convention the wrapper's compute-shader decoder implements; the emulator runs match it exactly (including a 42.5 tie that resolves to 42 on the driver).",
+          "BC4_UNORM/BC5_UNORM (RGTC): a BC4 block is 8 bytes = 8-bit endpoints a0/a1 then 16 3-bit indices, LSB first; the palette is identical to the BC3 alpha palette (8 entries when a0 > a1, otherwise 6 interpolated entries plus 0 and 255). BC5 is 16 bytes: a red BC4-like block followed by a green BC4-like block (red at bytes 0-7, green at bytes 8-15), decoding to (r,g).",
+          "Wrapper storage convention for emulated BC formats: the wrapper replaces BC1/BC2/BC3/BC4/BC5/BC7 images with R8G8B8A8_UNORM and expands BC4 to (r,r,r,255) and BC5 to (r,g,0,255); this tool compares against that documented convention for the wrapper copy paths and against the native uncompressed channel data for the driver blit-decode path.",
+          "sRGB BC1/BC3: the wrapper compute-shader decode linearises sRGB texels before storing them in the emulated R8G8B8A8_UNORM image, while the host-CPU (bcdec) fallback stores the sRGB-encoded numeric values without linearisation. The tool compares each wrapper decode path against its matching reference (linearised for compute/compute-view, encoded for host-cpu) and records the convention and the observed disagreement between the two paths.",
+          "BC2/BC6/BC7 decoding is not implemented in the independent reference; BC7 format support is still recorded from the driver. No sampling or rendering pipeline is created: decoded data is observed through buffer-image copies and vkCmdBlitImage."
+        ]
+      },
+      "run_count": 20,
+      "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+      "host_cpu_cases": [
+        "bc1_srgb-candidate-host-cpu",
+        "bc1_srgb-baseline-host-cpu",
+        "bc3_srgb-candidate-host-cpu",
+        "bc3_srgb-baseline-host-cpu"
+      ],
+      "expectation": {
+        "candidate_expected": "pass",
+        "baseline_expected": "pass",
+        "reason": "pinned unpatched build under the default encoded convention: all pass"
+      },
+      "observed": {
+        "candidate_verdicts": [
+          "pass"
+        ],
+        "baseline_verdicts": [
+          "pass"
+        ],
+        "expectation_met": true
+      }
+    },
+    {
+      "label": "patched-linear",
+      "source_payload": {
+        "path": "/Users/cheng/wrapper-bc6h/srgb-patched-linear.json",
+        "sha256": "98caf24f3ffd03328e13851d506784dc251d7ba5f643fe8ca67f5cbc06c7b1a6"
+      },
+      "wrapper_build": "/Users/cheng/staging-srgb/wrapper-build-patched",
+      "srgb_host_convention": "linear",
+      "device": {
+        "serial": "emulator-5556",
+        "is_emulator": true,
+        "properties": {
+          "ro.product.manufacturer": "Google",
+          "ro.product.model": "sdk_gphone64_arm64",
+          "ro.build.version.sdk": "36",
+          "ro.build.version.release": "16",
+          "ro.product.cpu.abi": "arm64-v8a",
+          "ro.kernel.qemu": "1",
+          "ro.hardware": "ranchu",
+          "ro.board.platform": "",
+          "ro.boot.qemu.avd_name": "VaporProbe36B",
+          "ro.boot.qemu.version": ""
+        },
+        "uname": "Linux localhost 6.6.66-android15-8-gd0c43a640eab-ab13812146-4k #1 SMP PREEMPT Mon Jul 21 17:41:13 UTC 2025 aarch64 Toybox",
+        "page_size_from_getconf": 4096,
+        "probe_reported": {
+          "device_name": "llvmpipe (LLVM 21.1.4, 128 bits)",
+          "vendor": "0x10005",
+          "device_id": "0x0000",
+          "api": "1.3.0",
+          "page_size": "4096",
+          "driver_id": "0x0000000d",
+          "driver_id_name": "MESA_LLVMPIPE",
+          "driver_name": "llvmpipe",
+          "driver_info": "Mesa 26.0.0-devel (git-3fc652a060) (LLVM 21.1.4)",
+          "driver_version": "0x06463063",
+          "device_type": "4",
+          "texture_compression_bc": "1"
+        },
+        "emulator_binary_version": "Android emulator version 37.2.12.0 (build_id 16428233) (CL:N/A)",
+        "page_size_consistent": true
+      },
+      "avd": "VaporProbe36B",
+      "serial": "emulator-5556",
+      "page_size": 4096,
+      "wrapper_builds": {
+        "candidate": {
+          "path": "/Users/cheng/staging-srgb/wrapper-build-patched/candidate-stripped.so",
+          "sha256": "e93e1e3a938629151e15b787c78183d49a561073fdcba08ae74822f6c0875303",
+          "matches_recorded_pinned_hash": false
+        },
+        "baseline": {
+          "path": "/Users/cheng/staging-srgb/wrapper-build-patched/baseline-stripped.so",
+          "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+          "matches_recorded_pinned_hash": true
+        }
+      },
+      "tool": {
+        "path": "tools/tests/vulkan-wrapper-reference.py",
+        "sha256": "276d2aef8d7db2cd08b5ef4e7d4e0b7076228e86c145e7dea532d3dcc887cf86",
+        "python": "3.14.4",
+        "host_platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+        "fixture": {
+          "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+          "command": [
+            "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+            "-std=c11",
+            "-O2",
+            "-g",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-D_GNU_SOURCE",
+            "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.c",
+            "-ldl",
+            "-Wl,-z,max-page-size=16384",
+            "-Wl,-z,common-page-size=16384",
+            "-o",
+            "/Users/cheng/wrapper-bc6h/scratch-srgb-B/bin/probe"
+          ],
+          "source": "tools/tests/vulkan-wrapper-reference.c",
+          "source_sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664",
+          "binary": "/Users/cheng/wrapper-bc6h/scratch-srgb-B/bin/probe",
+          "binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+          "binary_bytes": 228976,
+          "elf_max_load_align": 16384,
+          "page_size_link_flags": [
+            "-Wl,-z,max-page-size=16384",
+            "-Wl,-z,common-page-size=16384"
+          ]
+        },
+        "fixture_source_rule_summary": [
+          "BC1/DXT1 block is 8 bytes: RGB565 c0, RGB565 c1 (little-endian), then 16 2-bit indices, LSB first, row-major inside the 4x4 block.",
+          "Endpoint components are UNORM: c/31 (red, blue) and c/63 (green) expanded to 8-bit with round-to-nearest.",
+          "c0 > c1: palette is [c0, c1, (2c0+c1)/3, (c0+2c1)/3]. Else: [c0, c1, (c0+c1)/2, transparent black (0,0,0,0)].",
+          "BC3/DXT5 block is 16 bytes: 8-byte alpha block, then an 8-byte BC1 colour block that ALWAYS uses the four-colour palette regardless of c0 vs c1.",
+          "BC3 alpha endpoints a0, a1 are 8-bit; a0 > a1 gives [a0, a1, (6a0+a1)/7, (5a0+2a1)/7, (4a0+3a1)/7, (3a0+4a1)/7, (2a0+5a1)/7, (a0+6a1)/7]; otherwise [a0, a1, (4a0+a1)/5, (3a0+2a1)/5, (2a0+3a1)/5, (a0+4a1)/5, 0, 255]. 16 3-bit indices, LSB first.",
+          "All palette interpolants are exact rational weighted averages scaled to 8-bit and rounded to nearest with ties to even, the Vulkan/D3D float-to-UNORM convention. This is the convention the wrapper's compute-shader decoder implements; the emulator runs match it exactly (including a 42.5 tie that resolves to 42 on the driver).",
+          "BC4_UNORM/BC5_UNORM (RGTC): a BC4 block is 8 bytes = 8-bit endpoints a0/a1 then 16 3-bit indices, LSB first; the palette is identical to the BC3 alpha palette (8 entries when a0 > a1, otherwise 6 interpolated entries plus 0 and 255). BC5 is 16 bytes: a red BC4-like block followed by a green BC4-like block (red at bytes 0-7, green at bytes 8-15), decoding to (r,g).",
+          "Wrapper storage convention for emulated BC formats: the wrapper replaces BC1/BC2/BC3/BC4/BC5/BC7 images with R8G8B8A8_UNORM and expands BC4 to (r,r,r,255) and BC5 to (r,g,0,255); this tool compares against that documented convention for the wrapper copy paths and against the native uncompressed channel data for the driver blit-decode path.",
+          "sRGB BC1/BC3: the wrapper compute-shader decode linearises sRGB texels before storing them in the emulated R8G8B8A8_UNORM image, while the host-CPU (bcdec) fallback stores the sRGB-encoded numeric values without linearisation. The tool compares each wrapper decode path against its matching reference (linearised for compute/compute-view, encoded for host-cpu) and records the convention and the observed disagreement between the two paths.",
+          "BC2/BC6/BC7 decoding is not implemented in the independent reference; BC7 format support is still recorded from the driver. No sampling or rendering pipeline is created: decoded data is observed through buffer-image copies and vkCmdBlitImage."
+        ]
+      },
+      "run_count": 20,
+      "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+      "host_cpu_cases": [
+        "bc1_srgb-candidate-host-cpu",
+        "bc1_srgb-baseline-host-cpu",
+        "bc3_srgb-candidate-host-cpu",
+        "bc3_srgb-baseline-host-cpu"
+      ],
+      "expectation": {
+        "candidate_expected": "pass",
+        "baseline_expected": "fail",
+        "reason": "patched linear build: candidate linearises (pass), unpatched baseline still stores encoded (fail = negative control)"
+      },
+      "observed": {
+        "candidate_verdicts": [
+          "pass"
+        ],
+        "baseline_verdicts": [
+          "fail"
+        ],
+        "expectation_met": true
+      }
+    },
+    {
+      "label": "patched-bc7-linear",
+      "source_payload": {
+        "path": "/Users/cheng/wrapper-bc6h/srgb-patched-bc7-linear.json",
+        "sha256": "0388da4e21d329a38139ad039c215fbab0023f6bc23981d9468c1870a0006f3e"
+      },
+      "wrapper_build": "/Users/cheng/staging-srgb/wrapper-build-patched",
+      "srgb_host_convention": "linear",
+      "device": {
+        "serial": "emulator-5556",
+        "is_emulator": true,
+        "properties": {
+          "ro.product.manufacturer": "Google",
+          "ro.product.model": "sdk_gphone64_arm64",
+          "ro.build.version.sdk": "36",
+          "ro.build.version.release": "16",
+          "ro.product.cpu.abi": "arm64-v8a",
+          "ro.kernel.qemu": "1",
+          "ro.hardware": "ranchu",
+          "ro.board.platform": "",
+          "ro.boot.qemu.avd_name": "VaporProbe36B",
+          "ro.boot.qemu.version": ""
+        },
+        "uname": "Linux localhost 6.6.66-android15-8-gd0c43a640eab-ab13812146-4k #1 SMP PREEMPT Mon Jul 21 17:41:13 UTC 2025 aarch64 Toybox",
+        "page_size_from_getconf": 4096,
+        "probe_reported": {
+          "device_name": "llvmpipe (LLVM 21.1.4, 128 bits)",
+          "vendor": "0x10005",
+          "device_id": "0x0000",
+          "api": "1.3.0",
+          "page_size": "4096",
+          "driver_id": "0x0000000d",
+          "driver_id_name": "MESA_LLVMPIPE",
+          "driver_name": "llvmpipe",
+          "driver_info": "Mesa 26.0.0-devel (git-3fc652a060) (LLVM 21.1.4)",
+          "driver_version": "0x06463063",
+          "device_type": "4",
+          "texture_compression_bc": "1"
+        },
+        "emulator_binary_version": "Android emulator version 37.2.12.0 (build_id 16428233) (CL:N/A)",
+        "page_size_consistent": true
+      },
+      "avd": "VaporProbe36B",
+      "serial": "emulator-5556",
+      "page_size": 4096,
+      "wrapper_builds": {
+        "candidate": {
+          "path": "/Users/cheng/staging-srgb/wrapper-build-patched/candidate-stripped.so",
+          "sha256": "e93e1e3a938629151e15b787c78183d49a561073fdcba08ae74822f6c0875303",
+          "matches_recorded_pinned_hash": false
+        },
+        "baseline": {
+          "path": "/Users/cheng/staging-srgb/wrapper-build-patched/baseline-stripped.so",
+          "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+          "matches_recorded_pinned_hash": true
+        }
+      },
+      "tool": {
+        "path": "tools/tests/vulkan-wrapper-reference.py",
+        "sha256": "1a7186c68d97a55a13177978cfd1b95d4dc8716fb3de4712b35ea44057e5d565",
+        "python": "3.14.4",
+        "host_platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+        "fixture": {
+          "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+          "command": [
+            "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+            "-std=c11",
+            "-O2",
+            "-g",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-D_GNU_SOURCE",
+            "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.c",
+            "-ldl",
+            "-Wl,-z,max-page-size=16384",
+            "-Wl,-z,common-page-size=16384",
+            "-o",
+            "/Users/cheng/wrapper-bc6h/scratch-srgb-C/bin/probe"
+          ],
+          "source": "tools/tests/vulkan-wrapper-reference.c",
+          "source_sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664",
+          "binary": "/Users/cheng/wrapper-bc6h/scratch-srgb-C/bin/probe",
+          "binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+          "binary_bytes": 228976,
+          "elf_max_load_align": 16384,
+          "page_size_link_flags": [
+            "-Wl,-z,max-page-size=16384",
+            "-Wl,-z,common-page-size=16384"
+          ]
+        },
+        "fixture_source_rule_summary": [
+          "BC1/DXT1 block is 8 bytes: RGB565 c0, RGB565 c1 (little-endian), then 16 2-bit indices, LSB first, row-major inside the 4x4 block.",
+          "Endpoint components are UNORM: c/31 (red, blue) and c/63 (green) expanded to 8-bit with round-to-nearest.",
+          "c0 > c1: palette is [c0, c1, (2c0+c1)/3, (c0+2c1)/3]. Else: [c0, c1, (c0+c1)/2, transparent black (0,0,0,0)].",
+          "BC3/DXT5 block is 16 bytes: 8-byte alpha block, then an 8-byte BC1 colour block that ALWAYS uses the four-colour palette regardless of c0 vs c1.",
+          "BC3 alpha endpoints a0, a1 are 8-bit; a0 > a1 gives [a0, a1, (6a0+a1)/7, (5a0+2a1)/7, (4a0+3a1)/7, (3a0+4a1)/7, (2a0+5a1)/7, (a0+6a1)/7]; otherwise [a0, a1, (4a0+a1)/5, (3a0+2a1)/5, (2a0+3a1)/5, (a0+4a1)/5, 0, 255]. 16 3-bit indices, LSB first.",
+          "All palette interpolants are exact rational weighted averages scaled to 8-bit and rounded to nearest with ties to even, the Vulkan/D3D float-to-UNORM convention. This is the convention the wrapper's compute-shader decoder implements; the emulator runs match it exactly (including a 42.5 tie that resolves to 42 on the driver).",
+          "BC4_UNORM/BC5_UNORM (RGTC): a BC4 block is 8 bytes = 8-bit endpoints a0/a1 then 16 3-bit indices, LSB first; the palette is identical to the BC3 alpha palette (8 entries when a0 > a1, otherwise 6 interpolated entries plus 0 and 255). BC5 is 16 bytes: a red BC4-like block followed by a green BC4-like block (red at bytes 0-7, green at bytes 8-15), decoding to (r,g).",
+          "Wrapper storage convention for emulated BC formats: the wrapper replaces BC1/BC2/BC3/BC4/BC5/BC7 images with R8G8B8A8_UNORM and expands BC4 to (r,r,r,255) and BC5 to (r,g,0,255); this tool compares against that documented convention for the wrapper copy paths and against the native uncompressed channel data for the driver blit-decode path.",
+          "sRGB BC1/BC3: the wrapper compute-shader decode linearises sRGB texels before storing them in the emulated R8G8B8A8_UNORM image, while the host-CPU (bcdec) fallback stores the sRGB-encoded numeric values without linearisation. The tool compares each wrapper decode path against its matching reference (linearised for compute/compute-view, encoded for host-cpu) and records the convention and the observed disagreement between the two paths.",
+          "BC2/BC6/BC7 decoding is not implemented in the independent reference; BC7 format support is still recorded from the driver. No sampling or rendering pipeline is created: decoded data is observed through buffer-image copies and vkCmdBlitImage."
+        ]
+      },
+      "run_count": 19,
+      "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+      "host_cpu_cases": [
+        "candidate-host-cpu-bc7_srgb-copy",
+        "baseline-host-cpu-bc7_srgb-copy"
+      ],
+      "expectation": {
+        "candidate_expected": "pass",
+        "baseline_expected": "fail",
+        "reason": "patched linear build: candidate linearises (pass), unpatched baseline still stores encoded (fail = negative control)"
+      },
+      "observed": {
+        "candidate_verdicts": [
+          "pass"
+        ],
+        "baseline_verdicts": [
+          "fail"
+        ],
+        "expectation_met": true
+      }
+    },
+    {
+      "label": "unpatched-bc7-linear",
+      "source_payload": {
+        "path": "/Users/cheng/wrapper-bc6h/srgb-unpatched-bc7-linear.json",
+        "sha256": "cebb7e3c41718c89d79c1078d3ed5aef9b7008cd898a456e530a7cdf354c989b"
+      },
+      "wrapper_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+      "srgb_host_convention": "linear",
+      "device": {
+        "serial": "emulator-5556",
+        "is_emulator": true,
+        "properties": {
+          "ro.product.manufacturer": "Google",
+          "ro.product.model": "sdk_gphone64_arm64",
+          "ro.build.version.sdk": "36",
+          "ro.build.version.release": "16",
+          "ro.product.cpu.abi": "arm64-v8a",
+          "ro.kernel.qemu": "1",
+          "ro.hardware": "ranchu",
+          "ro.board.platform": "",
+          "ro.boot.qemu.avd_name": "VaporProbe36B",
+          "ro.boot.qemu.version": ""
+        },
+        "uname": "Linux localhost 6.6.66-android15-8-gd0c43a640eab-ab13812146-4k #1 SMP PREEMPT Mon Jul 21 17:41:13 UTC 2025 aarch64 Toybox",
+        "page_size_from_getconf": 4096,
+        "probe_reported": {
+          "device_name": "llvmpipe (LLVM 21.1.4, 128 bits)",
+          "vendor": "0x10005",
+          "device_id": "0x0000",
+          "api": "1.3.0",
+          "page_size": "4096",
+          "driver_id": "0x0000000d",
+          "driver_id_name": "MESA_LLVMPIPE",
+          "driver_name": "llvmpipe",
+          "driver_info": "Mesa 26.0.0-devel (git-3fc652a060) (LLVM 21.1.4)",
+          "driver_version": "0x06463063",
+          "device_type": "4",
+          "texture_compression_bc": "1"
+        },
+        "emulator_binary_version": "Android emulator version 37.2.12.0 (build_id 16428233) (CL:N/A)",
+        "page_size_consistent": true
+      },
+      "avd": "VaporProbe36B",
+      "serial": "emulator-5556",
+      "page_size": 4096,
+      "wrapper_builds": {
+        "candidate": {
+          "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+          "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+          "matches_recorded_pinned_hash": true
+        },
+        "baseline": {
+          "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+          "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+          "matches_recorded_pinned_hash": true
+        }
+      },
+      "tool": {
+        "path": "tools/tests/vulkan-wrapper-reference.py",
+        "sha256": "4c3a4f63c02f312288ad7080f205d6bd29a0e1fd14ef9bc281923f1c8d6c45c0",
+        "python": "3.14.4",
+        "host_platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+        "fixture": {
+          "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+          "command": [
+            "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+            "-std=c11",
+            "-O2",
+            "-g",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-D_GNU_SOURCE",
+            "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.c",
+            "-ldl",
+            "-Wl,-z,max-page-size=16384",
+            "-Wl,-z,common-page-size=16384",
+            "-o",
+            "/Users/cheng/wrapper-bc6h/scratch-srgb-D/bin/probe"
+          ],
+          "source": "tools/tests/vulkan-wrapper-reference.c",
+          "source_sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664",
+          "binary": "/Users/cheng/wrapper-bc6h/scratch-srgb-D/bin/probe",
+          "binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+          "binary_bytes": 228976,
+          "elf_max_load_align": 16384,
+          "page_size_link_flags": [
+            "-Wl,-z,max-page-size=16384",
+            "-Wl,-z,common-page-size=16384"
+          ]
+        },
+        "fixture_source_rule_summary": [
+          "BC1/DXT1 block is 8 bytes: RGB565 c0, RGB565 c1 (little-endian), then 16 2-bit indices, LSB first, row-major inside the 4x4 block.",
+          "Endpoint components are UNORM: c/31 (red, blue) and c/63 (green) expanded to 8-bit with round-to-nearest.",
+          "c0 > c1: palette is [c0, c1, (2c0+c1)/3, (c0+2c1)/3]. Else: [c0, c1, (c0+c1)/2, transparent black (0,0,0,0)].",
+          "BC3/DXT5 block is 16 bytes: 8-byte alpha block, then an 8-byte BC1 colour block that ALWAYS uses the four-colour palette regardless of c0 vs c1.",
+          "BC3 alpha endpoints a0, a1 are 8-bit; a0 > a1 gives [a0, a1, (6a0+a1)/7, (5a0+2a1)/7, (4a0+3a1)/7, (3a0+4a1)/7, (2a0+5a1)/7, (a0+6a1)/7]; otherwise [a0, a1, (4a0+a1)/5, (3a0+2a1)/5, (2a0+3a1)/5, (a0+4a1)/5, 0, 255]. 16 3-bit indices, LSB first.",
+          "All palette interpolants are exact rational weighted averages scaled to 8-bit and rounded to nearest with ties to even, the Vulkan/D3D float-to-UNORM convention. This is the convention the wrapper's compute-shader decoder implements; the emulator runs match it exactly (including a 42.5 tie that resolves to 42 on the driver).",
+          "BC4_UNORM/BC5_UNORM (RGTC): a BC4 block is 8 bytes = 8-bit endpoints a0/a1 then 16 3-bit indices, LSB first; the palette is identical to the BC3 alpha palette (8 entries when a0 > a1, otherwise 6 interpolated entries plus 0 and 255). BC5 is 16 bytes: a red BC4-like block followed by a green BC4-like block (red at bytes 0-7, green at bytes 8-15), decoding to (r,g).",
+          "Wrapper storage convention for emulated BC formats: the wrapper replaces BC1/BC2/BC3/BC4/BC5/BC7 images with R8G8B8A8_UNORM and expands BC4 to (r,r,r,255) and BC5 to (r,g,0,255); this tool compares against that documented convention for the wrapper copy paths and against the native uncompressed channel data for the driver blit-decode path.",
+          "sRGB BC1/BC3: the wrapper compute-shader decode linearises sRGB texels before storing them in the emulated R8G8B8A8_UNORM image, while the host-CPU (bcdec) fallback stores the sRGB-encoded numeric values without linearisation. The tool compares each wrapper decode path against its matching reference (linearised for compute/compute-view, encoded for host-cpu) and records the convention and the observed disagreement between the two paths.",
+          "BC2/BC6/BC7 decoding is not implemented in the independent reference; BC7 format support is still recorded from the driver. No sampling or rendering pipeline is created: decoded data is observed through buffer-image copies and vkCmdBlitImage."
+        ]
+      },
+      "run_count": 19,
+      "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+      "host_cpu_cases": [
+        "candidate-host-cpu-bc7_srgb-copy",
+        "baseline-host-cpu-bc7_srgb-copy"
+      ],
+      "expectation": {
+        "candidate_expected": "fail",
+        "baseline_expected": "fail",
+        "reason": "unpatched build under the linear option: both targets store encoded and fail (option discriminates)"
+      },
+      "observed": {
+        "candidate_verdicts": [
+          "fail"
+        ],
+        "baseline_verdicts": [
+          "fail"
+        ],
+        "expectation_met": true
+      }
+    }
+  ],
+  "srgb_cases": [
+    {
+      "phase": "unpatched-default-encoded",
+      "wrapper_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+      "srgb_host_convention": "encoded",
+      "target": "candidate",
+      "format": "bc1_srgb",
+      "mode": "copy",
+      "verdict": "pass",
+      "exact_pixels": 4094,
+      "total_pixels": 4096,
+      "hard_mismatches": 0,
+      "max_channel_delta": 1,
+      "tolerance": 2,
+      "srgb_convention": "host-CPU fallback stores sRGB-encoded numeric values (no linearisation; --srgb-host-convention encoded)",
+      "run_name": "bc1_srgb-candidate-host-cpu",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=none ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/candidate-stripped.so bc1_srgb in/bc1_srgb.bin out/bc1_srgb-candidate-host-cpu.bin 64 64",
+      "readback_sha256": "0828f333c848bdc5d29f19269eaa21ab898a918379aca7e64f10ea4f341584f2"
+    },
+    {
+      "phase": "unpatched-default-encoded",
+      "wrapper_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+      "srgb_host_convention": "encoded",
+      "target": "baseline",
+      "format": "bc1_srgb",
+      "mode": "copy",
+      "verdict": "pass",
+      "exact_pixels": 4094,
+      "total_pixels": 4096,
+      "hard_mismatches": 0,
+      "max_channel_delta": 1,
+      "tolerance": 2,
+      "srgb_convention": "host-CPU fallback stores sRGB-encoded numeric values (no linearisation; --srgb-host-convention encoded)",
+      "run_name": "bc1_srgb-baseline-host-cpu",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=none ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/baseline-stripped.so bc1_srgb in/bc1_srgb.bin out/bc1_srgb-baseline-host-cpu.bin 64 64",
+      "readback_sha256": "0828f333c848bdc5d29f19269eaa21ab898a918379aca7e64f10ea4f341584f2"
+    },
+    {
+      "phase": "unpatched-default-encoded",
+      "wrapper_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+      "srgb_host_convention": "encoded",
+      "target": "candidate",
+      "format": "bc3_srgb",
+      "mode": "copy",
+      "verdict": "pass",
+      "exact_pixels": 3308,
+      "total_pixels": 4096,
+      "hard_mismatches": 0,
+      "max_channel_delta": 1,
+      "tolerance": 2,
+      "srgb_convention": "host-CPU fallback stores sRGB-encoded numeric values (no linearisation; --srgb-host-convention encoded)",
+      "run_name": "bc3_srgb-candidate-host-cpu",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=none ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/candidate-stripped.so bc3_srgb in/bc3_srgb.bin out/bc3_srgb-candidate-host-cpu.bin 64 64",
+      "readback_sha256": "777ef4f50266e01596393937eb23c842a775970a09a68afee47f7eaf4823dc45"
+    },
+    {
+      "phase": "unpatched-default-encoded",
+      "wrapper_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+      "srgb_host_convention": "encoded",
+      "target": "baseline",
+      "format": "bc3_srgb",
+      "mode": "copy",
+      "verdict": "pass",
+      "exact_pixels": 3308,
+      "total_pixels": 4096,
+      "hard_mismatches": 0,
+      "max_channel_delta": 1,
+      "tolerance": 2,
+      "srgb_convention": "host-CPU fallback stores sRGB-encoded numeric values (no linearisation; --srgb-host-convention encoded)",
+      "run_name": "bc3_srgb-baseline-host-cpu",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=none ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/baseline-stripped.so bc3_srgb in/bc3_srgb.bin out/bc3_srgb-baseline-host-cpu.bin 64 64",
+      "readback_sha256": "777ef4f50266e01596393937eb23c842a775970a09a68afee47f7eaf4823dc45"
+    },
+    {
+      "phase": "patched-linear",
+      "wrapper_build": "/Users/cheng/staging-srgb/wrapper-build-patched",
+      "srgb_host_convention": "linear",
+      "target": "candidate",
+      "format": "bc1_srgb",
+      "mode": "copy",
+      "verdict": "pass",
+      "exact_pixels": 4096,
+      "total_pixels": 4096,
+      "hard_mismatches": 0,
+      "max_channel_delta": 0,
+      "tolerance": 2,
+      "srgb_convention": "host-CPU fallback linearises sRGB texels (--srgb-host-convention linear; patched build)",
+      "run_name": "bc1_srgb-candidate-host-cpu",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=none ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/candidate-stripped.so bc1_srgb in/bc1_srgb.bin out/bc1_srgb-candidate-host-cpu.bin 64 64",
+      "readback_sha256": "59ef181d69cc41ebde4ad07e512a62e756fdc0f42a0fc01d027180626a30b2c0"
+    },
+    {
+      "phase": "patched-linear",
+      "wrapper_build": "/Users/cheng/staging-srgb/wrapper-build-patched",
+      "srgb_host_convention": "linear",
+      "target": "baseline",
+      "format": "bc1_srgb",
+      "mode": "copy",
+      "verdict": "fail",
+      "exact_pixels": 1803,
+      "total_pixels": 4096,
+      "hard_mismatches": 2293,
+      "max_channel_delta": 73,
+      "tolerance": 2,
+      "srgb_convention": "host-CPU fallback linearises sRGB texels (--srgb-host-convention linear; patched build)",
+      "run_name": "bc1_srgb-baseline-host-cpu",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=none ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/baseline-stripped.so bc1_srgb in/bc1_srgb.bin out/bc1_srgb-baseline-host-cpu.bin 64 64",
+      "readback_sha256": "0828f333c848bdc5d29f19269eaa21ab898a918379aca7e64f10ea4f341584f2"
+    },
+    {
+      "phase": "patched-linear",
+      "wrapper_build": "/Users/cheng/staging-srgb/wrapper-build-patched",
+      "srgb_host_convention": "linear",
+      "target": "candidate",
+      "format": "bc3_srgb",
+      "mode": "copy",
+      "verdict": "pass",
+      "exact_pixels": 3308,
+      "total_pixels": 4096,
+      "hard_mismatches": 0,
+      "max_channel_delta": 1,
+      "tolerance": 2,
+      "srgb_convention": "host-CPU fallback linearises sRGB texels (--srgb-host-convention linear; patched build)",
+      "run_name": "bc3_srgb-candidate-host-cpu",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=none ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/candidate-stripped.so bc3_srgb in/bc3_srgb.bin out/bc3_srgb-candidate-host-cpu.bin 64 64",
+      "readback_sha256": "ba8d52c7869e6d69a6abf75957bae2ef604e602011ab36c2376051ce5b7f1567"
+    },
+    {
+      "phase": "patched-linear",
+      "wrapper_build": "/Users/cheng/staging-srgb/wrapper-build-patched",
+      "srgb_host_convention": "linear",
+      "target": "baseline",
+      "format": "bc3_srgb",
+      "mode": "copy",
+      "verdict": "fail",
+      "exact_pixels": 0,
+      "total_pixels": 4096,
+      "hard_mismatches": 4096,
+      "max_channel_delta": 73,
+      "tolerance": 2,
+      "srgb_convention": "host-CPU fallback linearises sRGB texels (--srgb-host-convention linear; patched build)",
+      "run_name": "bc3_srgb-baseline-host-cpu",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=none ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/baseline-stripped.so bc3_srgb in/bc3_srgb.bin out/bc3_srgb-baseline-host-cpu.bin 64 64",
+      "readback_sha256": "777ef4f50266e01596393937eb23c842a775970a09a68afee47f7eaf4823dc45"
+    },
+    {
+      "phase": "patched-bc7-linear",
+      "wrapper_build": "/Users/cheng/staging-srgb/wrapper-build-patched",
+      "srgb_host_convention": "linear",
+      "target": "candidate",
+      "format": "bc7_srgb",
+      "mode": "copy",
+      "verdict": "pass",
+      "exact_pixels": 4096,
+      "total_pixels": 4096,
+      "hard_mismatches": 0,
+      "max_channel_delta": 0,
+      "tolerance": 0,
+      "srgb_convention": "host-CPU bcdec fallback linearises BC7_SRGB texels (--srgb-host-convention linear; patched build)",
+      "run_name": "candidate-host-cpu-bc7_srgb-copy",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=debug ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/candidate-stripped.so bc7_srgb in/bc7.bin out/candidate-host-cpu-bc7_srgb-copy.bin 64 64",
+      "readback_sha256": "69e6834160524dcb9c605f60d1d5c07e25bdfaeec66444eb1652da3a0165ad10"
+    },
+    {
+      "phase": "patched-bc7-linear",
+      "wrapper_build": "/Users/cheng/staging-srgb/wrapper-build-patched",
+      "srgb_host_convention": "linear",
+      "target": "baseline",
+      "format": "bc7_srgb",
+      "mode": "copy",
+      "verdict": "fail",
+      "exact_pixels": 2688,
+      "total_pixels": 4096,
+      "hard_mismatches": 1408,
+      "max_channel_delta": 73,
+      "tolerance": 0,
+      "srgb_convention": "host-CPU bcdec fallback linearises BC7_SRGB texels (--srgb-host-convention linear; patched build)",
+      "run_name": "baseline-host-cpu-bc7_srgb-copy",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=debug ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/baseline-stripped.so bc7_srgb in/bc7.bin out/baseline-host-cpu-bc7_srgb-copy.bin 64 64",
+      "readback_sha256": "76d4b652e3f7eb5dd781e1c4c8c606ccb5278f14c34678ded63d8f45fdd60352"
+    },
+    {
+      "phase": "unpatched-bc7-linear",
+      "wrapper_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+      "srgb_host_convention": "linear",
+      "target": "candidate",
+      "format": "bc7_srgb",
+      "mode": "copy",
+      "verdict": "fail",
+      "exact_pixels": 2688,
+      "total_pixels": 4096,
+      "hard_mismatches": 1408,
+      "max_channel_delta": 73,
+      "tolerance": 0,
+      "srgb_convention": "host-CPU bcdec fallback linearises BC7_SRGB texels (--srgb-host-convention linear; patched build)",
+      "run_name": "candidate-host-cpu-bc7_srgb-copy",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=debug ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/candidate-stripped.so bc7_srgb in/bc7.bin out/candidate-host-cpu-bc7_srgb-copy.bin 64 64",
+      "readback_sha256": "76d4b652e3f7eb5dd781e1c4c8c606ccb5278f14c34678ded63d8f45fdd60352"
+    },
+    {
+      "phase": "unpatched-bc7-linear",
+      "wrapper_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+      "srgb_host_convention": "linear",
+      "target": "baseline",
+      "format": "bc7_srgb",
+      "mode": "copy",
+      "verdict": "fail",
+      "exact_pixels": 2688,
+      "total_pixels": 4096,
+      "hard_mismatches": 1408,
+      "max_channel_delta": 73,
+      "tolerance": 0,
+      "srgb_convention": "host-CPU bcdec fallback linearises BC7_SRGB texels (--srgb-host-convention linear; patched build)",
+      "run_name": "baseline-host-cpu-bc7_srgb-copy",
+      "command": "cd /data/local/tmp/vapor-wrapper-reference-2026-10-21 && FORCE_BCN_EMULATION=1 LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-reference-2026-10-21 PREFIX=/data/local/tmp/vapor-wrapper-reference-2026-10-21 USE_CPU_BCN=all USE_IMAGE_VIEW=0 WRAPPER_CMD_LOG_LEVEL=none WRAPPER_LOG_LEVEL=debug ./probe copy /data/local/tmp/vapor-wrapper-reference-2026-10-21/baseline-stripped.so bc7_srgb in/bc7.bin out/baseline-host-cpu-bc7_srgb-copy.bin 64 64",
+      "readback_sha256": "76d4b652e3f7eb5dd781e1c4c8c606ccb5278f14c34678ded63d8f45fdd60352"
+    }
+  ],
+  "verification": {
+    "patched_linear_candidate_passes": true,
+    "patched_linear_baseline_fails": true,
+    "unpatched_linear_candidate_fails": true,
+    "negative_control_ok": true,
+    "legacy_encoded_candidate_still_passes": true,
+    "unexpected_patched_candidate_failures": [],
+    "candidate_failures": [
+      "candidate-host-cpu-bc7_srgb-copy"
+    ],
+    "baseline_failures": [
+      "bc1_srgb-baseline-host-cpu",
+      "bc3_srgb-baseline-host-cpu",
+      "baseline-host-cpu-bc7_srgb-copy",
+      "baseline-host-cpu-bc7_srgb-copy"
+    ]
+  },
+  "summary": {
+    "phases": 4,
+    "runs_total": 12,
+    "runs_pass": 12,
+    "runs_fail": 0,
+    "host_cpu_srgb_cases": 12,
+    "phase_run_counts": {
+      "unpatched-default-encoded": 20,
+      "patched-linear": 20,
+      "patched-bc7-linear": 19,
+      "unpatched-bc7-linear": 19
+    },
+    "note": "Failures are expected for the negative-control phase(s): the unpatched baseline is evaluated under the patched linear convention on purpose."
+  },
+  "findings": [
+    "Page size: probe sysconf=4096, getconf=4096, fixture ELF max-load alignment=16384 (16 KB link flags on a 4096-byte-page emulator).",
+    "sRGB BC emulation convention: compute-shader paths store sRGB->linear values (19320/32768 pixels match the linearised reference, max delta 1); the host-CPU fallback stores sRGB-encoded numeric values (14804/16384 exact vs the encoded reference, max delta 1). The two wrapper decode paths therefore disagree on sRGB storage by design/omission - flagged as a suspected emulation inconsistency for the wrapper owners.",
+    "Page size: probe sysconf=4096, getconf=4096, fixture ELF max-load alignment=16384 (16 KB link flags on a 4096-byte-page emulator).",
+    "sRGB BC emulation convention: compute-shader paths store sRGB->linear values (19320/32768 pixels match the linearised reference, max delta 1); the host-CPU fallback stores sRGB-encoded numeric values (9207/16384 exact vs the encoded reference, max delta 73). The two wrapper decode paths therefore disagree on sRGB storage by design/omission - flagged as a suspected emulation inconsistency for the wrapper owners.",
+    "Page size: probe sysconf=4096, getconf=4096, fixture ELF max-load alignment=16384 (16 KB link flags on a 4096-byte-page emulator).",
+    "BC7_SRGB wrapper compute-shader vs the sRGB-linearised bcdec reference (bc7.comp linearises sRGB texels): 4 probe(s), 16384/16384 pixels exact, 0 over tolerance, max channel delta 0.",
+    "Page size: probe sysconf=4096, getconf=4096, fixture ELF max-load alignment=16384 (16 KB link flags on a 4096-byte-page emulator).",
+    "BC7_SRGB wrapper compute-shader vs the sRGB-linearised bcdec reference (bc7.comp linearises sRGB texels): 4 probe(s), 16384/16384 pixels exact, 0 over tolerance, max channel delta 0."
+  ],
+  "limitations": [
+    "Software Vulkan only: the emulator runs on llvmpipe (LLVMpipe) inside the Android emulator, not on Adreno/KGSL and not on a physical GPU.",
+    "No phone is attached to the qualifying machine. No Adreno, KGSL or physical-GPU result is claimed; the phone runbook is written but not executed.",
+    "Synthetic deterministic BC blocks, not game assets; no mip levels, array layers, sRGB variants or sub-block partial copies are exercised.",
+    "No graphics pipeline is created: the wrapper's decoded image is observed through buffer-image copies (and vkCmdBlitImage for the native driver decode), not through sampling or rendering.",
+    "No validation layers are loaded; correctness relies on probe metrics, not API validation.",
+    "BC7 decoding is not implemented in the independent reference; only BC7 format support is recorded. BC2/4/5/6 are likewise not part of the reference comparison.",
+    "Interpolated BC palette entries legitimately differ by a few LSBs between decoder implementations; the wrapper compute path matches the reference exactly, the wrapper CPU fallback (bcdec) is within 1 LSB and Mesa's native decoder within 2 LSB on this run, which is why a tolerance is reported alongside exact counts.",
+    "The pinned wrapper is a build-tree .so loaded via dlopen by the probe; it is not packaged, installed or selected by Vapor in this run.",
+    "Depth format reduction (WRAPPER_REDUCE_DEPTH_FORMAT) was deliberately not exercised: the required gate is create/bind/copy through TRANSFER_DST|TRANSFER_SRC, so depth images do not request DEPTH_STENCIL_ATTACHMENT usage.",
+    "BC7 reference independence caveat: the reference decoder is bcdec (pinned wrapper source, bcdec.h), which is ALSO the wrapper's host-CPU fallback decoder; the host-cpu results are a self-consistency check, while the wrapper compute-shader bc7.comp and llvmpipe's native BC7 decoder are independent implementations and are the meaningful differential comparisons."
+  ],
+  "emulator_operations": {
+    "ownership": "port 5556 only (VaporProbe36B, 4 KB); all verification phases run sequentially on that one emulator",
+    "preflight": "no qemu-system process on the port and `adb devices` empty before the session",
+    "post_session": "`adb -s emulator-5556 emu kill`, then `adb devices` empty and no qemu-system process",
+    "port": "5556",
+    "memory_mb": "2048",
+    "cores": 2,
+    "avd": "VaporProbe36B",
+    "boot_command": "emulator -avd VaporProbe36B -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 2",
+    "fingerprints": [
+      "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+      "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+      "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+      "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
+    ],
+    "phases": [
+      {
+        "label": "unpatched-default-encoded",
+        "page_size": 4096,
+        "serial": "emulator-5556",
+        "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
+      },
+      {
+        "label": "patched-linear",
+        "page_size": 4096,
+        "serial": "emulator-5556",
+        "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
+      },
+      {
+        "label": "patched-bc7-linear",
+        "page_size": 4096,
+        "serial": "emulator-5556",
+        "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
+      },
+      {
+        "label": "unpatched-bc7-linear",
+        "page_size": 4096,
+        "serial": "emulator-5556",
+        "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
+      }
+    ]
+  },
+  "raw_artifacts": {
+    "phases": [
+      {
+        "label": "unpatched-default-encoded",
+        "raw_artifacts": {
+          "scratch": "/Users/cheng/wrapper-bc6h/scratch-srgb-A",
+          "inputs": "/Users/cheng/wrapper-bc6h/scratch-srgb-A/in",
+          "reference_decodes": "/Users/cheng/wrapper-bc6h/scratch-srgb-A/refs",
+          "readbacks": "/Users/cheng/wrapper-bc6h/scratch-srgb-A/out",
+          "per_run_logs": "/Users/cheng/wrapper-bc6h/scratch-srgb-A/logs",
+          "tool_log": "/Users/cheng/wrapper-bc6h/scratch-srgb-A/logs/tool.log",
+          "fixture_binary": "/Users/cheng/wrapper-bc6h/scratch-srgb-A/bin/probe",
+          "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
+        },
+        "wrapper_builds": {
+          "candidate": {
+            "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+            "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+            "matches_recorded_pinned_hash": true
+          },
+          "baseline": {
+            "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+            "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+            "matches_recorded_pinned_hash": true
+          }
+        }
+      },
+      {
+        "label": "patched-linear",
+        "raw_artifacts": {
+          "scratch": "/Users/cheng/wrapper-bc6h/scratch-srgb-B",
+          "inputs": "/Users/cheng/wrapper-bc6h/scratch-srgb-B/in",
+          "reference_decodes": "/Users/cheng/wrapper-bc6h/scratch-srgb-B/refs",
+          "readbacks": "/Users/cheng/wrapper-bc6h/scratch-srgb-B/out",
+          "per_run_logs": "/Users/cheng/wrapper-bc6h/scratch-srgb-B/logs",
+          "tool_log": "/Users/cheng/wrapper-bc6h/scratch-srgb-B/logs/tool.log",
+          "fixture_binary": "/Users/cheng/wrapper-bc6h/scratch-srgb-B/bin/probe",
+          "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
+        },
+        "wrapper_builds": {
+          "candidate": {
+            "path": "/Users/cheng/staging-srgb/wrapper-build-patched/candidate-stripped.so",
+            "sha256": "e93e1e3a938629151e15b787c78183d49a561073fdcba08ae74822f6c0875303",
+            "matches_recorded_pinned_hash": false
+          },
+          "baseline": {
+            "path": "/Users/cheng/staging-srgb/wrapper-build-patched/baseline-stripped.so",
+            "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+            "matches_recorded_pinned_hash": true
+          }
+        }
+      },
+      {
+        "label": "patched-bc7-linear",
+        "raw_artifacts": {
+          "scratch": "/Users/cheng/wrapper-bc6h/scratch-srgb-C",
+          "inputs": "/Users/cheng/wrapper-bc6h/scratch-srgb-C/in",
+          "reference_decodes": "/Users/cheng/wrapper-bc6h/scratch-srgb-C/refs",
+          "readbacks": "/Users/cheng/wrapper-bc6h/scratch-srgb-C/out",
+          "per_run_logs": "/Users/cheng/wrapper-bc6h/scratch-srgb-C/logs",
+          "tool_log": "/Users/cheng/wrapper-bc6h/scratch-srgb-C/logs/tool.log",
+          "fixture_binary": "/Users/cheng/wrapper-bc6h/scratch-srgb-C/bin/probe",
+          "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
+        },
+        "wrapper_builds": {
+          "candidate": {
+            "path": "/Users/cheng/staging-srgb/wrapper-build-patched/candidate-stripped.so",
+            "sha256": "e93e1e3a938629151e15b787c78183d49a561073fdcba08ae74822f6c0875303",
+            "matches_recorded_pinned_hash": false
+          },
+          "baseline": {
+            "path": "/Users/cheng/staging-srgb/wrapper-build-patched/baseline-stripped.so",
+            "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+            "matches_recorded_pinned_hash": true
+          }
+        }
+      },
+      {
+        "label": "unpatched-bc7-linear",
+        "raw_artifacts": {
+          "scratch": "/Users/cheng/wrapper-bc6h/scratch-srgb-D",
+          "inputs": "/Users/cheng/wrapper-bc6h/scratch-srgb-D/in",
+          "reference_decodes": "/Users/cheng/wrapper-bc6h/scratch-srgb-D/refs",
+          "readbacks": "/Users/cheng/wrapper-bc6h/scratch-srgb-D/out",
+          "per_run_logs": "/Users/cheng/wrapper-bc6h/scratch-srgb-D/logs",
+          "tool_log": "/Users/cheng/wrapper-bc6h/scratch-srgb-D/logs/tool.log",
+          "fixture_binary": "/Users/cheng/wrapper-bc6h/scratch-srgb-D/bin/probe",
+          "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
+        },
+        "wrapper_builds": {
+          "candidate": {
+            "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+            "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+            "matches_recorded_pinned_hash": true
+          },
+          "baseline": {
+            "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+            "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+            "matches_recorded_pinned_hash": true
+          }
+        }
+      }
+    ],
+    "assembled_from": [
+      {
+        "path": "/Users/cheng/wrapper-bc6h/srgb-unpatched-default-encoded.json",
+        "sha256": "4dc181b2ee203e88cab6a0a84905d6557b09d9a6908be7c38deeb4450d1f537f"
+      },
+      {
+        "path": "/Users/cheng/wrapper-bc6h/srgb-patched-linear.json",
+        "sha256": "98caf24f3ffd03328e13851d506784dc251d7ba5f643fe8ca67f5cbc06c7b1a6"
+      },
+      {
+        "path": "/Users/cheng/wrapper-bc6h/srgb-patched-bc7-linear.json",
+        "sha256": "0388da4e21d329a38139ad039c215fbab0023f6bc23981d9468c1870a0006f3e"
+      },
+      {
+        "path": "/Users/cheng/wrapper-bc6h/srgb-unpatched-bc7-linear.json",
+        "sha256": "cebb7e3c41718c89d79c1078d3ed5aef9b7008cd898a456e530a7cdf354c989b"
+      }
+    ]
+  },
+  "generation": {
+    "mode": "assembled-from-executed-verification-payloads",
+    "assembly_tool": {
+      "path": "tools/tests/vulkan-wrapper-reference.py",
+      "sha256": "abdfbb614cc3b506f6780ba93deeb82cc5d9f144d1f73b954d4e4e2481665bf7"
+    },
+    "executing_tool_sha256s": {
+      "unpatched-default-encoded": "276d2aef8d7db2cd08b5ef4e7d4e0b7076228e86c145e7dea532d3dcc887cf86",
+      "patched-linear": "276d2aef8d7db2cd08b5ef4e7d4e0b7076228e86c145e7dea532d3dcc887cf86",
+      "patched-bc7-linear": "1a7186c68d97a55a13177978cfd1b95d4dc8716fb3de4712b35ea44057e5d565",
+      "unpatched-bc7-linear": "4c3a4f63c02f312288ad7080f205d6bd29a0e1fd14ef9bc281923f1c8d6c45c0"
+    },
+    "fixture_binary_sha256s": {
+      "unpatched-default-encoded": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+      "patched-linear": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+      "patched-bc7-linear": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+      "unpatched-bc7-linear": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05"
+    },
+    "phase_payloads": [
+      {
+        "label": "unpatched-default-encoded",
+        "path": "/Users/cheng/wrapper-bc6h/srgb-unpatched-default-encoded.json",
+        "sha256": "4dc181b2ee203e88cab6a0a84905d6557b09d9a6908be7c38deeb4450d1f537f"
+      },
+      {
+        "label": "patched-linear",
+        "path": "/Users/cheng/wrapper-bc6h/srgb-patched-linear.json",
+        "sha256": "98caf24f3ffd03328e13851d506784dc251d7ba5f643fe8ca67f5cbc06c7b1a6"
+      },
+      {
+        "label": "patched-bc7-linear",
+        "path": "/Users/cheng/wrapper-bc6h/srgb-patched-bc7-linear.json",
+        "sha256": "0388da4e21d329a38139ad039c215fbab0023f6bc23981d9468c1870a0006f3e"
+      },
+      {
+        "label": "unpatched-bc7-linear",
+        "path": "/Users/cheng/wrapper-bc6h/srgb-unpatched-bc7-linear.json",
+        "sha256": "cebb7e3c41718c89d79c1078d3ed5aef9b7008cd898a456e530a7cdf354c989b"
+      }
+    ],
+    "note": "Every phase was executed on the 4 KB VaporProbe36B emulator (port 5556) by the tool revision recorded for that phase; this receipt merges the raw payloads without re-executing device work. No CI or phone result is claimed."
+  }
+}

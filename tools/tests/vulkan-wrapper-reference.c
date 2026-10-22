@@ -15,8 +15,8 @@
  *   vulkan-wrapper-reference depth-attach LIBRARY FORMAT INPUT OUTPUT WIDTH HEIGHT
  *
  * LIBRARY is a .so path (a wrapper/baseline build or /system/lib64/libvulkan.so).
- * FORMAT is one of: bc1 bc3 bc4 bc5 bc7 bc1_srgb bc3_srgb bc7_srgb rgba8
- * rgba8_srgb r8 r8g8 d16 d24s8 d32.
+ * FORMAT is one of: bc1 bc3 bc4 bc5 bc7 bc6h_uf16 bc6h_sfloat bc1_srgb
+ * bc3_srgb bc7_srgb rgba8 rgba8_srgb r8 r8g8 d16 d24s8 d32.
  *
  * copy: creates an image with VK_IMAGE_USAGE_TRANSFER_DST_BIT |
  *       VK_IMAGE_USAGE_TRANSFER_SRC_BIT (plus SAMPLED for colour formats),
@@ -37,7 +37,8 @@
  * blit: block-compressed FORMAT only.  Uploads the BC blocks into a native BC
  *       image, then uses vkCmdBlitImage (NEAREST, 1:1) into an uncompressed
  *       image (R8G8B8A8_UNORM for BC1/BC2/BC3/BC7, R8_UNORM for BC4,
- *       R8G8_UNORM for BC5; SRGB destinations for SRGB sources) and copies
+ *       R8G8_UNORM for BC5, R16G16B16A16_SFLOAT for BC6H; SRGB destinations for
+ *       SRGB sources) and copies
  *       that out.  On the system loader this exposes the driver's own BC
  *       decoder without a graphics pipeline; on the wrapper the BC image is
  *       already emulated, so the blit is a pass-through of the wrapper decode.
@@ -122,6 +123,10 @@ static const ProbeFormat PROBE_FORMATS[] = {
     VK_FORMAT_R8G8B8A8_UNORM, 4},
    {"bc7_srgb", VK_FORMAT_BC7_SRGB_BLOCK, VK_IMAGE_ASPECT_COLOR_BIT, true, 16, 0, 0,
     VK_FORMAT_R8G8B8A8_SRGB, 4},
+   {"bc6h_uf16", VK_FORMAT_BC6H_UFLOAT_BLOCK, VK_IMAGE_ASPECT_COLOR_BIT, true, 16, 0, 0,
+    VK_FORMAT_R16G16B16A16_SFLOAT, 4},
+   {"bc6h_sfloat", VK_FORMAT_BC6H_SFLOAT_BLOCK, VK_IMAGE_ASPECT_COLOR_BIT, true, 16, 0, 0,
+    VK_FORMAT_R16G16B16A16_SFLOAT, 4},
    {"bc4", VK_FORMAT_BC4_UNORM_BLOCK, VK_IMAGE_ASPECT_COLOR_BIT, true, 8, 0, 0,
     VK_FORMAT_R8_UNORM, 1},
    {"bc5", VK_FORMAT_BC5_UNORM_BLOCK, VK_IMAGE_ASPECT_COLOR_BIT, true, 16, 0, 0,
@@ -440,12 +445,37 @@ static size_t src_size(const ProbeFormat *format, uint32_t width, uint32_t heigh
    return (size_t)width * height * format->texel_bytes;
 }
 
-/* Destination allocation: big enough for a compressed readback or an emulated
- * RGBA8 readback, whichever is larger. */
+/* Bytes per texel of the wrapper's emulated (uncompressed) image for a BC format:
+ * R8G8B8A8_UNORM for BC1/BC2/BC3/BC4/BC5/BC7, R16G16B16A16_SFLOAT for BC6H. */
+static uint32_t emulated_readback_texel_bytes(const ProbeFormat *format) {
+   if (format->format == VK_FORMAT_BC6H_UFLOAT_BLOCK || format->format == VK_FORMAT_BC6H_SFLOAT_BLOCK)
+      return 8;
+   return 4;
+}
+
+/* Bytes per texel of a blit destination image (8-bit channels except BC6H half). */
+static uint32_t blit_dest_texel_bytes(VkFormat format) {
+   switch (format) {
+   case VK_FORMAT_R8G8B8A8_UNORM:
+   case VK_FORMAT_R8G8B8A8_SRGB:
+      return 4;
+   case VK_FORMAT_R8_UNORM:
+      return 1;
+   case VK_FORMAT_R8G8_UNORM:
+      return 2;
+   case VK_FORMAT_R16G16B16A16_SFLOAT:
+      return 8;
+   default:
+      return 4;
+   }
+}
+
+/* Destination allocation: big enough for a compressed readback or the emulated
+ * uncompressed readback (RGBA8, or RGBA16F for BC6H), whichever is larger. */
 static size_t dst_allocation(const ProbeFormat *format, uint32_t width, uint32_t height) {
    size_t source = src_size(format, width, height);
-   size_t rgba = (size_t)width * height * 4;
-   return source > rgba ? source : rgba;
+   size_t emulated = (size_t)width * height * emulated_readback_texel_bytes(format);
+   return source > emulated ? source : emulated;
 }
 
 /* Per-level destination slot: large enough for a compressed or RGBA8 readback. */
@@ -588,7 +618,7 @@ static int blit_main(const ProbeFormat *format, const char *input_path,
    fflush(stdout);
 
    size_t in_size = src_size(format, width, height);
-   size_t dest_bytes = (size_t)width * height * format->blit_channels;
+   size_t dest_bytes = (size_t)width * height * blit_dest_texel_bytes(format->blit_format);
    size_t out_size = in_size > dest_bytes ? in_size : dest_bytes;
    printf("INPUT_BYTES=%zu\nALLOC_BYTES=%zu\nBLIT_DEST_BYTES=%zu\n",
           in_size, out_size, dest_bytes);
