@@ -104,13 +104,16 @@ internal fun VaporHeader(
                         Tab(selected = selected, onClick = { onSelect(index) },
                             modifier = Modifier.width(IntrinsicSize.Max).widthIn(min = tabWidth)
                                 .heightIn(min = 48.dp).bringIntoViewRequester(bringIntoView)
-                                .controllerFocusGlow(cornerRadius = 4.dp)) {
+                                .controllerFocusGlow(cornerRadius = 14.dp)) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                // Selected tab: a soft accent pill behind the label plus a short rounded indicator.
                                 Text(tab.label, color = ink, fontWeight = FontWeight.SemiBold,
                                     style = MaterialTheme.typography.labelLarge, maxLines = 1,
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp))
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                                        .background(Accent.copy(alpha = 0.14f * underline), RoundedCornerShape(50))
+                                        .padding(horizontal = 14.dp, vertical = 6.dp))
                                 Box(Modifier.fillMaxWidth().height(3.dp), contentAlignment = Alignment.Center) {
-                                    Box(Modifier.fillMaxWidth(underline).height(3.dp).background(Accent, RoundedCornerShape(2.dp)))
+                                    Box(Modifier.width(28.dp * underline).height(3.dp).background(Accent, RoundedCornerShape(50)))
                                 }
                             }
                         }

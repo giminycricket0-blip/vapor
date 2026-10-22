@@ -5,6 +5,7 @@ import android.view.WindowManager
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -1332,9 +1333,9 @@ private fun GameStatChip(
 ) {
     Surface(
         modifier = modifier,
-        color = LaunchBlack.copy(alpha = 0.44f),
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.11f)),
+        color = Color.White.copy(alpha = 0.07f),
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.09f)),
     ) {
         Row(
             modifier =
@@ -1418,12 +1419,23 @@ private fun LaunchPlayButton(
     modifier: Modifier = Modifier,
 ) {
     val showStatus = !enabled && !disabledLabel.isNullOrBlank()
+    val shape = RoundedCornerShape(16.dp)
+    // Hero action: a vertical green gradient with a soft top highlight. The disabled state
+    // falls back to the theme's flat disabled colours so it never looks actionable.
+    val playBrush = Brush.verticalGradient(listOf(
+        com.winlator.cmod.shared.theme.WinNativePlayHighlight,
+        com.winlator.cmod.shared.theme.WinNativePlay,
+        com.winlator.cmod.shared.theme.WinNativePlayShade,
+    ))
     Button(
         onClick = onClick,
         enabled = enabled,
-        shape = RoundedCornerShape(3.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = com.winlator.cmod.shared.theme.WinNativePlay, contentColor = Color.White),
-        modifier = modifier.heightIn(min = height).controllerFocusGlow(cornerRadius = 3.dp),
+        shape = shape,
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = Color.White,
+            disabledContainerColor = Color.White.copy(alpha = 0.08f), disabledContentColor = Color.White.copy(alpha = 0.55f)),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+        modifier = modifier.heightIn(min = height).controllerFocusGlow(cornerRadius = 16.dp)
+            .then(if (enabled) Modifier.background(playBrush, shape) else Modifier),
     ) {
         Icon(if (showStatus) Icons.Outlined.Refresh else Icons.Outlined.PlayArrow,
             contentDescription = null, modifier = Modifier.size(26.dp))
@@ -1442,19 +1454,20 @@ private fun LaunchIconActionButton(
     tint: Color = Color.White,
     enabled: Boolean = true,
 ) {
+    // Tonal glass action: a frosted fill over the hero art instead of a dark outlined box.
     Surface(
         modifier =
             modifier
                 .heightIn(min = 48.dp)
-                .controllerFocusGlow(cornerRadius = 8.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .controllerFocusGlow(cornerRadius = 14.dp)
+                .clip(RoundedCornerShape(14.dp))
                 .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
-        color = LaunchBlack.copy(alpha = 0.46f),
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.dp, tint.copy(alpha = 0.18f)),
+        color = Color.White.copy(alpha = 0.09f),
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.10f)),
     ) {
-        Row(Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             val contentTint = if (enabled) tint else LaunchTextSecondary
             Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = contentTint)
             Text(contentDescription, color = contentTint, style = MaterialTheme.typography.labelMedium,

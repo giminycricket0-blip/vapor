@@ -89,13 +89,14 @@ internal fun VaporLibraryTabs(installedOnly: Boolean, modifier: Modifier = Modif
             Tab(selected = selected, onClick = { onSelect(installed) },
                 selectedContentColor = TextPrimary, unselectedContentColor = TextSecondary,
                 modifier = Modifier.width(IntrinsicSize.Max).widthIn(min = 88.dp).heightIn(min = 48.dp)
-                    .bringIntoViewRequester(bringIntoView).controllerFocusGlow(cornerRadius = 3.dp)) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(if (installed) R.string.common_ui_installed else R.string.vapor_library_all),
-                        fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1, modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp))
-                    Box(Modifier.fillMaxWidth().height(3.dp).background(if (selected) TextPrimary else Color.Transparent))
-                }
+                    .bringIntoViewRequester(bringIntoView).controllerFocusGlow(cornerRadius = 50.dp)) {
+                // Segment-style pill, matching the header's selected tab treatment.
+                Text(stringResource(if (installed) R.string.common_ui_installed else R.string.vapor_library_all),
+                    fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.labelLarge,
+                    maxLines = 1, modifier = Modifier.padding(vertical = 6.dp)
+                        .background(if (selected) Color.White.copy(alpha = 0.12f) else Color.Transparent, RoundedCornerShape(50))
+                        .border(1.dp, if (selected) Color.White.copy(alpha = 0.14f) else Color.Transparent, RoundedCornerShape(50))
+                        .padding(horizontal = 16.dp, vertical = 8.dp))
             }
         }
     }

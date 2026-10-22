@@ -1,6 +1,11 @@
 package com.winlator.cmod.app.shell
 
 import android.app.Activity
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.winlator.cmod.shared.ui.focus.drawFocusHalo
+import com.winlator.cmod.shared.ui.focus.drawFocusRing
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.res.Configuration
@@ -311,6 +316,62 @@ internal fun UnifiedActivity.CompactActionButton(
     }
 }
 
+private val CapsuleCorner = 12.dp
+private val CapsuleShape = RoundedCornerShape(CapsuleCorner)
+
+// Deep, low-saturation gradients so placeholders read as artwork slots, never as errors.
+private val CapsulePlaceholderTints = listOf(
+    Color(0xFF1E3A5F) to Color(0xFF0F1B2C), Color(0xFF3B2A5C) to Color(0xFF170F2A),
+    Color(0xFF1F4D47) to Color(0xFF0C1F1D), Color(0xFF5A3424) to Color(0xFF22130D),
+    Color(0xFF2C3E63) to Color(0xFF121A2B), Color(0xFF4A2741) to Color(0xFF1C0E19),
+)
+
+/**
+ * Artwork slot shown while art loads, when it fails, or when a game has none.
+ * Per-game tint and title keep the shelf readable offline. It sits under the
+ * real artwork, which draws over it once loaded. Semantics are cleared because
+ * the artwork already carries the game name.
+ */
+@Composable
+private fun CapsulePlaceholder(name: String, compact: Boolean, modifier: Modifier = Modifier) {
+    val (top, bottom) = CapsulePlaceholderTints[(name.hashCode() and Int.MAX_VALUE) % CapsulePlaceholderTints.size]
+    Box(
+        modifier.background(Brush.linearGradient(listOf(top, bottom))).clearAndSetSemantics {},
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(Icons.Outlined.SportsEsports, contentDescription = null,
+            tint = Color.White.copy(alpha = 0.07f),
+            modifier = Modifier.fillMaxSize(if (compact) 0.55f else 0.62f).align(Alignment.Center))
+        if (!compact) Text(
+            name,
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.White.copy(alpha = 0.88f),
+            textAlign = TextAlign.Center,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 12.dp),
+        )
+    }
+}
+
+/** Install state as a small pill with a status dot; the label text is unchanged. */
+@Composable
+private fun CapsuleStatusChip(installed: Boolean, modifier: Modifier = Modifier) {
+    Row(
+        modifier
+            .background(Color(0xCC0A0F15), RoundedCornerShape(50))
+            .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(50))
+            .padding(start = 7.dp, end = 9.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        Box(Modifier.size(6.dp).background(if (installed) StatusOnline else TextSecondary.copy(alpha = 0.7f), CircleShape))
+        Text(stringResource(if (installed) R.string.common_ui_installed else R.string.vapor_library_download),
+            color = TextPrimary, style = MaterialTheme.typography.labelSmall, maxLines = 1,
+            overflow = TextOverflow.Ellipsis)
+    }
+}
+
 // Single game capsule for carousel / grid / list
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
@@ -349,7 +410,8 @@ internal fun GameCapsule(
     val isPressed by clickInteraction.collectIsPressedAsState()
     var keyboardFocused by remember { mutableStateOf(false) }
     val isFocused = (isControllerActive && isFocusedOverride) || keyboardFocused
-    val focusScale by animateFloatAsState(if (isFocused) 1.035f else 1f, tween(140), label = "libraryCardFocus")
+    val focusScale by animateFloatAsState(if (isFocused) 1.045f else 1f, tween(160), label = "libraryCardFocus")
+    val focusIntensity by animateFloatAsState(if (isFocused) 1f else 0f, tween(160), label = "libraryCardFocusRing")
     val glowAlpha by animateFloatAsState(
         targetValue = if (isPressed) 0.7f else 0f,
         animationSpec = if (isPressed) tween(100) else tween(400),
@@ -414,17 +476,8 @@ internal fun GameCapsule(
                     contentScale = ContentScale.Crop,
                 )
             } else {
-                Box(
-                    modifier = artModifier.background(SurfaceDark),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        Icons.Outlined.SportsEsports,
-                        contentDescription = app.name,
-                        tint = Accent.copy(alpha = 0.6f),
-                        modifier = Modifier.size(48.dp),
-                    )
-                }
+                // No artwork for this custom game: the placeholder under ArtContent shows through.
+                Box(artModifier.semantics { contentDescription = app.name })
             }
         } else {
             val preferWide = !useLibraryCapsule && !listMode && DeviceProfileSettings.preferWideArtwork(context)
@@ -461,16 +514,18 @@ internal fun GameCapsule(
             modifier =
                 modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(3.dp))
+                    .graphicsLayer { scaleX = focusScale; scaleY = focusScale }
+                    .drawBehind { drawFocusHalo(focusIntensity, CapsuleCorner) }
+                    .clip(CapsuleShape)
                     .then(
                         if (isControllerActive && !isFocused) {
-                            Modifier.border(1.dp, CardBorder, RoundedCornerShape(3.dp))
+                            Modifier.border(1.dp, CardBorder.copy(alpha = 0.6f), CapsuleShape)
                         } else {
                             Modifier
                         },
-                    ).graphicsLayer { scaleX = focusScale; scaleY = focusScale }
-                    .border(if (isFocused) 2.dp else 0.dp, if (isFocused) TextPrimary else Color.Transparent, RoundedCornerShape(3.dp))
-                    .background(CardDark, RoundedCornerShape(3.dp))
+                    )
+                    .background(CardDark, CapsuleShape)
+                    .drawWithContent { drawContent(); drawFocusRing(focusIntensity, CapsuleCorner) }
                     .onFocusChanged { keyboardFocused = it.isFocused }
                     .then(clickModifier),
         ) {
@@ -528,6 +583,7 @@ internal fun GameCapsule(
                             .aspectRatio(462f / 174f)
                             .clip(RoundedCornerShape(8.dp)),
                 ) {
+                    CapsulePlaceholder(app.name, compact = true, modifier = Modifier.fillMaxSize())
                     ArtContent(Modifier.fillMaxSize())
                     libraryBadgeLabel(app.id, isCustom)?.let { badge ->
                         RetroConsoleRibbon(badge, Modifier.align(Alignment.CenterStart))
@@ -562,15 +618,11 @@ internal fun GameCapsule(
             modifier =
                 modifier
                     .fillMaxWidth()
-                    .then(
-                        if (isFocused) {
-                            Modifier
-                        } else {
-                            Modifier.border(1.dp, CardDark, RoundedCornerShape(3.dp))
-                        },
-                    ).graphicsLayer { scaleX = focusScale; scaleY = focusScale }
-                    .border(if (isFocused) 2.dp else 0.dp, if (isFocused) TextPrimary else Color.Transparent, RoundedCornerShape(3.dp))
-                    .background(CardDark, RoundedCornerShape(3.dp))
+                    .graphicsLayer { scaleX = focusScale; scaleY = focusScale }
+                    .drawBehind { drawFocusHalo(focusIntensity, CapsuleCorner) }
+                    .clip(CapsuleShape)
+                    .background(CardDark, CapsuleShape)
+                    .drawWithContent { drawContent(); drawFocusRing(focusIntensity, CapsuleCorner) }
                     .onFocusChanged { keyboardFocused = it.isFocused }
                     .then(clickModifier),
         ) {
@@ -578,21 +630,15 @@ internal fun GameCapsule(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .weight(1f)
-                        .clip(if (showCaption) RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)
-                            else RoundedCornerShape(3.dp)),
+                        .weight(1f),
             ) {
+                CapsulePlaceholder(app.name, compact = showCaption, modifier = Modifier.fillMaxSize())
                 ArtContent(Modifier.fillMaxSize())
                 libraryBadgeLabel(app.id, isCustom)?.let { badge ->
                     RetroConsoleRibbon(badge, Modifier.align(Alignment.CenterStart))
                 }
                 installStatus?.let { installed ->
-                    Text(stringResource(if (installed) R.string.common_ui_installed else R.string.vapor_library_download),
-                        color = TextPrimary, style = MaterialTheme.typography.labelSmall, maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.align(Alignment.BottomStart).padding(6.dp)
-                            .background(BgDark.copy(alpha = 0.9f), RoundedCornerShape(2.dp))
-                            .padding(horizontal = 7.dp, vertical = 4.dp))
+                    CapsuleStatusChip(installed, Modifier.align(Alignment.BottomStart).padding(8.dp))
                 }
             }
 
@@ -601,7 +647,7 @@ internal fun GameCapsule(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 4.dp)
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
                         .then(if (isFocused) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
                 style = MaterialTheme.typography.bodySmall,
                 color = TextPrimary,

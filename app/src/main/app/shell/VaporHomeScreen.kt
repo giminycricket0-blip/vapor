@@ -1,5 +1,6 @@
 package com.winlator.cmod.app.shell
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -112,10 +113,11 @@ internal fun VaporGameShelf(
             val open: @Composable (Modifier) -> Unit = { modifier ->
                 Row(modifier, verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { onOpenGame(games[selected]) }, shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = TextPrimary, contentColor = BgDark),
+                    Button(onClick = { onOpenGame(games[selected]) }, shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = Color.White),
+                        contentPadding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
                         modifier = (if (stackedAction) Modifier.weight(1f) else Modifier)
-                            .heightIn(min = 48.dp).controllerFocusGlow()) {
+                            .heightIn(min = 48.dp).controllerFocusGlow(cornerRadius = 14.dp)) {
                         if (installed) {
                             Icon(Icons.Outlined.PlayArrow, null, Modifier.size(20.dp))
                             Spacer(Modifier.width(8.dp))
@@ -124,8 +126,9 @@ internal fun VaporGameShelf(
                     }
                     onSettings?.let { settings ->
                         OutlinedIconButton(onClick = settings,
-                            border = BorderStroke(1.dp, TextSecondary.copy(alpha = 0.55f)),
-                            modifier = Modifier.size(48.dp).controllerFocusGlow()) {
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f)),
+                            colors = IconButtonDefaults.outlinedIconButtonColors(containerColor = Color.White.copy(alpha = 0.08f)),
+                            modifier = Modifier.size(48.dp).controllerFocusGlow(cornerRadius = 24.dp)) {
                             Icon(Icons.Outlined.Settings, stringResource(R.string.vapor_session_failure_game_settings),
                                 Modifier.size(22.dp), tint = TextPrimary)
                         }

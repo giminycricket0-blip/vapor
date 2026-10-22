@@ -432,20 +432,21 @@ internal fun DownloadsQueueButton(
     onSecondary: () -> Unit = {},
     onClick: () -> Unit,
 ) {
+    // Tonal button: a soft accent-tinted fill instead of an outlined dark box.
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.heightIn(min = 48.dp).controllerFocusGlow()
-            .then(if (enabled) Modifier.paneNavItem(cornerRadius = 10.dp, onActivate = onClick, onSecondary = onSecondary) else Modifier),
+        modifier = modifier.heightIn(min = 48.dp).controllerFocusGlow(cornerRadius = 12.dp)
+            .then(if (enabled) Modifier.paneNavItem(cornerRadius = 12.dp, onActivate = onClick, onSecondary = onSecondary) else Modifier),
         colors = ButtonDefaults.buttonColors(
-            containerColor = SurfaceDark,
+            containerColor = accentColor.copy(alpha = 0.14f),
             contentColor = accentColor,
             disabledContainerColor = SurfaceDark.copy(alpha = 0.5f),
             disabledContentColor = TextSecondary.copy(alpha = 0.5f),
         ),
-        border = BorderStroke(1.dp, if (enabled) accentColor.copy(alpha = 0.5f) else CardBorder),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        shape = RoundedCornerShape(10.dp),
+        border = BorderStroke(1.dp, if (enabled) accentColor.copy(alpha = 0.22f) else CardBorder),
+        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
+        shape = RoundedCornerShape(12.dp),
     ) {
         Text(label, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
     }
@@ -453,16 +454,20 @@ internal fun DownloadsQueueButton(
 
 @Composable
 internal fun DownloadProgressBar(progress: Float, status: DownloadPhase, modifier: Modifier = Modifier) {
+    // One continuous rounded bar: no segment gap or end stop, which read as a glitch at this size.
     LinearProgressIndicator(
         progress = { progress.coerceIn(0f, 1f) },
-        modifier = modifier,
+        modifier = modifier.clip(RoundedCornerShape(50)),
         color = when (status) {
             DownloadPhase.FAILED, DownloadPhase.CANCELLED -> DangerRed
             DownloadPhase.COMPLETE -> StatusOnline
             DownloadPhase.PAUSED -> TextSecondary
             else -> Accent
         },
-        trackColor = CardBorder,
+        trackColor = Color.White.copy(alpha = 0.08f),
+        strokeCap = StrokeCap.Round,
+        gapSize = 0.dp,
+        drawStopIndicator = {},
     )
 }
 

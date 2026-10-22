@@ -1,5 +1,8 @@
 package com.winlator.cmod.app.shell
 
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import android.text.format.DateUtils
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -111,12 +114,13 @@ internal fun DownloadQueueCard(
         else -> R.string.downloads_queue_phase_unknown
     })
     Surface(Modifier.fillMaxWidth().controllerConfirmOnA(), color = colors.surface,
-        contentColor = colors.onSurface, shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, colors.outline.copy(alpha = .6f))) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        contentColor = colors.onSurface, shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = .07f))) {
+        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 AsyncImage(image, null, contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(88.dp, 52.dp).clip(RoundedCornerShape(8.dp)).background(colors.background))
+                    modifier = Modifier.size(96.dp, 56.dp).clip(RoundedCornerShape(10.dp))
+                        .background(Brush.linearGradient(listOf(colors.primaryContainer, colors.background))))
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     if (store.isNotEmpty()) Text(store, color = colors.onSurfaceVariant, style = MaterialTheme.typography.labelMedium)
@@ -131,7 +135,8 @@ internal fun DownloadQueueCard(
                 Text(currentFile.orEmpty(), color = colors.onSurfaceVariant, style = MaterialTheme.typography.bodySmall,
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            if (indeterminate) LinearProgressIndicator(Modifier.fillMaxWidth().height(6.dp), color = accent, trackColor = colors.outlineVariant)
+            if (indeterminate) LinearProgressIndicator(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(50)),
+                color = accent, trackColor = Color.White.copy(alpha = 0.08f), strokeCap = StrokeCap.Round, gapSize = 0.dp)
             else DownloadProgressBar(value, status, Modifier.fillMaxWidth().height(6.dp))
             if (knownProgress && !processing && status != DownloadPhase.CANCELLED) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {

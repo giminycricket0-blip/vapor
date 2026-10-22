@@ -9,8 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.winlator.cmod.R
 
 val WinNativeBackground = Color(0xFF0E141B)
@@ -22,8 +24,13 @@ val WinNativeAccent = Color(0xFF1A9FFF)
 val WinNativeTextPrimary = Color(0xFFF4F4F4)
 val WinNativeTextSecondary = Color(0xFFB8BCBF)
 val WinNativeFocus = Color.White
-val WinNativePlay = Color(0xFF5C7E10)
+/** Play action: a brighter, modern green. The gradient pair is used where the action is drawn as a hero button. */
+val WinNativePlay = Color(0xFF3FA83A)
+val WinNativePlayHighlight = Color(0xFF6CCB4A)
+val WinNativePlayShade = Color(0xFF2E8A2C)
 val WinNativeDanger = Color(0xFFFF7A88)
+/** Soft accent used for focus halos and selected surfaces. */
+val WinNativeAccentGlow = Color(0xFF58B4FF)
 
 private val WinNativeColorScheme =
     darkColorScheme(
@@ -57,14 +64,17 @@ private val WinNativeColorScheme =
         onBackground = WinNativeTextPrimary,
     )
 
+// Material components (cards, dialogs, menus, sheets) take their corners from here.
+// Softer, modern radii; explicit component shapes elsewhere are unaffected.
 private val WinNativeShapes = Shapes(
-    extraSmall = RoundedCornerShape(2.dp),
-    small = RoundedCornerShape(2.dp),
-    medium = RoundedCornerShape(3.dp),
-    large = RoundedCornerShape(4.dp),
-    extraLarge = RoundedCornerShape(4.dp),
+    extraSmall = RoundedCornerShape(6.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp),
+    extraLarge = RoundedCornerShape(24.dp),
 )
 
+/** Body and label text. Only the Inter Medium file is bundled, so every weight maps to it. */
 val WinNativeFontFamily =
     FontFamily(
         Font(R.font.inter_medium, FontWeight.Normal),
@@ -73,19 +83,36 @@ val WinNativeFontFamily =
         Font(R.font.inter_medium, FontWeight.Bold),
     )
 
+/**
+ * Display and title text. Bricolage Grotesque ships with real weights, so headings get an
+ * actual bold instead of the single Inter Medium face.
+ */
+val VaporDisplayFontFamily =
+    FontFamily(
+        Font(R.font.bricolage_grotesque_light, FontWeight.Light),
+        Font(R.font.bricolage_grotesque_regular, FontWeight.Normal),
+        Font(R.font.bricolage_grotesque_medium, FontWeight.Medium),
+        Font(R.font.bricolage_grotesque_semibold, FontWeight.SemiBold),
+        Font(R.font.bricolage_grotesque_bold, FontWeight.Bold),
+        Font(R.font.bricolage_grotesque_extrabold, FontWeight.ExtraBold),
+    )
+
 private val BaseTypography = Typography()
+
+private fun TextStyle.display(weight: FontWeight, tracking: Double = -0.01): TextStyle =
+    copy(fontFamily = VaporDisplayFontFamily, fontWeight = weight, letterSpacing = (fontSize.value * tracking).sp)
 
 val WinNativeTypography =
     Typography(
-        displayLarge = BaseTypography.displayLarge.copy(fontFamily = WinNativeFontFamily),
-        displayMedium = BaseTypography.displayMedium.copy(fontFamily = WinNativeFontFamily),
-        displaySmall = BaseTypography.displaySmall.copy(fontFamily = WinNativeFontFamily),
-        headlineLarge = BaseTypography.headlineLarge.copy(fontFamily = WinNativeFontFamily),
-        headlineMedium = BaseTypography.headlineMedium.copy(fontFamily = WinNativeFontFamily),
-        headlineSmall = BaseTypography.headlineSmall.copy(fontFamily = WinNativeFontFamily),
-        titleLarge = BaseTypography.titleLarge.copy(fontFamily = WinNativeFontFamily),
-        titleMedium = BaseTypography.titleMedium.copy(fontFamily = WinNativeFontFamily),
-        titleSmall = BaseTypography.titleSmall.copy(fontFamily = WinNativeFontFamily),
+        displayLarge = BaseTypography.displayLarge.display(FontWeight.ExtraBold, -0.02),
+        displayMedium = BaseTypography.displayMedium.display(FontWeight.ExtraBold, -0.02),
+        displaySmall = BaseTypography.displaySmall.display(FontWeight.Bold, -0.015),
+        headlineLarge = BaseTypography.headlineLarge.display(FontWeight.Bold, -0.015),
+        headlineMedium = BaseTypography.headlineMedium.display(FontWeight.Bold),
+        headlineSmall = BaseTypography.headlineSmall.display(FontWeight.Bold),
+        titleLarge = BaseTypography.titleLarge.display(FontWeight.SemiBold),
+        titleMedium = BaseTypography.titleMedium.display(FontWeight.SemiBold, 0.0),
+        titleSmall = BaseTypography.titleSmall.display(FontWeight.SemiBold, 0.0),
         bodyLarge = BaseTypography.bodyLarge.copy(fontFamily = WinNativeFontFamily),
         bodyMedium = BaseTypography.bodyMedium.copy(fontFamily = WinNativeFontFamily),
         bodySmall = BaseTypography.bodySmall.copy(fontFamily = WinNativeFontFamily),

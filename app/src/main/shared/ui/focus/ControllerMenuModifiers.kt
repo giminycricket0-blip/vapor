@@ -19,6 +19,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
@@ -66,6 +67,42 @@ fun Modifier.controllerFocusBorder(
             }
     }
 
+private val FocusHalo = com.winlator.cmod.shared.theme.WinNativeAccentGlow
+
+/**
+ * Soft accent halo just outside a focused control, drawn behind its content.
+ * Layered strokes approximate a blur without a RenderEffect, so it costs the
+ * same on every API level and stays cheap on handheld GPUs.
+ */
+fun DrawScope.drawFocusHalo(intensity: Float, cornerRadius: Dp, haloColor: Color = FocusHalo) {
+    if (intensity <= 0f) return
+    val cr = cornerRadius.toPx()
+    val layers = 4
+    for (i in layers downTo 1) {
+        val spread = (i * 1.75f).dp.toPx()
+        drawRoundRect(
+            color = haloColor.copy(alpha = 0.10f * intensity * (layers + 1 - i) / layers),
+            topLeft = Offset(-spread, -spread),
+            size = Size(size.width + spread * 2, size.height + spread * 2),
+            cornerRadius = CornerRadius(cr + spread, cr + spread),
+        )
+    }
+}
+
+/** Crisp focus ring drawn over the content, inset so it never clips at the edges. */
+fun DrawScope.drawFocusRing(intensity: Float, cornerRadius: Dp, ringColor: Color = AccentBorder, width: Dp = 2.dp) {
+    if (intensity <= 0f) return
+    val w = width.toPx()
+    val cr = cornerRadius.toPx()
+    drawRoundRect(
+        color = ringColor.copy(alpha = intensity),
+        topLeft = Offset(w / 2, w / 2),
+        size = Size(size.width - w, size.height - w),
+        cornerRadius = CornerRadius((cr - w / 2).coerceAtLeast(0f), (cr - w / 2).coerceAtLeast(0f)),
+        style = Stroke(width = w),
+    )
+}
+
 fun Modifier.controllerFocusGlow(
     cornerRadius: Dp = 8.dp,
     color: Color = AccentBorder,
@@ -80,23 +117,13 @@ fun Modifier.controllerFocusGlow(
         this
             .onFocusChanged { focused = it.isFocused }
             .drawWithContent {
-                val cr = cornerRadius.toPx()
+                drawFocusHalo(intensity, cornerRadius)
                 if (intensity > 0f) {
-                    drawRoundRect(
-                        color = color.copy(alpha = 0.08f * intensity),
-                        cornerRadius = CornerRadius(cr, cr),
-                    )
+                    val cr = cornerRadius.toPx()
+                    drawRoundRect(color = color.copy(alpha = 0.06f * intensity), cornerRadius = CornerRadius(cr, cr))
                 }
                 drawContent()
-                if (intensity > 0f) {
-                    drawRoundRect(
-                        color = color.copy(alpha = intensity),
-                        topLeft = Offset(1.dp.toPx(), 1.dp.toPx()),
-                        size = Size(size.width - 2.dp.toPx(), size.height - 2.dp.toPx()),
-                        cornerRadius = CornerRadius(cr, cr),
-                        style = Stroke(width = 2.dp.toPx()),
-                    )
-                }
+                drawFocusRing(intensity, cornerRadius, color)
             }
     }
 
