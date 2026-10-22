@@ -251,7 +251,7 @@ is identified:
 | **Store and controls** | Public Store recovery, native UI layouts, and injected controller navigation pass local checks. | Authenticated free/demo and paid flows, live web sign-in, physical controllers, and phone UX acceptance. |
 | **Graphics stack** | Driver validation and automatic graphics pass local and emulator checks. Wrapper decode, rendering and validation-layer probes pass on 4 KB / 16 KB emulators (software Vulkan), and five wrapper defects have local patches with before/after evidence. | Adreno/KGSL phone runs, automatic retries on the phone, packaging the wrapper patches, and the last two shutdown frees on a real driver. |
 | **Build reproducibility** | Two clean builds give byte-identical APKs on one machine and on two independent CI runners (pinned build ID and source date, CI-only signing key); CI checks this on every push. | Release signing and cross-toolchain builds. |
-| **Android platform** | ARM64 development APK; minimum Android 10. **39/39** APK native libraries and ZIP packaging pass 16 KB alignment. Native TLS/probe checks and startup pass on 4 KB / 16 KB emulators. | Modern target SDK 36 and complete Wine/FEX gameplay on 16 KB kernels. The current build targets SDK **28** and compiles against **35**. |
+| **Android platform** | ARM64 development APK; minimum Android 10. **39/39** APK native libraries and ZIP packaging pass 16 KB alignment. Native TLS/probe checks and startup pass on 4 KB / 16 KB emulators. The target-SDK blocker is measured: above 28 Android denies directly running Wine/Box64 from app storage, while running them through the system linker still works. | A modern target SDK (needs an exec shim and a component inventory; [plan](docs/TARGET-SDK.md)) and complete Wine/FEX gameplay on 16 KB kernels. The current build targets SDK **28** and compiles against **35**. |
 
 <details>
 <summary><strong>Engineering checks and current development builds</strong></summary>
@@ -373,6 +373,7 @@ Useful contributions include reproducible game/device reports, fixes in the exis
 | [UI and controls](docs/UI-UX.md) | Navigation, layouts, and interaction decisions |
 | [Runtime research](docs/RUNTIME-RESEARCH.md) | Translation, graphics, and upstream investigations |
 | [Drivers](docs/DRIVERS.md) | Android and Linux Turnip builds, packages, and installation |
+| [Target SDK](docs/TARGET-SDK.md) | What blocks raising the target SDK above 28, measured on the emulator, and the plan |
 | [Vulkan wrapper experiments](tools/vulkan-wrapper/README.md) | Wrapper probes, local patches, and their stacking order |
 | [Project comparisons](docs/COMPETITOR-COMPARISON.md) | Source-backed alternatives and comparison limits |
 | [Provenance](docs/PROVENANCE.md) | Component identities, sources, licenses, and open distribution gates |
