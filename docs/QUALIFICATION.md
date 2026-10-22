@@ -452,9 +452,13 @@ date and no dex `BUILD_ID` drift. Signing the demonstrated APK is also
 byte-deterministic in repeated runs (three identical debug-signed APKs, an
 identical 4 KB v2 signing block, zipalign included), and an independent
 `APK reproducibility` workflow builds the same pinned APK on two separate
-`ubuntu-24.04` runners and fails unless the two hashes match; the CI run result is
-recorded in the lane receipt. Release signing and cross-toolchain
-reproducibility remain out of scope.
+`ubuntu-24.04` runners, installs the committed throwaway CI debug keystore so
+signing is deterministic, and fails unless the two hashes match. Its first run
+proved the two builds produce byte-identical ZIP content (1638/1638 entries, zero
+differing CRCs, zero padding) and failed only on the per-runner debug signing
+block, which the fixed keystore addresses; the second run's result is recorded in
+the lane receipt. Release signing and cross-toolchain reproducibility remain out
+of scope.
 [Native rebuild receipt](evidence/2026-10-21-emuready-native-rebuild.json),
 [rebuild reproducibility receipt](evidence/2026-10-21-apk-rebuild-reproducibility.json),
 [root-cause receipt](evidence/2026-10-22-apk-reproducibility-rootcause.json),

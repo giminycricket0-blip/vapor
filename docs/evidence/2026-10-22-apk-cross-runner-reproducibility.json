@@ -65,15 +65,65 @@
       "Gradle dependency resolution from remote repositories could change if a pinned dependency version is not immutable (the build already uses fixed versions, but no lockfile guarantee is added here)",
       "Debug signing only; release signing and fully pristine caches are out of scope"
     ],
-    "status": "Workflow committed but not yet executed; the Lead pushes and records the CI run result here after it completes. This receipt does not claim CI success."
+    "status": "First lane run executed: both builds succeeded, ZIP content identical, compare failed only on the per-runner debug signing block. Fixed CI debug keystore + automatic signing-block classification committed; second run pending.",
+    "ci_runs": [
+      {
+        "run": 1,
+        "id": 39713433060,
+        "head_commit": "61b35fbd",
+        "head_workflow_sha": "5a0f93adf164b8877047257649dfdf8cd2946e512cd504746351d904583da532",
+        "jobs": {
+          "build-a": "success",
+          "build-b": "success",
+          "compare": "failure"
+        },
+        "builds": {
+          "size_bytes": 676228094,
+          "zip_entries": 1638,
+          "differing_crc32_entries": 0,
+          "local_order_identical": true,
+          "padding_bytes": 0
+        },
+        "hashes": {
+          "build_a": "b36fa715b1287ecc608101118d2dcf74b38811f9be25b51adb5f28d493c230ac",
+          "build_b": "971c1bdadfeb489868999564769bb603aaa03083b0e3b5f8b850c00c4aed9bc1"
+        },
+        "diagnosis": "The two independently built APKs are byte-identical in every ZIP entry (1638/1638, same order, same offsets, zero padding, zero differing CRC32). The only difference is the 4,096-byte APK signing block (sha256 source 77ba7a8f4fa859d0ed6ecea0a1b4c50eebfcd336d1f89d16948a00870ce11328 vs rebuild c01952130b8f074ebe98bbedb808e99f650f52cad26d2055620c4ab117fb41a8; 1,022 differing bytes): Android debug keystores are generated with a fresh random key on each runner, so signing differed while the build did not. tools/tests/apk-repro-diff.py (v1.1.0) was extended to detect and classify this signing-block-only case automatically.",
+        "artifact_diagnosis": {
+          "artifacts": "gh run download 39713433060 (apk-job-a, apk-job-b)",
+          "diff_report": "/Users/cheng/apk-repro-ci-diff3/report.json (signing block classification)"
+        }
+      },
+      {
+        "run": 2,
+        "status": "pending",
+        "fix": "Commit the throwaway CI debug keystore .github/ci-debug.keystore and install it as $HOME/.android/debug.keystore in both jobs before the build, so both runners sign with the same debug key. The lane then tests build determinism rather than per-runner key generation. The result is recorded here after the workflow runs."
+      }
+    ],
+    "fixed_ci_keystore": {
+      "path": ".github/ci-debug.keystore",
+      "sha256": "ab60f83d76554f6ca8f194ba5d8ad379e65d96d888ae10cd13111fdaaf207c6b",
+      "type": "JKS, RSA 2048, alias androiddebugkey, passwords android (public throwaway CI-only debug key, documented in .github/CI-DEBUG-KEYSTORE.md); never for releases",
+      "installed_as": "$HOME/.android/debug.keystore in both build jobs",
+      "rationale": "Android debug signing uses a per-machine random keystore, which would make the signing block differ even for byte-identical builds; the first lane run proved exactly that."
+    }
   },
   "limitations": [
     "CI lane proves same-image cross-runner reproducibility only; it does not prove reproducibility across different OS/toolchain versions",
     "Signing experiment covers the debug key and v2 scheme on one host",
-    "No app code or packaging change"
+    "No app code or packaging change",
+    "The fixed CI debug keystore is intentionally public and must never be used for releases; release-signing determinism remains untested."
   ],
   "raw_artifacts": {
     "signing_scratch": "/Users/cheng/apk-repro-ci (unsigned APK, apksigner outputs, sigblock.py, out/ and out2/ hashes)",
     "input_apk": "/Users/cheng/apk-repro-mitigation/out/buildA.apk and buildB.apk (sha256 f8cc0b2f\u2026, demonstrated byte-identical)"
+  },
+  "tools": {
+    "apk_repro_diff": {
+      "path": "tools/tests/apk-repro-diff.py",
+      "version": "1.1.0",
+      "sha256": "7ab25d2d1686041749ad9afaaa6ad0cc3200f4e4f4f1d31f6e8ee70bd9ab3f4c",
+      "change": "detects and classifies APK signing-block-only differences (v2/v3 block before the ZIP central directory) so a per-runner signing-key difference is not mis-attributed to the build"
+    }
   }
 }

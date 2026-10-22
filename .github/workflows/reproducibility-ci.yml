@@ -12,7 +12,12 @@ name: APK reproducibility
 #     Kotlin copies and D8's class-checksum metadata follow the git HEAD),
 #   * app/build and app/.cxx are removed before the build, so APK packaging
 #     starts from scratch (the root-cause pass showed incremental packaging
-#     leaves history-dependent ZIP holes/padding: a 4.87 MB size delta).
+#     leaves history-dependent ZIP holes/padding: a 4.87 MB size delta),
+#   * both jobs install the same fixed CI-only debug keystore
+#     (.github/ci-debug.keystore, see .github/CI-DEBUG-KEYSTORE.md), because an
+#     Android debug keystore generated independently per runner would make the
+#     signing block differ even when every ZIP entry is identical (this was the
+#     cause of the first lane run's failure).
 #
 # No Gradle/actions cache is used on purpose for this first version: the lane
 # must compare two pristine, independent builds. Do not add actions/cache here
@@ -55,6 +60,17 @@ jobs:
           submodules: recursive
           lfs: true
           persist-credentials: false
+
+      - name: Install fixed CI debug keystore
+        run: |
+          set -euo pipefail
+          # Android debug APKs are signed by AGP with a per-machine debug
+          # keystore. The fixed keystore committed under .github/ makes both
+          # jobs sign identically, so the comparison tests build determinism,
+          # not key generation (see .github/CI-DEBUG-KEYSTORE.md).
+          install -d -m 700 "$HOME/.android"
+          install -m 600 .github/ci-debug.keystore "$HOME/.android/debug.keystore"
+          sha256sum "$HOME/.android/debug.keystore"
 
       - uses: actions/setup-java@v5
         with:
@@ -139,6 +155,17 @@ jobs:
           submodules: recursive
           lfs: true
           persist-credentials: false
+
+      - name: Install fixed CI debug keystore
+        run: |
+          set -euo pipefail
+          # Android debug APKs are signed by AGP with a per-machine debug
+          # keystore. The fixed keystore committed under .github/ makes both
+          # jobs sign identically, so the comparison tests build determinism,
+          # not key generation (see .github/CI-DEBUG-KEYSTORE.md).
+          install -d -m 700 "$HOME/.android"
+          install -m 600 .github/ci-debug.keystore "$HOME/.android/debug.keystore"
+          sha256sum "$HOME/.android/debug.keystore"
 
       - uses: actions/setup-java@v5
         with:

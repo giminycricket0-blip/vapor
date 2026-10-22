@@ -51,7 +51,7 @@ import sys
 import zipfile
 from pathlib import Path
 
-TOOL_VERSION = "1.0.0"
+TOOL_VERSION = "1.1.0"
 
 # Sections whose contents are build-metadata rather than executable behaviour.
 METADATA_SECTIONS = {
@@ -1200,6 +1200,69 @@ def analyze_entries(source_apk: Path, rebuild_apk: Path, layout_report: dict,
     return report
 
 
+# ---------------------------------------------------------------------------
+# APK signing block
+#
+# apksigner writes the v2/v3 signing block immediately before the ZIP central
+# directory (and outside the ZIP entries). Two clean builds can therefore be
+# byte-identical in every entry and still hash differently when the signing key
+# differs, e.g. an Android debug keystore generated independently on each CI
+# runner. Detect and report that case explicitly so a hash mismatch is not
+# mis-attributed to the build.
+# ---------------------------------------------------------------------------
+
+APK_SIG_BLOCK_MAGIC = b"APK Sig Block 42"
+
+
+def read_apk_signing_block(path) -> dict:
+    """Return the APK signing block (if present) as bytes/hash/metadata."""
+    try:
+        data = Path(path).read_bytes()
+    except OSError as exc:  # noqa: PERF203 - report, never crash
+        return {"error": f"{type(exc).__name__}: {exc}"}
+    eocd = data.rfind(b"PK\x05\x06", max(0, len(data) - 65557))
+    if eocd < 0:
+        return {"present": False, "reason": "no ZIP end-of-central-directory record"}
+    if eocd + 22 > len(data):
+        return {"present": False, "reason": "truncated EOCD record"}
+    try:
+        cd_offset = struct.unpack_from("<I", data, eocd + 16)[0]
+    except struct.error as exc:
+        return {"error": f"{type(exc).__name__}: {exc}"}
+    # The APK signing block sits immediately before the ZIP central directory.
+    if cd_offset < 32 or data[cd_offset - 16:cd_offset] != APK_SIG_BLOCK_MAGIC:
+        return {"present": False, "reason": "no APK signing block"}
+    try:
+        block_size = struct.unpack_from("<Q", data, cd_offset - 24)[0]
+    except struct.error as exc:
+        return {"error": f"{type(exc).__name__}: {exc}"}
+    start = cd_offset - 8 - block_size
+    if start < 0 or block_size < 24:
+        return {"error": f"implausible signing block size {block_size}"}
+    block = data[start:cd_offset]
+    return {
+        "present": True,
+        "start": start,
+        "end": cd_offset,
+        "bytes": len(block),
+        "sha256": hashlib.sha256(block).hexdigest(),
+    }
+
+
+def compare_apk_signing_blocks(source, rebuild) -> dict:
+    source_block = read_apk_signing_block(source)
+    rebuild_block = read_apk_signing_block(rebuild)
+    result = {"source": source_block, "rebuild": rebuild_block}
+    if source_block.get("present") and rebuild_block.get("present"):
+        result["identical"] = source_block.get("sha256") == rebuild_block.get("sha256")
+    elif not source_block.get("present") and not rebuild_block.get("present"):
+        result["identical"] = True
+    else:
+        result["identical"] = False
+        result["note"] = "one APK is signed and the other is not"
+    return result
+
+
 def build_report(args):
     source = Path(args.source).resolve()
     rebuild = Path(args.rebuild).resolve()
@@ -1221,6 +1284,7 @@ def build_report(args):
     layout = compare_apk_layout(source, rebuild)
     entries = analyze_entries(source, rebuild, layout, workdir, llvm_bin, dexdump)
     layout.pop("_entries", None)
+    signing = compare_apk_signing_blocks(source, rebuild)
 
     report = {
         "tool": "tools/tests/apk-repro-diff.py",
@@ -1238,13 +1302,14 @@ def build_report(args):
             "dexdump": str(dexdump) if dexdump else None,
         },
         "apk_layout": layout,
+        "apk_signing_block": signing,
         "content": entries,
-        "verdicts": summarize_verdicts(layout, entries),
+        "verdicts": summarize_verdicts(layout, entries, signing),
     }
     return report
 
 
-def summarize_verdicts(layout, entries) -> dict:
+def summarize_verdicts(layout, entries, signing=None) -> dict:
     out = {"differing_entries": layout["entries_with_different_crc32"],
            "verdicts": {}}
     for name, entry in entries.get("native_libraries", {}).items():
@@ -1280,6 +1345,34 @@ def summarize_verdicts(layout, entries) -> dict:
             "content)")
         if layout_only else "review-needed (entry set/size change)",
     }
+    signing = signing or {}
+    if signing.get("source", {}).get("present") or signing.get("rebuild", {}).get("present"):
+        identical = signing.get("identical")
+        entries_identical = not layout["entries_with_different_crc32"]
+        if identical:
+            classification = "signing-block identical"
+        elif entries_identical:
+            classification = (
+                "signing-block-only difference (every ZIP entry is identical; "
+                "the signing key/keystore differs between the builds)")
+        else:
+            classification = "signing block differs alongside content differences"
+        out["apk_signing_block"] = {
+            "present": {
+                "source": bool(signing.get("source", {}).get("present")),
+                "rebuild": bool(signing.get("rebuild", {}).get("present")),
+            },
+            "bytes": {
+                "source": signing.get("source", {}).get("bytes"),
+                "rebuild": signing.get("rebuild", {}).get("bytes"),
+            },
+            "sha256": {
+                "source": signing.get("source", {}).get("sha256"),
+                "rebuild": signing.get("rebuild", {}).get("sha256"),
+            },
+            "identical": identical,
+            "classification": classification,
+        }
     return out
 
 
@@ -1297,6 +1390,16 @@ def print_summary(report):
           f"{layout['rebuild']['inter_entry_padding']['total_bytes']} bytes; "
           f"local order identical: "
           f"{layout['local_entry_order']['local_order_identical']}")
+    signing = report.get("apk_signing_block", {})
+    if signing.get("source", {}).get("present") or signing.get("rebuild", {}).get("present"):
+        print(f"APK signing block: source {signing['source'].get('bytes')}B "
+              f"{str(signing['source'].get('sha256'))[:16]}.. -> "
+              f"rebuild {signing['rebuild'].get('bytes')}B "
+              f"{str(signing['rebuild'].get('sha256'))[:16]}.. "
+              f"(identical={signing.get('identical')})")
+        verdict = report.get("verdicts", {}).get("apk_signing_block", {})
+        if verdict.get("classification"):
+            print(f"  signing-block classification: {verdict['classification']}")
     print(f"differing CRC32 entries ({len(layout['entries_with_different_crc32'])}): "
           + ", ".join(layout["entries_with_different_crc32"]))
     for name, entry in entries.get("native_libraries", {}).items():
