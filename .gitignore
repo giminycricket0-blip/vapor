@@ -70,6 +70,7 @@ dist/
 !tools/tests/vulkan-wrapper-reference.py
 !tools/tests/vulkan-wrapper-render.py
 !tools/tests/vulkan-wrapper-validation.py
+!tools/vulkan-wrapper/package-wrapper-vapor.py
 !tools/tests/vulkan-wrapper-trace.py
 !tools/tests/wayland-fences.py
 

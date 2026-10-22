@@ -22,6 +22,7 @@
         <item>Wrapper</item>
         <item>Wrapper-Leegao</item>
         <item>Wrapper-Gamenative</item>
+        <item>Wrapper-Vapor (experimental)</item>
     </string-array>
     <string-array name="zink_mode_entries">
         <item>Unix Zink</item>

@@ -10401,14 +10401,14 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
             }
         }
 
-        boolean wantLeegao = "wrapper-leegao".equals(graphicsDriver);
-        boolean wantGamenative = "wrapper-gamenative".equals(graphicsDriver);
+        com.winlator.cmod.runtime.system.WrapperVariant wrapperVariant =
+                com.winlator.cmod.runtime.system.WrapperVariant.forDriver(graphicsDriver);
+        boolean wantLeegao = wrapperVariant == com.winlator.cmod.runtime.system.WrapperVariant.LEEGAO;
+        boolean wantGamenative = wrapperVariant == com.winlator.cmod.runtime.system.WrapperVariant.GAMENATIVE;
         File leegaoMarker = new File(rootDir, "usr/lib/.wrapper_leegao");
         File gamenativeMarker = new File(rootDir, "usr/lib/.wrapper_gamenative");
         File wrapperStateMarker = new File(rootDir, "usr/lib/.wrapper_state");
-        String wantedWrapperState =
-                (wantLeegao ? "leegao" : wantGamenative ? "gamenative" : "stock")
-                        + ":" + AppUtils.getVersionCode(this);
+        String wantedWrapperState = wrapperVariant.state(AppUtils.getVersionCode(this));
         String installedWrapperState = "";
         if (wrapperStateMarker.isFile()) {
             String raw = FileUtils.readString(wrapperStateMarker);
@@ -10417,9 +10417,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
         if (!wantedWrapperState.equals(installedWrapperState)) {
             Log.i("GraphicsDriverExtraction", "Wrapper state " + installedWrapperState
                     + " -> " + wantedWrapperState + ", extracting");
-            String wrapperAsset = wantLeegao ? "graphics_driver/wrapper-leegao.tzst"
-                    : wantGamenative ? "graphics_driver/wrapper-gamenative.tzst"
-                    : "graphics_driver/wrapper.tzst";
+            String wrapperAsset = wrapperVariant.getAsset();
             if (TarCompressorUtils.extract(TarCompressorUtils.Type.ZSTD, this, wrapperAsset, rootDir)) {
                 FileUtils.writeString(wrapperStateMarker, wantedWrapperState);
                 leegaoMarker.delete();
@@ -10458,7 +10456,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
                     adrenoToolsDriverId + "' name='" + driverDisplayName +
                     "' version='" + driverVersion + "' library='" + driverLibrary + "'");
             adrenotoolsManager.setDriverById(envVars, imageFs, adrenoToolsDriverId);
-            if (wantLeegao) envVars.put("ADRENOTOOLS_HOOKS_PATH", imageFs.getLibDir().getPath());
+            if (wrapperVariant.getUsesLeegaoHooks()) envVars.put("ADRENOTOOLS_HOOKS_PATH", imageFs.getLibDir().getPath());
             Log.i("GraphicsDriverExtraction", "Loaded graphics/Turnip driver env: id='" +
                     adrenoToolsDriverId + "' path=" +
                     envVars.get("ADRENOTOOLS_DRIVER_PATH") + " name=" +
