@@ -35,7 +35,7 @@
     },
     "checker": {
       "path": "tools/tests/vulkan-wrapper-render.py",
-      "sha256": "6bd9ed110e965d264785a8c27a2ef1924236546fb0d7f9f7f464e94b6d11468a",
+      "sha256": "832fbe953519964c4658294682e7e08d9b7d05e677a7f40ba91b0cf605792e6e",
       "functions": "independently re-derives expected render images from the saved decoded textures (nearest upscale; sRGB encoded/linear conventions with double precision ties-to-even), verifies the recorded expected files, then compares every readback; --print-runbook prints device reproduction commands"
     }
   },
@@ -60,7 +60,8 @@
         "host-cpu (USE_CPU_BCN=all)",
         "native (system loader only)"
       ],
-      "readbacks_checked": 32
+      "readbacks_checked": 31,
+      "files": "33 readback files = 31 unique cases + 2 byte-identical alias copies written by the early smoke run (out-bc1-candidate-compute.bin, out-rgba8-system.bin)"
     },
     "inputs": {
       "bc1-32x32.bin": "294cb01a523693ddb55d1685f88467d3c673cd1cc031e52ee8328da36bc8d8ec",
@@ -72,7 +73,7 @@
     "derivation_verified": "The recorded expected images match an independent re-derivation exactly: unorm and srgb-encoded = nearest upscale of the saved decoded texture; srgb-linear = nearest upscale of the sRGB->linear (IEC 61966-2-1, double precision, ties-to-even) transform (max delta 0 for both BC1 and BC3)."
   },
   "results": {
-    "checker": "python3 tools/tests/vulkan-wrapper-render.py --dir <evidence> => 32 pass / 0 fail / 0 skipped (33 readbacks scanned); 16/32 byte-exact",
+    "checker": "python3 tools/tests/vulkan-wrapper-render.py --dir <evidence> => 31 pass / 0 fail / 0 skipped across 31 unique cases (33 files, 2 alias copies collapsed); 15/31 byte-exact",
     "groups": [
       {
         "group": "RGBA8 control (system/candidate/baseline)",
@@ -107,7 +108,8 @@
         "meaning": "expected inter-decoder rounding, not a wrapper path"
       }
     ],
-    "conclusion": "The wrapper-decoded textures survive a real sampled-rendering pipeline and produce the expected rendered images on the emulator, including sRGB sampling semantics; the only substantive deviation is the known host-CPU sRGB encode/linearise split, which is separately patched."
+    "conclusion": "The wrapper-decoded textures survive a real sampled-rendering pipeline and produce the expected rendered images on the emulator, including sRGB sampling semantics; the only substantive deviation is the known host-CPU sRGB encode/linearise split, which is separately patched.",
+    "correction_2026-10-22": "An earlier draft reported 32 pass / 16 byte-exact: the first checker revision counted the duplicated candidate BC1 compute case twice and silently skipped the out-rgba8-system.bin alias while printing \"0 skipped\". The fixed checker parses both naming forms, collapses byte-identical aliases, fails on conflicting aliases or unrecognised files, and reports skips; negative controls (one corrupted byte; an unknown file name) both fail as expected."
   },
   "confirmed": [
     "Graphics pipeline (graphicsPipeline, render pass, framebuffer, sampler, descriptor set, draw, readback) works with the wrapper on llvmpipe",

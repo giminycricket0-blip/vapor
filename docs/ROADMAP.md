@@ -62,7 +62,7 @@ Continue in this order:
    and BC7 pass the emulator probes: a reference-image probe matches independent
    S3TC, RGTC and BC7 decoders exactly for the wrapper compute path (BC7 on both
    4 KB and 16 KB), and a graphics-pipeline probe renders wrapper-decoded
-   BC1/BC3 UNORM/sRGB textures correctly (32/32 checked readbacks pass, RGBA8
+   BC1/BC3 UNORM/sRGB textures correctly (31/31 unique cases pass, RGBA8
    controls byte-exact). The BC_SRGB storage inconsistency is root-caused and
    fixed experimentally by `tools/vulkan-wrapper/srgb-storage.patch` (host-CPU
    path now linearises; A/B closes the 74-LSB gap to 1 LSB; reference-tool
@@ -73,8 +73,8 @@ Continue in this order:
    semaphore-only limitation. A no-GPU CI lane qualifies placed-memory loader
    plumbing and capability skip (lavapipe SKIP, patched mock ICD supported,
    Android emulator paths documented as absent), and an independent APK
-   reproducibility lane builds the pinned APK on two separate runners and fails
-   on any byte difference.
+   reproducibility lane builds the pinned APK on two separate runners, fails on
+   any byte difference, and now passes (byte-identical signed APKs).
    Remaining: real-driver placement semantics (RADV/ANV/NVK/Turnip), a
    validation-layer run over the wrapper itself, concurrency, physical-phone
    duration, the host-CPU odd-extent overrun, and an upstream decision/packaging
@@ -120,9 +120,10 @@ APKs. [Qualification and
 screenshots](QUALIFICATION.md#emuready-community-reports--21-october-2026).
 Selective settings application and automatic route ranking are not implemented;
 physical-phone/TalkBack acceptance, live coverage of the Windows-less gating
-branch, and cross-machine/release-signing reproducibility remain (same-machine
-byte-identical APKs were demonstrated with a pinned `BUILD_ID`,
-`SOURCE_DATE_EPOCH` and clean packaging).
+branch, and release-signing/cross-toolchain reproducibility remain (byte-identical
+APKs were demonstrated on one machine and on two independent CI runners with a
+pinned `BUILD_ID`, `SOURCE_DATE_EPOCH`, clean packaging and a fixed CI signing
+key).
 
 Implementation scope and verification plan:
 

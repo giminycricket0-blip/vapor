@@ -281,7 +281,7 @@ uploads BC1/BC3 UNORM/sRGB textures through the wrapper, samples them through a
 real graphics pipeline (fullscreen triangle, nearest clamp-edge sampler, RGBA8
 render target) and compares the rendered image with an independently derived
 expected image (nearest upscale of the decoded texture; sRGB encoded/linear
-conventions). On the 4 KB emulator all 32 checked readbacks pass and 16 are
+conventions). On the 4 KB emulator all 31 unique cases pass and 15 are
 byte-exact: wrapper compute/compute-view UNORM BC1/BC3 renders byte-exactly; the
 sRGB compute paths render the linearised convention within 1 LSB; the pre-patch
 host-CPU sRGB path renders the encoded convention and diverges from the
@@ -454,12 +454,14 @@ identical 4 KB v2 signing block, zipalign included), and an independent
 `APK reproducibility` workflow builds the same pinned APK on two separate
 `ubuntu-24.04` runners, signs both with a committed throwaway CI-only key through
 the app's `KEYSTORE_FILE` hook (guarded by `:app:signingReport`), and fails unless
-the two hashes match. Its first two runs both proved the builds produce
-byte-identical ZIP content (1638/1638 entries, zero differing CRCs, zero padding)
-and failed only on the per-runner debug signing block; copying the key to
-`~/.android` was not picked up by AGP on the runners, so signing now goes through
-the explicit hook. The latest run's result is recorded in the lane receipt. Release signing and cross-toolchain reproducibility remain out
-of scope.
+the two hashes match. **Two independent clean runners now produce byte-identical
+signed APKs** (run `39718305159`: both 676,228,094 B, SHA-256 `93ae1854…`). The two
+earlier runs had already shown byte-identical ZIP content (1638/1638 entries, zero
+differing CRCs, zero padding) and failed only on the per-runner debug signing
+block; copying the key to `~/.android` was not picked up by AGP on the runners, so
+signing goes through the explicit hook. This is same-image cross-runner
+reproducibility; release signing and cross-toolchain/cross-OS reproducibility
+remain out of scope.
 [Native rebuild receipt](evidence/2026-10-21-emuready-native-rebuild.json),
 [rebuild reproducibility receipt](evidence/2026-10-21-apk-rebuild-reproducibility.json),
 [root-cause receipt](evidence/2026-10-22-apk-reproducibility-rootcause.json),

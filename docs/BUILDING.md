@@ -245,8 +245,11 @@ ExternalProject, clear `app/build` and `app/.cxx` before each compared build
 toolchain pinned. Two such clean builds produced byte-identical APKs
 (SHA-256 `f8cc0b2f…`, 676,228,770 B). The default build is not byte-reproducible
 because the OpenSSL build date, the git-derived `BUILD_ID` and inherited
-packaging holes otherwise vary. Cross-machine and release-signing reproducibility
-remain out of scope; see the
+packaging holes otherwise vary. The `APK reproducibility` workflow applies the same
+pins on two independent `ubuntu-24.04` runners (plus a fixed CI-only signing key)
+and has produced byte-identical signed APKs there. Release signing and
+cross-toolchain/cross-OS reproducibility remain out of scope; see the
+[cross-runner lane receipt](evidence/2026-10-22-apk-cross-runner-reproducibility.json),
 [mitigation receipt](evidence/2026-10-22-apk-reproducibility-mitigation.json),
 [root-cause receipt](evidence/2026-10-22-apk-reproducibility-rootcause.json) and
 the [initial comparison](evidence/2026-10-21-apk-rebuild-reproducibility.json).

@@ -42,7 +42,7 @@
       "tree_contains": "src/vulkan/wrapper/{graphicsenv_hook.cpp,graphicsenv_hook.hpp,spirv_patcher.cpp,spirv_patcher.hpp,wrapper_bcdec.c,wrapper_bcdec.h,wrapper_bcn_spv.h,wrapper_bcn_transcode.comp,...}",
       "payload_markers": [
         "WRAPPER_DIAG diagnostics: 43 string occurrences in the GameNative payload, 0 in the default payload",
-        "GameNative-only compiler literals (e.g. WRAPPER_USE_BCN_CACHE, VK_KHR_vertex_attribute_divisor) present in the GameNative payload source fingerprint, absent from the default payload"
+        "57 of 66 GameNative-only literals (vs Pipetto ac54448c) present in the GameNative payload (absences are consistent with dead-code elimination in the stripped release build); 0 of 8 Pipetto-only literals present"
       ]
     }
   },
@@ -63,7 +63,7 @@
         }
       ],
       "literal_fingerprint": {
-        "method": "Extracted quoted string literals (length >= 8) from candidate wrapper sources and matched them against printable strings in each payload; fork-unique literals were checked for presence/absence.",
+        "method": "Extracted quoted string literals (length >= 8, excluding VK_* extension names and escaped strings) from all candidate wrapper sources of each fork, formed the fork-unique sets (present in one fork's files, absent from the other's), and checked each literal for presence among the printable strings of each payload.",
         "pipetto_ac54448c_literals_matched_in_default": "144/159 (90.6%)",
         "pipetto_e53b3999_literals_matched_in_default": "115/128 (89.8%)",
         "gamenative_5212f63a_literals_matched_in_default": "140/266 (52.6%)",
@@ -72,12 +72,43 @@
           "Failed to restore texture %s from cache, decompressing from huffer",
           "Successfully restored texture %s from cache"
         ],
-        "gamenative_only_literals_absent_from_default": [
-          "WRAPPER_DIAG (0 occurrences)",
-          "WRAPPER_USE_BCN_CACHE",
-          "VK_KHR_vertex_attribute_divisor"
+        "commit_discriminator": "WRAPPER_SURFACE_FORMAT literal exists in pipetto ac54448c wrapper_physical_device.c (matched in the default payload) and not in pipetto e53b3999, so the default build is at or after ac54448c",
+        "symmetric_fork_unique_result": {
+          "gamenative_5212f63a_only_vs_pipetto_ac54448c": {
+            "unique_literals": 66,
+            "present_in_default_payload": 0,
+            "present_in_gamenative_payload": 57
+          },
+          "pipetto_ac54448c_only_vs_gamenative_5212f63a": {
+            "unique_literals": 8,
+            "present_in_default_payload": 8,
+            "present_in_gamenative_payload": 0,
+            "literals": [
+              "/data/data/com.winlator.cmod/files/imagefs/usr/cache",
+              "Failed to find Vulkan Validation layer",
+              "Failed to restore texture %s from cache, decompressing from huffer",
+              "Faking VK_EXT_robustness2",
+              "Faking dualSrcBlend feature",
+              "Faking multiDrawIndirect feature",
+              "Successfully restored texture %s from cache",
+              "WRAPPER_SURFACE_FORMAT"
+            ]
+          },
+          "pipetto_ac54448c_only_vs_e53b3999": {
+            "unique_literals": 1,
+            "literal": "WRAPPER_SURFACE_FORMAT",
+            "present_in_default_payload": 1,
+            "present_in_gamenative_payload": 0
+          },
+          "pipetto_e53b3999_only_vs_ac54448c": {
+            "unique_literals": 0
+          }
+        },
+        "gamenative_only_markers_absent_from_default": [
+          "WRAPPER_DIAG (0 occurrences in default; 43 in the GameNative payload; only in GameNative wrapper_device.c/wrapper_log.c)",
+          "0 of 66 GameNative-only literals"
         ],
-        "commit_discriminator": "WRAPPER_SURFACE_FORMAT literal exists in pipetto ac54448c wrapper_physical_device.c (matched in the default payload) and not in pipetto e53b3999, so the default build is at or after ac54448c"
+        "correction_2026-10-22": "An earlier draft of this receipt listed WRAPPER_USE_BCN_CACHE and VK_KHR_vertex_attribute_divisor as GameNative-only literals absent from the default payload. That was wrong: both are present in the default payload; WRAPPER_USE_BCN_CACHE occurs in both forks (wrapper_bcdec.c) and VK_KHR_vertex_attribute_divisor is a Mesa extension name, so neither discriminates. The draft compared only wrapper_device.c to wrapper_device.c. The symmetric whole-fork analysis above replaces it and supports the same conclusion more strongly."
       },
       "build_style": "default payload retains .debug_info/.debug_str and embeds /data/data/com.termux/files/home/Code/mesa/build-wrapper, i.e. a manual Termux debug build of this line (not a CI release artifact); no commit/build record string was found in the payload (no Pipetto/gamenative/commit markers)"
     }
@@ -95,7 +126,7 @@
   "confirmed": [
     "The GameNative packaged payload is byte-identical to the public wrapper-gamenative-20260719 artifact member, so its build pipeline (GameNative/mesa fork, NDK r29 workflow) is identified.",
     "GameNative/mesa at 5212f63a (wrapper-25, merged 8e64d5f4 two days before the artifact) contains every previously-unidentified wrapper compile unit and the WRAPPER_DIAG code present in the GameNative payload.",
-    "The default payload is a debug Termux build of the Pipetto-crypto/mesa fork line: its fork-unique and cache literals match Pipetto sources (90.6%), its physical-device literal matches ac54448c (not e53b3999), and GameNative-only literals are absent.",
+    "The default payload is a debug Termux build of the Pipetto-crypto/mesa fork line: all 8 Pipetto-only literals and the ac54448c-only WRAPPER_SURFACE_FORMAT literal are present, while 0 of 66 GameNative-only literals and no WRAPPER_DIAG string are present.",
     "Neither packaged payload is a build of the reviewed v0.0.5r5 source; they are newer fork-line builds (NDK r29/clang 21, 16KB LOAD alignment, ICD-only 15 exports).",
     "The two packaged variants come from two different (public) forks, not one repository."
   ],

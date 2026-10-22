@@ -20,9 +20,11 @@
     "defect": "BC*_SRGB host-CPU (bcdec) decode stored sRGB-encoded texel values, while the compute-shader decoders store linear values. The emulated image format for a BC*_SRGB source is R8G8B8A8_UNORM (no hardware sRGB decode on sampling; the wrapper also patches image views to UNORM), so stored texels must be linear to reproduce the original sampled colours. Two paths therefore disagreed by up to 74 LSB.",
     "fix": "After the bcdec decode in the host path, linearise the RGB channels of each 4x4 block with the IEC 61966-2-1 transfer function, using double precision with ties-to-even rounding to mirror the compute shader float->UNORM conversion; alpha is left unchanged. The patch also records the format mapping rationale in comments.",
     "rationale_evidence": [
-      "wrapper source: unwrap_vk_format_physical_device maps BC*_SRGB to R8G8B8A8_UNORM and views are patched to that format, so sampling performs no sRGB decode",
-      "compute shaders (s3tc.comp/bc7.comp) already apply srgb_to_linear for SRGB originals",
-      "reference probe computes the linearised decode as the correct sRGB reference"
+      "src/vulkan/wrapper/wrapper_private.h:172-204 (unwrap_vk_format_physical_device): BC1/BC2/BC3/BC7 UNORM and SRGB block formats all map to VK_FORMAT_R8G8B8A8_UNORM when emulated",
+      "src/vulkan/wrapper/wrapper_image.c:55: emulated image creation uses that unwrapped format",
+      "src/vulkan/wrapper/wrapper_image.c:157-160 (WRAPPER_CreateImageView): for emulated BCn images the view format is patched to the emulated image format, so sampling performs no hardware sRGB decode",
+      "compute shaders (s3tc.comp/bc7.comp) already apply srgb_to_linear for SRGB originals; the render-pipeline probe confirms the compute path samples as the linearised convention within 1 LSB",
+      "source references verified against the pinned wrapper source 3abf48704a4d9303967a0811c0dc8ff8567d613b on 2026-10-22"
     ]
   },
   "build": {

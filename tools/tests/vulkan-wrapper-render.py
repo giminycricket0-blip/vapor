@@ -36,6 +36,8 @@ SOURCE_HEIGHT = 32
 TOLERANCE_WRAPPER = 2   # LSB; wrapper decode/rounding vs independent reference
 TOLERANCE_NATIVE = 3    # LSB; native llvmpipe decode vs independent reference
 CONTROL_FORMATS = {"rgba8"}
+TARGETS = ("system", "candidate", "baseline")
+FORMATS = ("bc1", "bc3", "bc1_srgb", "bc3_srgb", "rgba8")
 
 
 def read(path):
@@ -119,19 +121,23 @@ def output_cases(output_dir):
         stem = name[len("out-"):-len(".bin")]
         if os.path.isdir(os.path.join(output_dir, name)):
             continue
-        # Recorded names use one of: target-format, target-format-config,
-        # or format-target-config for the early smoke files.
+        # Recorded names use target-format[-config]; the early smoke run also
+        # wrote alias copies named format-target[-config].
         parts = stem.split("-")
-        if len(parts) == 2:
-            target, fmt = parts
-            config = "native" if target == "system" else "compute"
-        elif len(parts) >= 3:
-            if parts[0] in ("system", "candidate", "baseline"):
-                target, fmt, config = parts[0], parts[1], "-".join(parts[2:])
-            else:
-                fmt, target, config = parts[0], parts[1], "-".join(parts[2:])
-        else:
+        if len(parts) < 2:
+            yield None, None, None, os.path.join(output_dir, name)
             continue
+        if parts[0] in TARGETS:
+            target, fmt, rest = parts[0], parts[1], parts[2:]
+        elif parts[1] in TARGETS:
+            fmt, target, rest = parts[0], parts[1], parts[2:]
+        else:
+            yield None, None, None, os.path.join(output_dir, name)
+            continue
+        if rest:
+            config = "-".join(rest)
+        else:
+            config = "native" if target == "system" else "compute"
         yield target, fmt, config, os.path.join(output_dir, name)
 
 
@@ -174,23 +180,36 @@ def check(evidence_dir, verbose=False):
         return 1
     print(f"derived expected images verified for: {', '.join(checks)}")
 
-    cases = list(output_cases(output_dir))
-    if not cases:
+    scanned = list(output_cases(output_dir))
+    if not scanned:
         print(f"FAIL no readbacks found in {output_dir}")
         return 1
+
+    # Group readbacks by case. Byte-identical alias copies count once; a case
+    # whose files disagree is a problem, never silently collapsed.
+    grouped = {}
+    skipped = []
+    for target, fmt, config, path in scanned:
+        base = (fmt[:-5] if fmt and fmt.endswith("_srgb") else fmt)
+        if target is None or fmt not in FORMATS or base not in checks:
+            skipped.append(os.path.basename(path))
+            continue
+        grouped.setdefault((target, fmt, config), []).append(path)
+    aliases = 0
+    cases = []
+    for key, paths in sorted(grouped.items()):
+        digests = {sha256(read(p)) for p in paths}
+        if len(digests) > 1:
+            problems.append(f"conflicting readbacks for {key}: {[os.path.basename(p) for p in paths]}")
+        aliases += len(paths) - 1
+        canonical = [p for p in sorted(paths) if os.path.basename(p).startswith(f"out-{key[0]}-")]
+        cases.append((*key, (canonical or sorted(paths))[0]))
 
     passed = 0
     failed = 0
     records = []
     for target, fmt, config, path in cases:
         base = fmt[:-5] if fmt.endswith("_srgb") else fmt
-        if base not in checks:
-            continue
-        expected_paths = os.path.join(input_dir, f"{base}-decoded-{SOURCE_WIDTH}x{SOURCE_HEIGHT}.bin")
-        if base == "rgba8" and not os.path.exists(expected_paths):
-            expected_paths = os.path.join(input_dir, f"rgba8-{SOURCE_WIDTH}x{SOURCE_HEIGHT}.bin")
-        if not os.path.exists(expected_paths):
-            continue
         derived = derive_expected(input_dir, base, fmt)
         if fmt.endswith("_srgb"):
             convention = "srgb-encoded" if config.startswith("host") else "srgb-linear"
@@ -229,10 +248,14 @@ def check(evidence_dir, verbose=False):
                   f"convention={convention:12s} mismatch={metrics['mismatch']:6d} "
                   f"max_delta={metrics['max_delta']}")
 
-    print(f"render-pipeline check: {passed} pass / {failed} fail / 0 skipped "
-          f"({len(cases)} readbacks scanned)")
+    print(f"render-pipeline check: {passed} pass / {failed} fail / {len(skipped)} skipped "
+          f"across {len(cases)} unique cases ({len(scanned)} files scanned, "
+          f"{aliases} byte-identical alias copies collapsed)")
     exact = sum(1 for r in records if r["verdict"] == "PASS" and r["mismatch_bytes"] == 0)
     print(f"  byte-exact cases: {exact}/{passed}")
+    if skipped:
+        print(f"  skipped (unrecognised name or no decoded input): {', '.join(skipped)}")
+        problems.append(f"{len(skipped)} readback(s) could not be checked")
     if problems:
         print("problems:")
         for problem in problems:

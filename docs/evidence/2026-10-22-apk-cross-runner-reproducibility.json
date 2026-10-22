@@ -65,7 +65,7 @@
       "Gradle dependency resolution from remote repositories could change if a pinned dependency version is not immutable (the build already uses fixed versions, but no lockfile guarantee is added here)",
       "Debug signing only; release signing and fully pristine caches are out of scope"
     ],
-    "status": "Runs 1 and 2 both built byte-identical ZIP content on two runners and failed only on per-runner debug signing; run 3 uses explicit KEYSTORE_FILE signing guarded by signingReport (pending).",
+    "status": "Demonstrated: run 3 (39718305159) produced byte-identical signed APKs on two independent runners (sha256 93ae1854\u2026, 676,228,094 B). Runs 1-2 had byte-identical ZIP content and differed only in per-runner debug signing, fixed by explicit KEYSTORE_FILE signing with a signingReport guard.",
     "ci_runs": [
       {
         "run": 1,
@@ -116,8 +116,23 @@
       },
       {
         "run": 3,
-        "status": "pending",
-        "fix": "Sign through the app's explicit hook instead of AGP's default debug-key lookup: workflow env KEYSTORE_FILE=.github/ci-debug.keystore, KEYSTORE_PASSWORD/KEY_PASSWORD=android, KEY_ALIAS=androiddebugkey (app/build.gradle signs the debug build type with this keystore when KEYSTORE_FILE is set). A new \"Verify pinned signing config\" step runs :app:signingReport and fails unless standardDebug resolves to .github/ci-debug.keystore with SHA-256 6F:07:6A\u2026. Verified locally: passes with the variables set and fails without them (falls back to the machine debug key)."
+        "id": 39718305159,
+        "head_commit": "de95da1a",
+        "result": "success",
+        "jobs": {
+          "build-a": "success",
+          "build-b": "success",
+          "compare": "success"
+        },
+        "guard": "Verify pinned signing config passed on both runners: Store /home/runner/work/vapor/vapor/.github/ci-debug.keystore, SHA-256 6F:07:6A:D8:B2:85:10:A3:10:7A:CA:3F:36:7B:1C:D3:EE:96:87:C2:C0:61:1E:F0:40:9C:A8:AD:59:BA:62:F6",
+        "builds": {
+          "size_bytes": 676228094
+        },
+        "hashes": {
+          "build_a": "93ae1854b99f93e4d18410da18fdf63cfc3eef55482836b92d8eb0406dcb31a4",
+          "build_b": "93ae1854b99f93e4d18410da18fdf63cfc3eef55482836b92d8eb0406dcb31a4"
+        },
+        "conclusion": "RESULT: PASS - two independent clean ubuntu-24.04 runners produced byte-identical signed standard debug APKs."
       }
     ],
     "fixed_ci_keystore": {
@@ -127,7 +142,11 @@
       "installed_as": "used via KEYSTORE_FILE env in both build jobs (not copied to ~/.android)",
       "rationale": "Android debug signing uses a per-machine random keystore, which would make the signing block differ even for byte-identical builds; the first lane run proved exactly that.",
       "certificate_sha256": "6F:07:6A:D8:B2:85:10:A3:10:7A:CA:3F:36:7B:1C:D3:EE:96:87:C2:C0:61:1E:F0:40:9C:A8:AD:59:BA:62:F6"
-    }
+    },
+    "what_was_proven": [
+      "Same-image cross-runner byte reproducibility of the pinned standard debug APK, including signing with a fixed key",
+      "The build inputs pinned by the lane (SOURCE_DATE_EPOCH, BUILD_ID, clean app/build+app/.cxx, SDK/NDK/CMake/Rust versions) are sufficient on ubuntu-24.04 runners; no Gradle cache was used"
+    ]
   },
   "limitations": [
     "CI lane proves same-image cross-runner reproducibility only; it does not prove reproducibility across different OS/toolchain versions",
@@ -146,5 +165,6 @@
       "sha256": "7ab25d2d1686041749ad9afaaa6ad0cc3200f4e4f4f1d31f6e8ee70bd9ab3f4c",
       "change": "detects and classifies APK signing-block-only differences (v2/v3 block before the ZIP central directory) so a per-runner signing-key difference is not mis-attributed to the build"
     }
-  }
+  },
+  "conclusion": "Same-machine (macOS) and same-image cross-runner (ubuntu-24.04) byte reproducibility are both demonstrated for the pinned debug APK. Note the macOS build (676,228,770 B) and the Linux runner build (676,228,094 B) differ from each other, so cross-OS/cross-toolchain reproducibility is not claimed. Release signing remains untested."
 }

@@ -225,8 +225,8 @@ The same extended families also pass on the 16 KB Android 17/API 37 emulator
 A sampling/render probe (`tools/tests/vulkan-wrapper-render.c` with committed GLSL
 shaders and the `tools/tests/vulkan-wrapper-render.py` checker) draws
 wrapper-decoded BC1/BC3 UNORM/sRGB textures through a fullscreen triangle with a
-nearest sampler into an RGBA8 target. On the 4 KB emulator all 32 checked
-readbacks pass (16 byte-exact): UNORM compute/compute-view renders byte-exactly,
+nearest sampler into an RGBA8 target. On the 4 KB emulator all 31 unique
+cases pass (15 byte-exact): UNORM compute/compute-view renders byte-exactly,
 sRGB compute paths render the linearised convention within 1 LSB, the pre-patch
 host-CPU sRGB path renders the encoded convention (the known split), the native
 llvmpipe control stays within 3 LSB, and RGBA8 controls are byte-exact.
