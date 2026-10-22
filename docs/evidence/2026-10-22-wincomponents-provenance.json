@@ -238,5 +238,82 @@
       "Steamless removes SteamStub DRM; in a Steam-first launcher this is a policy/legal question independent of its non-standard licence. Normal Steam launching does not need it.",
       "Ajay_Prefix_Pro_v1.8_Downloader.exe is opaque and makes network requests."
     ]
+  },
+  "steampipe": {
+    "archive": "app/src/main/assets/steampipe/",
+    "total_bytes": 34580000,
+    "identity": "Goldberg Steam Emulator (\"GSE\") client API",
+    "evidence": {
+      "ProductName": "GSE Client API",
+      "LegalCopyright": "Copyright (C) 2007 (steam_api) / (C) 2005 GSE (steamclient)",
+      "interface_markers": [
+        "gServers_RequestInternetServerList",
+        "gServers_RequestLANServerList",
+        "gServers_RequestSpectatorServerList",
+        "gServers_ServerRules",
+        "GSE0",
+        "GSE1"
+      ]
+    },
+    "files": [
+      {
+        "name": "steam_api.dll",
+        "bytes": 16236968,
+        "product": "GSE Client API",
+        "orig": "steam_api.dll",
+        "file_version": "08.33.09.23"
+      },
+      {
+        "name": "steam_api64.dll",
+        "bytes": 18140072,
+        "product": "GSE Client API",
+        "orig": "steam_api.dll",
+        "file_version": "08.33.09.23"
+      },
+      {
+        "name": "steamclient.dll",
+        "bytes": 92072,
+        "copyright": "Copyright (C) 2005 GSE",
+        "file_version": "08.56.38.63"
+      },
+      {
+        "name": "steamclient64.dll",
+        "bytes": 111016,
+        "copyright": "Copyright (C) 2005 GSE",
+        "file_version": "08.56.38.63"
+      }
+    ],
+    "upstream": "https://gitlab.com/Mr_Goldberg/goldberg_emulator (Goldberg Steam Emulator)",
+    "license_file_shipped": null,
+    "how_used": "XServerDisplayActivity installs steam_api(64).dll plus the matching steamclient stub as a steam_api replacement in the game directory (lines 12139-12399); runtime/display/steampipeserver/SteamPipeServer.java is a companion component.",
+    "policy_note": "A Steam client emulator deployed automatically in a product presenting as a Steam client. Decide deliberately."
+  },
+  "dnas_bypass": {
+    "archive": "app/src/main/assets/dnas/dnas_bypass.json",
+    "games": 35,
+    "cheat_entries": 41,
+    "identity": "PlayStation 2 DNAS (Sony online authentication) bypass/patch cheat codes",
+    "applied": "all entries marked \"auto\": true",
+    "sample_titles": [
+      "Amplitude",
+      "Arc the Lad: End of Darkness",
+      "Battlefield 2: Modern Combat"
+    ],
+    "total_cheat_codes": 87,
+    "all_auto": true
+  },
+  "in_good_order": {
+    "soundfonts/wt_210k_G.sf2": "CC BY 3.0 licence bundled",
+    "directaudio/": "AUTHORS + own PROVENANCE.md",
+    "winnative/, linuxfs/": "Vapor/WinNative's own helper tools",
+    "box86_64/, steaminput/, retro/, wayland/": "configuration files"
+  },
+  "circumvention_tools_summary": {
+    "count": 3,
+    "items": [
+      "steampipe/ = Goldberg Steam Emulator (Steam client emulation, installed as steam_api.dll)",
+      "extras.tzst Steamless = SteamStub DRM remover",
+      "dnas/dnas_bypass.json = PS2 DNAS online-authentication bypass"
+    ]
   }
 }

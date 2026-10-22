@@ -641,11 +641,57 @@ Two of these deserve the owner's attention specifically:
    mapped to a source or a rights holder from the bytes alone. Recommend it not be
    shipped until it is identified and cleared.
 
+### `steampipe/` is a Steam client emulator, and `dnas/` bypasses console authentication
+
+Two further bundled payloads need the owner's attention before anything public.
+
+**`steampipe/` (33 MB) is the Goldberg Steam Emulator ("GSE"), not Valve.** The four
+files mimic Valve's filenames but identify themselves in their version resources:
+
+| File | Bytes | `ProductName` | `LegalCopyright` |
+| --- | ---: | --- | --- |
+| `steam_api.dll` | 16,236,968 | **GSE Client API** | Copyright (C) 2007 |
+| `steam_api64.dll` | 18,140,072 | **GSE Client API** | Copyright (C) 2007 |
+| `steamclient.dll` | 92,072 | — | Copyright (C) 2005 **GSE** |
+| `steamclient64.dll` | 111,016 | — | Copyright (C) 2005 **GSE** |
+
+The binaries contain Goldberg's distinctive `gServers_RequestInternetServerList` /
+`gServers_RequestLANServerList` / `gServers_ServerRules` interface strings and `GSE0`/
+`GSE1` markers. GSE is the open-source **Goldberg Steam Emulator**, whose upstream is
+[`gitlab.com/Mr_Goldberg/goldberg_emulator`](https://gitlab.com/Mr_Goldberg/goldberg_emulator);
+no licence file is shipped with these binaries, so its terms are unrecorded here.
+
+This is not incidental: `XServerDisplayActivity` **installs these as a `steam_api.dll`
+replacement into the game directory** (`steampipe/steam_api.dll` or `steam_api64.dll`
+with the matching `steamclient` stub, lines 12139–12399), alongside a
+`steampipeserver/SteamPipeServer.java` component. A Steam client emulator whose
+purpose is to make games believe Steam is present, deployed automatically in a
+product that presents as a Steam client, is a policy question separate from
+licensing.
+
+**`dnas/dnas_bypass.json` bypasses PlayStation 2 online authentication.** 35 games,
+41 cheat entries (87 cheat codes), every one named "DNAS Bypass" or "DNAS Patch", and
+38 of the 41 marked `"auto": true`. DNAS is Sony's PS2 online authentication service;
+these are per-game codes that disable it, applied by the retro/PS2 feature.
+
+Taken with `extras.tzst` (Steamless, a SteamStub DRM remover), the bundle contains
+three distinct Steam/console authentication-circumvention or emulation tools. For a
+launcher that is genuinely Steam-first and account-connected, that combination is the
+clearest distribution risk in the tree, and it should be decided deliberately — keep
+for offline/legacy use with clear labelling, or remove — rather than shipped
+unremarked.
+
+Things that are in good order in the same areas:
+`soundfonts/wt_210k_G.sf2` ships its **CC BY 3.0** licence; `directaudio/` ships
+`AUTHORS` and its own `PROVENANCE.md`; `winnative/` and `linuxfs/` are Vapor/WinNative's
+own helper tools; `box86_64/`, `steaminput/`, `retro/`, `wayland/` hold configuration
+files.
+
 ## Public distribution blockers
 
 1. **Valve client binaries:** `app/src/main/assets/wnsteam/bionic/valve-steam-x86_64.tzst` and other genuine Steam assets are inherited. Their presence in a public upstream is not redistribution permission. Establish a supported acquisition route and applicable terms before publishing an APK containing them.
 2. **Bundled runtime archives:** map the exact Wine/FEX/graphics builds and patches to corresponding source and licenses. Repository commits and SHA-256 alone are insufficient. The 22 October identification pass shows `wincomponents/` is **Microsoft** (VC++ 2010, legacy DirectX, DirectShow, Windows Media, XAudio2/XACT) plus one third-party `cnc-ddraw`, with no license files bundled at all — see [that section](#bundled-windows-component-archives--22-october-2026). Rights review, bundled license text and a keep/replace/drop decision per component are now required before public distribution, alongside the Valve assets in blocker 1.
-3. **Inherited optional integrations:** console, other-store, frame-generation and helper assets remain bundled. Narrow the shipped product and review those retained inputs before alpha. `extras.tzst` alone carries **Steamless** (a SteamStub DRM remover with a non-standard licence, see [`extras.tzst`](#extras-tzst--steamless-7-zip-and-an-unidentifiable-downloader)) and **`Ajay_Prefix_Pro_v1.8_Downloader.exe`**, an unidentifiable network downloader with no version resource or licence. Both should be resolved before any public build.
+3. **Inherited optional integrations:** (see also [`steampipe/`](#steampipe-is-a-steam-client-emulator-and-dnas-bypasses-console-authentication) — GSE, a Steam client emulator installed as a games' `steam_api.dll`, and [`dnas/dnas_bypass.json`](#steampipe-is-a-steam-client-emulator-and-dnas-bypasses-console-authentication) — automatic PS2 DNAS bypass codes) console, other-store, frame-generation and helper assets remain bundled. Narrow the shipped product and review those retained inputs before alpha. `extras.tzst` alone carries **Steamless** (a SteamStub DRM remover with a non-standard licence, see [`extras.tzst`](#extras-tzst--steamless-7-zip-and-an-unidentifiable-downloader)) and **`Ajay_Prefix_Pro_v1.8_Downloader.exe`**, an unidentifiable network downloader with no version resource or licence. Both should be resolved before any public build.
 4. **Modern Android:** target remains 28. The 16 October source rebuild resolves the three Prefab failures: all 39 APK native libraries now pass LOAD alignment and ZIP alignment passes. Nine actual JNI checks pass on both 4 KB and 16 KB emulators, and normal startup was checked on Android 17. Earlier APKs used page-size compatibility mode. These newer checks do not resolve target-36 downloaded-code execution, downloaded runtime ELF files or complete Wine/FEX game operation on 16 KB systems; see the [bounded result](QUALIFICATION.md#native-library-alignment-and-tls--16-october-2026).
 5. **Account and game proof:** the owner now reports successful EU3 gameplay and TF2 training with Steam connected on Xiaomi; the exact APK/configuration is not yet identified. Earlier emulator builds completed an authenticated EU3 demo download and a genuine-client launch handoff with visible rendering; an earlier custom-game build also completed a local save/reopen round trip. These separate results are recorded in [QUALIFICATION.md](QUALIFICATION.md#owner-reported-xiaomi-gameplay--14-october-2026). Steam-game save/reopen, Steam Cloud correctness and the full reference-phone qualification protocol remain open.
 
