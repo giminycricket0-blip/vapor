@@ -47,6 +47,7 @@ class SteamOnboardingUiTest {
     private var confirms = 0
     private var connects = 0
     private var continues = 0
+    private var dialogView: android.view.View? = null
 
     @Composable private fun Login() {
         SteamLoginScreen(state.value,
@@ -91,9 +92,16 @@ class SteamOnboardingUiTest {
                     }
                 }
             }
-            if (dialog) Dialog(onDismissRequest = {}, properties = DialogProperties(usePlatformDefaultWidth = false), content = content)
+            if (dialog) Dialog(onDismissRequest = {}, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+                val view = androidx.compose.ui.platform.LocalView.current
+                SideEffect { dialogView = view }
+                content()
+            }
             else content()
         }
+        // Compose can be idle before the dialog's native window takes focus; keys sent
+        // earlier go to the activity window and never reach the dialog.
+        if (dialog) compose.waitUntil(5_000) { dialogView?.hasWindowFocus() == true }
     }
 
     private fun credentials() {

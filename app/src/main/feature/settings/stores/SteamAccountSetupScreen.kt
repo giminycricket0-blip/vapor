@@ -14,6 +14,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,7 +28,13 @@ import com.winlator.cmod.shared.ui.layout.VaporOnboardingLayout
 internal fun SteamAccountSetupScreen(connected: Boolean, onConnect: () -> Unit, onContinue: () -> Unit) {
     val primary = remember { FocusRequester() }
     val inputMode = LocalInputModeManager.current.inputMode
-    LaunchedEffect(connected, inputMode) { if (inputMode == InputMode.Keyboard) primary.requestFocus() }
+    // In a Dialog the composition can settle before its window gains focus, and a focus
+    // request made then is dropped, so controller users landed on Back instead of the
+    // primary action. Request again once the window is focused.
+    val windowFocused = LocalWindowInfo.current.isWindowFocused
+    LaunchedEffect(connected, inputMode, windowFocused) {
+        if (inputMode == InputMode.Keyboard && windowFocused) primary.requestFocus()
+    }
     VaporOnboardingLayout(title = stringResource(R.string.vapor_accounts_title),
         subtitle = stringResource(R.string.vapor_accounts_intro), section = stringResource(R.string.vapor_onboarding_steam),
         onBack = onContinue) { compact ->
