@@ -401,5 +401,70 @@
       "per-component keep/replace/drop decision by the owner",
       "exact source revision and patch set for the bundled Proton (Wine 9.0 + Proton media patches)"
     ]
+  },
+  "license_bundle": {
+    "path": "app/src/main/assets/licenses/",
+    "files": {
+      "wine-LICENSE.txt": {
+        "license": "Wine notice, LGPL-2.1-or-later",
+        "sha256_prefix": "ae025f125a5d",
+        "covers": [
+          "ddrawrapper Wine 11.2",
+          "ddrawrapper Wine 4.21",
+          "bundled Proton 9.0 Wine",
+          "downloaded Proton 11 Wine"
+        ]
+      },
+      "wine-COPYING.LIB-LGPL-2.1.txt": {
+        "license": "GNU LGPL 2.1 full text",
+        "sha256_prefix": "e237fa566680",
+        "covers": [
+          "same as wine-LICENSE.txt"
+        ]
+      },
+      "cnc-ddraw-6.6.0.0-MIT.txt": {
+        "license": "MIT (FunkyFr3sh 2025)",
+        "sha256_prefix": "699c21484d3f",
+        "covers": [
+          "wincomponents/ddraw.tzst (6.6.0.0)",
+          "ddrawrapper/cnc-ddraw.tzst (7.1.0.0, same project)"
+        ]
+      },
+      "7zip-19.00-LICENSE.txt": {
+        "license": "7-Zip license for use and distribution",
+        "sha256_prefix": "4f1f05e88048",
+        "covers": [
+          "extras/opt/apps/7-Zip"
+        ]
+      },
+      "libogg-COPYING.txt": {
+        "license": "BSD-style (Xiph.org Foundation)",
+        "sha256_prefix": "d2ab57583364",
+        "covers": [
+          "imagefs.tzst libogg"
+        ]
+      },
+      "OpenSSL-1.1.1q.txt": {
+        "license": "Apache-2.0",
+        "sha256_prefix": "c32913b33252",
+        "covers": [
+          "imagefs.tzst openssl"
+        ]
+      },
+      "curl-7.85.0.txt": {
+        "license": "curl licence",
+        "sha256_prefix": "321b1a09ebc3",
+        "covers": [
+          "imagefs.tzst curl"
+        ]
+      }
+    },
+    "verified": "each text fetched from the project upstream and checked before bundling",
+    "still_outstanding": [
+      "MangoHud (imagefs)",
+      "X11 protocol headers: xproto, xorgproto, bigreqsproto, fontsproto, kbproto, recordproto, scrnsaverproto, xcmiscproto, xextproto (imagefs)",
+      "ffmpeg, lame, readline, flac, libtheora, libvorbis, libunistring, libsoxr, libsamplerate, tiff already has one (imagefs)",
+      "the Microsoft, Valve, GSE, Steamless and 3dfx payloads have no redistributable licence text to bundle"
+    ]
   }
 }

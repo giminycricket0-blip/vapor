@@ -729,6 +729,30 @@ in [the provenance receipt](evidence/2026-10-22-wincomponents-provenance.json).
 What remains is bundling the licence texts and the per-component keep/replace/
 drop decision.
 
+### The `licenses/` bundle — what each text covers
+
+`app/src/main/assets/licenses/` now carries seven files, each verified against its
+upstream text before being added:
+
+| File | Licence | Covers |
+| --- | --- | --- |
+| `wine-LICENSE.txt`, `wine-COPYING.LIB-LGPL-2.1.txt` | Wine's notice + **LGPL-2.1** | The Wine builds in `ddrawrapper/` (11.2 and 4.21) and the Wine inside the bundled and downloaded Proton |
+| `cnc-ddraw-6.6.0.0-MIT.txt` | **MIT** (FunkyFr3sh, 2025) | `wincomponents/ddraw.tzst` (6.6.0.0) |
+| `7zip-19.00-LICENSE.txt` | 7-Zip's own "License for use and distribution" | `extras/opt/apps/7-Zip/` |
+| `libogg-COPYING.txt` | **BSD-style** (Xiph.org Foundation) | `libogg` in `imagefs.tzst` |
+| `OpenSSL-1.1.1q.txt` | Apache-2.0 | `openssl` in `imagefs.tzst` |
+| `curl-7.85.0.txt` | curl licence | `curl` |
+
+Still not bundled: MangoHud and the X11 protocol headers (`xproto`, `xorgproto`, …)
+in `imagefs.tzst` — their upstream licence files were not retrievable at the paths
+tried, so they are recorded as outstanding rather than guessed. `cnc-ddraw` 7.1.0.0
+in `ddrawrapper/` is the same MIT project at a later build, covered by the same
+text. The Microsoft and Valve payloads and the `extras.tzst` items flagged above
+have no redistributable licence text to bundle; that is the point of those findings.
+
+Bundling these texts satisfies part of what their licences ask for. It is not
+permission to redistribute the payloads that have no text — see the blockers.
+
 ## Public distribution blockers
 
 1. **Valve client binaries:** `app/src/main/assets/wnsteam/bionic/valve-steam-x86_64.tzst` and other genuine Steam assets are inherited. Their presence in a public upstream is not redistribution permission. Establish a supported acquisition route and applicable terms before publishing an APK containing them.
