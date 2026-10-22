@@ -1,0 +1,86 @@
+--- a/src/vulkan/wrapper/bcdec.c
++++ b/src/vulkan/wrapper/bcdec.c
+@@ -2,12 +2,71 @@
+ #include <stdint.h>
+ #include <stdio.h>
+ 
++#include <math.h>
++
+ #include "wrapper_log.h"
+ #include "wrapper_debug.h"
+ #include "wrapper_private.h"
+ 
+ #include "bcdec.h"
++
++/* The emulated image for a BC*_SRGB source is VK_FORMAT_R8G8B8A8_UNORM
++ * (unwrap_vk_format_physical_device), and the wrapper patches image views to that
++ * same UNORM format, so sampling performs no hardware sRGB decode.  To render
++ * like the original BC*_SRGB image, the emulated texels must therefore hold
++ * linear values; that is what the compute-shader decoders do (srgb_to_linear in
++ * s3tc.comp and bc7.comp, for both the staging-buffer and image-view outputs).
++ * The host bcdec fallback used to store the sRGB-encoded texel values instead,
++ * which made CPU-decoded uploads disagree with the default compute path. */
++
++static bool bc_format_is_srgb(uint32_t format_id) {
++    switch (format_id) {
++    case 1:  // VK_FORMAT_BC1_RGB_SRGB_BLOCK
++    case 3:  // VK_FORMAT_BC1_RGBA_SRGB_BLOCK
++    case 5:  // VK_FORMAT_BC2_SRGB_BLOCK
++    case 7:  // VK_FORMAT_BC3_SRGB_BLOCK
++    case 15: // VK_FORMAT_BC7_SRGB_BLOCK
++        return true;
++    default:
++        return false;
++    }
++}
++
++/* 8-bit sRGB-encoded -> 8-bit linear via the IEC 61966-2-1 transfer function.
++ * Double precision with ties-to-even rounding mirrors the float -> UNORM
++ * conversion the compute-shader path applies to the same texel. */
++static uint8_t srgb_to_linear_u8(uint8_t value) {
++    double srgb = value / 255.0;
++    double linear = srgb <= 0.04045 ? srgb / 12.92
++                                    : pow((srgb + 0.055) / 1.055, 2.4);
++    double scaled = linear * 255.0;
++    double base = floor(scaled);
++    double fraction = scaled - base;
+ 
++    if (fraction > 0.5 || (fraction == 0.5 && (((long) base) & 1)))
++        base += 1.0;
++    if (base < 0.0)
++        base = 0.0;
++    if (base > 255.0)
++        base = 255.0;
++    return (uint8_t) base;
++}
++
++/* Linearise the RGB channels of one decoded 4x4 block in place; alpha is
++ * not colour-managed in the sRGB transfer function. */
++static void linearise_srgb_block(void *dstPixelBlock, int dst_stride) {
++    uint8_t *block = (uint8_t *) dstPixelBlock;
++
++    for (int i = 0; i < 4; i++) {
++        for (int j = 0; j < 4; j++) {
++            block[j * 4 + 0] = srgb_to_linear_u8(block[j * 4 + 0]);
++            block[j * 4 + 1] = srgb_to_linear_u8(block[j * 4 + 1]);
++            block[j * 4 + 2] = srgb_to_linear_u8(block[j * 4 + 2]);
++        }
++        block += dst_stride;
++    }
++}
++
+ bool is_striped(VkFormat format, void* mappedSrcBase, const VkBufferImageCopy* regions) {
+     uint8_t* startCompressedData = (uint8_t*)mappedSrcBase + (regions ? regions->bufferOffset : 0);
+     uint32_t format_id = format - VK_FORMAT_BC1_RGB_UNORM_BLOCK;
+@@ -247,6 +306,11 @@
+                     WLOGE("ERROR: Unsupported BCn format %d", format);
+                     break;
+             }
++
++            // Store the same linear convention as the compute-shader decoders.
++            if (bc_format_is_srgb(format_id))
++                linearise_srgb_block(dstPixelBlock, dst_stride);
++
+             srcDataBlock += block_size;
+         }
+     }

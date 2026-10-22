@@ -56,21 +56,27 @@ Continue in this order:
 2. Continue wrapper verification. The released-payload identity/reproduction is
    bounded: Leegao recipe located, exact bytes not reproducible from retained
    inputs, default/GameNative a different source line with exact revisions
-   open. Native loading, synthetic BC decode and depth transfers pass the
-   emulator probes, and a reference-image probe matches independent S3TC, RGTC
-   and BC7 decoders exactly for the wrapper compute path (BC7 verified on both
-   4 KB and 16 KB emulators). Next: run that probe on an
-   Adreno/KGSL phone (runbook ready); the staging-reclamation patch is now
-   runtime-validated on 4 KB and 16 KB (unfenced/one-time, reset/begin,
-   `vkQueueSubmit2`-with-fence, stress peak 2–16 tracked vs 512 for the
-   control), with a documented semaphore-only limitation. A no-GPU CI lane now
-   qualifies placed-memory loader plumbing and capability skip (lavapipe SKIP,
-   patched mock ICD supported, Android emulator paths documented as absent).
+   open. Native loading, synthetic BC decode, depth transfers, sampling/rendering
+   and BC7 pass the emulator probes: a reference-image probe matches independent
+   S3TC, RGTC and BC7 decoders exactly for the wrapper compute path (BC7 on both
+   4 KB and 16 KB), and a graphics-pipeline probe renders wrapper-decoded
+   BC1/BC3 UNORM/sRGB textures correctly (32/32 checked readbacks pass, RGBA8
+   controls byte-exact). The BC_SRGB storage inconsistency is root-caused and
+   fixed experimentally by `tools/vulkan-wrapper/srgb-storage.patch` (host-CPU
+   path now linearises; A/B closes the 74-LSB gap to 1 LSB; reference-tool
+   expectation update pending). Next: run the probes on an Adreno/KGSL phone
+   (runbook ready); the staging-reclamation patch is now runtime-validated on
+   4 KB and 16 KB (unfenced/one-time, reset/begin, `vkQueueSubmit2`-with-fence,
+   stress peak 2–16 tracked vs 512 for the control), with a documented
+   semaphore-only limitation. A no-GPU CI lane qualifies placed-memory loader
+   plumbing and capability skip (lavapipe SKIP, patched mock ICD supported,
+   Android emulator paths documented as absent), and an independent APK
+   reproducibility lane builds the pinned APK on two separate runners and fails
+   on any byte difference.
    Remaining: real-driver placement semantics (RADV/ANV/NVK/Turnip), a
    validation-layer run over the wrapper itself, concurrency, physical-phone
-   duration, and fixing the two suspected reference-image software-emulation
-   defects (BC_SRGB storage inconsistency, host-CPU odd-extent overrun) before
-   proposing anything upstream.
+   duration, the host-CPU odd-extent overrun, and an upstream decision/packaging
+   note for the sRGB host-path fix.
 3. Deepen DXVK queue/compiler and VKD3D shader/capability/descriptor review on the
    exact packaged ARM64EC bases. Measure submission cost, shader stalls, waits,
    memory and cold/warm behavior. Reuse upstream priority/cache mechanisms;

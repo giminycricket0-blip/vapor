@@ -222,6 +222,27 @@ The same extended families also pass on the 16 KB Android 17/API 37 emulator
 (page_size=16384), where both suspected defects reproduce.
 [16 KB extended receipt](../../docs/evidence/2026-10-21-vulkan-wrapper-reference-16k-extended.json).
 
+A sampling/render probe (`tools/tests/vulkan-wrapper-render.c` with committed GLSL
+shaders and the `tools/tests/vulkan-wrapper-render.py` checker) draws
+wrapper-decoded BC1/BC3 UNORM/sRGB textures through a fullscreen triangle with a
+nearest sampler into an RGBA8 target. On the 4 KB emulator all 32 checked
+readbacks pass (16 byte-exact): UNORM compute/compute-view renders byte-exactly,
+sRGB compute paths render the linearised convention within 1 LSB, the pre-patch
+host-CPU sRGB path renders the encoded convention (the known split), the native
+llvmpipe control stays within 3 LSB, and RGBA8 controls are byte-exact.
+[Render-pipeline receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-render-pipeline.json).
+
+The BC_SRGB storage split is root-caused and fixed experimentally:
+[`srgb-storage.patch`](srgb-storage.patch) linearises the host-CPU bcdec output
+(because BC*_SRGB is emulated as `R8G8B8A8_UNORM`, so stored texels must be
+linear). The patch applies cleanly to the pinned source, builds with the recorded
+recipe, keeps the ELF identity, and a 4 KB A/B reduces host-vs-compute
+disagreement from up to 74 LSB to 1 LSB with every other path byte-identical.
+The reference tool's host-cpu sRGB expectation still encodes the pre-patch
+convention, so patched runs report stale-convention failures until it is updated.
+[Patch receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-srgb-storage.json).
+
+
 ## Android build and limits
 
 Build the baseline before applying both patches with `patch -p1 --fuzz=0`, then

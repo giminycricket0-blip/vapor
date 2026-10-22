@@ -657,6 +657,35 @@ BC7_SRGB, compared against a host bcdec reference). Run it with
 `--serial <PHONE_SERIAL> --label phone-adreno` for the effective-driver pass. It
 does not modify the app or the pinned libraries.
 
+### Running the sampling/render-pipeline probe
+
+`tools/tests/vulkan-wrapper-render.c` samples wrapper-decoded textures through a
+real graphics pipeline (fullscreen triangle, nearest sampler, RGBA8 render
+target) and reads back the rendered image. Compile the fixture with the recorded
+NDK and compile the committed shaders with glslang (record the exact invocation
+and SPIR-V hashes):
+
+```sh
+$NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang \
+  -std=c11 -O2 -g -Wall -Wextra -Werror -D_GNU_SOURCE \
+  tools/tests/vulkan-wrapper-render.c -ldl \
+  -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 -o probe
+glslangValidator -V tools/tests/vulkan-wrapper-render.vert -o render.vert.spv
+glslangValidator -V tools/tests/vulkan-wrapper-render.frag -o render.frag.spv
+```
+
+Stage the probe, the pinned wrapper libraries, auxiliary libraries, the SPIR-V
+blobs and deterministic BC1/BC3/RGBA8 inputs on the device, run the matrix with
+`FORCE_BCN_EMULATION=1` (add `USE_IMAGE_VIEW=1` for compute-view and
+`USE_CPU_BCN=all` for host-CPU cases; omit for the native system-loader control),
+pull the readbacks into an evidence directory with `input/` and `output/`, and
+verify them with
+`python3 tools/tests/vulkan-wrapper-render.py --dir <evidence> --verbose`.
+`--print-runbook` prints the full device procedure and the expected-convention
+rules (wrapper compute and native controls render sRGB sources linearised; the
+pre-patch host-CPU fallback renders encoded values, see
+`tools/vulkan-wrapper/srgb-storage.patch`).
+
 ### Running the no-GPU placed-memory loader-path lane
 
 `tools/tests/vulkan-loader-path.c` is a loader-mediated harness (it never

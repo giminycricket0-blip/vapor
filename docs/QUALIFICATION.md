@@ -260,10 +260,50 @@ reference exactly. BC2/BC6H/BC7 format support is recorded.
 [BC7 receipt](evidence/2026-10-22-vulkan-wrapper-bc7-reference.json).
 
 These are software-Vulkan, synthetic-data results: no Adreno/KGSL driver, physical
-GPU, sampling/rendering pipeline, validation layers or game asset is covered. The
-receipt carries a one-command phone runbook
-(`--serial <PHONE> --label phone-adreno`) with controls and adjudication; no phone
-result is claimed.
+GPU, validation layers or game asset is covered. The receipt carries a one-command
+phone runbook (`--serial <PHONE> --label phone-adreno`) with controls and
+adjudication; no phone result is claimed.
+
+### Wrapper sampling and rendering pipeline
+
+An offscreen sampling/render probe (`tools/tests/vulkan-wrapper-render.c` fixture,
+committed GLSL shaders, and the `tools/tests/vulkan-wrapper-render.py` checker)
+uploads BC1/BC3 UNORM/sRGB textures through the wrapper, samples them through a
+real graphics pipeline (fullscreen triangle, nearest clamp-edge sampler, RGBA8
+render target) and compares the rendered image with an independently derived
+expected image (nearest upscale of the decoded texture; sRGB encoded/linear
+conventions). On the 4 KB emulator all 32 checked readbacks pass and 16 are
+byte-exact: wrapper compute/compute-view UNORM BC1/BC3 renders byte-exactly; the
+sRGB compute paths render the linearised convention within 1 LSB; the pre-patch
+host-CPU sRGB path renders the encoded convention and diverges from the
+linearised expectation by up to 73 LSB (the known storage split); the native
+llvmpipe control stays within 3 LSB (inter-decoder rounding); RGBA8 controls are
+byte-exact everywhere. This closes the "transfer-only" gap for the wrapper on
+software Vulkan. [Render-pipeline receipt](evidence/2026-10-22-vulkan-wrapper-render-pipeline.json).
+
+The fixture was salvaged from an interrupted workstream: the checker
+independently re-derives and verifies the expected images offline and
+`--print-runbook` prints the device commands, but a single-command device
+orchestrator is still a follow-up. Nearest sampling, one fullscreen triangle and
+llvmpipe only; no phone or game assets.
+
+### Wrapper SRGB storage fix
+
+The compute-vs-host sRGB split is root-caused and fixed experimentally:
+BC*_SRGB sources are emulated as `R8G8B8A8_UNORM` (and image views are patched to
+UNORM), so sampling performs no hardware sRGB decode and the stored texels must be
+linear, which is what the compute shaders already do. `tools/vulkan-wrapper/srgb-storage.patch`
+(3 hunks in the host bcdec path, IEC 61966-2-1 transfer function with double
+precision ties-to-even rounding, alpha untouched) makes the host-CPU fallback
+store linear values as well. The patch applies cleanly to the pinned source
+(forward/reverse, `--fuzz=0`), the patched library keeps the recorded ELF identity
+class (same SONAME, 20 NEEDED names, 4073 exports, 0x4000 load alignment), and a
+4 KB emulator A/B shows the host-vs-compute disagreement falling from up to 74 LSB
+to 1 LSB while compute, compute-view, native and RGBA8 readbacks stay byte-identical.
+The reference tool's host-cpu sRGB expectation still encodes the pre-patch
+convention, so patched runs report two stale-convention failures until that
+expectation is updated; that is a tool follow-up, not a patch failure.
+[SRGB patch receipt](evidence/2026-10-22-vulkan-wrapper-srgb-storage.json).
 
 ### Placed-memory loader path and capability skip
 
@@ -399,12 +439,18 @@ now demonstrated: at a fixed commit with a pinned `BUILD_ID`, a fixed
 `SOURCE_DATE_EPOCH`, cleared `app/build` and `app/.cxx`, and the pinned
 toolchain, two clean builds produced **byte-identical APKs** (676,228,770 B,
 SHA-256 `f8cc0b2f…`), with identical ZIP layout/padding, a fixed OpenSSL build
-date and no dex `BUILD_ID` drift. Cross-machine and release-signing
+date and no dex `BUILD_ID` drift. Signing the demonstrated APK is also
+byte-deterministic in repeated runs (three identical debug-signed APKs, an
+identical 4 KB v2 signing block, zipalign included), and an independent
+`APK reproducibility` workflow builds the same pinned APK on two separate
+`ubuntu-24.04` runners and fails unless the two hashes match; the CI run result is
+recorded in the lane receipt. Release signing and cross-toolchain
 reproducibility remain out of scope.
 [Native rebuild receipt](evidence/2026-10-21-emuready-native-rebuild.json),
 [rebuild reproducibility receipt](evidence/2026-10-21-apk-rebuild-reproducibility.json),
 [root-cause receipt](evidence/2026-10-22-apk-reproducibility-rootcause.json),
-[mitigation receipt](evidence/2026-10-22-apk-reproducibility-mitigation.json).
+[mitigation receipt](evidence/2026-10-22-apk-reproducibility-mitigation.json),
+[cross-runner lane receipt](evidence/2026-10-22-apk-cross-runner-reproducibility.json).
 
 ### Live public data in the normal app
 

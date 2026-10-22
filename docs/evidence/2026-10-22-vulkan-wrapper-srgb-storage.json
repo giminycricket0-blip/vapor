@@ -1,0 +1,111 @@
+{
+  "date": "2026-10-22",
+  "scope": "Source patch fixing the Vulkan wrapper host-CPU BCn sRGB decode convention, built from the pinned source and qualified with a 4 KB emulator A/B against the compute-shader and native paths. Experimental component work only; no app asset, default, driver install or packaging change.",
+  "base_commit": "835b426a74a3951f306bd80cdb72a03e1f710134",
+  "component": {
+    "name": "bionic-vulkan-wrapper BCn host-CPU decode",
+    "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+    "source_archive": "wrapper-build/source.tar.gz (retained)",
+    "source_archive_sha256": "fe1f7e32f0c4b151f74b252ffda3f3561d56df96e3b17863f66c89b01b698f3d",
+    "patched_file": "src/vulkan/wrapper/bcdec.c",
+    "patch": {
+      "path": "tools/vulkan-wrapper/srgb-storage.patch",
+      "sha256": "042dd50b05e24d658cc782218a0931926a068c21da02c7dabf276908c2782128",
+      "lines": 86,
+      "hunks": 3,
+      "applies_to": "3abf4870 with patch -p1 --fuzz=0 (forward and reverse dry-run verified on a pristine archive extraction)"
+    }
+  },
+  "defect_and_fix": {
+    "defect": "BC*_SRGB host-CPU (bcdec) decode stored sRGB-encoded texel values, while the compute-shader decoders store linear values. The emulated image format for a BC*_SRGB source is R8G8B8A8_UNORM (no hardware sRGB decode on sampling; the wrapper also patches image views to UNORM), so stored texels must be linear to reproduce the original sampled colours. Two paths therefore disagreed by up to 74 LSB.",
+    "fix": "After the bcdec decode in the host path, linearise the RGB channels of each 4x4 block with the IEC 61966-2-1 transfer function, using double precision with ties-to-even rounding to mirror the compute shader float->UNORM conversion; alpha is left unchanged. The patch also records the format mapping rationale in comments.",
+    "rationale_evidence": [
+      "wrapper source: unwrap_vk_format_physical_device maps BC*_SRGB to R8G8B8A8_UNORM and views are patched to that format, so sampling performs no sRGB decode",
+      "compute shaders (s3tc.comp/bc7.comp) already apply srgb_to_linear for SRGB originals",
+      "reference probe computes the linearised decode as the correct sRGB reference"
+    ]
+  },
+  "build": {
+    "recipe": "recorded Meson 1.9.1 + NDK 27.3.13750724 clang 18.0.4, android.ini/native.ini, 16 KB max-page-size (docs/BUILDING.md)",
+    "result": "471/471 targets linked; no new warnings in the touched file (4 pre-existing warnings elsewhere)",
+    "patched_unstripped_sha256": "35e9c167b92fcb11a649cb84ec62334f49df90b5a57c5684ced25ab75158dd62",
+    "patched_stripped_sha256": "e93e1e3a938629151e15b787c78183d49a561073fdcba08ae74822f6c0875303",
+    "baseline_stripped_sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c (unpatched baseline unchanged)",
+    "elf": "SONAME libvulkan_wrapper.so; same 20 NEEDED names; 4073 exported symbols; four LOAD segments at 0x4000 \u2014 identical identity class to the recorded candidate build"
+  },
+  "runtime_ab": {
+    "emulator": "AVD Vapor_API_36 on emulator-5558 (4 KB pages; llvmpipe software Vulkan); runs 2026-10-22 01:46 local",
+    "protocol": "reference probe extended sRGB family: BC1_SRGB/BC3_SRGB through candidate/baseline, compute/compute-view/host-cpu, system-loader native control and RGBA8_SRGB controls; FORCE_BCN_EMULATION=1; 17 runs + 3 caps per phase",
+    "unpatched": {
+      "evaluated": "20 runs: 20 pass against the pre-patch per-path expectations (compute vs linearised reference, host-cpu vs encoded reference)",
+      "compute_vs_host_cpu": {
+        "bc1_srgb": {
+          "diff_bytes": 6666,
+          "max_delta": 74,
+          "bytes": 16384
+        },
+        "bc3_srgb": {
+          "diff_bytes": 12670,
+          "max_delta": 74,
+          "bytes": 16384
+        }
+      }
+    },
+    "patched": {
+      "evaluated": "20 runs: 18 pass; the 2 \"failures\" are the tool comparing the now-linear host-cpu output with its pre-patch encoded expectation (expected after the fix)",
+      "compute_vs_host_cpu": {
+        "bc1_srgb": {
+          "diff_bytes": 1575,
+          "max_delta": 1,
+          "bytes": 16384
+        },
+        "bc3_srgb": {
+          "diff_bytes": 3506,
+          "max_delta": 1,
+          "bytes": 16384
+        }
+      },
+      "compute_paths_invariant": "compute, compute-view, native readbacks and RGBA8_SRGB controls are byte-identical between patched and unpatched runs (0 differing bytes)",
+      "baseline_host_unchanged": {
+        "bc1_srgb": {
+          "diff_bytes": 6666,
+          "max_delta": 74
+        },
+        "bc3_srgb": {
+          "diff_bytes": 12670,
+          "max_delta": 74
+        }
+      }
+    },
+    "adjudication": "The correct convention is the linear one (compute-shader and emulated-UNORM sampling semantics). The patch brings the host-CPU path into agreement with it to within 1 LSB rounding, and leaves every other path byte-identical. The reference tool currently encodes the old convention as the host-cpu sRGB expectation; updating that expectation (or adding a host-convention flag) is a follow-up tool change so future patched runs report PASS rather than a stale-convention failure. No app behaviour is affected by this experimental component patch."
+  },
+  "confirmed": [
+    "Patch applies cleanly to pristine 3abf4870 (forward/reverse, --fuzz=0)",
+    "Patched library builds and matches the recorded ELF identity class",
+    "Patched host-CPU path now agrees with the compute path within 1 LSB (was up to 74)",
+    "Compute, compute-view, native and control outputs are byte-identical to the unpatched build, so the patch is scoped to the host-CPU decode"
+  ],
+  "open": [
+    "Sampling/render-path verification of the corrected convention (separate sampling test)",
+    "Reference-tool expectation update/flag",
+    "Upstream submission decision; no upstream change was made",
+    "Physical-device/phone verification"
+  ],
+  "limitations": [
+    "Software Vulkan (llvmpipe) emulator only; no physical GPU or phone",
+    "Synthetic deterministic blocks, not game assets",
+    "Host-path conversion differs from compute by at most 1 LSB (double-vs-float rounding)",
+    "No concurrency or performance claims",
+    "Patch is experimental and not packaged or selected by Vapor"
+  ],
+  "raw_artifacts": {
+    "root": "/Users/cheng/staging-srgb",
+    "patch": "/Users/cheng/staging-srgb/patches/srgb-storage.patch",
+    "build_log": "/Users/cheng/staging-srgb/build.log",
+    "runs": [
+      "/Users/cheng/staging-srgb/raw/unpatched-srgb.json",
+      "/Users/cheng/staging-srgb/raw/patched-srgb.json"
+    ],
+    "readbacks": "/Users/cheng/staging-srgb/raw/{unpatched,patched}-srgb/out/*.bin"
+  }
+}

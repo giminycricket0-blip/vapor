@@ -1,0 +1,136 @@
+{
+  "date": "2026-10-22",
+  "scope": "Offscreen sampling/render-pipeline probe of wrapper-decoded BC1/BC3 (UNORM and sRGB) and RGBA8 control textures: upload through the pinned wrapper, sample through a real graphics pipeline (fullscreen triangle, nearest sampler, RGBA8 render target), read back and compare against an independently derived expected render image. Software Vulkan emulator only; no phone/Adreno result claimed.",
+  "base_commit": "835b426a74a3951f306bd80cdb72a03e1f710134",
+  "pipeline": {
+    "fixture": {
+      "path": "tools/tests/vulkan-wrapper-render.c",
+      "sha256": "ceefed85f21bf53c2dba74943a9ac5f79d42aca828eadb219b6cb3c40890279a",
+      "lines": 710,
+      "modes": [
+        "caps",
+        "render"
+      ],
+      "render_usage": "render LIBRARY FORMAT INPUT OUTPUT W H RW RH VERT_SPV FRAG_SPV; FORMAT bc1|bc3|bc1_srgb|bc3_srgb|rgba8"
+    },
+    "shaders": {
+      "vert": {
+        "path": "tools/tests/vulkan-wrapper-render.vert",
+        "sha256": "94d7ea6e56c2c9afd64e2676368189a56f88de414b2a2a5480ca200bba85932c",
+        "spirv_sha256": "49f744d5dccbda1b556ad26b37f9c160a20a839da371788f5cd3c4abad0a6c55",
+        "spirv_bytes": 1232
+      },
+      "frag": {
+        "path": "tools/tests/vulkan-wrapper-render.frag",
+        "sha256": "087e8bf12f97a654fd29778b0b5d706e3fbf519e1b68c5fad0b09a5d37623bfb",
+        "spirv_sha256": "ebee06a7e6fd464ca9bd51010c1ac029f571b9dd0c3363e00537ddb5b9f0fdf1",
+        "spirv_bytes": 560
+      },
+      "note": "GLSL sources are committed; the SPIR-V hashes are the binary blobs used by the salvaged run. The exact glslang invocation was not captured with the run; any glslangValidator -V from the recorded toolchain family reproduces equivalent modules (recompile and compare the SPIR-V hash before claiming bit-identical shaders)."
+    },
+    "probe_binary": {
+      "sha256": "b3e9facf55695c8aa21ea38c6e94542c33a5aa151c31787fcaf8223b968152e5",
+      "bytes": 225712,
+      "build": "NDK r27d aarch64-linux-android34-clang, -std=c11 -O2 -g -Wall -Wextra -Werror -D_GNU_SOURCE, -ldl, 16 KB max/common page-size flags (recorded command printed by tools/tests/vulkan-wrapper-render.py --print-runbook)"
+    },
+    "checker": {
+      "path": "tools/tests/vulkan-wrapper-render.py",
+      "sha256": "6bd9ed110e965d264785a8c27a2ef1924236546fb0d7f9f7f464e94b6d11468a",
+      "functions": "independently re-derives expected render images from the saved decoded textures (nearest upscale; sRGB encoded/linear conventions with double precision ties-to-even), verifies the recorded expected files, then compares every readback; --print-runbook prints device reproduction commands"
+    }
+  },
+  "run": {
+    "emulator": "AVD Vapor_UI_API36 (Android 16/API 36, 4 KB pages), serial emulator-5556, llvmpipe (LLVM 21.1.4, 128 bits), driver llvmpipe/Mesa 26.0.0-devel; run 2026-10-22 01:44-01:46 local",
+    "matrix": {
+      "targets": [
+        "system loader (native)",
+        "candidate wrapper (patched image-create build)",
+        "baseline wrapper (unpatched)"
+      ],
+      "formats": [
+        "bc1",
+        "bc3",
+        "bc1_srgb",
+        "bc3_srgb",
+        "rgba8"
+      ],
+      "configs": [
+        "compute (default)",
+        "compute-view (USE_IMAGE_VIEW=1)",
+        "host-cpu (USE_CPU_BCN=all)",
+        "native (system loader only)"
+      ],
+      "readbacks_checked": 32
+    },
+    "inputs": {
+      "bc1-32x32.bin": "294cb01a523693ddb55d1685f88467d3c673cd1cc031e52ee8328da36bc8d8ec",
+      "bc3-32x32.bin": "0f013cd8f74087f5901c14bc4f9247759f6cbb94175a488859511458fa9978ae",
+      "rgba8-32x32.bin": "173f4ab4d9c93e38881ba4b548eefaebf9be2b917814821d14662c7a061fa83e",
+      "bc1-decoded-32x32.bin": "879e64da743e94874ed14abf86018b02ee9dd52e5b4bd89a00757c737f4ecfbb",
+      "bc3-decoded-32x32.bin": "7d6001ddaedde4414d30a8c7505fe36b462560620fec98cf460c93b1cae11d72"
+    },
+    "derivation_verified": "The recorded expected images match an independent re-derivation exactly: unorm and srgb-encoded = nearest upscale of the saved decoded texture; srgb-linear = nearest upscale of the sRGB->linear (IEC 61966-2-1, double precision, ties-to-even) transform (max delta 0 for both BC1 and BC3)."
+  },
+  "results": {
+    "checker": "python3 tools/tests/vulkan-wrapper-render.py --dir <evidence> => 32 pass / 0 fail / 0 skipped (33 readbacks scanned); 16/32 byte-exact",
+    "groups": [
+      {
+        "group": "RGBA8 control (system/candidate/baseline)",
+        "result": "byte-exact (0 differing bytes)",
+        "tolerance": 0
+      },
+      {
+        "group": "Wrapper compute and compute-view, BC1/BC3 UNORM",
+        "result": "byte-exact for BC1 and BC3 (candidate and baseline)",
+        "tolerance": 0
+      },
+      {
+        "group": "Wrapper host-cpu, BC1/BC3 UNORM",
+        "result": "BC1 byte-exact; BC3 776/16384 bytes differ by max 1 LSB (bcdec host decoder vs independent reference rounding)",
+        "tolerance": 2
+      },
+      {
+        "group": "Wrapper compute and compute-view, BC1_SRGB/BC3_SRGB",
+        "result": "within 1 LSB of the sRGB-linearised expected image (1,288 and 2,964 differing bytes, max delta 1)",
+        "tolerance": 2,
+        "meaning": "the sampling path renders linearised values, consistent with the emulated R8G8B8A8_UNORM image having no hardware sRGB decode"
+      },
+      {
+        "group": "Wrapper host-cpu, BC1_SRGB/BC3_SRGB (pre-patch)",
+        "result": "matches the encoded convention (0/776 differing bytes) but not the linearised one (6,876/12,664 bytes, max delta 73)",
+        "meaning": "confirms the known compute-vs-host sRGB storage split at sampling time; the item is fixed experimentally by tools/vulkan-wrapper/srgb-storage.patch (see its receipt)"
+      },
+      {
+        "group": "System loader (native llvmpipe)",
+        "result": "matches the correct expected image within 3 LSB (BC1 1 LSB, BC3 2 LSB, sRGB 3 LSB; RGBA8 exact)",
+        "tolerance": 3,
+        "meaning": "expected inter-decoder rounding, not a wrapper path"
+      }
+    ],
+    "conclusion": "The wrapper-decoded textures survive a real sampled-rendering pipeline and produce the expected rendered images on the emulator, including sRGB sampling semantics; the only substantive deviation is the known host-CPU sRGB encode/linearise split, which is separately patched."
+  },
+  "confirmed": [
+    "Graphics pipeline (graphicsPipeline, render pass, framebuffer, sampler, descriptor set, draw, readback) works with the wrapper on llvmpipe",
+    "UNORM BC1/BC3 wrapper compute/compute-view rendering is byte-exact against the independent expected image",
+    "sRGB compute paths render the linearised convention within 1 LSB",
+    "The host-CPU sRGB path renders the encoded convention and differs from the linearised expectation by up to 73 LSB (known defect)",
+    "RGBA8 controls are byte-exact on all targets"
+  ],
+  "open": [
+    "Full one-command orchestrator was not preserved by the interrupted workstream: the fixture, GLSL sources, checker and runbook are committed, but the device-run matrix currently needs the documented commands (a driver script is a follow-up)",
+    "Exact glslang invocation/version was not captured; SPIR-V source is committed but recompile-and-hash check is a follow-up",
+    "Sampling on an effective driver/phone (Adreno/KGSL) with real game textures",
+    "Mip/array/sRGB sampling variants beyond the recorded matrix"
+  ],
+  "limitations": [
+    "Software Vulkan (llvmpipe) emulator only; no physical GPU or phone",
+    "Synthetic deterministic textures, not game assets",
+    "Nearest-only sampler and a single fullscreen triangle; no depth state, blending or mip filtering",
+    "The salvaged run is verified offline by the checker; the device-run orchestration was not re-executed after the interruption",
+    "No performance claims"
+  ],
+  "raw_artifacts": {
+    "evidence_directory": "/Users/cheng/wrapper-render (input/, output/, logs/, shaders/, run/; outside the repository)",
+    "logs": "/Users/cheng/wrapper-render/logs/emulator-smoke.log and run-*.smoke.log (all 32 smoke runs RESULT=ok)"
+  }
+}
