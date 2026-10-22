@@ -1,5 +1,13 @@
 package com.winlator.cmod.feature.settings.support
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -66,6 +74,33 @@ private val SUPPORT_LINKS = listOf(
     SupportLink(Icons.Outlined.Info, R.string.vapor_support_upstream, R.string.vapor_support_upstream_desc,
         "https://github.com/WinNative-Emu/WinNative"),
 )
+
+/** One bundled licence text in `assets/licenses/`. */
+internal data class BundledLicence(val fileName: String, val bytes: Int)
+
+/**
+ * Reads the licence texts actually present in the APK, so the list can never drift
+ * from what ships. Unknown files are listed by name; known ones get a readable label.
+ */
+internal fun loadBundledLicences(context: android.content.Context): List<BundledLicence> =
+    runCatching {
+        context.assets.list("licenses")
+            ?.mapNotNull { name ->
+                runCatching {
+                    BundledLicence(name, context.assets.open("licenses/$name").available())
+                }.getOrNull()
+            }
+            ?.sortedBy { it.fileName }
+            .orEmpty()
+    }.getOrDefault(emptyList())
+
+internal fun licenceLabel(fileName: String): String = when {
+    fileName.startsWith("wine-") -> "Wine (" + fileName.removePrefix("wine-").removeSuffix(".txt") + ")"
+    fileName.startsWith("cnc-ddraw") -> "cnc-ddraw (MIT)"
+    fileName.startsWith("7zip") -> "7-Zip 19.00"
+    fileName.startsWith("xorgproto") -> "X11 protocol headers"
+    else -> fileName.removeSuffix(".txt")
+}
 
 @Composable
 private fun SectionHeading(
@@ -162,6 +197,94 @@ private fun SupportLinkRow(
 }
 
 @Composable
+private fun ThirdPartyLicenceRow(
+    licence: BundledLicence,
+    onOpen: () -> Unit,
+) {
+    val shape = RoundedCornerShape(14.dp)
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .background(SupportCard)
+                .clickable(onClick = onOpen)
+                .paneNavItem(
+                    cornerRadius = 14.dp,
+                    onActivate = onOpen,
+                    highlightColor = SupportAccent,
+                    tapToSelect = true,
+                )
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(11.dp))
+                    .background(SupportAccent.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Description,
+                contentDescription = null,
+                tint = SupportAccent,
+                modifier = Modifier.size(22.dp),
+            )
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                licenceLabel(licence.fileName),
+                color = SupportText,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+            )
+            Text(
+                licence.fileName,
+                color = SupportSub,
+                fontSize = 11.sp,
+            )
+        }
+    }
+}
+
+/** Shows one bundled licence text verbatim. Read-only; no network. */
+@Composable
+private fun LicenceTextDialog(
+    licence: BundledLicence,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val text = remember(licence.fileName) {
+        runCatching {
+            context.assets.open("licenses/" + licence.fileName)
+                .bufferedReader(Charsets.UTF_8)
+                .readText()
+                .ifBlank { "(empty licence text)" }
+        }.getOrElse { "(the licence text could not be read: " + (it.message ?: "unknown error") + ")" }
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(licenceLabel(licence.fileName)) },
+        text = {
+            SelectionContainer {
+                Text(
+                    text,
+                    color = SupportText,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.support_license_close)) }
+        },
+    )
+}
+
+@Composable
 fun SupportScreen(bridge: SettingsNavBridge? = null) {
     val context = LocalContext.current
     val contentNav = rememberSettingsContentNav(bridge)
@@ -197,6 +320,20 @@ fun SupportScreen(bridge: SettingsNavBridge? = null) {
             SUPPORT_LINKS.forEach { link ->
                 SupportLinkRow(link = link, onOpen = ::open)
             }
+
+            val licences = remember(context) { loadBundledLicences(context) }
+            var opened by remember { mutableStateOf<BundledLicence?>(null) }
+            if (licences.isNotEmpty()) {
+                SectionHeading(
+                    textRes = R.string.support_licenses_heading,
+                    descRes = R.string.support_licenses_desc,
+                    topPadding = 18,
+                )
+                licences.forEach { licence ->
+                    ThirdPartyLicenceRow(licence = licence, onOpen = { opened = licence })
+                }
+            }
+            opened?.let { LicenceTextDialog(licence = it, onDismiss = { opened = null }) }
         }
     }
 }

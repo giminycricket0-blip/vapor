@@ -2709,6 +2709,10 @@ Installed path:
     <string name="retro_scr_tab_defaults">Defaults</string>
     <string name="retro_scr_tab_credits">Credits</string>
     <string name="settings_support_title">Support</string>
+    <string name="support_licenses_heading">THIRD-PARTY LICENCES</string>
+    <string name="support_licenses_desc">Licence texts shipped inside the app for the components it bundles. Tap one to read it.</string>
+    <string name="support_license_close">Close</string>
+    <string name="support_license_bytes">%1$s bytes</string>
     <string name="support_heading">GET HELP</string>
     <string name="support_desc">Ask questions, report problems, or see what is being worked on. Each opens in your browser.</string>
     <string name="retro_scr_enable_hardcore_title">Enable Hardcore mode?</string>

@@ -758,6 +758,12 @@ retrievable at the paths tried, so they are recorded as outstanding rather than
 guessed. And the Microsoft, Valve, GSE, Steamless and 3dfx payloads have **no**
 redistributable licence text to bundle; that is the point of those findings.
 
+The texts are also readable in the app: **Settings → Support → Third-party
+licences** lists every bundled file and opens its verbatim text. Shipping licence
+files inside the APK without a way to see them only half satisfies the licences,
+and this keeps the list in step with what actually ships (it is read from the
+`assets/licenses/` directory at runtime, so it cannot drift).
+
 Bundling these texts satisfies part of what their licences ask for. It is not
 permission to redistribute the payloads that have no text — see the blockers.
 
