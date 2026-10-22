@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-22",
+  "scope": "Cross-runner APK reproducibility CI lane (two independent ubuntu-24.04 runners, pinned inputs, byte comparison) plus a same-machine signing-determinism experiment on the demonstrated reproducible APK. No app or asset changes; the lane is additive CI.",
+  "base_commit": "835b426a74a3951f306bd80cdb72a03e1f710134",
+  "part_a_signing_determinism": {
+    "purpose": "Check that the packaging steps after the reproducible native build (zipalign + APK signing) are deterministic for the demonstrated APK.",
+    "input": {
+      "path": "/Users/cheng/apk-repro-ci/unsigned/buildA-unsigned.apk (derived from the demonstrated byte-identical buildA.apk, sha256 f8cc0b2f\u2026)",
+      "sha256": "932bed171e8c90b989efb29d32cd4944ebed279e7996695d36cc4761b581e06e",
+      "bytes": 676224674,
+      "apksigner_verify": "DOES NOT VERIFY / missing META-INF/MANIFEST.MF (unsigned, as intended)"
+    },
+    "zipalign": {
+      "command": "zipalign -P 16 -f 4 <unsigned> aligned-{1,2}.apk",
+      "result": "two runs byte-identical",
+      "sha256": "932bed171e8c90b989efb29d32cd4944ebed279e7996695d36cc4761b581e06e",
+      "bytes": 676224674
+    },
+    "debug_key_signing": {
+      "command": "apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android --out debug-signed-N.apk <unsigned>",
+      "runs": 3,
+      "result": "all three runs byte-identical",
+      "sha256": "37e30355458c0ad3e320b48903adc061373e58383b13c39bb707a45db6c44f1e",
+      "bytes": 676368099,
+      "v2_signing_block": {
+        "bytes": 4096,
+        "sha256": "f4df0bba54f038dfb66790e0d3a9b756c6cbf17500c1484c8146e06fe0f0f6a7",
+        "identical_across_runs": true
+      },
+      "certificate_sha256": "7e122c925e37a47696abc9b111ec747872061cb1d686eb7be9880cfafa4a93f1 (Android Debug)",
+      "apksigner_verify": "OK, v2 scheme"
+    },
+    "older_scratch_runs": "/Users/cheng/apk-repro-ci/out contains prior runs (zipalign pair identical 932bed\u2026, re-sign pairs identical, test-key pair identical 8cd2931d\u2026); the clean re-run above is the recorded result.",
+    "conclusion": "For this debug key and the demonstrated reproducible APK, zipalign and APK signing (v2, RSA PKCS#1 v1.5) are byte-deterministic in repeated runs.",
+    "limits": [
+      "Debug signing only; release signing (different key/keystore, v3/v4 options) is not covered",
+      "Signing determinism says nothing about signing-security properties",
+      "Same host/tool versions only"
+    ]
+  },
+  "part_b_ci_lane": {
+    "workflow": {
+      "path": ".github/workflows/reproducibility-ci.yml",
+      "sha256": "5a0f93adf164b8877047257649dfdf8cd2946e512cd504746351d904583da532",
+      "runner": "ubuntu-24.04",
+      "triggers": [
+        "push branches: Vapor",
+        "workflow_dispatch"
+      ]
+    },
+    "design": [
+      "Two independent, deliberately duplicated jobs (build-a, build-b) on separate runners perform the same clean pinned build (no Gradle/actions cache).",
+      "Pinned inputs: SOURCE_DATE_EPOCH=1792625234 (the epoch used by the demonstrated local experiment), BUILD_ID=vapor-repro via -PBUILD_ID, VERSION_CODE=1, Android SDK platforms/build-tools 35.0.0, NDK 27.3.13750724, cmake 3.22.1, Rust 1.99.0 with aarch64-linux-android, JDK 17 (temurin).",
+      "Each build removes app/build and app/.cxx first (the root-cause pass showed incremental packaging leaves history-dependent ZIP holes).",
+      "Each job records the APK sha256/size and uploads the APK + sha256 artifact.",
+      "A third compare job downloads both artifacts, verifies each recorded hash, compares sha256 and bytes with cmp, and fails on any difference; it prints diagnostics pointing at tools/tests/apk-repro-diff.py and the uploaded artifacts."
+    ],
+    "what_ci_must_prove": [
+      "Both runners resolve the pinned toolchains",
+      "Both clean builds produce the same APK sha256, so the compare job passes and the job summary records PASS",
+      "If they differ, the compare job fails with both APKs available for byte-level diagnosis"
+    ],
+    "residual_risks": [
+      "Runner images can carry different patch-level JDK/build-tools metadata over time; the lane pins the package versions it can and treats any drift as a failure signal, not a silent pass",
+      "Gradle dependency resolution from remote repositories could change if a pinned dependency version is not immutable (the build already uses fixed versions, but no lockfile guarantee is added here)",
+      "Debug signing only; release signing and fully pristine caches are out of scope"
+    ],
+    "status": "Workflow committed but not yet executed; the Lead pushes and records the CI run result here after it completes. This receipt does not claim CI success."
+  },
+  "limitations": [
+    "CI lane proves same-image cross-runner reproducibility only; it does not prove reproducibility across different OS/toolchain versions",
+    "Signing experiment covers the debug key and v2 scheme on one host",
+    "No app code or packaging change"
+  ],
+  "raw_artifacts": {
+    "signing_scratch": "/Users/cheng/apk-repro-ci (unsigned APK, apksigner outputs, sigblock.py, out/ and out2/ hashes)",
+    "input_apk": "/Users/cheng/apk-repro-mitigation/out/buildA.apk and buildB.apk (sha256 f8cc0b2f\u2026, demonstrated byte-identical)"
+  }
+}

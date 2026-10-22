@@ -1,0 +1,332 @@
+name: APK reproducibility
+
+# Cross-runner byte-for-byte reproducibility lane for the standard debug APK.
+#
+# Two independent ubuntu-24.04 runners (build-a, build-b) perform the same
+# clean, pinned build in parallel; the compare job fails unless the two APKs
+# have identical SHA-256 hashes. The pins are the mitigations demonstrated in
+# docs/evidence/2026-10-22-apk-reproducibility-mitigation.json:
+#   * SOURCE_DATE_EPOCH is a fixed, auditable value (OpenSSL's
+#     util/mkbuildinf.pl embeds it in the libcrypto "built on:" DATE string),
+#   * BUILD_ID is pinned with -PBUILD_ID (otherwise BuildConfig, its inlined
+#     Kotlin copies and D8's class-checksum metadata follow the git HEAD),
+#   * app/build and app/.cxx are removed before the build, so APK packaging
+#     starts from scratch (the root-cause pass showed incremental packaging
+#     leaves history-dependent ZIP holes/padding: a 4.87 MB size delta).
+#
+# No Gradle/actions cache is used on purpose for this first version: the lane
+# must compare two pristine, independent builds. Do not add actions/cache here
+# without re-qualifying the lane.
+#
+# The build step is the same Gradle invocation that pr-ci.yml already runs on
+# ubuntu-24.04, plus the reproducibility pins. The two build jobs are
+# deliberately duplicated (not a matrix) so each one is a separate runner and
+# the compare job can depend on both named jobs.
+
+on:
+  push:
+    branches: [Vapor]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apk-reproducibility-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # 2026-10-21T23:27:14Z, the committer timestamp used by the local
+  # reproducibility experiment. Both jobs and future runs use the same value,
+  # so only genuine build non-determinism can change the output bytes.
+  SOURCE_DATE_EPOCH: "1792625234"
+  BUILD_ID: vapor-repro
+  VERSION_CODE: "1"
+  APK_PATH: app/build/outputs/apk/standard/debug/standard.apk
+
+jobs:
+  build-a:
+    name: Build A (repro)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          lfs: true
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install native toolchains
+        run: |
+          set -euo pipefail
+          vapor_sdkmanager="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' -print -quit)"
+          test -x "$vapor_sdkmanager"
+          "$vapor_sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
+          sudo apt-get update
+          sudo apt-get install -y make perl
+
+      - name: Install pinned Rust toolchain
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.99.0 --profile minimal --target aarch64-linux-android
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.cargo/bin:$PATH"
+          rustc --version
+          cargo --version
+          rustup show
+
+      - name: Show pinned environment
+        run: |
+          set -euo pipefail
+          echo "git HEAD: $(git rev-parse HEAD)"
+          echo "SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH"
+          echo "BUILD_ID: $BUILD_ID  VERSION_CODE: $VERSION_CODE"
+          java -version
+          rustc --version
+          cargo --version
+          "$ANDROID_HOME/cmake/3.22.1/bin/cmake" --version | head -n 1
+          test -d "$ANDROID_HOME/ndk/27.3.13750724"
+          test -d "$ANDROID_HOME/build-tools/35.0.0"
+
+      - name: Clean build and native trees
+        run: |
+          set -euo pipefail
+          rm -rf app/build app/.cxx
+          test ! -e app/build
+          test ! -e app/.cxx
+
+      - name: Build pinned standard debug APK
+        run: |
+          set -euo pipefail
+          ./gradlew :app:assembleStandardDebug \
+            -PBUILD_ID="$BUILD_ID" \
+            -PVERSION_CODE="$VERSION_CODE" \
+            --max-workers=4 --console=plain --no-configuration-cache
+          test -s "$APK_PATH"
+
+      - name: Record APK hash and size
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/repro"
+          cp "$APK_PATH" "$RUNNER_TEMP/repro/standard-build-a.apk"
+          cd "$RUNNER_TEMP/repro"
+          sha256sum standard-build-a.apk | tee standard-build-a.apk.sha256
+          stat -c 'standard-build-a.apk bytes: %s' standard-build-a.apk
+
+      - name: Upload APK and sha256
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-job-a
+          path: |
+            ${{ runner.temp }}/repro/standard-build-a.apk
+            ${{ runner.temp }}/repro/standard-build-a.apk.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 2
+
+  build-b:
+    name: Build B (repro)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          lfs: true
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install native toolchains
+        run: |
+          set -euo pipefail
+          vapor_sdkmanager="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' -print -quit)"
+          test -x "$vapor_sdkmanager"
+          "$vapor_sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
+          sudo apt-get update
+          sudo apt-get install -y make perl
+
+      - name: Install pinned Rust toolchain
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.99.0 --profile minimal --target aarch64-linux-android
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.cargo/bin:$PATH"
+          rustc --version
+          cargo --version
+          rustup show
+
+      - name: Show pinned environment
+        run: |
+          set -euo pipefail
+          echo "git HEAD: $(git rev-parse HEAD)"
+          echo "SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH"
+          echo "BUILD_ID: $BUILD_ID  VERSION_CODE: $VERSION_CODE"
+          java -version
+          rustc --version
+          cargo --version
+          "$ANDROID_HOME/cmake/3.22.1/bin/cmake" --version | head -n 1
+          test -d "$ANDROID_HOME/ndk/27.3.13750724"
+          test -d "$ANDROID_HOME/build-tools/35.0.0"
+
+      - name: Clean build and native trees
+        run: |
+          set -euo pipefail
+          rm -rf app/build app/.cxx
+          test ! -e app/build
+          test ! -e app/.cxx
+
+      - name: Build pinned standard debug APK
+        run: |
+          set -euo pipefail
+          ./gradlew :app:assembleStandardDebug \
+            -PBUILD_ID="$BUILD_ID" \
+            -PVERSION_CODE="$VERSION_CODE" \
+            --max-workers=4 --console=plain --no-configuration-cache
+          test -s "$APK_PATH"
+
+      - name: Record APK hash and size
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/repro"
+          cp "$APK_PATH" "$RUNNER_TEMP/repro/standard-build-b.apk"
+          cd "$RUNNER_TEMP/repro"
+          sha256sum standard-build-b.apk | tee standard-build-b.apk.sha256
+          stat -c 'standard-build-b.apk bytes: %s' standard-build-b.apk
+
+      - name: Upload APK and sha256
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-job-b
+          path: |
+            ${{ runner.temp }}/repro/standard-build-b.apk
+            ${{ runner.temp }}/repro/standard-build-b.apk.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 2
+
+  compare:
+    name: Compare APK hashes
+    needs: [build-a, build-b]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Download build A artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: apk-job-a
+          path: artifacts/job-a
+
+      - name: Download build B artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: apk-job-b
+          path: artifacts/job-b
+
+      - name: Compare APK bytes (fails on any difference)
+        run: |
+          set -uo pipefail
+          A=artifacts/job-a/standard-build-a.apk
+          B=artifacts/job-b/standard-build-b.apk
+          SHA_FILE_A=artifacts/job-a/standard-build-a.apk.sha256
+          SHA_FILE_B=artifacts/job-b/standard-build-b.apk.sha256
+          LOG=comparison.log
+          : > "$LOG"
+          log() { echo "$@" | tee -a "$LOG"; }
+
+          log "APK reproducibility comparison"
+          log "  build A: $A"
+          log "  build B: $B"
+
+          # The artifact must contain the APK and its recorded sha256 file.
+          if [ ! -s "$A" ] || [ ! -s "$B" ]; then
+            log "RESULT: FAIL - missing APK artifact (A=$([ -s "$A" ] && echo present || echo missing), B=$([ -s "$B" ] && echo present || echo missing))"
+            exit 1
+          fi
+          log "  size A: $(stat -c %s "$A") bytes"
+          log "  size B: $(stat -c %s "$B") bytes"
+
+          # Check each job's own recorded hash, then compare the two builds.
+          ( cd artifacts/job-a && sha256sum -c standard-build-a.apk.sha256 ) | tee -a "$LOG"
+          ( cd artifacts/job-b && sha256sum -c standard-build-b.apk.sha256 ) | tee -a "$LOG"
+          SHA_A="$(sha256sum "$A" | cut -d' ' -f1)"
+          SHA_B="$(sha256sum "$B" | cut -d' ' -f1)"
+          log "  sha256 A: $SHA_A"
+          log "  sha256 B: $SHA_B"
+
+          {
+            echo "## APK cross-runner reproducibility"
+            echo ""
+            echo "| build | sha256 | bytes |"
+            echo "|---|---|---|"
+            echo "| A | \`$SHA_A\` | $(stat -c %s "$A") |"
+            echo "| B | \`$SHA_B\` | $(stat -c %s "$B") |"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$SHA_A" = "$SHA_B" ] && cmp -s "$A" "$B"; then
+            log "RESULT: PASS - the two independent clean builds are byte-identical"
+            {
+              echo "**RESULT: PASS** — two independent clean ubuntu-24.04 runners"
+              echo "produced byte-identical standard debug APKs."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          log "RESULT: FAIL - the two independent clean builds differ"
+          log ""
+          log "Diagnose the difference from the uploaded artifacts:"
+          log "  1. Download the 'apk-job-a' and 'apk-job-b' workflow artifacts."
+          log "  2. Install the pinned analysis tools:"
+          log "       sdkmanager 'ndk;27.3.13750724' 'build-tools;35.0.0'"
+          log "  3. Run the root-cause diff tool (auto-discovers the NDK/build-tools):"
+          log ""
+          log "       python3 tools/tests/apk-repro-diff.py \\"
+          log "         --source artifacts/job-a/standard-build-a.apk \\"
+          log "         --rebuild artifacts/job-b/standard-build-b.apk \\"
+          log "         --workdir \"\$RUNNER_TEMP/repro-diff\" \\"
+          log "         --json-out \"\$RUNNER_TEMP/repro-diff/report.json\""
+          log ""
+          log "     The report classifies any differing ZIP entries, ELF sections,"
+          log "     DEX structures and ZIP layout/padding (see"
+          log "     docs/evidence/2026-10-22-apk-reproducibility-rootcause.json)."
+          log ""
+          log "  Common leak sources to re-check: SOURCE_DATE_EPOCH not reaching the"
+          log "  OpenSSL ExternalProject, BUILD_ID not pinned for the build, or a"
+          log "  build cache/dirty app/build making packaging history-dependent."
+          {
+            echo ""
+            echo "**RESULT: FAIL** — the two independent clean builds differ."
+            echo ""
+            echo "Download \`apk-job-a\` and \`apk-job-b\` and run:"
+            echo ""
+            echo '```'
+            echo "python3 tools/tests/apk-repro-diff.py --source artifacts/job-a/standard-build-a.apk --rebuild artifacts/job-b/standard-build-b.apk --workdir repro-diff --json-out repro-diff/report.json"
+            echo '```'
+            echo ""
+            echo "The tool auto-discovers the NDK \`llvm-objdump\` and build-tools"
+            echo "\`dexdump\`; classifies ZIP entries, ELF sections, DEX structures"
+            echo "and ZIP ordering/padding. See the uploaded APK artifacts."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - name: Upload comparison log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-repro-comparison
+          path: comparison.log
+          if-no-files-found: warn
+          retention-days: 7
