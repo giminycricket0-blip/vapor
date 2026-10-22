@@ -457,14 +457,70 @@
         "covers": [
           "imagefs.tzst curl"
         ]
+      },
+      "mangohud-MIT.txt": {
+        "license": "MIT (c) 2020 flightlessmango",
+        "sha256_prefix": "18503b2b95a4",
+        "covers": [
+          "imagefs.tzst mangohud"
+        ]
+      },
+      "xorgproto-COPYING.txt": {
+        "license": "MIT-style, verbatim per-protocol COPYING files",
+        "sha256_prefix": "16ecd4c1b880",
+        "covers": [
+          "imagefs X11 protocol headers: x11proto/xproto, bigreqsproto, fontsproto, kbproto, recordproto, scrnsaverproto, xcmiscproto, xextproto"
+        ],
+        "format": "concatenated verbatim, each protocol in its own delimited section"
+      },
+      "ffmpeg-COPYING.LGPLv2.1.txt": {
+        "license": "LGPL-2.1 full text",
+        "sha256_prefix": null,
+        "covers": [
+          "imagefs.tzst ffmpeg",
+          "ffmpeg8.tzst (FFmpeg n8.0)"
+        ],
+        "note": "FFmpeg's effective licence depends on build options (--enable-gpl etc.); the LGPL text is what FFmpeg ships as its base licence"
+      },
+      "lame-LICENSE.txt": {
+        "license": "LAME upstream LICENSE file (LGPL-2.0-or-later; the file is upstream explanatory text)",
+        "covers": [
+          "imagefs.tzst lame"
+        ]
+      },
+      "flac-COPYING.Xiph.txt": {
+        "license": "Xiph BSD-style (c) 2000-2009 Josh Coalson",
+        "covers": [
+          "imagefs.tzst flac"
+        ]
+      },
+      "libtheora-COPYING.txt": {
+        "license": "Xiph BSD-style (c) 2002-2009 Xiph.org",
+        "covers": [
+          "imagefs.tzst libtheora"
+        ]
+      },
+      "libvorbis-COPYING.txt": {
+        "license": "Xiph BSD-style (c) 2002-2020 Xiph.org",
+        "covers": [
+          "imagefs.tzst libvorbis"
+        ]
+      },
+      "libsamplerate-COPYING.txt": {
+        "license": "BSD-style (c) 2012-2016 Erik de Castro Lopo",
+        "covers": [
+          "imagefs.tzst libsamplerate"
+        ]
       }
     },
     "verified": "each text fetched from the project upstream and checked before bundling",
     "still_outstanding": [
-      "MangoHud (imagefs)",
-      "X11 protocol headers: xproto, xorgproto, bigreqsproto, fontsproto, kbproto, recordproto, scrnsaverproto, xcmiscproto, xextproto (imagefs)",
-      "ffmpeg, lame, readline, flac, libtheora, libvorbis, libunistring, libsoxr, libsamplerate, tiff already has one (imagefs)",
+      "readline (imagefs) - GPL-3.0; upstream COPYING not retrievable at the paths tried",
+      "libunistring (imagefs) - LGPL-3.0/GPL-3.0; same",
+      "libsoxr (imagefs) - LGPL-2.1; same",
+      "pcre2, libjpeg-turbo, lzo, tiff, zimg already carry their licence inside imagefs.tzst itself",
       "the Microsoft, Valve, GSE, Steamless and 3dfx payloads have no redistributable licence text to bundle"
-    ]
+    ],
+    "coverage_summary": "16 licence files covering the LGPL/MIT/BSD components of the runtime; the remaining gaps are 3 rootfs packages whose upstream licence files were not retrievable, plus the proprietary payloads that have no redistributable text"
   }
 }

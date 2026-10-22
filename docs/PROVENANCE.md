@@ -743,12 +743,20 @@ upstream text before being added:
 | `OpenSSL-1.1.1q.txt` | Apache-2.0 | `openssl` in `imagefs.tzst` |
 | `curl-7.85.0.txt` | curl licence | `curl` |
 
-Still not bundled: MangoHud and the X11 protocol headers (`xproto`, `xorgproto`, …)
-in `imagefs.tzst` — their upstream licence files were not retrievable at the paths
-tried, so they are recorded as outstanding rather than guessed. `cnc-ddraw` 7.1.0.0
-in `ddrawrapper/` is the same MIT project at a later build, covered by the same
-text. The Microsoft and Valve payloads and the `extras.tzst` items flagged above
-have no redistributable licence text to bundle; that is the point of those findings.
+`mangohud-MIT.txt`, `xorgproto-COPYING.txt`, `ffmpeg-COPYING.LGPLv2.1.txt`,
+`lame-LICENSE.txt`, `flac-COPYING.Xiph.txt`, `libtheora-COPYING.txt`,
+`libvorbis-COPYING.txt` and `libsamplerate-COPYING.txt` complete the set for the
+permissively- and LGPL-licensed runtime pieces. `xorgproto-COPYING.txt` is the eight
+per-protocol `COPYING-*` files, concatenated verbatim with a heading naming the
+protocol each covers. `cnc-ddraw` 7.1.0.0 in `ddrawrapper/` is the same MIT project
+at a later build, covered by the same text. `pcre2`, `libjpeg-turbo`, `lzo`, `tiff`
+and `zimg` already carry their own licence inside `imagefs.tzst`.
+
+Still not bundled: `readline` (GPL-3.0), `libunistring` (LGPL-3.0/GPL-3.0) and
+`libsoxr` (LGPL-2.1) in `imagefs.tzst` — their upstream licence files were not
+retrievable at the paths tried, so they are recorded as outstanding rather than
+guessed. And the Microsoft, Valve, GSE, Steamless and 3dfx payloads have **no**
+redistributable licence text to bundle; that is the point of those findings.
 
 Bundling these texts satisfies part of what their licences ask for. It is not
 permission to redistribute the payloads that have no text — see the blockers.
