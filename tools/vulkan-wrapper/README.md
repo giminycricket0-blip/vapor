@@ -13,7 +13,11 @@ submitted upstream.
 ## Packaged source relationship
 
 Vapor's default `wrapper.tzst`, optional `wrapper-leegao.tzst` and optional
-`wrapper-gamenative.tzst` contain different libraries. This experiment concerns
+`wrapper-gamenative.tzst` contain different libraries. A fourth, opt-in
+`wrapper-vapor.tzst` (**Wrapper-Vapor (experimental)** in settings) carries the full
+patch stack below: the qualified build `095c9a81…`, packaged with the stock hooks by
+[`package-wrapper-vapor.py`](package-wrapper-vapor.py), which checks the library hash
+and produces a byte-identical package. It is never selected automatically. This experiment concerns
 the Leegao source; it does not establish the source of the other two variants.
 The optional Leegao payload matches the upstream `v0.0.5r5` release binary exactly.
 That tag resolves to `c8baafbd4f4835ca103acb55ec3ac13642b6b7e3`. Its image function,

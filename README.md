@@ -32,7 +32,7 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 - **Community compatibility reports.** Steam game pages can read EmuReady reports in a native modal, with device, emulator and reported settings. Console ports are filtered out, title-only matches are labeled, known non-Windows entries hide the action, and external responses are never treated as compatibility verdicts. Reports are informational; applying settings automatically is not implemented. [Integration and evidence](docs/QUALIFICATION.md#emuready-community-reports--21-october-2026).
 - **Direct downloads.** The connected Steam account supplies licenses, manifests, and game depots. Owned paid games, free/demo acquisition, and checkout are separate actions; public catalog information never grants ownership.
 - **Graphics that pick themselves.** Guided Steam launches probe your real Vulkan driver and choose an eligible driver/translator combination. They retry a few known start-up errors (visibly, at most four times) and remember what worked for each game. Your explicit per-game settings always win. [How it works](#drivers-runtimes-and-automatic-graphics).
-- **Your drivers, your runtime.** Use system Vulkan, one of three bundled Vulkan wrappers, or custom Turnip drivers (downloaded in **Settings → Drivers** or imported, then validated before launch). The runtime is the bundled Proton ARM64EC with FEX or Box64, plus DXVK, VKD3D-Proton or WineD3D. A Linux runtime can add official GE-Proton and Proton-CachyOS ARM64 builds.
+- **Your drivers, your runtime.** Use system Vulkan, one of three bundled Vulkan wrappers (plus an opt-in experimental build with Vapor's own fixes), or custom Turnip drivers (downloaded in **Settings → Drivers** or imported, then validated before launch). The runtime is the bundled Proton ARM64EC with FEX or Box64, plus DXVK, VKD3D-Proton or WineD3D. A Linux runtime can add official GE-Proton and Proton-CachyOS ARM64 builds.
 - **Your controls.** Touch gamepad, RTS and FPS layouts, keyboard/mouse bindings, and an in-game Vapor menu. New supported-store shortcuts start with a **60 FPS limit**; existing choices are preserved.
 - **Official Steam pages when needed.** Checkout, Wishlist, Community, guides, and Workshop browsing open in a dedicated modal web panel. Web install links return to the native game page. Shared web sign-in is implemented; live authentication and payment flows still need qualification.
 
@@ -196,7 +196,7 @@ graphics and a test bench for its Vulkan wrapper.
 
 | Layer | What's available | Notes |
 | --- | --- | --- |
-| **Graphics drivers** | System Vulkan; three bundled Vulkan **wrapper** builds (default, Leegao v0.0.5r5, GameNative) that emulate desktop BCn textures; custom **Turnip** drivers loaded through Adrenotools, either downloaded in **Settings → Drivers** (WN-Turnip balanced and performance builds) or imported from a ZIP; VirGL and Zink for OpenGL paths. | Imported drivers pass device, payload and initialization checks, and the selection is checked again before launch. A broken custom driver reports its own failure instead of the system driver's identity. On non-Adreno GPUs the built-in filter offers System only. [Driver review](docs/DRIVERS.md) |
+| **Graphics drivers** | System Vulkan; three bundled Vulkan **wrapper** builds (default, Leegao v0.0.5r5, GameNative) that emulate desktop BCn textures, plus an opt-in **Wrapper-Vapor (experimental)** build with Vapor's six wrapper patches; custom **Turnip** drivers loaded through Adrenotools, either downloaded in **Settings → Drivers** (WN-Turnip balanced and performance builds) or imported from a ZIP; VirGL and Zink for OpenGL paths. | Imported drivers pass device, payload and initialization checks, and the selection is checked again before launch. A broken custom driver reports its own failure instead of the system driver's identity. On non-Adreno GPUs the built-in filter offers System only. [Driver review](docs/DRIVERS.md) |
 | **Translation and runtime** | Bundled **Proton 9.0 (ARM64EC)** with **FEX** or **Box64**, selectable per game; **DXVK** (guided setup pins an ARM64EC 1.10.3 build), **VKD3D-Proton** for DirectX 12, and **WineD3D**. A separate Linux runtime runs the Linux Steam client with its own glibc Turnip and can download official **GE-Proton** and **Proton-CachyOS** ARM64 builds (SHA-256 checked). | Rebuilt Wine X11 and FEX components with fixes for lost clipped clicks and mixed-architecture cache reuse exist as credited experiments; the guided defaults stay on the tested baseline. [Runtime research](docs/RUNTIME-RESEARCH.md) · [Linux Proton builds](docs/LINUX-PROTONS.md) |
 | **Automatic graphics** | Guided Steam launches probe the real Vulkan driver (feature bits, limits and identity) and choose among eligible installed combinations: your driver or System, with legacy DXVK, modern DXVK, DXVK + VKD3D, or WineD3D. | Only specific Vulkan start-up errors trigger another attempt: at most four, visible and cancellable, each after a clean Steam/Cloud teardown. A combination is remembered for a game only after a clean, observed session, and is re-checked against hardware, game build and file hashes. **Explicit per-game settings always win.** 79 JVM and 39 emulator checks pass; phone retries are still pending. [Routing record](docs/QUALIFICATION.md#automatic-graphics-routing--18-october-2026) · [source](app/src/main/runtime/system/AutomaticGraphics.kt) |
 
@@ -224,10 +224,13 @@ has its own test bench, run on 4 KB and 16 KB emulators:
   The full six-patch stack builds with the recorded library identity and passes
   every probe family.
 
-The patches live in [`tools/vulkan-wrapper`](tools/vulkan-wrapper/README.md). They
-are **not yet built into the app's bundled wrappers**: packaging them is a separate
-decision, and they still need a physical Adreno phone. Each bundled wrapper's
-source line is identified:
+The patches live in [`tools/vulkan-wrapper`](tools/vulkan-wrapper/README.md). The
+app now offers them as an opt-in graphics driver, **Wrapper-Vapor (experimental)**,
+in container and game settings. It is the exact qualified full-stack build, packaged
+with the stock wrapper's hooks, and is never chosen automatically; the default is
+unchanged. It has run only on software-Vulkan emulators, so the Adreno phone pass is
+what decides whether it should become a default. Each bundled wrapper's source line
+is identified:
 - the default build comes from the Pipetto-crypto/mesa fork;
 - the GameNative build is byte-identical to GameNative's published release;
 - the Leegao build is v0.0.5r5.

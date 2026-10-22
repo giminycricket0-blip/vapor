@@ -85,8 +85,9 @@ Continue in this order:
    any byte difference, and now passes (byte-identical signed APKs).
    Remaining: real-driver placement semantics (RADV/ANV/NVK/Turnip), the last
    two teardown frees on a non-gfxstream driver or phone, concurrency,
-   physical-phone duration, and a packaging decision for the local wrapper
-   patches. Owner
+   physical-phone duration, and an Adreno phone pass of the opt-in
+   **Wrapper-Vapor (experimental)** driver, which now ships the full patch stack, to
+   decide whether it should become a default. Owner
    decision (22 October 2026): wrapper patches and test
    findings are committed to Vapor's own repository only; nothing is submitted
    upstream.

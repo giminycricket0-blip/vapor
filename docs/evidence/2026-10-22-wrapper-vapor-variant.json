@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-22",
+  "scope": "Opt-in Wrapper-Vapor (experimental) graphics driver carrying the full local wrapper patch stack.",
+  "base_commit": "40db56ba348ea4e36ef55f0b600503c094ab4069",
+  "library": {
+    "source": "leegao/bionic-vulkan-wrapper 3abf4870 pristine archive (wrapper-build/source.tar.gz)",
+    "patches_in_order": [
+      "image-create",
+      "srgb-storage",
+      "odd-extent",
+      "device-teardown",
+      "host-decode-map",
+      "bc6-image-view"
+    ],
+    "spirv_tools_inputs": {
+      "libSPIRV-Tools-opt.a": "29f201bef4920013049d19cce334cce915196feb6c8e386641f02def8ec5eebd",
+      "libSPIRV-Tools.a": "f71b46d46110cf1d894a81faac47188aa4cdec4366217c2f41b7646788512dcf"
+    },
+    "recipe": "recorded Meson/NDK recipe (docs/evidence/2026-10-22-vulkan-wrapper-patch-stack.json), 471/471 steps",
+    "unstripped_sha256": "69dac4c99994e9fc48e868316e43b28f5a9fd11baeccfd731925debc72ab7d61",
+    "unstripped_reproduces": "byte-identical to the qualified full-stack build",
+    "strip": "llvm-strip (no flags); --strip-unneeded and -x produce different bytes",
+    "stripped_sha256": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
+    "stripped_bytes": 10704784,
+    "qualification": "the binary every probe family ran on 4 KB and 16 KB software-Vulkan emulators (docs/evidence/2026-10-22-vulkan-wrapper-patch-stack.json, render-stack, validation)"
+  },
+  "package": {
+    "asset": "app/src/main/assets/graphics_driver/wrapper-vapor.tzst",
+    "sha256": "c32aebb5211f2b5a410e93958504927d828e8f9c6dbce6b80017da637be948ad",
+    "bytes": 2706382,
+    "layout": "stock wrapper.tzst members and metadata; only usr/lib/libvulkan_wrapper.so replaced (fixed mtime 2026-10-22T00:00:00Z)",
+    "hooks": "stock adrenotools/hook libraries, the set this build was linked against and qualified with (libadrenotools 7412c757...); Leegao package hooks differ and are not used",
+    "generator": "tools/vulkan-wrapper/package-wrapper-vapor.py (refuses any library but the qualified hash; output reproduced byte-for-byte)"
+  },
+  "app_integration": {
+    "choice": "res/values/arrays.xml graphics_driver_entries: \"Wrapper-Vapor (experimental)\" -> id wrapper-vapor",
+    "mapping": "runtime/system/WrapperVariant.kt replaces the inline id->asset/marker/hook logic in XServerDisplayActivity; existing marker strings unchanged (stock/leegao/gamenative), so existing installs do not re-extract",
+    "automatic_graphics": "not affected: AutomaticGraphics only routes containers on the default wrapper; an explicit Wrapper-Vapor choice is respected and never auto-selected"
+  },
+  "tests": {
+    "jvm": "517/517 including WrapperVariantTest (3)",
+    "device": "API 36 emulator: WrapperVariantDeviceTest 3/3 (all four packages extract via TarCompressorUtils; Vapor library hash and stock hooks verified; settings entries map 1:1 to packages), GameMenuUiTest 7, GraphicsDriverProbeDeviceTest 5, DriversScreenTest 1, ComponentsScreenTest 2, GameSettingsNavigationTest 2 = 20/20"
+  },
+  "apk_size_delta_bytes": 2706382,
+  "limitations": [
+    "Not run on an Adreno/KGSL phone; software Vulkan only.",
+    "No full game launch with this driver on the emulator (requires the prepared runtime); the binary itself is the probe-qualified build.",
+    "Device-teardown leaves 2 constants VkDeviceMemory allocations to the driver (gfxstream crash workaround)."
+  ]
+}
