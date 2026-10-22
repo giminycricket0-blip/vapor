@@ -119,5 +119,41 @@
       "note": "restoreOneWineDll deletes the target when no Wine builtin exists, so those three are lost when the component is switched off; games needing them still require the Microsoft payload."
     },
     "what_wine_supplies": "The bundled Proton implements 46 of 49 direct3d modules, 10/10 directmusic, 6/6 directshow, 7/8 directplay, 35/43 xaudio, 1/1 directsound, 1/1 dinput8 and 4/4 vcrun2010 (confirmed by filename in lib/wine/aarch64-windows and ntdll imports; real sizes, not stubs)."
+  },
+  "source_identity": {
+    "proton-9.0-arm64ec.txz": {
+      "version_string": "wine-9.0 (embedded in lib/wine/aarch64-unix/*.so)",
+      "embedded_source_paths": [
+        "../dlls/winegstreamer/media-converter/protondemuxer.c"
+      ],
+      "proton_markers": [
+        "protonaudioconverter",
+        "protonvideoconvert",
+        "protondemuxer",
+        "Converts audio for Proton"
+      ],
+      "conclusion": "Wine 9.0 base with Valve Proton media-converter patches; not a stock or tagged release",
+      "git_hash": "not embedded",
+      "license_file_in_archive": "none",
+      "expected_license": "Wine LGPL-2.1-or-later (text not bundled)"
+    },
+    "ddraw.dll": {
+      "identity": "cnc-ddraw 6.6.0.0 (github.com/FunkyFr3sh)",
+      "license": "MIT (verified via GitHub API: license.spdx_id=MIT) and LICENSE file, copyright 2025 github.com/FunkyFr3sh",
+      "bundled_as": "app/src/main/assets/licenses/cnc-ddraw-6.6.0.0-MIT.txt",
+      "sha256": "see git"
+    },
+    "imagefs.tzst": {
+      "type": "Arch-style rootfs",
+      "license_files_inside": 5,
+      "packages": [
+        "pcre2",
+        "libjpeg-turbo",
+        "lzo",
+        "tiff-4.7.0",
+        "zimg"
+      ],
+      "gap": "remaining packages carry no license file"
+    }
   }
 }

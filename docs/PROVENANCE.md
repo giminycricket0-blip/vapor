@@ -583,6 +583,26 @@ of those three DLLs; the other five components already default to Wine builtins.
 Whether to ship that way is the owner's call, and per-component rights review is still
 required for whatever is kept.
 
+### Source identity of the remaining bundled archives
+
+Bounded, verifiable identifications from the shipped bytes themselves:
+
+- **`proton-9.0-arm64ec.txz`** — the Unix side embeds the version string `wine-9.0` and
+  Proton's own media-converter source paths (`../dlls/winegstreamer/media-converter/
+  protondemuxer.c`, plus `protonaudioconverter`/`protonvideoconvert` messages). So this
+  is **Wine 9.0 plus Valve Proton media patches**, not stock Wine and not a release
+  build. No git commit hash is embedded. The archive ships **no** `LICENSE`/`COPYING`,
+  even though Wine's code is LGPL-2.1-or-later.
+- **`wincomponents/ddraw.tzst` → `ddraw.dll`** — `cnc-ddraw` 6.6.0.0, `github.com/
+  FunkyFr3sh`, **MIT** (verified from the project's `LICENSE`, copyright 2025). The
+  license text is now bundled as
+  `licenses/cnc-ddraw-6.6.0.0-MIT.txt`, matching the existing `OpenSSL-1.1.1q.txt` and
+  `curl-7.85.0.txt` convention. This one component is now redistribution-clear.
+
+Still open for these archives: the Wine/Proton LGPL text and its exact source revision,
+and the per-package mapping for `imagefs.tzst` (an Arch-style rootfs where only 5 of the
+packages carry a license file inside `usr/share/doc`).
+
 ## Public distribution blockers
 
 1. **Valve client binaries:** `app/src/main/assets/wnsteam/bionic/valve-steam-x86_64.tzst` and other genuine Steam assets are inherited. Their presence in a public upstream is not redistribution permission. Establish a supported acquisition route and applicable terms before publishing an APK containing them.
