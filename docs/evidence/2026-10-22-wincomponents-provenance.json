@@ -293,14 +293,14 @@
     "games": 35,
     "cheat_entries": 41,
     "identity": "PlayStation 2 DNAS (Sony online authentication) bypass/patch cheat codes",
-    "applied": "all entries marked \"auto\": true",
+    "applied": "38 of 41 cheat entries marked \"auto\": true; the remaining 3 are manual",
     "sample_titles": [
       "Amplitude",
       "Arc the Lad: End of Darkness",
       "Battlefield 2: Modern Combat"
     ],
     "total_cheat_codes": 87,
-    "all_auto": true
+    "automatic_entries": 38
   },
   "in_good_order": {
     "soundfonts/wt_210k_G.sf2": "CC BY 3.0 licence bundled",
