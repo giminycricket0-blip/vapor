@@ -503,10 +503,56 @@ requirements profile. This archive contains no Valve libraries or new Android EL
 libraries. A successful cross-build and DLL load do not establish graphics compatibility.
 See the [graphics/cache checkpoint](QUALIFICATION.md#dxvk-311-candidate-and-cache-path--16-october-2026).
 
+## Bundled Windows component archives — 22 October 2026
+
+`app/src/main/assets/wincomponents/` ships nine archives of Windows DLLs, installed
+into a container from the Components screen (`wincomponents.json` lists the module
+names). They were assumed to be Wine's own implementations. **They are not.** Reading
+the PE version resources and import tables of the shipped DLLs:
+
+| Archive | What the shipped binaries say they are | Version |
+| --- | --- | --- |
+| `vcrun2010` | **Microsoft** Visual C++ 2010 Runtime (`msvcr100`, `msvcp100`, `vcomp100`, `atl100`) | 10.00.40219.325 |
+| `direct3d` | **Microsoft** legacy DirectX: `d3dx9_*`, `d3dx10_*`, `d3dx11_*`, `d3dcompiler_33..47`, `d3dcsx_*` | 9.29.952.3111, `built by: DIRECTX` |
+| `directmusic` | **Microsoft** DirectMusic core services | 5.3.0000000.900 |
+| `directplay` | **Microsoft** DirectPlay | 5.3.0000000.900 |
+| `directsound` | **Microsoft** DirectSound | 5.3.0000000.900 |
+| `directshow` | **Microsoft** DirectShow runtime (`quartz.dll`, Windows 7 SP1) | 6.6.7601.17514 |
+| `wmdecoder` | **Microsoft** Windows Media Playback/Authoring (`wmvcore.dll`, WMP 11) | 11.0.5721.5145 |
+| `xaudio` | **Microsoft** XAudio2 / XACT / X3DAudio / XAPOFX | 9.27 (DXSDK_AUG09) |
+| `ddraw` | **cnc-ddraw** DirectDraw replacement, `github.com/FunkyFr3sh` | 6.6.0.0 |
+
+The evidence is in the shipped files themselves: `msvcr100.dll` reports
+`CompanyName: Microsoft Corporation`, `FileDescription: Microsoft Visual C++ Runtime
+Library`; `xactengine3_5.dll` reports `FileVersion: 9.27 (DXSDK_AUG09.090904-1607)`;
+`quartz.dll` reports `OriginalFilename: Quartz.dll`, `6.6.7601.17514 (win7sp1_rtm…)`
+and so on. Wine's own builtin PE DLLs always import `ntdll.dll`, which was confirmed
+against the bundled Proton's `d3d11.dll`, `msvcrt.dll` and `dsound.dll`; these do not
+(aside from a few MS runtime DLLs that import `ntdll` for `Rtl*` routines, which is why
+the version resources are the deciding evidence). Archive-level
+hashes and the per-DLL findings are in
+[the provenance receipt](evidence/2026-10-22-wincomponents-provenance.json).
+
+**What this means.** These are third-party binaries under their own terms, not
+re-distributable Wine output. The VC++ 2010 Redistributable and the DirectX
+End-User Runtime are published by Microsoft as redistributable packages with
+conditions; the DirectShow (`quartz`, Windows 7 SP1) and Windows Media (`wmvcore`,
+WMP 11) pieces are not part of those packages. `cnc-ddraw` is a third-party
+open-source project. **None of the nine archives contains a license, copying or
+notice file**, and the app's `licenses/` bundle covers only OpenSSL and curl. No legal
+conclusion is drawn here: each component needs its rights review, its license text
+bundled, and then a decision to keep, replace (Wine implements several of these) or
+drop before any public distribution.
+
+The same gap exists in the other runtime archives: `proton-9.0-arm64ec.txz` (1700
+files) contains no `LICENSE`/`COPYING`/`NOTICE`, and `imagefs.tzst` carries
+per-package licenses for only 5 of its packages (`pcre2`, `libjpeg-turbo`, `lzo`,
+`tiff`, `zimg`).
+
 ## Public distribution blockers
 
 1. **Valve client binaries:** `app/src/main/assets/wnsteam/bionic/valve-steam-x86_64.tzst` and other genuine Steam assets are inherited. Their presence in a public upstream is not redistribution permission. Establish a supported acquisition route and applicable terms before publishing an APK containing them.
-2. **Bundled runtime archives:** map the exact Wine/FEX/graphics builds and patches to corresponding source and licenses. Repository commits and SHA-256 alone are insufficient.
+2. **Bundled runtime archives:** map the exact Wine/FEX/graphics builds and patches to corresponding source and licenses. Repository commits and SHA-256 alone are insufficient. The 22 October identification pass shows `wincomponents/` is **Microsoft** (VC++ 2010, legacy DirectX, DirectShow, Windows Media, XAudio2/XACT) plus one third-party `cnc-ddraw`, with no license files bundled at all — see [that section](#bundled-windows-component-archives--22-october-2026). Rights review, bundled license text and a keep/replace/drop decision per component are now required before public distribution, alongside the Valve assets in blocker 1.
 3. **Inherited optional integrations:** console, other-store, frame-generation and helper assets remain bundled. Narrow the shipped product and review those retained inputs before alpha.
 4. **Modern Android:** target remains 28. The 16 October source rebuild resolves the three Prefab failures: all 39 APK native libraries now pass LOAD alignment and ZIP alignment passes. Nine actual JNI checks pass on both 4 KB and 16 KB emulators, and normal startup was checked on Android 17. Earlier APKs used page-size compatibility mode. These newer checks do not resolve target-36 downloaded-code execution, downloaded runtime ELF files or complete Wine/FEX game operation on 16 KB systems; see the [bounded result](QUALIFICATION.md#native-library-alignment-and-tls--16-october-2026).
 5. **Account and game proof:** the owner now reports successful EU3 gameplay and TF2 training with Steam connected on Xiaomi; the exact APK/configuration is not yet identified. Earlier emulator builds completed an authenticated EU3 demo download and a genuine-client launch handoff with visible rendering; an earlier custom-game build also completed a local save/reopen round trip. These separate results are recorded in [QUALIFICATION.md](QUALIFICATION.md#owner-reported-xiaomi-gameplay--14-october-2026). Steam-game save/reopen, Steam Cloud correctness and the full reference-phone qualification protocol remain open.

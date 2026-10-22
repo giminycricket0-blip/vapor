@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-22",
+  "scope": "Gate-2 mapping: identify exactly what app/src/main/assets/wincomponents ships and where its license files are.",
+  "method": "PE version resources (UTF-16) and import tables (llvm-objdump -p) read from the shipped DLLs; archive listings for license files.",
+  "discriminator": "Wine builtin PE DLLs always import ntdll.dll (verified on the bundled Proton's d3d11.dll, msvcrt.dll, dsound.dll). Most wincomponents DLLs do not; and each carries Microsoft or third-party version-resource identity. Note some MS runtime DLLs also import ntdll for Rtl* routines, so ntdll alone is not decisive - the version resources are.",
+  "microsoft_proprietary": {
+    "vcrun2010": {
+      "identity": "Microsoft Visual C++ 2010 Runtime (SP1, 10.00.40219.325)",
+      "source_package": "Microsoft Visual C++ 2010 Redistributable",
+      "evidence": "msvcr100/atl100/msvcp100/vcomp100: CompanyName \"Microsoft Corporation\", FileDescription \"Microsoft Visual C++ Runtime Library\", FileVersion 10.00.40219.325; imports KERNEL32/MSVCR100, no ntdll",
+      "archive_sha256": "9def7b4b5c31c839d155f05e372e0e9ce4968b57f815c1abf93b7735e7d0ceb7",
+      "license_files_in_archive": 0
+    },
+    "direct3d": {
+      "identity": "Microsoft legacy DirectX End-User Runtime (June 2010 / DXSDK_AUG09)",
+      "source_package": "DirectX End-User Runtime Web Installer",
+      "evidence": "d3dx9_43 FileVersion 9.29.952.3111 OriginalFilename D3DX9D.dll; xact/d3d \"built by: DIRECTX\", \"DXSDK_AUG09.090904-1607\"; CompanyName Microsoft Corporation; d3dx9/d3dcompiler/d3dcsx/d3dx10/d3dx11",
+      "archive_sha256": "149d55436e050bfa3fe8caf650cb97ddb2bc9fa99cd96869bd2bc4977b708fb5",
+      "license_files_in_archive": 0
+    },
+    "directmusic": {
+      "identity": "Microsoft DirectMusic core services (5.3.0000000.900)",
+      "source_package": "DirectX End-User Runtime",
+      "evidence": "dmusic/dmsynth/dmband/dmime/dmloader/dmcompos/dmscript/dmstyle: CompanyName Microsoft Corporation, ProductName \"MicrosoftR WindowsR Operating System\", FileVersion 5.3.0000000.900 built by: DIRECTX",
+      "archive_sha256": "eb906732d14766641edfae0b2d722c36f4632de7fa321a5844037115b513b77e",
+      "license_files_in_archive": 0
+    },
+    "directplay": {
+      "identity": "Microsoft DirectPlay (5.3.0000000.900)",
+      "source_package": "DirectX End-User Runtime",
+      "evidence": "dplayx \"Microsoft DirectPlay\"; dpmodemx \"Modem and Serial Connection For DirectPlay\", built by: DIRECTX",
+      "archive_sha256": "70eb81449230af66286f5b4d5922dca13057600c35d4cdfe91930e966c2386d9",
+      "license_files_in_archive": 0
+    },
+    "directsound": {
+      "identity": "Microsoft DirectSound (5.3.0000000.900)",
+      "source_package": "DirectX End-User Runtime",
+      "evidence": "dsound.dll: CompanyName Microsoft Corporation, Copyright (c) Microsoft Corporation",
+      "archive_sha256": "72f0e880eef1387a55602ac02b07ef26778d23c2f70d931bd2d13e92f8dc99d4",
+      "license_files_in_archive": 0
+    },
+    "directshow": {
+      "identity": "Microsoft DirectShow Runtime (quartz.dll 6.6.7601.17514, Windows 7 SP1)",
+      "source_package": "Windows 7 DirectShow runtime (not a public redistributable package)",
+      "evidence": "quartz.dll OriginalFilename Quartz.dll, FileDescription \"DirectShow Runtime.\", CompanyName Microsoft Corporation",
+      "archive_sha256": "aa682b7ee6e5903e4571bfe5a8dc9b05d0a9f05cd860cfdc810f2ddd3745e9b4",
+      "license_files_in_archive": 0
+    },
+    "wmdecoder": {
+      "identity": "Microsoft Windows Media Playback/Authoring (wmvcore.dll 11.0.5721.5145, WMP 11)",
+      "source_package": "Windows Media Player 11 runtime (not a public redistributable package)",
+      "evidence": "wmvcore.dll CompanyName Microsoft Corporation, FileDescription \"Windows Media Playback/Authoring DLL\", OriginalFilename wmvcore.dll",
+      "archive_sha256": "a2ca365cc43265680ee71a7b13a4626ed02368feec135571fb841c7b4abf62d1",
+      "license_files_in_archive": 0
+    },
+    "xaudio": {
+      "identity": "Microsoft XAudio2 / XACT / X3DAudio / XAPOFX (9.27, DXSDK_AUG09)",
+      "source_package": "DirectX SDK (August 2009) / XAudio2 redistributable",
+      "evidence": "xaudio2_5 \"Copyright (c) Microsoft Corporation\"; xactengine3_5 FileVersion 9.27 (DXSDK_AUG09.090904-1607)",
+      "archive_sha256": "128ab3f25a74ff371d381cc0e028e8e2101f72e434ff46b85f629921ee0e2683",
+      "license_files_in_archive": 0
+    }
+  },
+  "third_party": {
+    "ddraw": {
+      "identity": "cnc-ddraw 6.6.0.0 (DirectDraw replacement)",
+      "source": "https://github.com/FunkyFr3sh/cnc-ddraw",
+      "evidence": "ddraw.dll CompanyName \"github.com/FunkyFr3sh\", ProductName cnc-ddraw, FileDescription \"DirectDraw replacement\", FileVersion 6.6.0.0, LegalCopyright \"Copyright (c) 2010-2024\"; no ntdll import",
+      "archive_sha256": "eabb2d59ce7060767996d0c9597ee8772059126a3af01698e59a5e7905e49867",
+      "license_files_in_archive": 0
+    }
+  },
+  "license_bundle_gap": {
+    "app/src/main/assets/licenses": [
+      "OpenSSL-1.1.1q.txt",
+      "curl-7.85.0.txt"
+    ],
+    "finding": "The app's own licenses/ bundle covers only OpenSSL and curl. No wincomponents archive contains a license, copying or notice file."
+  },
+  "related_archive_gaps": {
+    "proton-9.0-arm64ec.txz": "1700 files, no LICENSE/COPYING/NOTICE entry",
+    "imagefs.tzst": "10892 files; usr/share/doc carries per-package licenses for only 5 packages (pcre2 COPYING, libjpeg-turbo LICENSE.md, lzo COPYING, tiff-4.7.0 LICENSE.md, zimg COPYING)"
+  },
+  "meaning": "These are not Wine builtins. Redistribution of each is governed by its own rights holder terms, which differ per package: the VC++ 2010 Redistributable and the DirectX End-User Runtime ship under Microsoft redistribution terms with conditions; the DirectShow (quartz, Win7 SP1) and Windows Media (wmvcore, WMP 11) pieces are not part of those redistributable packages; cnc-ddraw is a third-party open-source project whose license file is not bundled. No legal conclusion is drawn here; each needs its own rights review and a bundled license file before public distribution.",
+  "next_steps": [
+    "Record the exact source (upstream package/version) for each archive.",
+    "Bundle the license text each rights holder requires.",
+    "Decide per component: keep (with terms), replace (e.g. Wine's own implementations), or drop from the shipped product.",
+    "Same mapping for proton-9.0-arm64ec.txz and imagefs.tzst (source and license per package)."
+  ],
+  "open": "This closes the identification half of distribution blocker 2. Source mapping and license bundling remain open."
+}
