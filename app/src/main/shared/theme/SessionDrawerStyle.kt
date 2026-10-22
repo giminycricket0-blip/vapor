@@ -9,8 +9,8 @@ object SessionDrawerStyle {
     const val PressedAlpha = 0.88f
     const val GradientLift = 0.014f
 
-    val Accent = Color(0xFF2196F3)
-    val ActiveAccent = Color(0xFF29B6F6)
+    val Accent = WinNativeAccent
+    val ActiveAccent = WinNativeAccentGlow
     val FocusFill = Color(0xFF0E2438)
     val TextPrimary = WinNativeTextPrimary.copy(alpha = 0.88f)
     val TextSecondary = WinNativeTextSecondary.copy(alpha = 0.82f)
@@ -25,7 +25,7 @@ object SessionDrawerStyle {
     val PaneInnerResting = WinNativePanel.copy(alpha = SurfaceAlpha)
     val PaneInnerPressed = Color(0xFF242B3A).copy(alpha = PressedAlpha)
     val RestingCardBorder = WinNativeOutline.copy(alpha = 0.72f)
-    val DisabledCardBorder = Color(0xFF202033).copy(alpha = 0.58f)
+    val DisabledCardBorder = WinNativeOutlineSoft.copy(alpha = 0.58f)
     val ActiveCardBorder = ActiveAccent
     val GlassExitTint = Color(0xFFE07B6B)
     val Divider = WinNativeOutline.copy(alpha = 0.6f)
