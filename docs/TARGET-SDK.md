@@ -65,6 +65,53 @@ Launches go through `GuestProgramLauncherComponent` (`ProcessHelper.exec` of
 `.../usr/bin/box64` or the Wine launcher), `LinuxProgramLauncherComponent`,
 `PulseAudioComponent` and `ComponentInstaller`.
 
+## The exec shim (built and measured, 22 October)
+
+`libvapor_exec.so` (`app/src/main/cpp/vapor-exec`, 12.5 KB in `nativeLibraryDir`, 16 KB
+aligned) is the `LD_PRELOAD` shim from the plan. It is packaged but **not preloaded
+anywhere yet**, so shipped behaviour is unchanged.
+
+- It calls the real `execve` first and reroutes only on `EACCES`, so wherever direct exec
+  works (target 28 today) it changes nothing.
+- Denied dynamic bionic executables run as `/system/bin/linker64 <absolute path> args`
+  (the linker rejects relative paths). `#!` scripts run through their interpreter,
+  which is itself rerouted if it lives in app storage. Static executables keep the
+  original error.
+- It covers `execve`, `execv`, `execvp`, `execvpe`, `posix_spawn` and `posix_spawnp`.
+- Under the linker route `/proc/self/exe` would name the linker, and `wineserver` uses it to
+  find its NLS data. The shim passes the real path to the child in `VAPOR_EXEC_SELF`. Inside
+  the child it answers `readlink`/`readlinkat`/`realpath("/proc/self/exe")` (and their
+  fortified `_chk` forms) with it. The variable is adopted only when the real executable is
+  the system linker (`/system/bin/linker64` or its APEX target), and is removed so
+  children that run directly do not inherit it. The shim is built without
+  `_FORTIFY_SOURCE` because it defines the `_chk` entry points itself; an early build
+  that did not recursed forever.
+
+`ExecShimDeviceTest` passes 8/8 at target 35 and at target 28. It covers:
+- denied without the shim, running with it;
+- relative paths and PATH lookup;
+- scripts, including a script whose interpreter is in app storage;
+- `/proc/self/exe` reporting the program, with no leaked variable;
+- static executables staying denied.
+
+**Real Wine through the shim.** Proton 11.0-2 ARM64EC was staged in app storage and run
+from the app process at target 35. The `run-as` domain is not subject to W^X, so it was
+used only as a direct-exec baseline.
+
+| Stage | Direct exec (baseline) | Target 35 without shim | Target 35 with shim |
+| --- | --- | --- | --- |
+| `wineserver --version` | Wine 11.0 | denied (126) | Wine 11.0 |
+| `wine --version` | runs | denied | runs |
+| loader finds its own install | yes | — | yes (`.../files/proton/lib/wine/...`) |
+| `wineserver` loads its NLS data | yes | — | yes, after the `/proc/self/exe` emulation (failed before it) |
+| prefix registry written | yes | — | yes (`system.reg`, `user.reg`, `userdef.reg`) |
+| `wine cmd /c echo` | stops at `kernel32.dll` (c0000135) | — | stops at the same point |
+
+The shim path now matches direct execution as far as this ad-hoc staging reaches. The
+`kernel32.dll` stop comes from the missing container setup (prefix template, ARM64EC
+environment), not the shim. A full game launch needs the shim wired into the launcher
+with a prepared container. [Shim receipt](evidence/2026-10-22-exec-shim.json).
+
 ## The real work
 
 Rewriting Vapor's own launch commands is not enough. Wine and the translators spawn
@@ -89,9 +136,9 @@ those `execve` calls hits the same rule. The established approach is Termux's:
 
 1. Inventory the downloadable components: **done for the guided-setup set** (table
    above). Extend it to the rest of the user-installable catalog. No phone needed.
-2. Build the exec shim with a JVM/NDK test suite. On the emulator, run it against the
-   real `wine`/`wineserver` and the scripts at target 35, using `ExecPolicyDeviceTest`
-   as the baseline.
+2. Build the exec shim: **done** (above), including real `wine`/`wineserver` at target
+   35. Next: preload it from the launchers (`LD_PRELOAD` in the guest environment, only
+   when the target is above 28), then decide whether to skip `wine-preloader`.
 3. Behind a build flag, raise the target and run the existing UI and launch suites on the
    emulator. Keep 28 as the shipped default until the phone pass.
 4. On an Adreno phone, confirm game launch, audio, input and Cloud saves at the new

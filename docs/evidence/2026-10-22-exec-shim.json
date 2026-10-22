@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-22",
+  "scope": "libvapor_exec.so LD_PRELOAD exec shim for a future target SDK > 28; packaged, not preloaded.",
+  "source": "app/src/main/cpp/vapor-exec/vapor_exec.c",
+  "source_sha256": "eef839fab6e802e59103d6aa6fb33f355f3b616769980c5ebff554df4ef49713",
+  "apk_entry": {
+    "path": "lib/arm64-v8a/libvapor_exec.so",
+    "bytes": 12536,
+    "load_align": "0x4000 (3 LOAD)",
+    "exports": [
+      "execve",
+      "execv",
+      "execvp",
+      "execvpe",
+      "posix_spawn",
+      "posix_spawnp",
+      "readlink",
+      "readlinkat",
+      "realpath",
+      "__readlink_chk",
+      "__readlinkat_chk",
+      "__realpath_chk"
+    ]
+  },
+  "apk_sha256_target28": "091c289ba699440f8a7e5e19166ebccda9fad43e839fa0f5eea8e384490f4055",
+  "device": "VaporProbe36A, Android 16/API 36, 4 KB pages; app built at targetSdk 35 and 28 via temporary local edits (shipped target stays 28)",
+  "tests": {
+    "ExecShimDeviceTest": "8/8 at target 35 and 8/8 at target 28",
+    "ExecPolicyDeviceTest": "4/4 at 28 and 35",
+    "WrapperVariantDeviceTest": "3/3",
+    "jvm": "517/517"
+  },
+  "bugs_found_and_fixed_during_measurement": [
+    "linker64 rejects relative program paths (\"expected absolute path\"): shim joins relative paths to the cwd without resolving symlinks",
+    "wineserver located its NLS data via /proc/self/exe, which named the linker: shim emulates /proc/self/exe via VAPOR_EXEC_SELF",
+    "fortified call inside __readlinkat_chk resolved back to itself (infinite loop): shim built with -U_FORTIFY_SOURCE and wrappers call private helpers",
+    "real /proc/self/exe is /apex/com.android.runtime/bin/linker64, not /system/bin/linker64: both accepted"
+  ],
+  "wine_probe": {
+    "runtime": "Proton-11.0-2-arm64ec-steam-unix.wcp (WinNative-Components), staged in app files",
+    "note": "run-as runs in runas_app, which W^X does not restrict; used only as the direct-exec baseline. All target-35 results come from the app process (instrumentation).",
+    "target35_without_shim": "wineserver --version -> 126 Permission denied",
+    "target35_with_shim": {
+      "wineserver --version": "Wine 11.0",
+      "wine --version": "runs",
+      "loader self-location": "/data/data/app.vapor.android/files/proton/lib/wine/...",
+      "wineserver NLS": "loads (failed before /proc/self/exe emulation: \"failed to load l_intl.nls\")",
+      "prefix": "system.reg, user.reg, userdef.reg written",
+      "wine cmd /c echo": "could not load kernel32.dll, status c0000135 (same as direct-exec baseline)"
+    },
+    "WINEDATADIR": "does not affect wineserver NLS lookup (tested)",
+    "compiled_nls_fallbacks": [
+      "/home/max/termuxfs/.../opt/wine/share/wine/nls",
+      "/usr/share/wine/nls",
+      "/usr/local/share/wine/nls"
+    ]
+  },
+  "limitations": [
+    "Not preloaded by any launcher yet; shipped target stays 28.",
+    "posix_spawn reroute is implemented but not exercised by a test (sh/env use execve/execvp).",
+    "Full game launch at target 35 needs the shim wired into GuestProgramLauncherComponent with a prepared container; the ad-hoc staging stops at kernel32.dll in both modes.",
+    "wine-preloader (static) cannot be rerouted.",
+    "Emulator only."
+  ]
+}
