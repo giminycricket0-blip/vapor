@@ -134,7 +134,7 @@ class InputControlsFragment : Fragment() {
                         darkColorScheme(
                             primary = Color(0xFF1A9FFF),
                             background = Color(0xFF18181D),
-                            surface = Color(0xFF1C1C2A),
+                            surface = com.winlator.cmod.shared.theme.WinNativePanel,
                         ),
                 ) {
                     InputControlsScreen(

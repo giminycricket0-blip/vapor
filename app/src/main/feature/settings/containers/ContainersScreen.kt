@@ -75,11 +75,11 @@ import com.winlator.cmod.shared.ui.layout.isCompactWidth
 import androidx.compose.runtime.CompositionLocalProvider
 import java.util.Locale
 
-private val ContainersBg = Color(0xFF11111C)
-private val ContainersCard = Color(0xFF1C1C2A)
+private val ContainersBg = com.winlator.cmod.shared.theme.WinNativeBackground
+private val ContainersCard = com.winlator.cmod.shared.theme.WinNativePanel
 private val ContainersSubcard = Color(0xFF161622)
-private val ContainersOutline = Color(0xFF2A2A3A)
-private val ContainersIconBox = Color(0xFF242434)
+private val ContainersOutline = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
+private val ContainersIconBox = com.winlator.cmod.shared.theme.WinNativeSurfaceRaised
 private val ContainersAccent = Color(0xFF1A9FFF)
 private val ContainersNavHighlight = Color(0xFF4FC3F7)
 private val ContainersTextPrimary = Color(0xFFF0F4FF)

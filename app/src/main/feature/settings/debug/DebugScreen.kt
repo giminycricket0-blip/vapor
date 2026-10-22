@@ -155,11 +155,11 @@ import androidx.compose.ui.text.input.ImeAction
 import com.winlator.cmod.runtime.system.LogManager
 
 // Palette (mirrors StoresScreen)
-private val BgDark = Color(0xFF11111C)
-private val CardDark = Color(0xFF1C1C2A)
-private val CardBorder = Color(0xFF2A2A3A)
-private val IconBoxBg = Color(0xFF242434)
-private val SurfaceDark = Color(0xFF21212A)
+private val BgDark = com.winlator.cmod.shared.theme.WinNativeBackground
+private val CardDark = com.winlator.cmod.shared.theme.WinNativePanel
+private val CardBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
+private val IconBoxBg = com.winlator.cmod.shared.theme.WinNativeSurfaceRaised
+private val SurfaceDark = com.winlator.cmod.shared.theme.WinNativeSurface
 private val Accent = Color(0xFF1A9FFF)
 private val NavHighlight = Color(0xFF4FC3F7)
 private val Warning = Color(0xFFFF4444)
@@ -1470,7 +1470,7 @@ private fun LogTagFilterDialog(
                 // Custom Tags row
                 if (customTags.isNotEmpty()) {
                     Spacer(Modifier.height(6.dp))
-                    HorizontalDivider(color = Color(0xFF2A2A3A), thickness = 0.5.dp)
+                    HorizontalDivider(color = com.winlator.cmod.shared.theme.WinNativeOutlineSoft, thickness = 0.5.dp)
                     Spacer(Modifier.height(6.dp))
                     Row(
                         modifier = Modifier
@@ -1485,7 +1485,7 @@ private fun LogTagFilterDialog(
                         }
                     }
                     Spacer(Modifier.height(3.dp))
-                    HorizontalDivider(color = Color(0xFF2A2A3A), thickness = 0.5.dp)
+                    HorizontalDivider(color = com.winlator.cmod.shared.theme.WinNativeOutlineSoft, thickness = 0.5.dp)
                 }
             }
         },

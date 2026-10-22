@@ -64,9 +64,9 @@ import com.winlator.cmod.shared.ui.nav.PaneNavRegistry
 import com.winlator.cmod.shared.ui.nav.bindPaneNav
 import com.winlator.cmod.shared.ui.nav.paneNavItem
 
-private val BgDark = Color(0xFF12121B)
-private val SurfaceDark = Color(0xFF171722)
-private val CardBorder = Color(0xFF2A2A3A)
+private val BgDark = com.winlator.cmod.shared.theme.WinNativeBackground
+private val SurfaceDark = com.winlator.cmod.shared.theme.WinNativePanelDeep
+private val CardBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
 private val Accent = Color(0xFF1A9FFF)
 private val TextPrimary = Color(0xFFF0F4FF)
 private val TextSecondary = Color(0xFF93A6BC)

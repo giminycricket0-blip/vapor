@@ -1,5 +1,14 @@
 package com.winlator.cmod.app.shell
 
+import androidx.compose.foundation.layout.Row
+import com.winlator.cmod.feature.stores.steam.service.SteamCatalogItem
+import com.winlator.cmod.feature.stores.steam.service.SteamCatalogPage
+import com.winlator.cmod.feature.settings.SettingsNavSidebar
+import com.winlator.cmod.feature.settings.SettingsNavItem
+import com.winlator.cmod.feature.settings.DriversScreen
+import com.winlator.cmod.feature.settings.DriversState
+import com.winlator.cmod.feature.settings.InstalledDriverItem
+import com.winlator.cmod.feature.settings.DriverRepo
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -161,6 +170,41 @@ class VaporUiGalleryTest {
         }
     }
 
+
+    @Composable private fun Store() {
+        val items = remember { listOf(
+            Triple(1145360, "Hades", "€24.50"), Triple(504230, "Celeste", "€19.99"), Triple(646570, "Slay the Spire", "€24.99"),
+            Triple(105600, "Terraria", "€9.99"), Triple(250900, "The Binding of Isaac: Rebirth", "€14.99"), Triple(1794680, "Vampire Survivors", "€4.99"),
+            Triple(367520, "Hollow Knight", "€14.79"), Triple(413150, "Stardew Valley", "€13.99"),
+        ).map { (id, name, price) ->
+            SteamCatalogItem(id, name, false, false, price, "https://cdn.cloudflare.steamstatic.com/steam/apps/$id/header.jpg",
+                "", "", true, false, emptyList())
+        } }
+        Column(Modifier.fillMaxSize()) {
+            Header(2)
+            Box(Modifier.weight(1f)) {
+                SteamCatalogBrowser(ownedIds = setOf(367520), onOpenGame = {}, onWishlist = {}, onCommunity = {}, onBack = {},
+                    loadPage = { _, start, _, _ -> SteamCatalogPage(items, start, items.size, items.size) })
+            }
+        }
+    }
+
+    @Composable private fun SettingsDrivers() = Row(Modifier.fillMaxSize()) {
+        SettingsNavSidebar(selectedItem = SettingsNavItem.DRIVERS, onItemSelected = {}, onBackPressed = {})
+        Box(Modifier.weight(1f)) {
+            DriversScreen(
+                state = DriversState(installedDrivers = listOf(
+                    InstalledDriverItem(id = "system", name = "System driver", version = "Vulkan 1.3", selected = true, removable = false),
+                    InstalledDriverItem(id = "wn-b", name = "WN Turnip (balanced)", version = "26.2.2"),
+                    InstalledDriverItem(id = "wn-p", name = "WN Turnip (performance)", version = "26.2.2"),
+                ), sources = listOf(DriverRepo("WinNative Drivers", "https://github.com/WinNative-Emu/Drivers", "https://api.github.com/repos/WinNative-Emu/Drivers/releases"))),
+                onInstallFromFile = {}, onPlatformSelected = {}, onSelectDriver = {}, onSourceTapped = {}, onReleaseTapped = {},
+                onDownloadAsset = {}, onRemoveDriver = {}, onRepoAdded = { _, _ -> }, onRepoUpdated = { _, _, _ -> },
+                onRepoDeleted = {}, onRestoreDefaultRepos = {},
+            )
+        }
+    }
+
     @Test fun homeLandscape() = capture("home-landscape", 960, 540) { Home() }
     @Test fun homePortrait() = capture("home-portrait", 412, 892) { Home() }
     @Test fun libraryLandscape() = capture("library-landscape", 960, 540) { Library(6) }
@@ -169,4 +213,7 @@ class VaporUiGalleryTest {
     @Test fun gamePagePortrait() = capture("game-page-portrait", 412, 892) { GamePage() }
     @Test fun downloadsLandscape() = capture("downloads-landscape", 960, 540) { Downloads() }
     @Test fun downloadsPortrait() = capture("downloads-portrait", 412, 892) { Downloads() }
+    @Test fun storeLandscape() = capture("store-landscape", 960, 540) { Store() }
+    @Test fun storePortrait() = capture("store-portrait", 412, 892) { Store() }
+    @Test fun settingsDriversLandscape() = capture("settings-drivers-landscape", 960, 540) { SettingsDrivers() }
 }

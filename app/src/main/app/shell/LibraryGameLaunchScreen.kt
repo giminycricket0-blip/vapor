@@ -950,8 +950,8 @@ private fun LaunchMenuTextAction(
         modifier =
             modifier
                 .heightIn(min = 48.dp)
-                .clip(RoundedCornerShape(8.dp))
                 .controllerFocusGlow(cornerRadius = 8.dp)
+                .clip(RoundedCornerShape(8.dp))
                 .clickable(onClick = onClick)
                 .padding(horizontal = 10.dp, vertical = 7.dp),
         contentAlignment = Alignment.Center,

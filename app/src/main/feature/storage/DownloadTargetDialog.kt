@@ -51,9 +51,9 @@ enum class DownloadTarget {
 }
 
 private val Accent = Color(0xFF1A9FFF)
-private val OptionBg = Color(0xFF1C1C2A)
-private val OptionBorder = Color(0xFF2A2A3A)
-private val IconBoxBg = Color(0xFF242434)
+private val OptionBg = com.winlator.cmod.shared.theme.WinNativePanel
+private val OptionBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
+private val IconBoxBg = com.winlator.cmod.shared.theme.WinNativeSurfaceRaised
 private val TextPrimary = Color(0xFFF0F4FF)
 private val TextSecondary = Color(0xFF93A6BC)
 

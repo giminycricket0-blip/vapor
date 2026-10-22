@@ -42,7 +42,7 @@ import com.winlator.cmod.shared.ui.nav.LocalPaneNav
 import com.winlator.cmod.shared.ui.nav.paneNavItem
 
 private val DefaultAccent = Color(0xFFFF6B6B)
-private val DefaultCard = Color(0xFF12121B)
+private val DefaultCard = com.winlator.cmod.shared.theme.WinNativeBackground
 private val DefaultTrack = Color(0xFF1F2230)
 private val DefaultTextPrimary = Color(0xFFF0F4FF)
 private val DefaultTextSecondary = Color(0xFF93A6BC)

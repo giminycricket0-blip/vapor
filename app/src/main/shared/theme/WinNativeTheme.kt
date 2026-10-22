@@ -32,6 +32,16 @@ val WinNativeDanger = Color(0xFFFF7A88)
 /** Soft accent used for focus halos and selected surfaces. */
 val WinNativeAccentGlow = Color(0xFF58B4FF)
 
+// Surface steps for settings, sheets and secondary screens. They replace the purple-tinted
+// palette inherited from WinNative (#11111C / #1C1C2A / #2A2A3A ...) so every screen
+// shares the shell's blue-slate hue.
+/** Recessed panel (list wells, inset cards). */
+val WinNativePanelDeep = Color(0xFF141A21)
+/** Raised tile (icon boxes, chips on panels). */
+val WinNativeSurfaceRaised = Color(0xFF232B35)
+/** Hairline borders and dividers on dark panels. */
+val WinNativeOutlineSoft = Color(0xFF2B323C)
+
 private val WinNativeColorScheme =
     darkColorScheme(
         primary = WinNativeAccent,

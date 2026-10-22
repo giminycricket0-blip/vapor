@@ -156,7 +156,7 @@ object DirectoryPickerDialog {
     private val BgDark = WinNativeBackground
     private val CardDark = WinNativeSurface
     private val CardBorder = WinNativeOutline
-    private val IconBoxBg = Color(0xFF242434)
+    private val IconBoxBg = com.winlator.cmod.shared.theme.WinNativeSurfaceRaised
     private val Accent = WinNativeAccent
     private val NavHighlight = Color(0xFF4FC3F7)
     private val TextPrimary = WinNativeTextPrimary

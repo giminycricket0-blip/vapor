@@ -77,10 +77,10 @@ import com.winlator.cmod.shared.ui.nav.paneNavItem
 import com.winlator.cmod.shared.ui.toast.WinToast
 import kotlinx.coroutines.launch
 
-private val BgDark = Color(0xFF11111C)
-private val CardDark = Color(0xFF1C1C2A)
-private val CardBorder = Color(0xFF2A2A3A)
-private val IconBoxBg = Color(0xFF242434)
+private val BgDark = com.winlator.cmod.shared.theme.WinNativeBackground
+private val CardDark = com.winlator.cmod.shared.theme.WinNativePanel
+private val CardBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
+private val IconBoxBg = com.winlator.cmod.shared.theme.WinNativeSurfaceRaised
 private val Accent = Color(0xFF1A9FFF)
 private val TextPrimary = Color(0xFFF0F4FF)
 private val TextSecondary = Color(0xFF7A8FA8)

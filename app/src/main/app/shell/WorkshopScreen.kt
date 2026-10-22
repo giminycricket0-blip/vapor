@@ -94,9 +94,9 @@ internal data class StoreWorkshopItem(
 internal enum class WorkshopLoadState { LOADING, READY, ERROR }
 
 // Palette — mirrors the per-game Settings dialog so the window feels native.
-private val WsBg = Color(0xFF12121B)
-private val WsBorder = Color(0xFF2A2A3A)
-private val WsInputBg = Color(0xFF171722)
+private val WsBg = com.winlator.cmod.shared.theme.WinNativeBackground
+private val WsBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
+private val WsInputBg = com.winlator.cmod.shared.theme.WinNativePanelDeep
 private val WsAccent = Color(0xFF1A9FFF)
 private val WsAccentGlow = Color(0xFF58A6FF)
 private val WsTextPrimary = Color(0xFFF0F4FF)

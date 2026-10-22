@@ -124,12 +124,12 @@ import androidx.compose.runtime.key
 import com.winlator.cmod.shared.ui.outlinedSwitchColors
 import kotlin.math.roundToInt
 
-private val InputBg = Color(0xFF11111C)
-private val InputCard = Color(0xFF1C1C2A)
+private val InputBg = com.winlator.cmod.shared.theme.WinNativeBackground
+private val InputCard = com.winlator.cmod.shared.theme.WinNativePanel
 private val InputSubcard = Color(0xFF161622)
 private val InputField = Color(0xFF14141E)
-private val InputOutline = Color(0xFF2A2A3A)
-private val InputIconBox = Color(0xFF242434)
+private val InputOutline = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
+private val InputIconBox = com.winlator.cmod.shared.theme.WinNativeSurfaceRaised
 private val InputAccent = Color(0xFF1A9FFF)
 private val InputNavHighlight = Color(0xFF4FC3F7)
 private val InputTextPrimary = Color(0xFFF0F4FF)

@@ -102,10 +102,10 @@ import com.winlator.cmod.shared.ui.nav.PaneNavRegistry
 import com.winlator.cmod.shared.ui.nav.paneNavItem
 import com.winlator.cmod.shared.ui.outlinedSwitchColors
 
-private val BgDark = Color(0xFF11111C)
-private val CardDark = Color(0xFF1C1C2A)
-private val CardDarker = Color(0xFF15151E)
-private val CardBorder = Color(0xFF2A2A3A)
+private val BgDark = com.winlator.cmod.shared.theme.WinNativeBackground
+private val CardDark = com.winlator.cmod.shared.theme.WinNativePanel
+private val CardDarker = com.winlator.cmod.shared.theme.WinNativePanelDeep
+private val CardBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
 private val Accent = Color(0xFF1A9FFF)
 private val NavHighlight = Color(0xFF4FC3F7)
 private val DangerRed = Color(0xFFFF7A88)

@@ -86,12 +86,12 @@ import com.winlator.cmod.shared.ui.nav.PaneNavRegistry
 import com.winlator.cmod.shared.ui.nav.paneNavItem
 
 // Palette (unified with Drivers / Stores / Other / Debug)
-private val BgDark = Color(0xFF11111C)
-private val CardDark = Color(0xFF1C1C2A)
-private val CardDarker = Color(0xFF15151E)
-private val CardBorder = Color(0xFF2A2A3A)
-private val IconBoxBg = Color(0xFF242434)
-private val SurfaceDark = Color(0xFF21212A)
+private val BgDark = com.winlator.cmod.shared.theme.WinNativeBackground
+private val CardDark = com.winlator.cmod.shared.theme.WinNativePanel
+private val CardDarker = com.winlator.cmod.shared.theme.WinNativePanelDeep
+private val CardBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
+private val IconBoxBg = com.winlator.cmod.shared.theme.WinNativeSurfaceRaised
+private val SurfaceDark = com.winlator.cmod.shared.theme.WinNativeSurface
 private val Accent = Color(0xFF1A9FFF)
 private val SuccessGreen = Color(0xFF5BD68F)
 private val DangerRed = Color(0xFFFF7A88)

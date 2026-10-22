@@ -71,9 +71,9 @@ import java.io.File
 import java.text.DateFormat
 import java.util.Date
 
-private val BgDark = Color(0xFF12121B)
-private val SurfaceDark = Color(0xFF171722)
-private val CardBorder = Color(0xFF2A2A3A)
+private val BgDark = com.winlator.cmod.shared.theme.WinNativeBackground
+private val SurfaceDark = com.winlator.cmod.shared.theme.WinNativePanelDeep
+private val CardBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
 private val Accent = Color(0xFF1A9FFF)
 private val AccentGlow = Color(0xFF58A6FF)
 private val TextPrimary = Color(0xFFF0F4FF)

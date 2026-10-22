@@ -110,15 +110,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private val PageBg = Color(0xFF12121B)
-private val SurfaceDark = Color(0xFF1C1C2A)
-private val CardBorder = Color(0xFF2A2A3A)
+private val PageBg = com.winlator.cmod.shared.theme.WinNativeBackground
+private val SurfaceDark = com.winlator.cmod.shared.theme.WinNativePanel
+private val CardBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
 private val Accent = Color(0xFF1A9FFF)
 private val TextPrimary = Color(0xFFF0F4FF)
 private val TextSecondary = Color(0xFF7A8FA8)
-private val CloudPanel = Color(0xFF1C1C2A)
-private val CloudPanelRaised = Color(0xFF232334)
-private val CloudBorder = Color(0xFF2A2A3A)
+private val CloudPanel = com.winlator.cmod.shared.theme.WinNativePanel
+private val CloudPanelRaised = com.winlator.cmod.shared.theme.WinNativeSurfaceRaised
+private val CloudBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
 private val CloudAccent = Color(0xFF5CC8FF)
 private val CloudSuccess = Color(0xFF65D394)
 private val CloudWarning = Color(0xFFFFB85C)

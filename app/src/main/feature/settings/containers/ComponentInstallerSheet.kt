@@ -77,9 +77,9 @@ private const val INDEX_URL = "$DATASET_BASE/index.json"
 private val installMutex = Mutex()
 
 private val SheetRoot = Color(0xFF18181D)
-private val SheetCard = Color(0xFF1C1C2A)
+private val SheetCard = com.winlator.cmod.shared.theme.WinNativePanel
 private val SheetSubcard = Color(0xFF161622)
-private val SheetOutline = Color(0xFF2A2A3A)
+private val SheetOutline = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
 private val SheetAccent = Color(0xFF1A9FFF)
 private val SheetTextPrimary = Color(0xFFF0F4FF)
 private val SheetTextSecondary = Color(0xFF7A8FA8)

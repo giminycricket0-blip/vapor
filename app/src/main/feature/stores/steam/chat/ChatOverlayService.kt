@@ -158,10 +158,10 @@ private fun overlayImage(data: Any?): ImageRequest {
     return remember(data) { ImageRequest.Builder(ctx).data(data).allowHardware(false).build() }
 }
 
-private val WsBg = Color(0xFF12121B)
-private val BgDark = Color(0xFF171722)
+private val WsBg = com.winlator.cmod.shared.theme.WinNativeBackground
+private val BgDark = com.winlator.cmod.shared.theme.WinNativePanelDeep
 private val SurfaceDark = Color(0xFF1B1B27)
-private val CardBorder = Color(0xFF2A2A3A)
+private val CardBorder = com.winlator.cmod.shared.theme.WinNativeOutlineSoft
 private val Accent = Color(0xFF1A9FFF)
 private val TextPrimary = Color(0xFFF0F4FF)
 private val TextSecondary = Color(0xFF93A6BC)

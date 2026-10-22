@@ -370,7 +370,7 @@ internal fun UnifiedActivity.DrawerContent(
 
     ModalDrawerSheet(
         drawerShape = RectangleShape,
-        drawerContainerColor = Color(0xFF12121B),
+        drawerContainerColor = com.winlator.cmod.shared.theme.WinNativeBackground,
         drawerContentColor = TextPrimary,
         windowInsets = WindowInsets(0, 0, 0, 0),
         modifier = Modifier.width(minOf(324.dp, screenWidthDp() - 56.dp)),

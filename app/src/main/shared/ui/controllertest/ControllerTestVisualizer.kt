@@ -67,7 +67,7 @@ import kotlin.math.roundToInt
 
 private val TestLive = Color(0xFF57C777)
 private val TestTile = Color(0xFF14141E)
-private val TestMenuCard = Color(0xFF1C1C2A)
+private val TestMenuCard = com.winlator.cmod.shared.theme.WinNativePanel
 private val TestNub = Color(0xFF12161D)
 internal val BIND_BLUE = Color(0xFF7AA0FF)
 
