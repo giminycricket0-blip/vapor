@@ -3214,6 +3214,7 @@ Installed path:
     <string name="vapor_store_search_results">Results for “%1$s”</string>
     <string name="vapor_store_browse_games">Explore games</string>
     <string name="vapor_store_suggestion">Try “%1$s”</string>
+    <string name="vapor_store_closest_matches">No exact match for “%1$s”. Showing the closest matches for “%2$s”.</string>
     <string name="vapor_store_reset_filters">Clear search and filters</string>
     <string name="vapor_store_refresh">Refresh games</string>
     <string name="vapor_store_game_filter">Game filter</string>

@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-22",
+  "scope": "Steam Store search: broad terms errored as connection failures; descriptive/misspelled terms returned nothing.",
+  "root_cause": {
+    "file": "app/src/main/feature/stores/steam/service/SteamCatalog.kt",
+    "function": "parsePage",
+    "detail": "IStoreQueryService/SearchSuggestions reports metadata.count as the full match count (live: rpg count=100 total=1483; car 100/11719; world car 65; kart 62; city builder 58) while returning at most max_results=50 items. parsePage threw IOException(\"Invalid store pagination\") when count > SEARCH_LIMIT (50); SteamCatalogBrowser shows any exception as vapor_store_error (\"Steam Store could not be loaded. Check your connection and try again.\").",
+    "second": "SearchSuggestions is title matching: descriptive or misspelled phrases (open world car, hollw nite, mario kart, city builder manage people) return 0 items, and its spellcheck_suggestions are not useful (oper world ca, hollo nine)."
+  },
+  "fix": [
+    "Search pages report count = items returned and total = max(total, items); browse pages keep the strict check (their count drives the next offset).",
+    "Zero-result search tries up to 6 relaxed terms (contiguous word groups longest-first, then significant words longest-first, or a single word shortened by up to 3 letters; stop words skipped) and returns the first page with games, marked relaxedFrom/matchedTerm; the UI shows \"No exact match for X. Showing the closest matches for Y.\" A fallback request failure keeps the honest empty result; cancellation propagates."
+  ],
+  "tests": {
+    "jvm": [
+      "SteamCatalogTest.broadSearchesWithLargeSteamCountsAreResultsNotConnectionErrors",
+      "SteamCatalogTest.zeroResultSearchStaysAnEmptyPage",
+      "SteamCatalogTest.relaxedSearchTermsTryShorterPhrasesThenSignificantWords"
+    ],
+    "jvm_total": "514/514",
+    "instrumented_total": "186/186 across 23 UI classes on API 36 emulator, APK sha256 112b8f11a04aca10c74ee188a84ec4c9fcd3ca2f520550074ca67c90edb53cb1"
+  },
+  "live_verification": {
+    "device": "VaporProbe36A, Android 16/API 36, 4 KB, live api.steampowered.com, country US",
+    "before": {
+      "rpg": "IOException Invalid store pagination -> \"could not be loaded\"",
+      "open world car": "0 items, \"Try oper world ca\"",
+      "hollw nite": "0 items"
+    },
+    "after_service": {
+      "rpg": "50 items, total 1483",
+      "car": "50 / 11719",
+      "a": "50 / 38416",
+      "fun game": "31",
+      "open world car": "closest matches for \"open world\" (23)",
+      "hollw nite": "closest matches for \"hollw\": Hollow Knight: Silksong, Hollow Knight",
+      "mario kart": "closest matches for \"mario\" (Marionette titles; Mario is not on Steam)",
+      "city builder manage people": "closest matches for \"city builder\"",
+      "asdkjqwe": "0 items, no games",
+      "hollow knight": "2 exact"
+    },
+    "after_ui": "Production SteamCatalogBrowser on the emulator: rpg RESULTS 1483, open world car banner->open world, fun game RESULTS 31, hollw nite banner->hollw, asdkjqwe NO_GAMES, zombie survival RESULTS 66, mario kart banner->mario. An earlier probe that slept the test thread did not advance the Compose test clock past the 350 ms debounce and showed stale results; it was corrected and was not an app defect."
+  },
+  "limitations": [
+    "Closest-match choice is a heuristic: \"mario kart\" picks \"mario\" (Marionette titles) rather than \"kart\".",
+    "Results header still shows Steam total_matching_records (e.g. 1483) while search returns at most 50 items.",
+    "Emulator and live Steam only; not checked on a phone network."
+  ]
+}

@@ -515,6 +515,17 @@ internal fun SteamCatalogBrowser(
                                     }
                                 }
                             }
+                            val relaxed = page?.takeIf { search.isNotBlank() && it.matchedTerm != null && it.items.isNotEmpty() }
+                            if (relaxed != null) item(key = "closest:${relaxed.matchedTerm}", span = { GridItemSpan(maxLineSpan) }) {
+                                // Results for a shorter form of the query; say so instead of implying an exact match.
+                                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+                                    .background(Accent.copy(alpha = 0.10f)).padding(horizontal = 14.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Icon(Icons.Outlined.SearchOff, null, tint = Accent, modifier = Modifier.size(20.dp))
+                                    Text(stringResource(R.string.vapor_store_closest_matches, relaxed.relaxedFrom.orEmpty(), relaxed.matchedTerm.orEmpty()),
+                                        color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
+                                }
+                            }
                             val suggestion = page?.suggestions?.firstOrNull {
                                 it.isNotBlank() && !it.equals(search, ignoreCase = true)
                             }?.takeIf { search.isNotBlank() && items.isEmpty() }
@@ -609,8 +620,9 @@ private fun catalogGenreLabel(genre: SteamCatalogGenre): Int = when (genre) {
 
 @Composable
 internal fun SteamCatalogSpotlight(item: SteamCatalogItem, price: String, modifier: Modifier, onClick: () -> Unit) {
-    Box(modifier.fillMaxWidth().heightIn(min = 180.dp).clip(RoundedCornerShape(12.dp))
-        .background(SurfaceDark).controllerFocusGlow(cornerRadius = 12.dp).clickable(onClick = onClick)) {
+    // Focus glow precedes the clip so its halo can draw outside the card.
+    Box(modifier.fillMaxWidth().heightIn(min = 180.dp).controllerFocusGlow(cornerRadius = 20.dp)
+        .clip(RoundedCornerShape(20.dp)).background(SurfaceDark).clickable(onClick = onClick)) {
         AsyncImage(item.artwork, contentDescription = null, contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize())
         Box(Modifier.matchParentSize().background(Brush.verticalGradient(
@@ -628,8 +640,8 @@ internal fun SteamCatalogSpotlight(item: SteamCatalogItem, price: String, modifi
 
 @Composable
 private fun SteamCatalogCard(name: String, artwork: String?, status: String, modifier: Modifier, onClick: () -> Unit) {
-    Column(modifier.vaporGlass(RoundedCornerShape(16.dp))
-        .controllerFocusGlow(cornerRadius = 16.dp)
+    Column(modifier.controllerFocusGlow(cornerRadius = 16.dp)
+        .vaporGlass(RoundedCornerShape(16.dp))
         .clickable(onClick = onClick)) {
         AsyncImage(artwork, contentDescription = null, contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxWidth().aspectRatio(460f / 215f).background(SurfaceDark))

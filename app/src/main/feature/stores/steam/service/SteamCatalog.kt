@@ -41,6 +41,9 @@ internal data class SteamCatalogPage(
     val count: Int,
     val total: Int,
     val suggestions: List<String> = emptyList(),
+    /** Set when the exact search found nothing and these are results for [matchedTerm] instead. */
+    val relaxedFrom: String? = null,
+    val matchedTerm: String? = null,
 ) {
     // Advance by Steam's result count, including entries we cannot display.
     val nextStart: Int? get() = (start + count).takeIf { count > 0 && it < total }
@@ -55,6 +58,7 @@ internal data class SteamCatalogPage(
 internal object SteamCatalog {
     const val PAGE_SIZE = 24
     const val SEARCH_LIMIT = 50
+    private const val MAX_RELAXED = 6
     private const val ASSETS = "https://shared.fastly.steamstatic.com/store_item_assets/"
     // Steam rejects a query without a country. This public catalog uses the device
     // region, explicitly labeled in the UI; it is not the signed-in account's region.
@@ -71,8 +75,43 @@ internal object SteamCatalog {
     suspend fun browse(section: SteamCatalogSection, start: Int, search: String, genre: SteamCatalogGenre = SteamCatalogGenre.ALL): SteamCatalogPage {
         val searching = search.isNotBlank()
         val method = if (searching) "SearchSuggestions" else "Query"
-        val result = request("IStoreQueryService/$method/v1/", query(section, start, search, genre))
-        return parsePage(result)
+        val page = parsePage(request("IStoreQueryService/$method/v1/", query(section, start, search, genre)), searching)
+        if (!searching || page.items.isNotEmpty()) return page
+        // SearchSuggestions matches titles, so descriptive or misspelled phrases ("open world car",
+        // "hollw nite") return nothing. Try a few shorter forms and show the first that finds games,
+        // clearly labelled as closest matches. A fallback failure keeps the honest empty result.
+        for (candidate in relaxedSearchTerms(search)) {
+            val relaxed = try {
+                parsePage(request("IStoreQueryService/SearchSuggestions/v1/", query(section, 0, candidate, genre)), true)
+            } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+            catch (_: Exception) { break }
+            if (relaxed.items.isNotEmpty())
+                return relaxed.copy(suggestions = emptyList(), relaxedFrom = search.trim(), matchedTerm = candidate)
+        }
+        return page
+    }
+
+    private val STOP_WORDS = setOf("a", "an", "the", "of", "and", "or", "with", "for", "to", "in", "on", "game", "games", "play")
+
+    /**
+     * Shorter searches to try when an exact search finds nothing, most specific first, at most
+     * [MAX_RELAXED] of them: contiguous word groups from longest to shortest (left first), then
+     * single significant words (longest first); a single word is shortened by up to three letters.
+     */
+    internal fun relaxedSearchTerms(search: String): List<String> {
+        val words = search.trim().lowercase(Locale.ROOT).split(Regex("\\s+")).filter { it.isNotBlank() }
+        val out = LinkedHashSet<String>()
+        if (words.size >= 2) {
+            for (length in words.size - 1 downTo 2) for (from in 0..words.size - length) {
+                val group = words.subList(from, from + length)
+                if (group.any { it !in STOP_WORDS }) out += group.joinToString(" ")
+            }
+            words.filter { it.length >= 3 && it !in STOP_WORDS }.sortedByDescending { it.length }.forEach { out += it }
+        } else if (words.size == 1 && words[0].length >= 5) {
+            val word = words[0]
+            for (cut in 1..3) if (word.length - cut >= 4) out += word.dropLast(cut)
+        }
+        return out.take(MAX_RELAXED)
     }
 
     suspend fun details(appId: Int): SteamCatalogItem {
@@ -140,18 +179,23 @@ internal object SteamCatalog {
         put("include_screenshots", screenshots)
     }
 
-    internal fun parsePage(json: String): SteamCatalogPage {
+    internal fun parsePage(json: String, searching: Boolean = false): SteamCatalogPage {
         val response = response(json)
         val meta = response["metadata"]?.jsonObject ?: throw IOException("Missing store results")
         val start = meta.int("start") ?: 0
-        val count = meta.int("count") ?: throw IOException("Missing store result count")
+        val reportedCount = meta.int("count") ?: throw IOException("Missing store result count")
         val total = meta.int("total_matching_records") ?: throw IOException("Missing store total")
-        if (start < 0 || count < 0 || count > SEARCH_LIMIT || total < 0) throw IOException("Invalid store pagination")
-        val items = response["store_items"]?.jsonArray?.mapNotNull { parseItem(it.jsonObject) }.orEmpty()
+        val items = response["store_items"]?.jsonArray?.mapNotNull { parseItem(it.jsonObject) }.orEmpty().distinctBy { it.appId }
+        // Search returns at most SEARCH_LIMIT items, but Steam's count can be larger (100 for
+        // "rpg"). That is not a transport error, so search reports what it actually returned;
+        // browse pages keep the strict check because their count drives the next offset.
+        val count = if (searching) items.size else reportedCount
+        if (start < 0 || count < 0 || total < 0 || (!searching && count > SEARCH_LIMIT))
+            throw IOException("Invalid store pagination")
         val suggestions = (meta["spellcheck_suggestions"] as? JsonArray).orEmpty()
             .mapNotNull { (it as? JsonPrimitive)?.contentOrNull?.takeIf(String::isNotBlank) }
             .distinct().take(5)
-        return SteamCatalogPage(items.distinctBy { it.appId }, start, count, total, suggestions)
+        return SteamCatalogPage(items, start, count, if (searching) maxOf(total, items.size) else total, suggestions)
     }
 
     private fun response(json: String): JsonObject =

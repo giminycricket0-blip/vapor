@@ -117,4 +117,32 @@ class SteamCatalogTest {
         assertThrows(IOException::class.java) { SteamCatalog.parsePage(page(game, count = -1)) }
         assertThrows(IOException::class.java) { SteamCatalog.parsePage(page(game, count = 51)) }
     }
+
+    @Test fun broadSearchesWithLargeSteamCountsAreResultsNotConnectionErrors() {
+        // Live Steam reports count=100 / total=1483 for "rpg" while returning 50 items.
+        val result = SteamCatalog.parsePage(page(game, count = 100, total = 1483), searching = true)
+        assertEquals(1, result.items.size)
+        assertEquals(1, result.count)
+        assertEquals(1483, result.total)
+        // Browse pages keep the strict check because count drives the next offset.
+        assertThrows(IOException::class.java) { SteamCatalog.parsePage(page(game, count = 100, total = 1483)) }
+    }
+
+    @Test fun zeroResultSearchStaysAnEmptyPage() {
+        val empty = """{"response":{"metadata":{"start":0,"count":0,"total_matching_records":0,"spellcheck_suggestions":["oper world ca"]}}}"""
+        val result = SteamCatalog.parsePage(empty, searching = true)
+        assertTrue(result.items.isEmpty())
+        assertNull(result.matchedTerm)
+    }
+
+    @Test fun relaxedSearchTermsTryShorterPhrasesThenSignificantWords() {
+        assertEquals(listOf("open world", "world car", "world", "open", "car"), SteamCatalog.relaxedSearchTerms("Open world car"))
+        assertEquals(listOf("hollw", "nite"), SteamCatalog.relaxedSearchTerms("hollw nite"))
+        assertEquals(listOf("mario", "kart"), SteamCatalog.relaxedSearchTerms("mario kart"))
+        assertEquals(listOf("minecrf", "minecr", "minec"), SteamCatalog.relaxedSearchTerms("minecrft"))
+        // Stop words never become a search on their own; short single words are not shortened.
+        assertTrue(SteamCatalog.relaxedSearchTerms("the game").isEmpty())
+        assertTrue(SteamCatalog.relaxedSearchTerms("rpg").isEmpty())
+        assertTrue(SteamCatalog.relaxedSearchTerms("a game where you build a city and manage people").size <= 6)
+    }
 }
