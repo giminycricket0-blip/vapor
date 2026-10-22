@@ -616,11 +616,36 @@ Still open for these archives: the Wine/Proton LGPL text and its exact source re
 and the per-package mapping for `imagefs.tzst` (an Arch-style rootfs where only 5 of the
 packages carry a license file inside `usr/share/doc`).
 
+### `extras.tzst` — Steamless, 7-Zip and an unidentifiable downloader
+
+The 28-file `extras.tzst` bundle contains third-party Windows executables, identified
+from their own version resources:
+
+| Payload | Identity | License status |
+| --- | --- | --- |
+| `Steamless/` (16 files, duplicated under `Steamless/Plugins/`) | **Steamless 3.1.0.0**, `CompanyName: atom0s`, plus its `Steamless.API` 1.0.0.8 and `Steamless.Unpacker.Variant10..31` (x86/x64), `SharpDisasm` (Justin Stenning, 2018), `GalaSoft.MvvmLight` 4.4.32 | GitHub reports `NOASSERTION` / "Other" — **not** a standard SPDX licence |
+| `opt/apps/7-Zip/` (`7zFM.exe`, `7zG.exe`, `7z.dll`) | **7-Zip 19.00**, Igor Pavlov, (c) 1999-2018 | LGPL-2.1-or-later, with the unRAR restriction and BSD-3-Clause AES code |
+| `home/.Ajay_Prefix/Ajay_Prefix_Pro_v1.8_Downloader.exe` | **1,450,496 bytes, no version resource, no identifying strings.** Only WinHTTP imports (`HttpOpenRequestW`, `HttpSendRequestW`, `HttpQueryInfoW`) show it makes network requests | **Unknown** |
+| `generate_interfaces_file.exe`, `opt/apps/TestD3D.exe`, `opt/apps/GPUInfo.exe` | No version resources; helper tools (D3D/GPU probes) | Unknown |
+
+Two of these deserve the owner's attention specifically:
+
+1. **Steamless is a SteamStub DRM remover.** Its own project description: *"Steamless is a
+   DRM remover of the SteamStub variants."* In a launcher whose entire premise is
+   launching Steam titles, shipping a Steam DRM-stripping tool is a policy and
+   legal question independent of its licence, and its licence is not a standard
+   one. Removing it from the shipped product does not affect normal Steam
+   launching.
+2. **`Ajay_Prefix_Pro_v1.8_Downloader.exe` is opaque.** No version resource, no
+   copyright string, no licence, and it opens HTTP connections. It cannot be
+   mapped to a source or a rights holder from the bytes alone. Recommend it not be
+   shipped until it is identified and cleared.
+
 ## Public distribution blockers
 
 1. **Valve client binaries:** `app/src/main/assets/wnsteam/bionic/valve-steam-x86_64.tzst` and other genuine Steam assets are inherited. Their presence in a public upstream is not redistribution permission. Establish a supported acquisition route and applicable terms before publishing an APK containing them.
 2. **Bundled runtime archives:** map the exact Wine/FEX/graphics builds and patches to corresponding source and licenses. Repository commits and SHA-256 alone are insufficient. The 22 October identification pass shows `wincomponents/` is **Microsoft** (VC++ 2010, legacy DirectX, DirectShow, Windows Media, XAudio2/XACT) plus one third-party `cnc-ddraw`, with no license files bundled at all — see [that section](#bundled-windows-component-archives--22-october-2026). Rights review, bundled license text and a keep/replace/drop decision per component are now required before public distribution, alongside the Valve assets in blocker 1.
-3. **Inherited optional integrations:** console, other-store, frame-generation and helper assets remain bundled. Narrow the shipped product and review those retained inputs before alpha.
+3. **Inherited optional integrations:** console, other-store, frame-generation and helper assets remain bundled. Narrow the shipped product and review those retained inputs before alpha. `extras.tzst` alone carries **Steamless** (a SteamStub DRM remover with a non-standard licence, see [`extras.tzst`](#extras-tzst--steamless-7-zip-and-an-unidentifiable-downloader)) and **`Ajay_Prefix_Pro_v1.8_Downloader.exe`**, an unidentifiable network downloader with no version resource or licence. Both should be resolved before any public build.
 4. **Modern Android:** target remains 28. The 16 October source rebuild resolves the three Prefab failures: all 39 APK native libraries now pass LOAD alignment and ZIP alignment passes. Nine actual JNI checks pass on both 4 KB and 16 KB emulators, and normal startup was checked on Android 17. Earlier APKs used page-size compatibility mode. These newer checks do not resolve target-36 downloaded-code execution, downloaded runtime ELF files or complete Wine/FEX game operation on 16 KB systems; see the [bounded result](QUALIFICATION.md#native-library-alignment-and-tls--16-october-2026).
 5. **Account and game proof:** the owner now reports successful EU3 gameplay and TF2 training with Steam connected on Xiaomi; the exact APK/configuration is not yet identified. Earlier emulator builds completed an authenticated EU3 demo download and a genuine-client launch handoff with visible rendering; an earlier custom-game build also completed a local save/reopen round trip. These separate results are recorded in [QUALIFICATION.md](QUALIFICATION.md#owner-reported-xiaomi-gameplay--14-october-2026). Steam-game save/reopen, Steam Cloud correctness and the full reference-phone qualification protocol remain open.
 

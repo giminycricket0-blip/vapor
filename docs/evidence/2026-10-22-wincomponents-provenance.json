@@ -182,5 +182,61 @@
       ],
       "gap": "remaining packages carry no license file"
     }
+  },
+  "extras_tzst": {
+    "archive": "app/src/main/assets/extras.tzst",
+    "sha256": "46217601a80e16ca",
+    "files": 28,
+    "payloads": {
+      "Steamless": {
+        "path": "extras/Steamless/ (duplicated at extras/Steamless/Plugins/)",
+        "identity": "Steamless 3.1.0.0, CompanyName atom0s",
+        "components": [
+          "Steamless.CLI.exe 3.1.0.0",
+          "Steamless.exe (MvvmLight host)",
+          "Steamless.API.dll 1.0.0.8",
+          "Steamless.Unpacker.Variant10/20/21/30/31 x86+x64",
+          "SharpDisasm.dll (Justin Stenning, 2018)",
+          "GalaSoft.MvvmLight.dll 4.4.32"
+        ],
+        "purpose": "SteamStub DRM remover (project self-description)",
+        "github_license": "NOASSERTION / Other (not a standard SPDX licence)"
+      },
+      "7-Zip": {
+        "path": "extras/opt/apps/7-Zip/",
+        "identity": "7-Zip 19.00, Igor Pavlov, (c) 1999-2018",
+        "files": [
+          "7zFM.exe",
+          "7zG.exe",
+          "7z.dll"
+        ],
+        "license": "LGPL-2.1-or-later + unRAR restriction + BSD-3-Clause AES"
+      },
+      "Ajay_Prefix_Pro_v1.8_Downloader.exe": {
+        "path": "extras/home/.Ajay_Prefix/",
+        "bytes": 1450496,
+        "identity": "unidentifiable - no version resource, no copyright string",
+        "imports": [
+          "HttpOpenRequestW",
+          "HttpSendRequestW",
+          "HttpQueryInfoW"
+        ],
+        "license": "unknown",
+        "recommendation": "do not ship until identified and cleared"
+      },
+      "helper tools": {
+        "paths": [
+          "extras/generate_interfaces_file.exe (241152 B)",
+          "extras/opt/apps/TestD3D.exe (518656 B)",
+          "extras/opt/apps/GPUInfo.exe (112128 B)"
+        ],
+        "identity": "no version resources",
+        "license": "unknown"
+      }
+    },
+    "owner_attention": [
+      "Steamless removes SteamStub DRM; in a Steam-first launcher this is a policy/legal question independent of its non-standard licence. Normal Steam launching does not need it.",
+      "Ajay_Prefix_Pro_v1.8_Downloader.exe is opaque and makes network requests."
+    ]
   }
 }
