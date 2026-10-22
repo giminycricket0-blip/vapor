@@ -464,6 +464,28 @@ confirms the patched binary was the one sampled.
 [Patch-stack receipt](evidence/2026-10-22-vulkan-wrapper-patch-stack.json),
 [render-stack receipt](evidence/2026-10-22-vulkan-wrapper-render-stack.json).
 
+### Wrapper concurrency
+
+`tools/tests/vulkan-wrapper-concurrency.c` (reusing the reference fixture's setup code)
+runs several threads on one Vulkan device through the wrapper. Each thread maps its
+source memory, uploads a BCn texture, lets the wrapper decode it, reads it back and
+compares it with a golden single-threaded result. Alternate iterations keep the source
+mapped across the submit, so the host-CPU path sees both the application-mapped and the
+wrapper-mapped case that `host-decode-map.patch` changed. Queue submission is serialised
+as Vulkan requires; everything else runs concurrently. Results:
+
+- **Matrix:** the unpatched baseline and Wrapper-Vapor (`095c9a81…`, as shipped) × compute,
+  compute-view and host-CPU × BC1/BC3, 4 threads × 40 iterations each: **12/12 pass on 4 KB
+  and 12/12 on 16 KB**, 0 mismatches and 0 errors.
+- **Stress:** Wrapper-Vapor, 8 threads × 100 iterations per decode path, and 256×256 BC3
+  host-CPU at 6×30 and 8×50, all with 0 mismatches.
+- **Negative control:** corrupting one thread's input makes exactly that thread report
+  every iteration as a mismatch while the others stay clean, so the probe detects errors
+  and threads do not contaminate each other.
+
+Software Vulkan only.
+[Concurrency receipt](evidence/2026-10-22-vulkan-wrapper-concurrency.json).
+
 ### Placed-memory loader path and capability skip
 
 The wrapper's placed-memory path (`VK_EXT_map_memory_placed` with

@@ -1,0 +1,77 @@
+{
+  "date": "2026-10-22",
+  "scope": "Multi-threaded BCn upload/decode/readback through the Vulkan wrapper on one device.",
+  "fixture": {
+    "source": "tools/tests/vulkan-wrapper-concurrency.c",
+    "source_sha256": "b1ac8e62b16f612418d3a0ea003d0dad343e82834de8d2e13e7c1518c5e1a42e",
+    "reuses": "tools/tests/vulkan-wrapper-reference.c (included with main renamed)",
+    "binary_sha256": "fd9420061ab2b07020f83fb417b075e5067bbe538cf4268d64a690fc3c45b5ab",
+    "build": "NDK r27d aarch64-linux-android34-clang -std=c11 -O2 -g -Wall -Wextra -Werror -D_GNU_SOURCE -ldl, 16 KB page-size link flags",
+    "design": "N threads share one VkDevice; each owns a command pool, source/destination buffers and a BCn image. Per iteration: map source, upload, wrapper decode, readback, compare with a golden single-threaded iteration. Odd iterations keep the source mapped across the submit (application-mapped case for the host-CPU path); even iterations unmap first. Each iteration creates and destroys its command buffer and fence. Queue submission is serialised by a mutex (Vulkan external synchronisation); all other calls are concurrent."
+  },
+  "wrappers": {
+    "baseline": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c (unpatched source build)",
+    "candidate": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712 (Wrapper-Vapor full patch stack, as shipped in wrapper-vapor.tzst)"
+  },
+  "configs": {
+    "compute": "USE_IMAGE_VIEW=0",
+    "compute-view": "USE_IMAGE_VIEW=1",
+    "host-cpu": "USE_IMAGE_VIEW=0 USE_CPU_BCN=all"
+  },
+  "env": "FORCE_BCN_EMULATION=1, WRAPPER_LOG_LEVEL=error",
+  "inputs": {
+    "bc1 64x64": "2048 bytes (reference-tool deterministic input)",
+    "bc3 64x64": "4096 bytes",
+    "bc3 256x256": "65536 bytes, seeded random blocks (seed 7)"
+  },
+  "devices": {
+    "4k": "VaporProbe36A, Android 16/API 36, 4 KB pages, lavapipe",
+    "16k": "VaporProbe37K16A, Android 17/API 37, 16 KB pages, fingerprint google/sdk_gphone16k_arm64/emu64a16k:17/CE2A.260420.051.A3/16571990"
+  },
+  "results_raw": [
+    "baseline compute bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "baseline compute bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "baseline compute-view bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "baseline compute-view bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "baseline host-cpu bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "baseline host-cpu bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "candidate compute bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "candidate compute bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "candidate compute-view bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "candidate compute-view bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "candidate host-cpu bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "candidate host-cpu bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "NEGATIVE_CONTROL thread=2 THREAD id=0 iterations=20 mismatches=0 errors=0 THREAD id=1 iterations=20 mismatches=0 errors=0 THREAD id=2 iterations=20 mismatches=20 errors=0 THREAD id=3 iterations=20 mismatches=0 errors=0 TOTAL iterations=80 mismatches=20 errors=0 RESULT=fail EXIT=1 ",
+    "NEGATIVE_CONTROL thread=0 THREAD id=0 iterations=20 mismatches=20 errors=0 THREAD id=1 iterations=20 mismatches=0 errors=0 THREAD id=2 iterations=20 mismatches=0 errors=0 THREAD id=3 iterations=20 mismatches=0 errors=0 TOTAL iterations=80 mismatches=20 errors=0 RESULT=fail EXIT=1 ",
+    "TOTAL iterations=800 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "TOTAL iterations=800 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "TOTAL iterations=800 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "TOTAL iterations=180 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "TOTAL iterations=180 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k baseline compute bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k baseline compute bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k baseline compute-view bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k baseline compute-view bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k baseline host-cpu bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k baseline host-cpu bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k candidate compute bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k candidate compute bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k candidate compute-view bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k candidate compute-view bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k candidate host-cpu bc1 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k candidate host-cpu bc3 :: TOTAL iterations=160 mismatches=0 errors=0 RESULT=ok EXIT=0 ",
+    "16k candidate host-cpu 256 bc3 8x50 :: TOTAL iterations=400 mismatches=0 errors=0 EXIT=0 "
+  ],
+  "summary": {
+    "matrix_4k": "12/12 pass (2 wrappers x 3 configs x 2 formats, 4 threads x 40 iterations = 160 each), 0 mismatches, 0 errors",
+    "matrix_16k": "12/12 pass, same matrix",
+    "stress_4k": "candidate 8 threads x 100 iterations = 800 per config, 0 mismatches (compute, compute-view, host-cpu)",
+    "large_host_cpu": "256x256 BC3 host-cpu: baseline and candidate 6x30 = 180 on 4 KB, candidate 8x50 = 400 on 16 KB, 0 mismatches",
+    "negative_controls": "CONC_CORRUPT_THREAD flips one input byte for one thread: exactly that thread reports 20/20 mismatches and the others 0 (host-cpu bc1 thread 2; compute bc3 thread 0), proving detection and per-thread isolation"
+  },
+  "limitations": [
+    "Software Vulkan (lavapipe) on emulators; not an Adreno/Turnip result.",
+    "Queue submission is serialised by the fixture; concurrent submission to one queue is invalid Vulkan usage and was not tested.",
+    "No device-level teardown concurrency (one device per process)."
+  ]
+}

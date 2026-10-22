@@ -83,8 +83,9 @@ Continue in this order:
    Android emulator paths documented as absent), and an independent APK
    reproducibility lane builds the pinned APK on two separate runners, fails on
    any byte difference, and now passes (byte-identical signed APKs).
-   Remaining: real-driver placement semantics (RADV/ANV/NVK/Turnip), the last
-   two teardown frees on a non-gfxstream driver or phone, concurrency,
+   Concurrency now passes on 4 KB and 16 KB emulators (multi-threaded decode, 0
+   mismatches, negative control detected). Remaining: real-driver placement semantics
+   (RADV/ANV/NVK/Turnip), the last two teardown frees on a non-gfxstream driver or phone,
    physical-phone duration, and an Adreno phone pass of the opt-in
    **Wrapper-Vapor (experimental)** driver, which now ships the full patch stack, to
    decide whether it should become a default. Owner
