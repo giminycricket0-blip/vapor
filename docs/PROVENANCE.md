@@ -132,8 +132,9 @@ Their `usr/lib/libvulkan_wrapper.so` payloads are distinct:
 | GameNative | 2,705,856 | `25e8010444dca69a448fa8bbd145b650e8283e329228fc7b7d1b70b79e63d1f3` |
 
 The later source experiment maps the Leegao release's reviewed image and generator
-files to the current pinned source. It does not establish either other variant's
-source identity. File sizes describe payload storage, not resident RAM or speed.
+files to the current pinned source. The default and GameNative variants were
+source-identified on 22 October from public artifacts (see below); file sizes
+describe payload storage, not resident RAM or speed.
 
 A 21 October static check (no execution and no repackaging) confirms all three
 hashes above and separates the build lines. The default and GameNative payloads
@@ -141,8 +142,22 @@ are not builds of the v0.0.5r5 source: both use NDK r29/clang 21, 16 KB `LOAD`
 alignment and an ICD-only 15-export set, the default payload retains `debug_info`
 and a Termux build directory, and compile units they name (`graphicsenv_hook.cpp`,
 `spirv_patcher.cpp`, `wrapper_bcdec.c`) do not exist in the v0.0.5r5 tag, the
-reviewed `3abf4870` tree or the 16 upstream branches examined. Their exact source
-revisions remain open. The Leegao release was packaged by the retained
+reviewed `3abf4870` tree or the 16 upstream branches examined. A follow-up public
+source hunt identified both:
+- **GameNative** (2,705,856 B) is byte-identical to the `libvulkan_wrapper.so`
+  member of the public `wrapper-gamenative-20260719` release artifact, whose
+  workflow builds the public **GameNative/mesa** fork (branch `wrapper-25`, NDK
+  r29; commit `5212f63a`, merged `8e64d5f4` two days before the artifact, carries
+  every previously-unidentified compile unit and the `WRAPPER_DIAG` code seen in
+  the payload).
+- **Default** (19,146,576 B) is a Termux debug build of the public
+  **Pipetto-crypto/mesa** fork line (branch `wrapper-25`, at or after commit
+  `ac54448c`): its fork-unique texture-cache strings and the
+  `WRAPPER_SURFACE_FORMAT` literal match, while GameNative-only literals and
+  `WRAPPER_DIAG` are absent. The exact packaged build commit is not embedded.
+Neither variant is the reviewed v0.0.5r5 tree; they are two different public forks.
+The exact GameNative build ref and the default build record remain open. The Leegao
+release was packaged by the retained
 `leegao/vulkan_wrapper_termux-packages` repository at `c5c45d88` (Termux Docker
 build, NDK r27c, API 26). A build of the tag source reproduces that payload's
 SONAME, 20 `NEEDED` names, export family and 4 KB `LOAD` alignment, but not its

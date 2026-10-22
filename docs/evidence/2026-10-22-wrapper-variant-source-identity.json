@@ -1,0 +1,119 @@
+{
+  "date": "2026-10-22",
+  "scope": "Static source-identity hunt for the two packaged Vulkan-wrapper payloads that are not builds of the v0.0.5r5 source (default and wrapper-gamenative). Public repositories/artifacts only; the packaged payloads were not executed or repackaged. No execution, image-quality or performance result is claimed.",
+  "base_commit": "835b426a74a3951f306bd80cdb72a03e1f710134",
+  "inputs": {
+    "default_payload": {
+      "bytes": 19146576,
+      "sha256": "ff43589bd34c236a048f93f0beb0af0ff0cbb5c8a0ecfe4227bacd5db7d2ba7a"
+    },
+    "gamenative_payload": {
+      "bytes": 2705856,
+      "sha256": "25e8010444dca69a448fa8bbd145b650e8283e329228fc7b7d1b70b79e63d1f3"
+    },
+    "leegao_payload": {
+      "bytes": 8709528,
+      "sha256": "520ec0ba1b5a404b12282d18f863761a44703012be6e2421b0f5adcb9d47be11",
+      "note": "already identified as v0.0.5r5 release asset in the earlier receipt"
+    },
+    "previous_receipt": "docs/evidence/2026-10-21-wrapper-release-repro.json (exact source revisions were open there)"
+  },
+  "gamenative_variant": {
+    "verdict": "Identified: build of the public GameNative/mesa fork (branch wrapper-25), published by GameNative's wrapper-gamenative release workflow with NDK r29.",
+    "artifact_match": {
+      "artifact": "wrapper-gamenative-20260719 (tzst extracted in scratch)",
+      "member": "usr/lib/libvulkan_wrapper.so",
+      "sha256": "25e8010444dca69a448fa8bbd145b650e8283e329228fc7b7d1b70b79e63d1f3",
+      "bytes": 2705856,
+      "result": "byte-identical to the packaged GameNative payload"
+    },
+    "build_pipeline": {
+      "repo": "GameNative/mesa (public)",
+      "workflow": ".github/workflows/wrapper-gamenative.yml",
+      "workflow_evidence": "dispatch inputs ndk default r29 / adrenotools r28c; builds ./.github/scripts/build-wrapper-gamenative.sh; uploads tzst + libvulkan_wrapper.so.unstripped; release job runs on tags wrapper-*",
+      "workflow_hash": "761d0112241406d11eb5aebe17f08cc96a69190e4fc0a185d8c168400107f045",
+      "ndk_match": "NDK r29/clang 21 fingerprint in the payload matches the workflow default"
+    },
+    "source_line": {
+      "commit": "5212f63a491c67f626224a30177fa131174dd2fa",
+      "commit_date": "2026-07-17T10:40:46Z",
+      "commit_subject": "Add legacy ion interface handling and non-qcom heap mask fallback",
+      "merge_commit": "8e64d5f4 (2026-07-17T16:13:41Z, two days before the artifact date)",
+      "tree_contains": "src/vulkan/wrapper/{graphicsenv_hook.cpp,graphicsenv_hook.hpp,spirv_patcher.cpp,spirv_patcher.hpp,wrapper_bcdec.c,wrapper_bcdec.h,wrapper_bcn_spv.h,wrapper_bcn_transcode.comp,...}",
+      "payload_markers": [
+        "WRAPPER_DIAG diagnostics: 43 string occurrences in the GameNative payload, 0 in the default payload",
+        "GameNative-only compiler literals (e.g. WRAPPER_USE_BCN_CACHE, VK_KHR_vertex_attribute_divisor) present in the GameNative payload source fingerprint, absent from the default payload"
+      ]
+    }
+  },
+  "default_variant": {
+    "verdict": "Identified as a debug/Termux build of the public Pipetto-crypto/mesa fork line (branch wrapper-25), at or after commit ac54448c; the exact packaged build commit is not recorded in the payload.",
+    "source_evidence": {
+      "repo": "Pipetto-crypto/mesa (public, default branch wrapper-25, pushed 2026-10-19)",
+      "candidate_commits": [
+        {
+          "sha": "ac54448c142108e63efa1f96c52e2863ac7bcdaa",
+          "date": "2026-10-16T07:44:22Z",
+          "subject": "update subproject to newest changes"
+        },
+        {
+          "sha": "e53b3999f1ed54739630a963ce7e296f0c32f19b",
+          "date": "2026-06-07T12:44:36Z",
+          "subject": "spirv_patcher: extend pass to also remove CullDistance"
+        }
+      ],
+      "literal_fingerprint": {
+        "method": "Extracted quoted string literals (length >= 8) from candidate wrapper sources and matched them against printable strings in each payload; fork-unique literals were checked for presence/absence.",
+        "pipetto_ac54448c_literals_matched_in_default": "144/159 (90.6%)",
+        "pipetto_e53b3999_literals_matched_in_default": "115/128 (89.8%)",
+        "gamenative_5212f63a_literals_matched_in_default": "140/266 (52.6%)",
+        "pipetto_only_literals_present_in_default": [
+          "/data/data/com.winlator.cmod/files/imagefs/usr/cache",
+          "Failed to restore texture %s from cache, decompressing from huffer",
+          "Successfully restored texture %s from cache"
+        ],
+        "gamenative_only_literals_absent_from_default": [
+          "WRAPPER_DIAG (0 occurrences)",
+          "WRAPPER_USE_BCN_CACHE",
+          "VK_KHR_vertex_attribute_divisor"
+        ],
+        "commit_discriminator": "WRAPPER_SURFACE_FORMAT literal exists in pipetto ac54448c wrapper_physical_device.c (matched in the default payload) and not in pipetto e53b3999, so the default build is at or after ac54448c"
+      },
+      "build_style": "default payload retains .debug_info/.debug_str and embeds /data/data/com.termux/files/home/Code/mesa/build-wrapper, i.e. a manual Termux debug build of this line (not a CI release artifact); no commit/build record string was found in the payload (no Pipetto/gamenative/commit markers)"
+    }
+  },
+  "family_relation": {
+    "both_public_forks": "GameNative/mesa and Pipetto-crypto/mesa both use branch wrapper-25 and both carry the previously-unidentified wrapper sources (graphicsenv_hook.cpp, spirv_patcher.cpp, wrapper_bcdec.c). graphicsenv_hook.cpp is byte-identical across the three candidate commits (sha256 dadae306aa0073a89a5a1df2ba46b97ba73833e1d869cbbe46544ecb26f32db5), while wrapper_device/wrapper_bcdec/spirv_patcher differ between the forks.",
+    "candidate_file_hashes": {
+      "gamenative-5212f63a-wrapper_device.c": "58b018ae45ea844f356ff691bbc396ba2a44a40cbdc785b4c5c2e525d9f53b53",
+      "gamenative-5212f63a-wrapper_bcdec.c": "80429dbbda2459447a9ef68e5bb4e11eced5ab64318d790492760aa9adccae34",
+      "pipetto-ac54448c-wrapper_device.c": "bbc5e1be780d1b3a30ed1e2b2ba43dc9e1f8715d0747160d429f3d97f1d45e26",
+      "pipetto-ac54448c-wrapper_bcdec.c": "62a9bc982178ef9e0ad3f33179a00ac7ff46e60014c2690ecfa42c9748468218",
+      "pipetto-e53b3999-wrapper_physical_device.c": "26dc4b8d906e5dac809a6e94d24ea857acc3b01834ed72df896acc4109dda520"
+    }
+  },
+  "confirmed": [
+    "The GameNative packaged payload is byte-identical to the public wrapper-gamenative-20260719 artifact member, so its build pipeline (GameNative/mesa fork, NDK r29 workflow) is identified.",
+    "GameNative/mesa at 5212f63a (wrapper-25, merged 8e64d5f4 two days before the artifact) contains every previously-unidentified wrapper compile unit and the WRAPPER_DIAG code present in the GameNative payload.",
+    "The default payload is a debug Termux build of the Pipetto-crypto/mesa fork line: its fork-unique and cache literals match Pipetto sources (90.6%), its physical-device literal matches ac54448c (not e53b3999), and GameNative-only literals are absent.",
+    "Neither packaged payload is a build of the reviewed v0.0.5r5 source; they are newer fork-line builds (NDK r29/clang 21, 16KB LOAD alignment, ICD-only 15 exports).",
+    "The two packaged variants come from two different (public) forks, not one repository."
+  ],
+  "open": [
+    "Exact source commit for the GameNative release artifact is not embedded in the artifact; 5212f63a/8e64d5f4 is the branch state two days before the release, not a recorded build ref.",
+    "Exact commit and build record for the default Termux debug build are not in the payload; ac54448c (2026-10-16) is a lower bound supported by literal evidence only.",
+    "No attempt was made to build either fork and reproduce the payload bytes (large Mesa build; not needed for the identity claim).",
+    "The unwrapped archive metadata/tag names for the release artifacts were not fully enumerated (GitHub release listing returned no entries to the API query used)."
+  ],
+  "limitations": [
+    "Static analysis of debug strings/ELF sections only; no execution, repackaging, image-quality, concurrency or performance claim.",
+    "Literal matching is a fingerprint heuristic: absence of a literal can be caused by dead-code elimination (explains why the stripped GameNative payload matches only ~70% of its source literals); the conclusions rest on fork-unique present/absent patterns and the exact artifact hash match.",
+    "Candidate commits are those reachable in the public default branches at hunt time; branches may move.",
+    "Raw hunt artifacts are kept outside the repository."
+  ],
+  "raw_artifacts": {
+    "hunt_root": "/Users/cheng/wrapper-release-repro/hunt (candidate sources, payload DWARF/subprogram extracts, tree listings)",
+    "payloads": "/Users/cheng/wrapper-release-repro/payloads (default, leegao, gamenative wrapper payloads)",
+    "artifacts": "/Users/cheng/wrapper-release-repro/hunt/artifacts (wrapper-gamenative-20260719 and 20260722 tzst extractions)"
+  }
+}

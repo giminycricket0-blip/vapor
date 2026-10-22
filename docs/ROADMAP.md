@@ -55,8 +55,10 @@ Continue in this order:
    Preserve the working driver and ordinary Steam/Cloud teardown.
 2. Continue wrapper verification. The released-payload identity/reproduction is
    bounded: Leegao recipe located, exact bytes not reproducible from retained
-   inputs, default/GameNative a different source line with exact revisions
-   open. Native loading, synthetic BC decode, depth transfers, sampling/rendering
+   inputs; the default and GameNative payloads are now source-identified as builds
+   of the public Pipetto-crypto/mesa and GameNative/mesa forks respectively (the
+   GameNative payload is byte-identical to a published wrapper-gamenative release
+   artifact; exact build refs remain partly open). Native loading, synthetic BC decode, depth transfers, sampling/rendering
    and BC7 pass the emulator probes: a reference-image probe matches independent
    S3TC, RGTC and BC7 decoders exactly for the wrapper compute path (BC7 on both
    4 KB and 16 KB), and a graphics-pipeline probe renders wrapper-decoded

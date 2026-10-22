@@ -200,12 +200,21 @@ release SPIRV-Tools revision and the release strip step are not retained.
 The default payload (19,146,576 B, `ff43589b…`) and GameNative payload
 (2,705,856 B, `25e80104…`) are different builds — NDK r29/clang 21, 16 KB
 alignment, an ICD-only 15-export set, with the default retaining `debug_info` and
-a Termux build path. Compile units they name (`graphicsenv_hook.cpp`,
-`spirv_patcher.cpp`, `wrapper_bcdec.c`) are absent from the v0.0.5r5 tag, the
-reviewed tree and the 16 upstream branches examined, so their exact source
-revisions remain open. Static identity evidence does not establish execution,
-image quality or performance.
-[Reproduction receipt](evidence/2026-10-21-wrapper-release-repro.json).
+a Termux build path. Their source lines are now identified from public sources:
+the **GameNative payload is byte-identical to the `libvulkan_wrapper.so` member of
+the public `wrapper-gamenative-20260719` release artifact**, whose workflow builds
+the public **GameNative/mesa** fork (branch `wrapper-25`, NDK r29; commit
+`5212f63a`/merge `8e64d5f4` two days before the artifact contains every
+previously-unidentified compile unit and the `WRAPPER_DIAG` code present in the
+payload), and the **default payload is a Termux debug build of the public
+`Pipetto-crypto/mesa` fork line** (branch `wrapper-25`, at or after commit
+`ac54448c`: its fork-unique cache strings and the `WRAPPER_SURFACE_FORMAT` literal
+match, while GameNative-only literals and `WRAPPER_DIAG` are absent). They are two
+different public forks, not the reviewed v0.0.5r5 source; the exact GameNative
+build ref and the default build's commit are not embedded in the payloads. Static
+identity evidence does not establish execution, image quality or performance.
+[Reproduction receipt](evidence/2026-10-21-wrapper-release-repro.json),
+[source-identity receipt](evidence/2026-10-22-wrapper-variant-source-identity.json).
 
 ### Wrapper reference-image BC/depth probe
 
