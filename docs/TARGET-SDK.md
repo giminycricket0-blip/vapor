@@ -112,6 +112,38 @@ The shim path now matches direct execution as far as this ad-hoc staging reaches
 environment), not the shim. A full game launch needs the shim wired into the launcher
 with a prepared container. [Shim receipt](evidence/2026-10-22-exec-shim.json).
 
+## End to end in the real app (22 October)
+
+`ExecShim` now feeds the shim into the guest launchers:
+- the game/Wine launch environment (`GuestProgramLauncherComponent`, both preload sites);
+- the app's own first exec (`ProcessHelper`, `execShellCommand`, `cabextract` in
+  `ComponentInstaller`).
+
+`LD_PRELOAD` cannot help that first exec, because the shim only exists inside the new
+process. So above target 28 those launches start as
+`/system/bin/sh -c 'exec "$0" "$@"' <program> args`: `sh` may run, loads the shim, and
+its exec of Wine is rerouted. At target 28 both steps return their input unchanged.
+
+On the API 36 emulator, a clean install ran Prepare Vapor and then booted the default
+container's Wine desktop (`XServerDisplayActivity`, `container_id=1`):
+
+| Run | Result |
+| --- | --- |
+| target 35, before the first-exec wrapping | `wine` denied by the app's own exec (`error=13`) |
+| target 35, shim wired in | the Wine process tree starts; Windows processes run as `/system/bin/linker64 C:\windows\system32\winedevice.exe`; Proton logs 956 handled executable-memory remaps under W^X (`mprotect_exec ... anon-remap success`) |
+| target 35 (3 runs) | the explorer desktop logs "no driver could be loaded" and "The explorer process failed to start"; the session ends at once |
+| target 28, no or minimal logging (4 runs) | session stays up (13–14 Wine/Windows processes) |
+| target 28 without `wine-preloader` (`WINELOADERNOEXEC=1`, 2 runs) | session stays up, so the static preloader is not needed here |
+| target 28 with heavy `WINEDEBUG` | **the same** "no driver could be loaded" failure as target 35 |
+
+**Conclusion so far.** The shim and launcher wiring work: Wine and its child processes
+start at target 35. The remaining failure has the same signature as a target-28 run
+slowed down by heavy logging. That points at a startup timing race in the explorer
+desktop's display-driver handshake, which W^X's extra startup cost (the executable-memory
+remaps) is enough to trigger. Netlink route `bind` (EACCES) appears at both targets and
+is not the cause. **Next:** time the explorer/driver handshake at both targets, and
+find where that wait lives (Wine's desktop start-up timeout, or Vapor's launch path).
+
 ## The real work
 
 Rewriting Vapor's own launch commands is not enough. Wine and the translators spawn
@@ -136,9 +168,10 @@ those `execve` calls hits the same rule. The established approach is Termux's:
 
 1. Inventory the downloadable components: **done for the guided-setup set** (table
    above). Extend it to the rest of the user-installable catalog. No phone needed.
-2. Build the exec shim: **done** (above), including real `wine`/`wineserver` at target
-   35. Next: preload it from the launchers (`LD_PRELOAD` in the guest environment, only
-   when the target is above 28), then decide whether to skip `wine-preloader`.
+2. Build the exec shim and wire it into the launchers: **done** (above). At target 35 the
+   real app starts the Wine process tree; the explorer desktop then hits a display-driver
+   start-up race that heavy logging also triggers at 28. `wine-preloader` is not needed
+   for the container session. Next: fix that race.
 3. Behind a build flag, raise the target and run the existing UI and launch suites on the
    emulator. Keep 28 as the shipped default until the phone pass.
 4. On an Adreno phone, confirm game launch, audio, input and Cloud saves at the new
