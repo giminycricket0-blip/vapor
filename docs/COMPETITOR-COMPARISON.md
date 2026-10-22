@@ -41,6 +41,41 @@ older-chipset limits and a competitor speed/RAM ranking are not established.
 See [component evidence](QUALIFICATION.md#runtime-components--19-october-2026)
 and [Ghostrunner evidence](QUALIFICATION.md#ghostrunner-demo-loading-and-gameplay-observation--15-october-2026).
 
+## Drivers, runtimes and automatic settings — 22 October 2026
+
+This refresh compares how each project handles graphics drivers, runtimes and
+automatic settings, using only the sources already cited in this document. No
+competitor was installed or benchmarked.
+
+- **Vapor** inherits WinNative's component system: system Vulkan, three bundled
+  Vulkan wrapper builds, Turnip drivers downloaded from the WN Drivers feed or
+  imported, Proton 9.0 ARM64EC with FEX or Box64 per game, DXVK/VKD3D-Proton/WineD3D,
+  and a Linux runtime that can add official GE-Proton and Proton-CachyOS ARM64
+  builds. Vapor adds three things on top:
+  - imported-driver validation before launch;
+  - capability-checked automatic graphics: a real Vulkan probe, eligible
+    combinations only, at most four visible retries on specific start-up errors,
+    a learned per-game choice, and explicit settings always winning;
+  - a wrapper test bench (decode, rendering and validation layers) with five
+    locally patched wrapper defects.
+
+  The patches are not yet packaged in the app, and phone qualification is pending.
+- **WinNative** supplies the same component owners and driver feeds; Vapor extends
+  them rather than replacing them.
+- **GameNative** applies known game configurations automatically; its #2010 sends
+  device/app/driver details to a remote best-config request. Its runtime includes
+  proprietary helpers listed in its notices.
+- **Winlator** exposes Wine with Box86/Box64 through containers and per-shortcut
+  settings that the user configures.
+- **DroidDeck** uses Valve's Big Picture client with ARM64 Proton on supported
+  Adreno hardware, and per-game compatibility settings in that client.
+
+Automatic configuration is a shared idea. Vapor's version is local, bounded, and
+documented with tests, but it is not yet phone-qualified; it is not a verified
+game-compatibility database. There is still no measured speed, RAM or
+compatibility ranking. [Routing evidence](QUALIFICATION.md#automatic-graphics-routing--18-october-2026),
+[wrapper evidence](QUALIFICATION.md#wrapper-reference-image-bcdepth-probe).
+
 ## Comparison
 
 | Project | Interface and local execution | Source availability | What this means for Vapor |

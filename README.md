@@ -10,6 +10,7 @@
   </p>
   <p>
     <a href="#the-experience">The experience</a> &nbsp;·&nbsp;
+    <a href="#drivers-runtimes-and-automatic-graphics">Drivers &amp; runtimes</a> &nbsp;·&nbsp;
     <a href="#compatibility-and-status">Compatibility</a> &nbsp;·&nbsp;
     <a href="docs/BUILDING.md">Build</a> &nbsp;·&nbsp;
     <a href="docs/ROADMAP.md">Roadmap</a>
@@ -20,7 +21,7 @@
 
 <p align="center"><sub>Native Android interface · Home preview with labeled sample games and installs</sub></p>
 
-Connect Steam, choose a game, and play what your device can handle. Vapor pairs a Steam / Big Picture-inspired interface with local Windows-game execution through Wine, CPU translation, and graphics drivers. Snapdragon devices are the first qualification target.
+Connect Steam, choose a game, and play what your device can handle. Vapor pairs a Steam / Big Picture-inspired interface with local Windows-game execution through Wine/Proton, FEX or Box64 CPU translation, and your choice of Vulkan drivers: system, bundled wrappers or custom Turnip. Graphics selection can be automatic. Snapdragon devices are the first qualification target.
 
 > **In active development.** Local phone gameplay is demonstrated; compatibility and Steam feature qualification continue. No public alpha or official release APK is designated yet. See [current evidence](docs/QUALIFICATION.md) before treating a game or device as supported.
 
@@ -30,6 +31,8 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 - **A native game library.** Cover shelves, controller focus, portrait and landscape layouts, and a game page that keeps Play, Settings, Cloud Saves, and supported Achievements close at hand. Maintenance tools live in Manage.
 - **Community compatibility reports.** Steam game pages can read EmuReady reports in a native modal, with device, emulator and reported settings. Console ports are filtered out, title-only matches are labeled, known non-Windows entries hide the action, and external responses are never treated as compatibility verdicts. Reports are informational; applying settings automatically is not implemented. [Integration and evidence](docs/QUALIFICATION.md#emuready-community-reports--21-october-2026).
 - **Direct downloads.** The connected Steam account supplies licenses, manifests, and game depots. Owned paid games, free/demo acquisition, and checkout are separate actions; public catalog information never grants ownership.
+- **Graphics that pick themselves.** Guided Steam launches probe your real Vulkan driver and choose an eligible driver/translator combination. They retry a few known start-up errors (visibly, at most four times) and remember what worked for each game. Your explicit per-game settings always win. [How it works](#drivers-runtimes-and-automatic-graphics).
+- **Your drivers, your runtime.** Use system Vulkan, one of three bundled Vulkan wrappers, or custom Turnip drivers (downloaded in **Settings → Drivers** or imported, then validated before launch). The runtime is the bundled Proton ARM64EC with FEX or Box64, plus DXVK, VKD3D-Proton or WineD3D. A Linux runtime can add official GE-Proton and Proton-CachyOS ARM64 builds.
 - **Your controls.** Touch gamepad, RTS and FPS layouts, keyboard/mouse bindings, and an in-game Vapor menu. New supported-store shortcuts start with a **60 FPS limit**; existing choices are preserved.
 - **Official Steam pages when needed.** Checkout, Wishlist, Community, guides, and Workshop browsing open in a dedicated modal web panel. Web install links return to the native game page. Shared web sign-in is implemented; live authentication and payment flows still need qualification.
 
@@ -61,7 +64,25 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 
 ## Latest development work
 
-The latest UI pass makes Friends, Chat and per-game settings more consistent with
+**21–22 October: the graphics stack and the build itself got test benches.**
+
+- **Vulkan wrapper verification.** Reference-image, rendering and validation-layer
+  probes now cover the wrapper that emulates desktop texture formats on phone
+  GPUs. They found five wrapper defects, each now with a local patch and
+  before/after evidence. [Details](#vulkan-wrapper-verification).
+- **Reproducible APKs.** The differences between two builds were traced to a
+  build timestamp, the git build ID and packaging history. With those pinned, two
+  clean builds are byte-identical, on one machine and on two independent CI
+  runners; a CI lane now checks this on every push.
+  [Reproducibility evidence](docs/QUALIFICATION.md#emuready-community-reports--21-october-2026).
+- **Placed-memory capability lane.** A no-GPU CI lane runs the real Vulkan loader
+  against Lavapipe and a patched mock driver, covering the wrapper's
+  placed-memory feature detection and its skip on drivers that lack it.
+- **Wrapper provenance.** All three bundled wrappers are now traced to source: the
+  GameNative variant is byte-identical to GameNative's published release.
+  [Provenance](docs/PROVENANCE.md).
+
+The 20 October UI pass made Friends, Chat and per-game settings more consistent with
 Vapor’s handheld interface: shared branding, reachable close actions, larger touch
 targets, scrollable chat settings, and layouts that adapt to narrow screens and
 larger text. Compact game settings use a horizontal section rail with controller
@@ -120,6 +141,54 @@ features or usable performance; its age alone is not a universal DX12 cutoff.
 Onimusha: Way of the Sword Demo's reported GPU-support error remains unresolved
 on the phone. [Investigation](docs/QUALIFICATION.md#onimusha-way-of-the-sword-demo--18-october-2026).
 
+## Drivers, runtimes and automatic graphics
+
+Vapor keeps WinNative's component system: graphics drivers, CPU translators and
+Windows/Linux runtimes are installed once, selected per container or game, and
+remembered. On top of that it adds driver validation, capability-checked automatic
+graphics and a test bench for its Vulkan wrapper.
+
+| Layer | What's available | Notes |
+| --- | --- | --- |
+| **Graphics drivers** | System Vulkan; three bundled Vulkan **wrapper** builds (default, Leegao v0.0.5r5, GameNative) that emulate desktop BCn textures; custom **Turnip** drivers loaded through Adrenotools, either downloaded in **Settings → Drivers** (WN-Turnip balanced and performance builds) or imported from a ZIP; VirGL and Zink for OpenGL paths. | Imported drivers pass device, payload and initialization checks, and the selection is checked again before launch. A broken custom driver reports its own failure instead of the system driver's identity. On non-Adreno GPUs the built-in filter offers System only. [Driver review](docs/DRIVERS.md) |
+| **Translation and runtime** | Bundled **Proton 9.0 (ARM64EC)** with **FEX** or **Box64**, selectable per game; **DXVK** (guided setup pins an ARM64EC 1.10.3 build), **VKD3D-Proton** for DirectX 12, and **WineD3D**. A separate Linux runtime runs the Linux Steam client with its own glibc Turnip and can download official **GE-Proton** and **Proton-CachyOS** ARM64 builds (SHA-256 checked). | Rebuilt Wine X11 and FEX components with fixes for lost clipped clicks and mixed-architecture cache reuse exist as credited experiments; the guided defaults stay on the tested baseline. [Runtime research](docs/RUNTIME-RESEARCH.md) · [Linux Proton builds](docs/LINUX-PROTONS.md) |
+| **Automatic graphics** | Guided Steam launches probe the real Vulkan driver (feature bits, limits and identity) and choose among eligible installed combinations: your driver or System, with legacy DXVK, modern DXVK, DXVK + VKD3D, or WineD3D. | Only specific Vulkan start-up errors trigger another attempt: at most four, visible and cancellable, each after a clean Steam/Cloud teardown. A combination is remembered for a game only after a clean, observed session, and is re-checked against hardware, game build and file hashes. **Explicit per-game settings always win.** 79 JVM and 39 emulator checks pass; phone retries are still pending. [Routing record](docs/QUALIFICATION.md#automatic-graphics-routing--18-october-2026) · [source](app/src/main/runtime/system/AutomaticGraphics.kt) |
+
+### Vulkan wrapper verification
+
+The wrapper sits between Windows graphics translation and Android's Vulkan driver,
+decoding the BCn texture formats desktop games use but phone GPUs lack. It now
+has its own test bench, run on 4 KB and 16 KB emulators:
+
+- **Decode accuracy.** Reference-image probes check BC1, BC3, BC4, BC5, BC6H and
+  BC7 against independent decoders. The wrapper's GPU decode matches exactly
+  (sRGB within 1 LSB). Depth formats, odd sizes, mips, array layers and sRGB are
+  also covered.
+- **Real rendering.** A one-command graphics-pipeline probe samples
+  wrapper-decoded textures and compares the rendered image (31/31 cases).
+- **Validation layers.** Khronos validation chained in front of the wrapper finds
+  no app-facing errors; placed behind it, it found two internal defects.
+- **Five defects root-caused and patched:**
+  - sRGB textures decoding differently on the CPU fallback;
+  - out-of-bounds writes on odd-size copies;
+  - all-black BC6H image-view output;
+  - device-shutdown leaks (14 objects reduced to 2);
+  - a source mapping never released.
+
+  The full six-patch stack builds with the recorded library identity and passes
+  every probe family.
+
+The patches live in [`tools/vulkan-wrapper`](tools/vulkan-wrapper/README.md). They
+are **not yet built into the app's bundled wrappers**: packaging them is a separate
+decision, and they still need a physical Adreno phone. Each bundled wrapper's
+source line is identified:
+- the default build comes from the Pipetto-crypto/mesa fork;
+- the GameNative build is byte-identical to GameNative's published release;
+- the Leegao build is v0.0.5r5.
+
+[Wrapper evidence](docs/QUALIFICATION.md#wrapper-reference-image-bcdepth-probe) ·
+[provenance](docs/PROVENANCE.md).
+
 ## Compatibility and status
 
 **The app running, a game launching, and a game playing well are different results.** Vapor does not promise the entire Steam catalog. GPU features, drivers, the runtime, game dependencies, available memory, and anti-cheat can all affect compatibility.
@@ -131,6 +200,8 @@ on the phone. [Investigation](docs/QUALIFICATION.md#onimusha-way-of-the-sword-de
 | **Steam Cloud** | One confirmed Ghostrunner Demo upload contains two files. Exit-sync guards and recovery have local regression coverage. | Remote restore/reopen and reliable repeated uploads; intermittent phone exit timeouts remain open. |
 | **Friends, Chat, Achievements** | Native screens, request states, refresh, message acknowledgements, and session-ownership handling have local coverage; the latest UI has emulator checks. Controlled native receiver diagnostics run under Wine/FEX. | Live message delivery, in-game Android chat integration, and newly earned achievements reaching Steam. |
 | **Store and controls** | Public Store recovery, native UI layouts, and injected controller navigation pass local checks. | Authenticated free/demo and paid flows, live web sign-in, physical controllers, and phone UX acceptance. |
+| **Graphics stack** | Driver validation and automatic graphics pass local and emulator checks. Wrapper decode, rendering and validation-layer probes pass on 4 KB / 16 KB emulators (software Vulkan), and five wrapper defects have local patches with before/after evidence. | Adreno/KGSL phone runs, automatic retries on the phone, packaging the wrapper patches, and the last two shutdown frees on a real driver. |
+| **Build reproducibility** | Two clean builds give byte-identical APKs on one machine and on two independent CI runners (pinned build ID and source date, CI-only signing key); CI checks this on every push. | Release signing and cross-toolchain builds. |
 | **Android platform** | ARM64 development APK; minimum Android 10. **39/39** APK native libraries and ZIP packaging pass 16 KB alignment. Native TLS/probe checks and startup pass on 4 KB / 16 KB emulators. | Modern target SDK 36 and complete Wine/FEX gameplay on 16 KB kernels. The current build targets SDK **28** and compiles against **35**. |
 
 <details>
@@ -178,20 +249,27 @@ unchanged; no new APK or phone performance result is claimed.
 ## What makes Vapor different
 
 Vapor focuses on a **Steam-first handheld experience in a native Android app**,
-with source-visible Steam session handling and automatic selection among eligible
-installed graphics components. It builds on WinNative and shared Wine, FEX and
-Mesa work; it does not claim a new emulation engine or a proven speed lead.
+with source-visible Steam session handling, validated custom drivers and
+capability-checked automatic graphics. It builds on WinNative and shared Wine,
+Proton, FEX and Mesa work; it does not claim a new emulation engine or a proven
+speed lead.
 
-| Project | Main approach | Vapor's distinction |
-| --- | --- | --- |
-| [GameNative](https://github.com/utkarshdalal/GameNative) | Native Android launcher with several stores, Cloud saves and automatically applied known game configurations. | Vapor emphasizes Steam / Big Picture-style navigation, its open inherited Steam host, bounded graphics startup retries and published test evidence. Native launching and automatic configs are shared ideas. |
-| [DroidDeck](https://github.com/Droid-Deck/DroidDeck) | Valve's actual Steam Big Picture client in a Linux environment, using ARM64 Proton. | Vapor browses and downloads through Android services, then starts the game runtime and genuine Steam host on demand. DroidDeck provides the actual Valve frontend and more client behavior directly. |
+| Project | Approach | Drivers and runtime | Automatic settings |
+| --- | --- | --- | --- |
+| **Vapor** | Native Android shell, Steam-first; genuine Steam host started on demand. | Inherits WinNative's catalog (bundled wrappers, Turnip downloads and imports, Proton ARM64EC with FEX or Box64, Linux runtime with GE/CachyOS Proton) and adds driver validation plus a tested wrapper bench. | Probes the real Vulkan driver, picks an eligible driver/translator, retries only known start-up errors (at most four, visible), learns per game; explicit settings win. |
+| [WinNative](https://github.com/WinNative-Emu/WinNative) | Vapor's foundation: a launcher for Windows games, Steam/Epic/GOG and retro games. | The same component system and driver feeds; Vapor builds on these owners rather than replacing them. | Container and per-game settings, which Vapor's routing uses. |
+| [GameNative](https://github.com/utkarshdalal/GameNative) | Native Android launcher with several stores and Cloud saves. | Its own runtime; its notices list proprietary redirect, bootstrap and launcher helpers. | Applies known game configurations automatically; a recent change sends device and driver details to its remote best-config request. |
+| [Winlator](https://github.com/brunodev85/winlator) | General Windows app/game environment. | Wine with Box86/Box64 in containers. | Manual per-container and per-shortcut configuration. |
+| [DroidDeck](https://github.com/Droid-Deck/DroidDeck) | Valve's actual Steam Big Picture client in a Linux environment. | ARM64 Proton; documented for supported Adreno hardware. | Per-game compatibility settings through the Steam client. |
 
-The current work reaches below the interface: reproducible input fixes, translator
-cache correctness, graphics capability checks and safer game/Cloud teardown.
-Upstream fixes are credited, experimental builds stay separate, and live Steam
-feature checks remain explicit. **There is no measured Vapor-versus-competitor
-FPS, RAM or compatibility ranking yet.** [Detailed comparison](docs/COMPETITOR-COMPARISON.md).
+Native launching and automatic configuration are shared ideas, not Vapor
+exclusives. Vapor's emphasis is the combination: Steam / Big Picture-style
+navigation, the open inherited Steam host, driver checks before launch, bounded
+graphics retries, and published evidence for each change, including this week's
+wrapper and reproducibility test benches. Upstream fixes are credited and
+experimental builds stay separate. **There is no measured
+Vapor-versus-competitor FPS, RAM or compatibility ranking yet.**
+[Detailed comparison](docs/COMPETITOR-COMPARISON.md).
 
 ## How Steam runs
 
@@ -245,6 +323,8 @@ Useful contributions include reproducible game/device reports, fixes in the exis
 | [Qualification](docs/QUALIFICATION.md) | Game observations, test records, and explicit limits |
 | [UI and controls](docs/UI-UX.md) | Navigation, layouts, and interaction decisions |
 | [Runtime research](docs/RUNTIME-RESEARCH.md) | Translation, graphics, and upstream investigations |
+| [Drivers](docs/DRIVERS.md) | Android and Linux Turnip builds, packages, and installation |
+| [Vulkan wrapper experiments](tools/vulkan-wrapper/README.md) | Wrapper probes, local patches, and their stacking order |
 | [Project comparisons](docs/COMPETITOR-COMPARISON.md) | Source-backed alternatives and comparison limits |
 | [Provenance](docs/PROVENANCE.md) | Component identities, sources, licenses, and open distribution gates |
 
