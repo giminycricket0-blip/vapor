@@ -141,8 +141,22 @@ start at target 35. The remaining failure has the same signature as a target-28 
 slowed down by heavy logging. That points at a startup timing race in the explorer
 desktop's display-driver handshake, which W^X's extra startup cost (the executable-memory
 remaps) is enough to trigger. Netlink route `bind` (EACCES) appears at both targets and
-is not the cause. **Next:** time the explorer/driver handshake at both targets, and
-find where that wait lives (Wine's desktop start-up timeout, or Vapor's launch path).
+is not the cause.
+
+Follow-up checks at target 35:
+- **No crash record.** There are no fatal signals, tombstones or SELinux denials in
+  logcat, so the explorer desktop process exits quietly. Its last output is X11's
+  OpenGL initialisation; at target 28 that same warning appears and the session
+  survives.
+- **Software OpenGL is not an escape hatch.** `GALLIUM_DRIVER=llvmpipe` and
+  `MESA_LOADER_DRIVER_OVERRIDE=llvmpipe` are ignored (Zink is still chosen).
+- **The failure is early.** The session's main process ends about 90 ms after it starts,
+  which suggests the explorer errors happen during launch preparation (the `wineboot`
+  steps) rather than in the main command.
+
+**Next:** instrument Wine's process creation and the desktop's driver registration (the
+`GraphicsDriver`/`DriverError` values explorer writes) at both targets, ideally with a
+timestamped trace that does not slow start-up the way `WINEDEBUG` does.
 
 ## The real work
 
