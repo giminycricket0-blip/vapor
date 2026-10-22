@@ -1,0 +1,90 @@
+--- a/src/vulkan/wrapper/wrapper_device.c
++++ b/src/vulkan/wrapper/wrapper_device.c
+@@ -1410,11 +1410,21 @@
+    VkDescriptorBufferInfo dstBufferInfo = { 0 };
+ 
+    if (use_image_view) {
++      VkFormat storage_view_format = unwrap_vk_format(_device, wimg->original_format);
++      // BC6H image-view decode: bc6.comp declares an rgba16ui storage image and
++      // stores raw half-float bit patterns.  Bind the matching 16-bit UINT view
++      // (same 64-bit compatibility class as the emulated R16G16B16A16_SFLOAT
++      // image) so the numeric type matches the shader; a SFLOAT view made
++      // llvmpipe drop the writes.
++      if (wimg->original_format == VK_FORMAT_BC6H_UFLOAT_BLOCK ||
++          wimg->original_format == VK_FORMAT_BC6H_SFLOAT_BLOCK) {
++         storage_view_format = VK_FORMAT_R16G16B16A16_UINT;
++      }
+       VkImageViewCreateInfo viewCreateInfo = {
+          .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+          .image = dstImage,
+          .viewType = VK_IMAGE_VIEW_TYPE_2D,
+-         .format = unwrap_vk_format(_device, wimg->original_format),
++         .format = storage_view_format,
+          .subresourceRange = {
+             .aspectMask = region->imageSubresource.aspectMask,
+             .baseMipLevel = region->imageSubresource.mipLevel,
+@@ -1425,7 +1435,11 @@
+       };
+       
+       VkImageView dstImageView;
+-      result = WCHECK(CreateImageView((VkDevice) _device, &viewCreateInfo, NULL, &dstImageView));
++      // Bypass the wrapper's own CreateImageView hook: WRAPPER_CreateImageView rewrites
++      // views of tracked BC6H emulated images back to the emulated SFLOAT format,
++      // which would undo the UINT storage view required by bc6.comp's rgba16ui output.
++      result = wrapper_device_trampolines.CreateImageView(
++         (VkDevice) _device, &viewCreateInfo, NULL, &dstImageView);
+       if (result != VK_SUCCESS) {
+          return;
+       }
+--- a/src/vulkan/wrapper/wrapper_image.c
++++ b/src/vulkan/wrapper/wrapper_image.c
+@@ -32,6 +32,7 @@
+ 
+    VkImageCreateInfo create_info = *pCreateInfo;
+    VkImageFormatListCreateInfo format_list;
++   VkFormat emulated_view_formats[2];
+    void *pnext_copy = NULL;
+    bool is_depth_stencil_reduced = false;
+    VkFormat original_format = pCreateInfo->format;
+@@ -62,9 +63,20 @@
+       const VkImageFormatListCreateInfo *formats =
+          vk_find_struct_const(create_info.pNext, IMAGE_FORMAT_LIST_CREATE_INFO);
+       if (formats && formats->viewFormatCount) {
++         // The emulated image is created with MUTABLE_FORMAT because the wrapper
++         // replaces the app's BC view formats with the emulated one.  BC6H's
++         // image-view decode path additionally binds an R16G16B16A16_UINT storage
++         // view (bc6.comp declares an rgba16ui output), so the format list must
++         // allow that view format as well as the emulated float format.
++         emulated_view_formats[0] = new_format;
+          format_list = *formats;
+          format_list.viewFormatCount = 1;
+-         format_list.pViewFormats = &new_format;
++         format_list.pViewFormats = emulated_view_formats;
++         if (original_format == VK_FORMAT_BC6H_UFLOAT_BLOCK ||
++             original_format == VK_FORMAT_BC6H_SFLOAT_BLOCK) {
++            emulated_view_formats[1] = VK_FORMAT_R16G16B16A16_UINT;
++            format_list.viewFormatCount = 2;
++         }
+ 
+          size_t prefix_size = 0;
+          const VkBaseInStructure *node = create_info.pNext;
+@@ -100,6 +112,19 @@
+          } else {
+             create_info.pNext = &format_list;
+          }
++      } else if (original_format == VK_FORMAT_BC6H_UFLOAT_BLOCK ||
++                 original_format == VK_FORMAT_BC6H_SFLOAT_BLOCK) {
++         // No app list: add one so the internal R16G16B16A16_UINT storage view is an
++         // explicitly allowed view format of the MUTABLE_FORMAT emulated image.
++         emulated_view_formats[0] = new_format;
++         emulated_view_formats[1] = VK_FORMAT_R16G16B16A16_UINT;
++         format_list = (VkImageFormatListCreateInfo) {
++            .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO,
++            .pNext = create_info.pNext,
++            .viewFormatCount = 2,
++            .pViewFormats = emulated_view_formats,
++         };
++         create_info.pNext = &format_list;
+       }
+    }
+ 

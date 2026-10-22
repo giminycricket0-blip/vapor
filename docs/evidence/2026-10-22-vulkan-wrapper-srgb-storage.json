@@ -90,7 +90,6 @@
   "open": [
     "Sampling/render-path verification of the corrected convention (separate sampling test)",
     "Reference-tool expectation update/flag",
-    "Upstream submission decision; no upstream change was made",
     "Physical-device/phone verification"
   ],
   "limitations": [
@@ -109,5 +108,6 @@
       "/Users/cheng/staging-srgb/raw/patched-srgb.json"
     ],
     "readbacks": "/Users/cheng/staging-srgb/raw/{unpatched,patched}-srgb/out/*.bin"
-  }
+  },
+  "upstream_policy": "Decided by the repository owner on 2026-10-22: the patch is kept and committed in Vapor's own repository (giminycricket0-blip/vapor) only; it is not submitted upstream."
 }

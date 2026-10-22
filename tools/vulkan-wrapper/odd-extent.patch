@@ -1,0 +1,71 @@
+--- a/src/vulkan/wrapper/bcdec.c
++++ b/src/vulkan/wrapper/bcdec.c
+@@ -32,6 +32,32 @@
+         }
+     }
+     return true;
++}
++
++/* Copy the in-bounds texels of a decoded 4x4 block into the destination.
++ *
++ * imageExtent is not required to be a multiple of the block size (Vulkan only
++ * forbids non-block-aligned copies for compressed formats, but the wrapper's
++ * host-CPU fallback must not assume it either).  Writing a full 4x4 block
++ * straight into the destination with a row stride of imageExtent.width texels
++ * overruns the last row and spills the partial edge columns into the following
++ * rows, corrupting in-bounds texels.  Decode blocks into this 4x4 temporary and
++ * copy only the texels that fall inside the region. */
++static void copy_block_texels(void *mappedDst, int image_stride,
++                              const void *block_texels, int texel_size,
++                              int x, int y, int width, int height) {
++    int copy_width = width - x < 4 ? width - x : 4;
++    int copy_height = height - y < 4 ? height - y : 4;
++
++    for (int i = 0; i < copy_height; i++) {
++        uint8_t *dst_row = (uint8_t *) mappedDst + (y + i) * image_stride
++                           + x * texel_size;
++        const uint8_t *src_row = (const uint8_t *) block_texels
++                                 + i * 4 * texel_size;
++
++        for (int b = 0; b < copy_width * texel_size; b++)
++            dst_row[b] = src_row[b];
++    }
+ }
+ 
+ void BCnDecompression(VkFormat format,
+@@ -54,7 +80,8 @@
+ 
+     int height = regions->imageExtent.height;
+     int width = regions->imageExtent.width;
+-    int dst_stride = texel_size * width;
++    int image_stride = texel_size * width;
++    int dst_stride = texel_size * 4; // decode blocks into a 4x4 temporary
+     int src_stride = block_size * (regions->bufferRowLength ? regions->bufferRowLength : width);
+     if (regions->bufferRowLength != 0 && (width + 3) / 4 * 4 != regions->bufferRowLength) {
+         WLOGE("Texture (fmt=%d) is not tightly packed, block_size = %d, width = %d, bufferRowLength = %d", format, block_size, width, regions->bufferRowLength);
+@@ -84,7 +111,10 @@
+                 continue;
+             }
+ 
+-            void *dstPixelBlock = (uint8_t *) mappedDst + (y * dst_stride) + (x * texel_size);
++            // Decode into a 4x4 temporary and copy only the in-bounds texels;
++            // see copy_block_texels().
++            uint16_t block_texels[4 * 4 * 4]; // 4x4 texels, up to RGBA16F
++            void *dstPixelBlock = block_texels;
+             if (is_masked || (is_watermarked && x < watermark_size && y < watermark_size)) {
+                 for (int i = 0; i < 4; ++i) {
+                     for (int j = 0; j < 4; ++j) {
+@@ -154,6 +184,8 @@
+                     }
+                 }
+ 
++                copy_block_texels(mappedDst, image_stride, dstPixelBlock, texel_size,
++                                  x, y, width, height);
+                 srcDataBlock += block_size;
+                 continue;
+             }
+@@ -250,2 +282,4 @@
+             srcDataBlock += block_size;
++            copy_block_texels(mappedDst, image_stride, dstPixelBlock, texel_size,
++                              x, y, width, height);
+         }

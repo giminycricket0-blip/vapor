@@ -1,0 +1,701 @@
+{
+  "date": "2026-10-22",
+  "scope": "Root-cause and minimal fix for the BC6H image-view (USE_IMAGE_VIEW=1) zero-output defect found by the BC6H differential probe: with the pinned wrapper both BC6H_UFLOAT and BC6H_SFLOAT emulated R16G16B16A16_SFLOAT images stayed zero, while the bc6.comp staging path decoded bit-exactly. The fix binds the internal storage view as VK_FORMAT_R16G16B16A16_UINT (matching bc6.comp's rgba16ui output), bypasses the wrapper's own CreateImageView format-rewrite hook for that internal view, and includes the UINT view format in the emulated image's format list. Verified A/B on llvmpipe emulators: patched candidate decodes BC6H compute-view bit-exactly, pinned baseline still produces zero (negative control). Offscreen transfer-only probe; no app, phone/Adreno or CI result is claimed.",
+  "base_commit": "c5a76582b25ffb924fea255b71101edd88d76fa6",
+  "defect_reference": {
+    "receipt": "docs/evidence/2026-10-22-vulkan-wrapper-bc6h-reference.json",
+    "sha256": "ab9465400766dd8986336164c0820563a8a600c79d163195ae90234dcd8888da",
+    "symptom": "BC6H compute-view runs 0/4096 exact pixels, max ULP 31743/31744, zero-filled readback for candidate and baseline on 4 KB and 16 KB; staging path 4096/4096 exact."
+  },
+  "patch": {
+    "path": "tools/vulkan-wrapper/bc6-image-view.patch",
+    "sha256": "5990d0419d31dfdba68ecadeec152ef75b696b6ccda08e67887f505e871a2e83",
+    "bytes": 4315,
+    "target_base": "pristine 3abf4870 (pinned wrapper source)",
+    "applies_with": "patch -p1 --fuzz=0",
+    "hunks": [
+      "wrapper_device.c: CmdComputeShaderForDecompression - for BC6H originals create the image-view storage view as VK_FORMAT_R16G16B16A16_UINT and create it through wrapper_device_trampolines.CreateImageView so the wrapper CreateImageView hook cannot rewrite it back to SFLOAT.",
+      "wrapper_image.c: emulated BC image creation - keep an explicit view-format list: when the app supplied VkImageFormatListCreateInfo, append R16G16B16A16_UINT for BC6H (viewFormatCount 2); when no list is supplied, synthesize one containing {emulated format, R16G16B16A16_UINT} so the MUTABLE_FORMAT image allows the internal UINT view."
+    ],
+    "content": "--- a/src/vulkan/wrapper/wrapper_device.c\n+++ b/src/vulkan/wrapper/wrapper_device.c\n@@ -1410,11 +1410,21 @@\n    VkDescriptorBufferInfo dstBufferInfo = { 0 };\n \n    if (use_image_view) {\n+      VkFormat storage_view_format = unwrap_vk_format(_device, wimg->original_format);\n+      // BC6H image-view decode: bc6.comp declares an rgba16ui storage image and\n+      // stores raw half-float bit patterns.  Bind the matching 16-bit UINT view\n+      // (same 64-bit compatibility class as the emulated R16G16B16A16_SFLOAT\n+      // image) so the numeric type matches the shader; a SFLOAT view made\n+      // llvmpipe drop the writes.\n+      if (wimg->original_format == VK_FORMAT_BC6H_UFLOAT_BLOCK ||\n+          wimg->original_format == VK_FORMAT_BC6H_SFLOAT_BLOCK) {\n+         storage_view_format = VK_FORMAT_R16G16B16A16_UINT;\n+      }\n       VkImageViewCreateInfo viewCreateInfo = {\n          .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,\n          .image = dstImage,\n          .viewType = VK_IMAGE_VIEW_TYPE_2D,\n-         .format = unwrap_vk_format(_device, wimg->original_format),\n+         .format = storage_view_format,\n          .subresourceRange = {\n             .aspectMask = region->imageSubresource.aspectMask,\n             .baseMipLevel = region->imageSubresource.mipLevel,\n@@ -1425,7 +1435,11 @@\n       };\n       \n       VkImageView dstImageView;\n-      result = WCHECK(CreateImageView((VkDevice) _device, &viewCreateInfo, NULL, &dstImageView));\n+      // Bypass the wrapper's own CreateImageView hook: WRAPPER_CreateImageView rewrites\n+      // views of tracked BC6H emulated images back to the emulated SFLOAT format,\n+      // which would undo the UINT storage view required by bc6.comp's rgba16ui output.\n+      result = wrapper_device_trampolines.CreateImageView(\n+         (VkDevice) _device, &viewCreateInfo, NULL, &dstImageView);\n       if (result != VK_SUCCESS) {\n          return;\n       }\n--- a/src/vulkan/wrapper/wrapper_image.c\n+++ b/src/vulkan/wrapper/wrapper_image.c\n@@ -32,6 +32,7 @@\n \n    VkImageCreateInfo create_info = *pCreateInfo;\n    VkImageFormatListCreateInfo format_list;\n+   VkFormat emulated_view_formats[2];\n    void *pnext_copy = NULL;\n    bool is_depth_stencil_reduced = false;\n    VkFormat original_format = pCreateInfo->format;\n@@ -62,9 +63,20 @@\n       const VkImageFormatListCreateInfo *formats =\n          vk_find_struct_const(create_info.pNext, IMAGE_FORMAT_LIST_CREATE_INFO);\n       if (formats && formats->viewFormatCount) {\n+         // The emulated image is created with MUTABLE_FORMAT because the wrapper\n+         // replaces the app's BC view formats with the emulated one.  BC6H's\n+         // image-view decode path additionally binds an R16G16B16A16_UINT storage\n+         // view (bc6.comp declares an rgba16ui output), so the format list must\n+         // allow that view format as well as the emulated float format.\n+         emulated_view_formats[0] = new_format;\n          format_list = *formats;\n          format_list.viewFormatCount = 1;\n-         format_list.pViewFormats = &new_format;\n+         format_list.pViewFormats = emulated_view_formats;\n+         if (original_format == VK_FORMAT_BC6H_UFLOAT_BLOCK ||\n+             original_format == VK_FORMAT_BC6H_SFLOAT_BLOCK) {\n+            emulated_view_formats[1] = VK_FORMAT_R16G16B16A16_UINT;\n+            format_list.viewFormatCount = 2;\n+         }\n \n          size_t prefix_size = 0;\n          const VkBaseInStructure *node = create_info.pNext;\n@@ -100,6 +112,19 @@\n          } else {\n             create_info.pNext = &format_list;\n          }\n+      } else if (original_format == VK_FORMAT_BC6H_UFLOAT_BLOCK ||\n+                 original_format == VK_FORMAT_BC6H_SFLOAT_BLOCK) {\n+         // No app list: add one so the internal R16G16B16A16_UINT storage view is an\n+         // explicitly allowed view format of the MUTABLE_FORMAT emulated image.\n+         emulated_view_formats[0] = new_format;\n+         emulated_view_formats[1] = VK_FORMAT_R16G16B16A16_UINT;\n+         format_list = (VkImageFormatListCreateInfo) {\n+            .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO,\n+            .pNext = create_info.pNext,\n+            .viewFormatCount = 2,\n+            .pViewFormats = emulated_view_formats,\n+         };\n+         create_info.pNext = &format_list;\n       }\n    }\n \n",
+    "apply_checks": {
+      "pristine_3abf4870_forward": "OK (patch -p1 --fuzz=0)",
+      "pristine_3abf4870_reverse": "OK (patch -p1 --fuzz=0 -R --dry-run)",
+      "staging_source_with_srgb_storage_and_odd_extent_forward": "OK (patch -p1 --fuzz=0 --dry-run)",
+      "stack_after_staging_reclaim_patch": "OK for the wrapper_device.c region (dry-run after applying staging-reclaim.patch to a minimal source copy; that patch also needs wrapper_objects.{h,c} which were not copied)",
+      "stack_after_image_create_patch": "image-create.patch is not forward-applicable to pristine 3abf4870 in this checkout (patch reports it as previously applied/reversed and ignores 3 hunks), so the exact combined order should be checked by the Lead; our patch remains dry-run-clean on that state and overlaps only the wrapper_image.c format-list block that image-create.patch also rewrites.",
+      "device_teardown_and_host_decode_map_patches": "not present in tools/vulkan-wrapper at the time of writing (only image-create, odd-extent, srgb-storage, staging-reclaim, trace-gate were present); touched regions to check when they land: wrapper_device.c CmdComputeShaderForDecompression view-creation/trampoline call, wrapper_image.c emulated-image format-list block."
+    }
+  },
+  "root_cause": {
+    "hypothesis_status": "CONFIRMED with an additional wrapper self-patch layer (the numeric-type mismatch alone is necessary but not sufficient).",
+    "confirmed_evidence": [
+      "bc6.comp line 68 declares `layout(set = 0, binding = 1, rgba16ui) uniform writeonly uimage2D dstImage`; the image-view output stores raw binary16 bit patterns via imageStore at bc6.comp lines 690 and 788.",
+      "wrapper_device.c CmdComputeShaderForDecompression (pristine lines ~1412-1440) created the storage view with `.format = unwrap_vk_format(_device, wimg->original_format)`, which is VK_FORMAT_R16G16B16A16_SFLOAT (enum 97) for BC6H - a numeric type mismatch with the rgba16ui shader output; llvmpipe discards the writes, leaving the emulated image zero-filled.",
+      "Additional layer found with diagnostic logging: after changing the view format to VK_FORMAT_R16G16B16A16_UINT (enum 95), the wrapper's own WRAPPER_CreateImageView (wrapper_image.c ~179-186) rewrote it back to the emulated format. Logcat from the diagnostic build: `BC6H diagnostic: original=143 image=97 view=95` followed by `Patching ImageView format for tracked image from 95 to 97 (original img format: 143)`. The fix therefore bypasses WRAPPER_CreateImageView for this internal storage view via wrapper_device_trampolines.CreateImageView.",
+      "After the bypass the diagnostic run readback sha256 13541bd48e7e68c1... equals the bcdec reference sha256 exactly (32768 bytes, 20576 non-zero); the `Patching ImageView format ... 95 to 97` line no longer appears.",
+      "Format-list handling: wrapper_image.c (pristine lines ~62-101) replaced an app-supplied VkImageFormatListCreateInfo with a single emulated format; under VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT the UINT view must be an allowed view format. The patch appends R16G16B16A16_UINT (and synthesizes a list when the app supplied none; the probe supplies none, so this branch is exercised).",
+      "s3tc/bc7 shaders use rgba8/uimage outputs matched by R8G8B8A8_UNORM views, which is why only BC6H was affected; the BC7 image-view regression below stays bit-exact."
+    ]
+  },
+  "build": {
+    "staging_tree": "/Users/cheng/staging-bc6iv",
+    "provenance": "copy of /Users/cheng/staging-oddextent (pinned 3abf4870 source + srgb-storage.patch + odd-extent.patch) with bc6-image-view.patch applied; build.sh adapted to ROOT=/Users/cheng/staging-bc6iv",
+    "recipe": "Meson cross build from staging-oddextent/build.sh (Android NDK 27.3.13750724, --buildtype release, -Dplatforms=x11, -Dandroid-stub=true, -Dvulkan-drivers=wrapper; ninja target src/vulkan/wrapper/libvulkan_wrapper.so)",
+    "source_files": {
+      "wrapper_device.c": "7080edd558b64571e992b55b2ded22af85062ad75d4f98c5608c854c0569b508",
+      "wrapper_image.c": "dfa3266ab1b56e992b555f0ad3d63debccac6fd607f99c9b88f4ab9c4097a001"
+    },
+    "elf": {
+      "candidate": {
+        "path": "/Users/cheng/staging-bc6iv/wrapper-build/candidate-stripped.so",
+        "sha256": "eb92268a770b1aa832d9760b86085f9420e3a7c9501dc5b143b18ba1cade2238",
+        "bytes": 10700792,
+        "soname": "libvulkan_wrapper.so",
+        "needed_count": 20,
+        "load_align": "0x4000",
+        "exported_global_func_symbols": 2124,
+        "export_set_matches_recorded_staging_candidate": true,
+        "recorded_staging_candidate": {
+          "path": "/Users/cheng/staging-oddextent/wrapper-build-patched/candidate-stripped.so",
+          "sha256": "ce42e9281ae5bb96a2eb8b97d8209e6b4e5ec9687e4262a22010d698b8f89e5b"
+        }
+      },
+      "baseline": {
+        "path": "/Users/cheng/staging-bc6iv/wrapper-build/baseline-stripped.so",
+        "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+        "bytes": 10698760,
+        "note": "pinned unpatched baseline (negative control)"
+      },
+      "unstripped_build": {
+        "path": "/Users/cheng/staging-bc6iv/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+        "bytes": 131381760
+      }
+    },
+    "wrapper_build_dir": "/Users/cheng/staging-bc6iv/wrapper-build",
+    "native_probe_copied_from": "/Users/cheng/staging-oddextent/wrapper-build-patched/native-probe"
+  },
+  "verification": {
+    "emulators": [
+      {
+        "phase": "4 KB",
+        "avd": "VaporProbe36B",
+        "port": 5556,
+        "page_size": 4096,
+        "api": 36,
+        "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
+      },
+      {
+        "phase": "16 KB",
+        "avd": "VaporProbe37K16B",
+        "port": 5566,
+        "page_size": 16384,
+        "api": 37,
+        "fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CE2A.260420.051.A3/16571990:userdebug/dev-keys"
+      }
+    ],
+    "commands": [
+      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5556 --cases bc6h --wrapper-build /Users/cheng/staging-bc6iv/wrapper-build --label bc6iv-4k-bc6h --out /Users/cheng/staging-bc6iv/bc6iv-phase1-4k-bc6h.json --scratch /Users/cheng/staging-bc6iv/scratch-4k-bc6h",
+      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5566 --cases bc6h --wrapper-build /Users/cheng/staging-bc6iv/wrapper-build --label bc6iv-16k-bc6h --out /Users/cheng/staging-bc6iv/bc6iv-phase2-16k-bc6h.json --scratch /Users/cheng/staging-bc6iv/scratch-16k-bc6h",
+      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5556 --cases default --wrapper-build /Users/cheng/staging-bc6iv/wrapper-build --label bc6iv-4k-default --out /Users/cheng/staging-bc6iv/bc6iv-4k-default.json --scratch /Users/cheng/staging-bc6iv/scratch-4k-default",
+      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5556 --cases bc7 --srgb-host-convention linear --wrapper-build /Users/cheng/staging-bc6iv/wrapper-build --label bc6iv-4k-bc7-linear --out /Users/cheng/staging-bc6iv/bc6iv-4k-bc7-linear.json --scratch /Users/cheng/staging-bc6iv/scratch-4k-bc7-linear"
+    ],
+    "ab_4k": [
+      {
+        "run": "bc6h_uf16-candidate-compute-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "bc6h_uf16-candidate-compute-view-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "bc6h_uf16-candidate-host-cpu-copy",
+        "verdict": "pass",
+        "reference_class": "self-consistency-bcdec",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 0,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "bc6h_uf16-baseline-compute-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "bc6h_uf16-baseline-compute-view-copy",
+        "verdict": "fail",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 0,
+        "pixels": 4096,
+        "hard_mismatches": 4096,
+        "max_ulp_delta": 31743,
+        "tolerance_ulp": 1,
+        "readback_sha256": "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479"
+      },
+      {
+        "run": "bc6h_uf16-baseline-host-cpu-copy",
+        "verdict": "pass",
+        "reference_class": "self-consistency-bcdec",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 0,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "system-bc6h_uf16-copy",
+        "verdict": "pass",
+        "reference_class": "transfer-control-compressed",
+        "exact_pixels": null,
+        "pixels": null,
+        "hard_mismatches": 0,
+        "max_ulp_delta": null,
+        "tolerance_ulp": null,
+        "readback_sha256": "07c5b994d60133090f147177f4ea03f6d30e91e69e721dfec9de3f502fe5f8c6"
+      },
+      {
+        "run": "system-bc6h_uf16-blit",
+        "verdict": "pass",
+        "reference_class": "independent-native-llvmpipe-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "bc6h_sfloat-candidate-compute-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"
+      },
+      {
+        "run": "bc6h_sfloat-candidate-compute-view-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"
+      },
+      {
+        "run": "bc6h_sfloat-candidate-host-cpu-copy",
+        "verdict": "pass",
+        "reference_class": "self-consistency-bcdec",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 0,
+        "readback_sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"
+      },
+      {
+        "run": "bc6h_sfloat-baseline-compute-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"
+      },
+      {
+        "run": "bc6h_sfloat-baseline-compute-view-copy",
+        "verdict": "fail",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 0,
+        "pixels": 4096,
+        "hard_mismatches": 4096,
+        "max_ulp_delta": 31744,
+        "tolerance_ulp": 1,
+        "readback_sha256": "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479"
+      },
+      {
+        "run": "bc6h_sfloat-baseline-host-cpu-copy",
+        "verdict": "pass",
+        "reference_class": "self-consistency-bcdec",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 0,
+        "readback_sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"
+      },
+      {
+        "run": "system-bc6h_sfloat-copy",
+        "verdict": "pass",
+        "reference_class": "transfer-control-compressed",
+        "exact_pixels": null,
+        "pixels": null,
+        "hard_mismatches": 0,
+        "max_ulp_delta": null,
+        "tolerance_ulp": null,
+        "readback_sha256": "07c5b994d60133090f147177f4ea03f6d30e91e69e721dfec9de3f502fe5f8c6"
+      },
+      {
+        "run": "system-bc6h_sfloat-blit",
+        "verdict": "pass",
+        "reference_class": "independent-native-llvmpipe-bc6h",
+        "exact_pixels": 4090,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 1,
+        "tolerance_ulp": 1,
+        "readback_sha256": "703d9b1b80a1d1bbc970aac2370ab42e1c0c99d729239b76fb93d8ef5207568b"
+      }
+    ],
+    "ab_16k": [
+      {
+        "run": "bc6h_uf16-candidate-compute-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "bc6h_uf16-candidate-compute-view-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "bc6h_uf16-candidate-host-cpu-copy",
+        "verdict": "pass",
+        "reference_class": "self-consistency-bcdec",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 0,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "bc6h_uf16-baseline-compute-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "bc6h_uf16-baseline-compute-view-copy",
+        "verdict": "fail",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 0,
+        "pixels": 4096,
+        "hard_mismatches": 4096,
+        "max_ulp_delta": 31743,
+        "tolerance_ulp": 1,
+        "readback_sha256": "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479"
+      },
+      {
+        "run": "bc6h_uf16-baseline-host-cpu-copy",
+        "verdict": "pass",
+        "reference_class": "self-consistency-bcdec",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 0,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "system-bc6h_uf16-copy",
+        "verdict": "pass",
+        "reference_class": "transfer-control-compressed",
+        "exact_pixels": null,
+        "pixels": null,
+        "hard_mismatches": 0,
+        "max_ulp_delta": null,
+        "tolerance_ulp": null,
+        "readback_sha256": "07c5b994d60133090f147177f4ea03f6d30e91e69e721dfec9de3f502fe5f8c6"
+      },
+      {
+        "run": "system-bc6h_uf16-blit",
+        "verdict": "pass",
+        "reference_class": "independent-native-llvmpipe-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
+      },
+      {
+        "run": "bc6h_sfloat-candidate-compute-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"
+      },
+      {
+        "run": "bc6h_sfloat-candidate-compute-view-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"
+      },
+      {
+        "run": "bc6h_sfloat-candidate-host-cpu-copy",
+        "verdict": "pass",
+        "reference_class": "self-consistency-bcdec",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 0,
+        "readback_sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"
+      },
+      {
+        "run": "bc6h_sfloat-baseline-compute-copy",
+        "verdict": "pass",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 1,
+        "readback_sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"
+      },
+      {
+        "run": "bc6h_sfloat-baseline-compute-view-copy",
+        "verdict": "fail",
+        "reference_class": "independent-wrapper-compute-bc6h",
+        "exact_pixels": 0,
+        "pixels": 4096,
+        "hard_mismatches": 4096,
+        "max_ulp_delta": 31744,
+        "tolerance_ulp": 1,
+        "readback_sha256": "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479"
+      },
+      {
+        "run": "bc6h_sfloat-baseline-host-cpu-copy",
+        "verdict": "pass",
+        "reference_class": "self-consistency-bcdec",
+        "exact_pixels": 4096,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 0,
+        "tolerance_ulp": 0,
+        "readback_sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"
+      },
+      {
+        "run": "system-bc6h_sfloat-copy",
+        "verdict": "pass",
+        "reference_class": "transfer-control-compressed",
+        "exact_pixels": null,
+        "pixels": null,
+        "hard_mismatches": 0,
+        "max_ulp_delta": null,
+        "tolerance_ulp": null,
+        "readback_sha256": "07c5b994d60133090f147177f4ea03f6d30e91e69e721dfec9de3f502fe5f8c6"
+      },
+      {
+        "run": "system-bc6h_sfloat-blit",
+        "verdict": "pass",
+        "reference_class": "independent-native-llvmpipe-bc6h",
+        "exact_pixels": 4090,
+        "pixels": 4096,
+        "hard_mismatches": 0,
+        "max_ulp_delta": 1,
+        "tolerance_ulp": 1,
+        "readback_sha256": "703d9b1b80a1d1bbc970aac2370ab42e1c0c99d729239b76fb93d8ef5207568b"
+      }
+    ],
+    "summary_4k": {
+      "runs": 19,
+      "pass": 17,
+      "fail": 2,
+      "failing": [
+        "bc6h_uf16-baseline-compute-view-copy",
+        "bc6h_sfloat-baseline-compute-view-copy"
+      ],
+      "explanation": "baseline is the pinned unpatched build: its compute-view path still returns the zero-filled image (negative control). Candidate compute-view is bit-exact for both formats."
+    },
+    "summary_16k": {
+      "runs": 19,
+      "pass": 17,
+      "fail": 2,
+      "failing": [
+        "bc6h_uf16-baseline-compute-view-copy",
+        "bc6h_sfloat-baseline-compute-view-copy"
+      ],
+      "explanation": "same A/B on the 16 KB API 37 emulator."
+    },
+    "candidate_compute_view": {
+      "bc6h_uf16": "4096/4096 exact, max ULP 0",
+      "bc6h_sfloat": "4096/4096 exact, max ULP 0"
+    },
+    "baseline_compute_view": {
+      "bc6h_uf16": "0/4096 exact, max ULP 31743 (zero-filled)",
+      "bc6h_sfloat": "0/4096 exact, max ULP 31744 (zero-filled)"
+    },
+    "unchanged_paths": "candidate/baseline staging compute, host-CPU bcdec self-consistency, native compressed copies and native blit decode all keep their previous results on both page sizes.",
+    "regressions": {
+      "default_matrix_4k": {
+        "payload": "bc6iv-4k-default.json",
+        "runs": 43,
+        "pass": 43,
+        "fail": 0,
+        "note": "s3tc bc1/bc3 compute and compute-view image-view runs are 4096/4096 exact; blit and host-cpu paths unchanged.",
+        "compute_view_and_blit_runs": [
+          {
+            "run": "baseline/compute-view/copy/bc1",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "candidate/compute-view/copy/bc1",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "baseline/compute-view/copy/bc3",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "candidate/compute-view/copy/bc3",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "baseline/compute/blit/bc1",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "baseline/compute-view/blit/bc1",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "candidate/compute/blit/bc1",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "candidate/compute-view/blit/bc1",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "baseline/compute/blit/bc3",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "baseline/compute-view/blit/bc3",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "candidate/compute/blit/bc3",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "candidate/compute-view/blit/bc3",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          }
+        ]
+      },
+      "bc7_image_view_4k": {
+        "payload": "bc6iv-4k-bc7-linear.json",
+        "runs": [
+          {
+            "run": "candidate-compute-view-bc7-copy",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "candidate-compute-view-bc7_srgb-copy",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "candidate-host-cpu-bc7_srgb-copy",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "baseline-compute-view-bc7-copy",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          },
+          {
+            "run": "baseline-compute-view-bc7_srgb-copy",
+            "verdict": "pass",
+            "exact_pixels": 4096,
+            "pixels": 4096,
+            "hard_mismatches": 0,
+            "max_channel_delta": 0
+          }
+        ],
+        "pass": 15,
+        "fail": 1,
+        "failing": [
+          "baseline-host-cpu-bc7_srgb-copy"
+        ],
+        "explanation": "candidate build stacks srgb-storage.patch, so with --srgb-host-convention linear the candidate host-cpu BC7_SRGB path is exact (4096/4096) while the unpatched baseline fails as expected; all BC7 compute/compute-view image-view runs are exact 4096/4096 for candidate and baseline."
+      }
+    }
+  },
+  "findings": [
+    "The Lead's hypothesis is confirmed: the bc6.comp rgba16ui storage-image output was bound to a R16G16B16A16_SFLOAT view (numeric type mismatch), and llvmpipe dropped the writes.",
+    "A second, wrapper-internal cause was required: the wrapper's CreateImageView hook rewrote the internal UINT view back to SFLOAT; the fix must create that view through the raw trampoline (wrapper_device_trampolines.CreateImageView).",
+    "The emulated BC6H image is created with MUTABLE_FORMAT; the wrapper must allow R16G16B16A16_UINT in the image format list (append when supplied, synthesize when absent) for the storage view to be spec-valid.",
+    "Patched candidate BC6H compute-view is bit-exact (4096/4096, max ULP 0) for BC6H_UFLOAT and BC6H_SFLOAT on both 4 KB and 16 KB; the pinned baseline stays zero (negative control), and the bc6.comp staging path plus bc1/bc3/bc7 image-view paths are unchanged.",
+    "The fix deliberately keeps the shader writing raw binary16 bits via rgba16ui rather than switching to rgba16f, avoiding float NaN canonicalisation of BC6H endpoint bit patterns."
+  ],
+  "limitations": [
+    "Software Vulkan only (llvmpipe inside the Android emulator); no phone/Adreno/KGSL or other physical GPU result is claimed.",
+    "No validation layer was loaded. The format-list legality of the UINT view under MUTABLE_FORMAT is reasoned from the Vulkan rules and exercised by llvmpipe, but no VUID validation run is part of this receipt.",
+    "The probe creates its BC images without VkImageFormatListCreateInfo, so the patched \"append UINT to an app-supplied list\" branch is not exercised by these runs; the \"synthesize a list when none is supplied\" branch is exercised (the probe path).",
+    "The staged build includes srgb-storage.patch and odd-extent.patch from staging-oddextent; the BC7 regression therefore uses --srgb-host-convention linear and the unpatched baseline host-cpu BC7_SRGB failure is expected, not a BC6H regression.",
+    "image-create.patch (repo) overlaps the wrapper_image.c emulated-image/format-list region; it was already present/reversed when tested on pristine 3abf4870, so the Lead should confirm the final stacked order. device-teardown/host-decode-map patches were not present yet; touched regions are named above.",
+    "The emulated image-view path is still marked experimental by the wrapper (USE_IMAGE_VIEW opt-in); this fix does not change that status."
+  ],
+  "raw_artifacts": {
+    "staging_root": "/Users/cheng/staging-bc6iv",
+    "payloads": [
+      "/Users/cheng/staging-bc6iv/bc6iv-phase1-4k-bc6h.json",
+      "/Users/cheng/staging-bc6iv/bc6iv-phase2-16k-bc6h.json",
+      "/Users/cheng/staging-bc6iv/bc6iv-4k-default.json",
+      "/Users/cheng/staging-bc6iv/bc6iv-4k-bc7-linear.json"
+    ],
+    "logs": [
+      "/Users/cheng/staging-bc6iv/logs/bc6iv-4k-bc6h.log",
+      "/Users/cheng/staging-bc6iv/logs/bc6iv-16k-bc6h.log",
+      "/Users/cheng/staging-bc6iv/logs/bc6iv-4k-default.log",
+      "/Users/cheng/staging-bc6iv/logs/bc6iv-4k-bc7-linear.log",
+      "/Users/cheng/staging-bc6iv/build-run.log"
+    ],
+    "source_tree": "/Users/cheng/staging-bc6iv/source",
+    "build_tree": "/Users/cheng/staging-bc6iv/build",
+    "wrapper_build": "/Users/cheng/staging-bc6iv/wrapper-build",
+    "emulator_logs": [
+      "/Users/cheng/staging-bc6iv/logs/emulator-4k.log",
+      "/Users/cheng/staging-bc6iv/logs/emulator-16k.log"
+    ],
+    "diagnostic_logcat_quotes_recorded_in_root_cause": "BC6H diagnostic: original=143 image=97 view=95; Patching ImageView format for tracked image from 95 to 97 (original img format: 143); after bypass: readback sha256 == bcdec reference sha256 13541bd48e7e68c1..."
+  },
+  "emulator_cleanup": {
+    "ownership": "port 5556 (VaporProbe36B) and port 5566 (VaporProbe37K16B) only; one emulator at a time; port 5558 belonged to another owner and was never touched",
+    "kill_commands": [
+      "adb -s emulator-5556 emu kill",
+      "adb -s emulator-5566 emu kill"
+    ],
+    "final_state": "our 5556/5566 emulators are gone (no qemu-system for them, no listeners on those ports); adb devices only shows emulator-5558 from another owner"
+  },
+  "no_commit_note": "Nothing committed; nothing submitted upstream. The patch and this receipt are the only artifacts added by this task.",
+  "lead_review_2026-10-22": {
+    "base_tree_correction": "wrapper-build/source.tar.gz is pristine upstream 3abf4870: image-create.patch applies forward to it with patch -p1 --fuzz=0 and does not reverse. The \"already applied\" observation in this receipt came from the staging tree, which is the candidate source (pristine + image-create.patch). The Lead verified on a pristine extraction that image-create -> srgb-storage -> odd-extent -> bc6-image-view applies and reverses cleanly, and that staging-reclaim.patch still stacks on top.",
+    "verified": [
+      "root cause re-read in source: bc6.comp:68 rgba16ui uimage2D output vs SFLOAT storage view; WRAPPER_CreateImageView rewrites tracked-image views to the emulated format (wrapper_image.c:157-160)"
+    ]
+  }
+}
