@@ -17,9 +17,9 @@
   </p>
 </div>
 
-![Vapor Home: a native cover shelf with game selection and controller focus](docs/images/home-landscape.png)
+![Vapor Home: a cover shelf with Steam artwork, the selected game highlighted, and an Open game action](docs/images/ui-2026-10-22-home-landscape.png)
 
-<p align="center"><sub>Native Android interface · Home preview with labeled sample games and installs</sub></p>
+<p align="center"><sub>Native Android interface · Home with public Steam artwork and sample installs, no account connected</sub></p>
 
 Connect Steam, choose a game, and play what your device can handle. Vapor pairs a Steam / Big Picture-inspired interface with local Windows-game execution through Wine/Proton, FEX or Box64 CPU translation, and your choice of Vulkan drivers: system, bundled wrappers or custom Turnip. Graphics selection can be automatic. Snapdragon devices are the first qualification target.
 
@@ -36,9 +36,20 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 - **Your controls.** Touch gamepad, RTS and FPS layouts, keyboard/mouse bindings, and an in-game Vapor menu. New supported-store shortcuts start with a **60 FPS limit**; existing choices are preserved.
 - **Official Steam pages when needed.** Checkout, Wishlist, Community, guides, and Workshop browsing open in a dedicated modal web panel. Web install links return to the native game page. Shared web sign-in is implemented; live authentication and payment flows still need qualification.
 
-![Vapor game page with Play, Manage, Settings, Cloud Saves and Achievements](docs/images/game-page-landscape.png)
+![Vapor game page with a gradient Play button, Manage, Settings, Cloud Saves and Achievements over Helltaker artwork](docs/images/ui-2026-10-22-game-page-landscape.png)
 
-<p align="center"><sub>Native game-page preview · Sample Helltaker play history, not a live account result</sub></p>
+<p align="center"><sub>Game page · Sample Helltaker play history, not a live account result</sub></p>
+
+<table>
+  <tr>
+    <td align="center" width="50%"><img src="docs/images/ui-2026-10-22-library-landscape.png" alt="Library grid with Steam cover art, rounded cards, install-status chips and a focused card halo"></td>
+    <td align="center" width="50%"><img src="docs/images/ui-2026-10-22-downloads-landscape.png" alt="Downloads queue with a game header image, a rounded progress bar and tonal Pause and Cancel buttons"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Library · install status at a glance, controller focus halo</sub></td>
+    <td align="center"><sub>Downloads · sample progress, no transfer running</sub></td>
+  </tr>
+</table>
 
 <details>
 <summary><strong>Portrait layouts and phone gameplay</strong></summary>
@@ -47,14 +58,20 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 
 <table>
   <tr>
-    <td align="center" width="50%"><img src="docs/images/store-portrait.png" alt="Vapor Steam Store with compact search and category selectors" width="280"></td>
-    <td align="center" width="50%"><img src="docs/images/game-page-portrait.png" alt="Vapor game page in portrait orientation with sample play history" width="280"></td>
+    <td align="center" width="25%"><img src="docs/images/ui-2026-10-22-home-portrait.png" alt="Home in portrait with a large focused cover and full-width Open game button" width="200"></td>
+    <td align="center" width="25%"><img src="docs/images/ui-2026-10-22-library-portrait.png" alt="Library in portrait with a two-column cover grid" width="200"></td>
+    <td align="center" width="25%"><img src="docs/images/ui-2026-10-22-game-page-portrait.png" alt="Game page in portrait with play stats and actions at the bottom" width="200"></td>
+    <td align="center" width="25%"><img src="docs/images/ui-2026-10-22-downloads-portrait.png" alt="Downloads queue in portrait with downloading, paused and completed games" width="200"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Public Steam catalog in the signed-out app</sub></td>
-    <td align="center"><sub>Portrait game page with sample data</sub></td>
+    <td align="center"><sub>Home</sub></td>
+    <td align="center"><sub>Library</sub></td>
+    <td align="center"><sub>Game page</sub></td>
+    <td align="center"><sub>Downloads</sub></td>
   </tr>
 </table>
+
+<p align="center"><sub>Captured on an Android 16 emulator (1080×2400, 420 dpi) from the production Compose components with public Steam artwork and sample state. The earlier <a href="docs/images/store-portrait.png">signed-out Store capture</a> shows the live catalog.</sub></p>
 
 ![Helltaker running on the Xiaomi 17 Pro with Vapor touch controls](docs/images/helltaker-xiaomi.jpg)
 
@@ -63,6 +80,13 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 </details>
 
 ## Latest development work
+
+**22 October: a more modern look.** Rounded cover cards with a soft controller-focus
+halo, tinted per-game placeholders when artwork is missing, install-status chips, a
+gradient Play button, pill-shaped tabs, smooth progress bars, tonal buttons, and real
+bold display type (Bricolage Grotesque) for titles. Behaviour, navigation and
+controller handling are unchanged; 40 instrumented UI tests pass.
+[Screenshots above](#the-experience) · [UI notes](docs/UI-UX.md#modern-visual-refresh--22-october-2026).
 
 **21–22 October: the graphics stack and the build itself got test benches.**
 

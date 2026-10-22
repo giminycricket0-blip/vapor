@@ -1,12 +1,54 @@
 # Vapor: UI and app work first
 
-Updated 21 October 2026. Home and the Library carousel now share a native cover shelf,
+Updated 22 October 2026 with a [modern visual refresh](#modern-visual-refresh--22-october-2026).
+Home and the Library carousel now share a native cover shelf,
 with selection and game actions in place. Store search suppresses repeated spelling prompts
 and preserves the current results during connection recovery. Branding uses the same artwork in the standard
 APK and native shell. The preceding passes improve page navigation, Home,
 Downloads and Quick Access with consistent spacing and reachable large-text actions. Steam remains
 the main experience; optional storefronts remain in Settings → More stores. Gameplay reports and
 account qualification remain separately recorded in [QUALIFICATION.md](QUALIFICATION.md).
+
+## Modern visual refresh — 22 October 2026
+
+A presentation-only pass over the shared theme and the four main screens. Navigation,
+focus order, controller handling, callbacks and strings are unchanged.
+
+- **Theme.** Titles and headings use the bundled Bricolage Grotesque in real weights
+  (bold through extra-bold, slightly tightened), so headings have true weight instead
+  of the single Inter Medium face. Body and label text stay on Inter. The Material
+  shape scale moves from 2–4 dp to 6–24 dp. Play is a brighter green (`#3FA83A`)
+  with a highlight/shade pair for the gradient.
+- **Focus.** `controllerFocusGlow` now draws a soft accent halo outside the control
+  (layered strokes, no `RenderEffect`, the same cost on every API level) plus the crisp
+  inset ring, so focus reads from couch distance. The same helpers draw the cover-card
+  focus.
+- **Cover cards.** 12 dp corners and a larger focus lift. When artwork is missing,
+  loading or failed, a per-game tinted gradient shows the title, so offline shelves
+  stay readable; real artwork draws over it. Install state is a pill with a status dot.
+- **Game page.** A gradient Play button with 16 dp corners. Secondary actions and stat
+  chips are frosted tonal glass over the hero art instead of dark outlined boxes.
+- **Header and Library.** The selected tab gets an accent pill and a short rounded
+  indicator; the Library's All/Installed control is a segmented pill.
+- **Downloads.** Rounded cards with a gradient artwork slot, a continuous rounded
+  progress bar (no segment gap or end stop) and tonal Pause/Resume/Cancel buttons.
+
+**Verification.**
+- A new JVM gallery (`VaporUiGalleryTest`, Robolectric native graphics) renders
+  Home, Library, game page and Downloads in landscape and portrait for before/after
+  review, in about 20 seconds.
+- On the API 36 / 4 KB emulator, all 40 existing instrumented UI tests pass,
+  including controller focus, A/B activation and large-text reachability: Home 10,
+  Library 7, game page 12, Downloads 11.
+- `ReadmeScreenshotsTest` produced the README images from the production components,
+  with public Steam artwork and sample state; no account, transfer or launch was involved.
+- Separately, seven Steam-controller and window-input test classes were pinned to
+  Robolectric SDK 28, below the app's `minSdk 29`, so they could never load the app.
+  Repinned to 29, their 32 tests run and pass.
+
+These are emulator renders, not phone captures. Physical-phone legibility and focus
+visibility at handheld distance remain part of the phone pass.
+[UI refresh receipt](evidence/2026-10-22-ui-refresh.json).
 
 ## Community reports — 21 October 2026
 

@@ -1,0 +1,154 @@
+{
+  "date": "2026-10-22",
+  "scope": "Presentation-only modern visual refresh of the shared theme, focus treatment, cover cards, game page, header/library tabs and downloads; README screenshot set and GitHub social card.",
+  "base_commit": "7760d3e283ae222000cd0b915e0f13cb6e8bb3ae",
+  "changed_sources": {
+    "app/src/main/shared/theme/WinNativeTheme.kt": "c961ffaf220f5c06208287bc4e6a4d0f582858d22fceb947afe60ad9147e9e32",
+    "app/src/main/shared/ui/focus/ControllerMenuModifiers.kt": "63114b74e46a991c1a7e4b37328f642980a3940b38fefe753799ffee4b91fbac",
+    "app/src/main/app/shell/UnifiedActivityStores.kt": "c8941194013de00fd56fdc6f111322d811efba0b9951477ea6fa8b08862e3941",
+    "app/src/main/app/shell/LibraryGameLaunchScreen.kt": "df201f318b19b5b81e4231fc054312d712752bc23e138f0adff434aca1c622fe",
+    "app/src/main/app/shell/VaporHomeScreen.kt": "fc841e10a0645977c17f839a9076b9979a74882da2a2eaf1fcdd53f7dbfd6c8a",
+    "app/src/main/app/shell/VaporHeader.kt": "1b7733b7e592acaf5d46cd89fccfa528ed38cb49c2f4b75f2faa7c8ea323f748",
+    "app/src/main/app/shell/VaporGamingUI.kt": "7e0a8f71acaa05ec9d01e5e04f0f09d1dbde5ea095ab297ac9766d3f9752deb7",
+    "app/src/main/app/shell/DownloadQueueCard.kt": "284c5327d3d3131d288f4ca7d3275ac6388826b3fbab74432ba038c5272fb9e1",
+    "app/src/main/app/shell/UnifiedActivityDownloads.kt": "d9908b4b63a9a998923450fa9d7a8428a2a5846f1f400a2400c2b1b17b61aa50",
+    "app/src/test/kotlin/com/winlator/cmod/app/shell/VaporUiGalleryTest.kt": "794ba9bc697fa8079ce907bac2c8661e77f41c8820440b83639729b690dcff87",
+    "app/src/androidTest/kotlin/com/winlator/cmod/app/shell/ReadmeScreenshotsTest.kt": "02312fe0ae59f0bf7b9af8501f188f398fbb1d731455f2a17388168c1b238b59"
+  },
+  "behaviour_unchanged": "No navigation, focus order, controller mapping, callback, string or data change. Shapes, colours, typography and drawing only.",
+  "apk": {
+    "path": "app/build/outputs/apk/standard/debug/standard.apk",
+    "bytes": 684939980,
+    "sha256": "6fbd648bb867628e72783fc555642293cd0dd61a8b52ba3d19ad3a0b5f77dc0a",
+    "signing": "debug",
+    "note": "Development artifact, not committed."
+  },
+  "jvm_tests": {
+    "command": "./gradlew :app:testStandardDebugUnitTest",
+    "tests": 508,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "includes": "VaporUiGalleryTest (8 renders) and 32 Steam-controller/window-input tests that previously could not run"
+  },
+  "sdk_pin_fix": {
+    "files": 7,
+    "change": "@Config(sdk = [28]) -> [29]",
+    "reason": "Robolectric refused to load the app package because minSdk is 29 (\"Requires newer sdk version #29\"); 32 tests failed before any assertion ran. After repinning, all pass."
+  },
+  "instrumented_tests": {
+    "device": "VaporProbe36A emulator, Android 16/API 36 ARM64, 4 KB pages, 1080x2400 @420dpi, software Vulkan (lavapipe)",
+    "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+    "apk_sha256": "6fbd648bb867628e72783fc555642293cd0dd61a8b52ba3d19ad3a0b5f77dc0a",
+    "result": "44/44 pass",
+    "classes": {
+      "HomeUiTest": 10,
+      "LibraryViewUiTest": 7,
+      "LibraryGamePageUiTest": 12,
+      "DownloadQueueUiTest": 11,
+      "ReadmeScreenshotsTest": 4
+    },
+    "note": "An earlier 40/40 run used an APK built before the Library segmented-tab change; this final run supersedes it."
+  },
+  "readme_images": {
+    "docs/images/ui-2026-10-22-home-landscape.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/landscape/home.png",
+      "source_sha256": "1cb6b1895f32ae7f9112a5b1aaba768c7cdb5d7b4149580ec7c8aa7f49756e58",
+      "sha256": "b27d2b68ec45c4381e188a2d6bc6dfe2f3efe2a13399a4a7ae8be3371be22b5c",
+      "bytes": 789052,
+      "size": [
+        1600,
+        636
+      ]
+    },
+    "docs/images/ui-2026-10-22-library-landscape.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/landscape/library.png",
+      "source_sha256": "8462c000266fc1a3d120a06d1fee8a10484eca956d45c87031dd42804107a9c7",
+      "sha256": "bcd7c028a54a6093775bac6716bed20684c92ae77d74cd2b1a74745090f526e0",
+      "bytes": 878292,
+      "size": [
+        1600,
+        636
+      ]
+    },
+    "docs/images/ui-2026-10-22-game-page-landscape.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/landscape/game-page.png",
+      "source_sha256": "be4ed9652b2ff3e21e0af8dd2f560fbd83adf15e90edc917e06e9170a999a2f5",
+      "sha256": "4a799c829a4d670ca22a59f1291c72b6dd649bfb1c3fa4b955641a0bfe3ad09f",
+      "bytes": 567964,
+      "size": [
+        1600,
+        636
+      ]
+    },
+    "docs/images/ui-2026-10-22-downloads-landscape.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/landscape/downloads.png",
+      "source_sha256": "fb1b62441642b316b1653c3157a013f91cf86d8b590bdabd8fdcba36001c9814",
+      "sha256": "4e363cf3eb45092b2781ed123d9ac7690bcc0408eb69f08bdd41a74c4aa216a1",
+      "bytes": 146615,
+      "size": [
+        1600,
+        636
+      ]
+    },
+    "docs/images/ui-2026-10-22-home-portrait.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/portrait/home.png",
+      "source_sha256": "375a90b3d7e8a65d4da16cd79fe66d3d773d7129cfbdb2bf40403dde063ee6b2",
+      "sha256": "61cc9cd5374e20985e420cfb6517db6f2c44a11f48872fd63fc2cb0e8b1ea01b",
+      "bytes": 625052,
+      "size": [
+        720,
+        1473
+      ]
+    },
+    "docs/images/ui-2026-10-22-library-portrait.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/portrait/library.png",
+      "source_sha256": "848199cde4026f58d77863cf7796b0ea34eff7225807a578388382d66d48d09c",
+      "sha256": "949ac5a41c73d547724239593d781f9a565411fb33bf010c499389c656e92b9e",
+      "bytes": 1024837,
+      "size": [
+        720,
+        1473
+      ]
+    },
+    "docs/images/ui-2026-10-22-game-page-portrait.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/portrait/game-page.png",
+      "source_sha256": "d09a34b6500b1fa12cede5ff3baab5279544b83eaa89edb6b4435117b2cab717",
+      "sha256": "d91739db3e0da6e168578f163036ddef207bf444bda420877986a964b64e59a2",
+      "bytes": 178753,
+      "size": [
+        720,
+        1473
+      ]
+    },
+    "docs/images/ui-2026-10-22-downloads-portrait.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/portrait/downloads.png",
+      "source_sha256": "dba1d3c32638775aea3e25317b60154f86acc8916bb3d763ff722872d727670f",
+      "sha256": "9fda04684a76fd679f75cd2098bba8b0073217254d51c6fd084b51dc4052b47e",
+      "bytes": 290018,
+      "size": [
+        720,
+        1473
+      ]
+    },
+    "docs/images/social-preview.png": {
+      "sha256": "26cfdae8fad8bc7feaa9beb8082b0265102098ea2a00432079e086a1000f4b84",
+      "bytes": 268309,
+      "size": [
+        1280,
+        640
+      ]
+    }
+  },
+  "image_processing": "Downscaled (Lanczos) to 1600 px landscape / 720 px portrait width and PNG-optimised; no other edits. Landscape captures used a 2400x1080 wm size override because rotation settings did not apply to the test activity.",
+  "image_sources": "Public Steam CDN catalog artwork loaded through the app image loader; Helltaker library_hero.jpg staged for the game-page hero. Sample install, progress and play-history state. No account, purchase, transfer or game launch.",
+  "social_preview": {
+    "path": "docs/images/social-preview.png",
+    "upload": "Manual: GitHub repository Settings -> General -> Social preview (no REST API exists)."
+  },
+  "limitations": [
+    "Emulator renders only; physical-phone legibility and focus visibility at handheld distance are not checked.",
+    "Store, Settings, Friends/Chat and in-game drawer were not restyled beyond what the shared theme shapes and focus helper change.",
+    "Before/after JVM gallery images are kept in /Users/cheng/vapor-scratch/ui-modernise (before/, after-device/), not committed."
+  ]
+}
