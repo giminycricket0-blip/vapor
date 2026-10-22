@@ -1,0 +1,739 @@
+{
+  "date": "2026-10-22",
+  "task": "task-29",
+  "subject": "Final full-stack wrapper build + regression across every probe family",
+  "base_commit": "fd92d8b283a3a5276e323e56e222b8901d335dc8",
+  "base_branch": "Vapor",
+  "scope": "Apply the complete bionic-vulkan-wrapper patch stack (image-create, srgb-storage, odd-extent, device-teardown, host-decode-map, bc6-image-view) to a fresh pristine extraction of wrapper-build/source.tar.gz, verify apply/reverse and staging-reclaim stackability, build with the recorded Meson/NDK recipe in /Users/cheng/staging-stack, verify ELF identity against the recorded candidate, stage a wrapper-build-style directory, and run every probe family with the current tools on a 4 KB API 36 emulator (VaporProbe36A, port 5558) plus the core set on a 16 KB API 37 emulator (VaporProbe37K16A, port 5568). No commit, nothing upstream.",
+  "base_tree": {
+    "statement": "wrapper-build/source.tar.gz is the PRISTINE upstream 3abf48704a4d9303967a0811c0dc8ff8567d613b tree. The \"candidate\" build used by all of today's patches is pristine + image-create.patch; every patch in this receipt was applied to a fresh extraction of the pristine archive (never to the already-candidate staging tree).",
+    "archive": {
+      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source.tar.gz",
+      "sha256": "fe1f7e32f0c4b151f74b252ffda3f3561d56df96e3b17863f66c89b01b698f3d",
+      "bytes": 47251711
+    },
+    "archive_top_level": "bionic-vulkan-wrapper-3abf48704a4d9303967a0811c0dc8ff8567d613b/",
+    "source_version": "24.2.5",
+    "extraction_root": "/Users/cheng/staging-stack/source (flattened extraction)"
+  },
+  "patch_stack": {
+    "working_order": [
+      "image-create.patch",
+      "srgb-storage.patch",
+      "odd-extent.patch",
+      "device-teardown.patch",
+      "host-decode-map.patch",
+      "bc6-image-view.patch"
+    ],
+    "patches": [
+      {
+        "name": "image-create.patch",
+        "path": "tools/vulkan-wrapper/image-create.patch",
+        "sha256": "f085ea3cfbdf3a5fd8463836564c495e310fc5ecb5cdd064bbbe79af645737bd",
+        "bytes": 6662,
+        "lines": 153,
+        "hunks": 3,
+        "files": [
+          "src/vulkan/wrapper/wrapper_image.c"
+        ]
+      },
+      {
+        "name": "srgb-storage.patch",
+        "path": "tools/vulkan-wrapper/srgb-storage.patch",
+        "sha256": "042dd50b05e24d658cc782218a0931926a068c21da02c7dabf276908c2782128",
+        "bytes": 3262,
+        "lines": 86,
+        "hunks": 2,
+        "files": [
+          "src/vulkan/wrapper/bcdec.c"
+        ]
+      },
+      {
+        "name": "odd-extent.patch",
+        "path": "tools/vulkan-wrapper/odd-extent.patch",
+        "sha256": "aa1e29961085059bf57c627b044c1235fc308b0faf40fd17d97ed0ed13da0fed",
+        "bytes": 3226,
+        "lines": 71,
+        "hunks": 5,
+        "files": [
+          "src/vulkan/wrapper/bcdec.c"
+        ]
+      },
+      {
+        "name": "device-teardown.patch",
+        "path": "tools/vulkan-wrapper/device-teardown.patch",
+        "sha256": "03b23f9696e83d0990fc1dc28e8d89f8fd82d1fbb994f0c87fd42624b3405a16",
+        "bytes": 5236,
+        "lines": 108,
+        "hunks": 6,
+        "files": [
+          "src/vulkan/wrapper/wrapper_device.c"
+        ]
+      },
+      {
+        "name": "host-decode-map.patch",
+        "path": "tools/vulkan-wrapper/host-decode-map.patch",
+        "sha256": "363a8da756bc11e18c1e33a4692ed19c605d0b9ca1984daca9bd1e2b3da78230",
+        "bytes": 14957,
+        "lines": 342,
+        "hunks": 13,
+        "files": [
+          "src/vulkan/wrapper/wrapper_device.c",
+          "src/vulkan/wrapper/wrapper_device_memory.c",
+          "src/vulkan/wrapper/wrapper_objects.h"
+        ]
+      },
+      {
+        "name": "bc6-image-view.patch",
+        "path": "tools/vulkan-wrapper/bc6-image-view.patch",
+        "sha256": "5990d0419d31dfdba68ecadeec152ef75b696b6ccda08e67887f505e871a2e83",
+        "bytes": 4315,
+        "lines": 90,
+        "hunks": 5,
+        "files": [
+          "src/vulkan/wrapper/wrapper_device.c",
+          "src/vulkan/wrapper/wrapper_image.c"
+        ]
+      }
+    ],
+    "staging_reclaim": {
+      "patch": {
+        "name": "staging-reclaim.patch",
+        "path": "tools/vulkan-wrapper/staging-reclaim.patch",
+        "sha256": "c92b69ebbbf244c74d05455e1bfff3da0c0aaff94bbd8a75ab4dc4f6308a6568",
+        "bytes": 12813
+      },
+      "dry_run_on_full_stack": {
+        "exit_code": 0,
+        "touches": [
+          "src/vulkan/wrapper/wrapper_objects.h",
+          "src/vulkan/wrapper/wrapper_objects.c",
+          "src/vulkan/wrapper/wrapper_device.c"
+        ],
+        "result": "applies cleanly on top of the full 6-patch stack with patch -p1 --fuzz=0 --dry-run; it is a separate experiment and is NOT part of the regression build",
+        "log": "/Users/cheng/staging-stack/logs/staging-reclaim-dryrun.log",
+        "log_sha256": "5f7fbed3ed12a64c92690d5eb9fd021fcb00ab97b2ad371a5170f8f568ae96c2"
+      }
+    },
+    "apply": {
+      "result": "all six patches applied forward with patch -p1 --fuzz=0, no fuzz, no rejects",
+      "method": "patch -p1 --fuzz=0 < tools/vulkan-wrapper/<name>.patch, in working_order"
+    },
+    "reverse": {
+      "result": "the whole stack reverses cleanly in the exact reverse order (bc6-image-view, host-decode-map, device-teardown, odd-extent, srgb-storage, image-create), no fuzz, no rejects",
+      "note": "a naive per-patch dry-run of the reverse chain fails on the overlapping files (bcdec.c, wrapper_image.c) unless the later patches are actually reversed first, because patch --dry-run does not mutate the tree; the verified check reversed them for real, confirmed the pristine markers (the commented-out unmap TODO in wrapper_device.c and no sRGB changes in bcdec.c), then re-applied forward and compared sha256 of all five touched files before/after (identical)."
+    }
+  },
+  "build": {
+    "scratch_root": "/Users/cheng/staging-stack",
+    "source_dir": "/Users/cheng/staging-stack/source",
+    "build_dir": "/Users/cheng/staging-stack/build",
+    "recipe": {
+      "meson": "meson setup build source --cross-file <wrapper-build>/android.ini --native-file <codex>/native.ini --buildtype release --prefix=/usr -Dplatforms=x11 -Dplatform-sdk-version=34 -Dandroid-stub=true -Dvulkan-drivers=wrapper -Dgallium-drivers= -Dglx=disabled -Degl=disabled -Dgbm=disabled -Dllvm=disabled -Dopengl=false -Dandroid-libbacktrace=disabled -Dxmlconfig=disabled",
+      "configure_defines": "-Dc_args=['-D__TERMUX__','-include','fcntl.h'] -Dcpp_args=['-D__TERMUX__','-include','fcntl.h','-Wno-c++11-narrowing']",
+      "configure_link": "-Dc_link_args=['-Wl,-z,max-page-size=16384','-Wl,-z,common-page-size=16384','-L<termuxfs>/data/data/com.termux/files/usr/lib','-L<wrapper-build>/hooks','-Wl,-rpath-link=<termuxfs>/data/data/com.termux/files/usr/lib','-ladrenotools','-landroid-shmem'] -Dcpp_link_args=[...same...,'-lc++_shared']",
+      "ninja": "ninja -C build -j4 src/vulkan/wrapper/libvulkan_wrapper.so",
+      "toolchain": {
+        "ndk": "27.3.13750724 (r27d), clang 18.0.4",
+        "meson": "1.9.1",
+        "ninja": "1.10.2"
+      },
+      "pkg_config_libdir": "<codex>/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/pkgconfig",
+      "build_inputs_note": "The pristine archive does not contain the prebuilt SPIRV-Tools static archives that the recorded recipe copies into src/vulkan/wrapper/lib/; they were copied from the recorded pinned build tree exactly as the release recipe does (copy mesa_bionic/src/vulkan/wrapper/lib/*.a). The files are build inputs only, not patched source.",
+      "spirv_tools_archives": [
+        {
+          "file": "src/vulkan/wrapper/lib/libSPIRV-Tools-opt.a",
+          "sha256": "29f201bef4920013049d19cce334cce915196feb6c8e386641f02def8ec5eebd"
+        },
+        {
+          "file": "src/vulkan/wrapper/lib/libSPIRV-Tools.a",
+          "sha256": "f71b46d46110cf1d894a81faac47188aa4cdec4366217c2f41b7646788512dcf"
+        }
+      ]
+    },
+    "result": {
+      "targets": "471/471",
+      "errors": 0,
+      "warnings_in_touched_files": "none new (pre-existing wrapper warnings only)",
+      "lib_unstripped": {
+        "path": "/Users/cheng/staging-stack/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+        "sha256": "69dac4c99994e9fc48e868316e43b28f5a9fd11baeccfd731925debc72ab7d61",
+        "bytes": 131386736
+      },
+      "candidate_stripped": {
+        "path": "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
+        "sha256": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
+        "bytes": 10704784
+      }
+    },
+    "logs": {
+      "setup": "/Users/cheng/staging-stack/setup.log sha256 7c7e2425343440cf2e30369ac4d359735a8959ab0e736664b8f2e1d75fe655fa",
+      "build": "/Users/cheng/staging-stack/build.log sha256 87dd72b3e2eef5527229283c08b8723477e32e0eb6098b8ee5fd8408be4e1ae0"
+    }
+  },
+  "elf_check": {
+    "compared_against": "recorded candidate /Users/cheng/Documents/.../turnip-refactor-qualification/wrapper-build/candidate-stripped.so sha256 574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+    "soname": "libvulkan_wrapper.so",
+    "needed_count": 20,
+    "needed_list": [
+      "libadrenotools.so",
+      "libandroid-shmem.so",
+      "libc++_shared.so",
+      "libcutils.so",
+      "liblog.so",
+      "libnativewindow.so",
+      "libsync.so",
+      "libz.so.1",
+      "libm.so",
+      "libzstd.so.1",
+      "libxcb.so",
+      "libX11-xcb.so",
+      "libxcb-dri3.so",
+      "libxcb-present.so",
+      "libxcb-sync.so",
+      "libxcb-randr.so",
+      "libxcb-shm.so",
+      "libdrm.so",
+      "libdl.so",
+      "libc.so"
+    ],
+    "load_alignments": [
+      "0x4000"
+    ],
+    "export_count": 4073,
+    "export_set_identical_to_recorded_candidate": true,
+    "elf_log": "/Users/cheng/staging-stack/logs-elf.txt sha256 1f86d286c8d40ef44643e6c717ebe7248fbd19c8f3ed3efd0cad64f654d29ecc"
+  },
+  "staged_build": {
+    "path": "/Users/cheng/staging-stack/wrapper-build-patched",
+    "layout": "candidate.so (full stack, unstripped) + candidate-stripped.so + baseline-stripped.so (recorded pinned baseline 2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c) + native-probe/ (pinned auxiliary libraries from the recorded wrapper-build tree) + STAGED.json",
+    "candidate_sha256": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
+    "baseline_sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+    "staged_identity": {
+      "path": "/Users/cheng/staging-stack/wrapper-build-patched/STAGED.json",
+      "sha256": "a2eb17f9f8cb652efd86994dc98032fda10716cbf99e38c6e72124dfb3e633f0"
+    }
+  },
+  "tools": {
+    "reference": {
+      "path": "tools/tests/vulkan-wrapper-reference.py",
+      "sha256": "abdfbb614cc3b506f6780ba93deeb82cc5d9f144d1f73b954d4e4e2481665bf7"
+    },
+    "render": {
+      "path": "tools/tests/vulkan-wrapper-render.py",
+      "sha256": "8aee1d604bb5b955b59765ebcd955cd428dde256ab58c96867c8453a8d7feff1"
+    },
+    "fixture": {
+      "path": "tools/tests/vulkan-wrapper-reference.c",
+      "sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664"
+    },
+    "render_fixture": {
+      "path": "tools/tests/vulkan-wrapper-render.c",
+      "sha256": "ceefed85f21bf53c2dba74943a9ac5f79d42aca828eadb219b6cb3c40890279a"
+    },
+    "note": "used read-only; hashes are the concurrent-team versions observed at run time (the tools are being edited by teammates)."
+  },
+  "emulators": {
+    "4k": {
+      "avd": "VaporProbe36A",
+      "serial": "emulator-5558",
+      "port": 5558,
+      "page_size": 4096,
+      "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+      "boot": "emulator -avd VaporProbe36A -port 5558 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 2"
+    },
+    "16k": {
+      "avd": "VaporProbe37K16A",
+      "serial": "emulator-5568",
+      "port": 5568,
+      "page_size": 16384,
+      "fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CE2A.260420.051.A3/16571990:userdebug/dev-keys",
+      "boot": "emulator -avd VaporProbe37K16A -port 5568 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 2"
+    },
+    "isolation": "emulators were run sequentially (one at a time); ports 5558 and 5568 only. Port 5562 (staging-review) was never touched."
+  },
+  "families": {
+    "4k_default": {
+      "artifact": "/Users/cheng/staging-stack/raw/4k-default.json",
+      "sha256": "83a8f23600b65e4ce2a4759c7e8a9a6d48818da8d97c70156987508249ab150c",
+      "summary_line": "runs: 43 pass / 0 fail (default matrix) + 0 extended pass / 0 fail / 0 recorded",
+      "case_table": {
+        "default": {
+          "system/pass": 9,
+          "baseline/pass": 17,
+          "candidate/pass": 17
+        }
+      },
+      "fails": []
+    },
+    "4k_extended_encoded": {
+      "artifact": "/Users/cheng/staging-stack/raw/4k-extended.json",
+      "sha256": "8c71378eb5819c4290f716ec1409fb6b4268cc0678f3294e4e12632176f69191",
+      "planned_line": "[07:24:08] extended matrix: 94 planned runs across 6 cases",
+      "case_table": {
+        "default": {
+          "system/pass": 1,
+          "baseline/pass": 1,
+          "candidate/pass": 1
+        },
+        "odd-extents": {
+          "candidate/recorded": 24,
+          "system/pass": 8
+        },
+        "partial-region": {
+          "system/pass": 3,
+          "baseline/pass": 1,
+          "candidate/pass": 7
+        },
+        "mips-layers": {
+          "system/pass": 3,
+          "baseline/pass": 1,
+          "candidate/pass": 7
+        },
+        "srgb": {
+          "system/pass": 3,
+          "candidate/pass": 5,
+          "candidate/fail": 2,
+          "baseline/pass": 7
+        },
+        "bc4-bc5": {
+          "system/pass": 4,
+          "candidate/pass": 8,
+          "baseline/pass": 2
+        },
+        "depth-reduce": {
+          "candidate/pass": 4,
+          "candidate/recorded": 4,
+          "system/pass": 1
+        }
+      },
+      "fails": [
+        {
+          "name": "bc1_srgb-candidate-host-cpu",
+          "target": "candidate",
+          "case": "srgb",
+          "config": "host-cpu",
+          "format": "bc1_srgb",
+          "reasons": [
+            "2293 mismatch unit(s) exceed the 2-LSB tolerance"
+          ]
+        },
+        {
+          "name": "bc3_srgb-candidate-host-cpu",
+          "target": "candidate",
+          "case": "srgb",
+          "config": "host-cpu",
+          "format": "bc3_srgb",
+          "reasons": [
+            "4096 mismatch unit(s) exceed the 2-LSB tolerance"
+          ]
+        }
+      ],
+      "note": "default encoded host-convention: the two candidate sRGB host-cpu failures are the expected convention split introduced by srgb-storage.patch, not regressions (see 4k_extended_linear)."
+    },
+    "4k_extended_linear": {
+      "artifact": "/Users/cheng/staging-stack/raw/4k-extended-linear.json",
+      "sha256": "0c6564462e71c76322ab1dcb3127daad4aa7d8016935ae439133c6d9bce218f3",
+      "planned_line": "[07:25:16] extended matrix: 94 planned runs across 6 cases",
+      "case_table": {
+        "default": {
+          "system/pass": 1,
+          "baseline/pass": 1,
+          "candidate/pass": 1
+        },
+        "odd-extents": {
+          "candidate/recorded": 24,
+          "system/pass": 8
+        },
+        "partial-region": {
+          "system/pass": 3,
+          "baseline/pass": 1,
+          "candidate/pass": 7
+        },
+        "mips-layers": {
+          "system/pass": 3,
+          "baseline/pass": 1,
+          "candidate/pass": 7
+        },
+        "srgb": {
+          "system/pass": 3,
+          "candidate/pass": 7,
+          "baseline/pass": 5,
+          "baseline/fail": 2
+        },
+        "bc4-bc5": {
+          "system/pass": 4,
+          "candidate/pass": 8,
+          "baseline/pass": 2
+        },
+        "depth-reduce": {
+          "candidate/pass": 4,
+          "candidate/recorded": 4,
+          "system/pass": 1
+        }
+      },
+      "fails": [
+        {
+          "name": "bc1_srgb-baseline-host-cpu",
+          "target": "baseline",
+          "case": "srgb",
+          "config": "host-cpu",
+          "format": "bc1_srgb",
+          "reasons": [
+            "2293 mismatch unit(s) exceed the 2-LSB tolerance"
+          ]
+        },
+        {
+          "name": "bc3_srgb-baseline-host-cpu",
+          "target": "baseline",
+          "case": "srgb",
+          "config": "host-cpu",
+          "format": "bc3_srgb",
+          "reasons": [
+            "4096 mismatch unit(s) exceed the 2-LSB tolerance"
+          ]
+        }
+      ],
+      "note": "--srgb-host-convention linear: the only failures are the baseline sRGB host-cpu negative controls; candidate passes every sRGB case, and candidate odd-extent host-cpu hard mismatches are 0."
+    },
+    "4k_bc7": {
+      "artifact": "/Users/cheng/staging-stack/raw/4k-bc7.json",
+      "sha256": "d98365acd851d1da72766d2303b9fa64ddfd763d0d3df3431d975fe20dd8671e",
+      "planned_line": "[07:24:23] extended matrix: 16 planned runs across 1 cases",
+      "case_table": {
+        "default": {
+          "system/pass": 1,
+          "baseline/pass": 1,
+          "candidate/pass": 1
+        },
+        "bc7": {
+          "candidate/pass": 6,
+          "candidate/fail": 1,
+          "baseline/pass": 6,
+          "system/pass": 3
+        }
+      },
+      "fails": [
+        {
+          "name": "candidate-host-cpu-bc7_srgb-copy",
+          "target": "candidate",
+          "case": "bc7",
+          "config": "host-cpu",
+          "format": "bc7_srgb",
+          "reasons": [
+            "1408 mismatch unit(s) exceed the 2-LSB tolerance"
+          ]
+        }
+      ]
+    },
+    "4k_bc6h": {
+      "artifact": "/Users/cheng/staging-stack/raw/4k-bc6h.json",
+      "sha256": "ad3b2fee64ea9ee3147e3c705eb02de22afb5e1528dc8a60a5870da7a3787b8d",
+      "planned_line": "[07:24:28] extended matrix: 16 planned runs across 1 cases",
+      "case_table": {
+        "default": {
+          "system/pass": 1,
+          "baseline/pass": 1,
+          "candidate/pass": 1
+        },
+        "bc6h": {
+          "candidate/pass": 6,
+          "baseline/pass": 4,
+          "baseline/fail": 2,
+          "system/pass": 4
+        }
+      },
+      "fails": [
+        {
+          "name": "bc6h_uf16-baseline-compute-view-copy",
+          "target": "baseline",
+          "case": "bc6h",
+          "config": "compute-view",
+          "format": "bc6h_uf16",
+          "reasons": [
+            "4096 mismatch unit(s) exceed the 2-LSB tolerance"
+          ]
+        },
+        {
+          "name": "bc6h_sfloat-baseline-compute-view-copy",
+          "target": "baseline",
+          "case": "bc6h",
+          "config": "compute-view",
+          "format": "bc6h_sfloat",
+          "reasons": [
+            "4096 mismatch unit(s) exceed the 2-LSB tolerance"
+          ]
+        }
+      ],
+      "note": "candidate compute-view is bit-exact for both bc6h_uf16 and bc6h_sfloat (4096/4096, max delta 0); the two baseline compute-view failures are the documented negative control from the bc6-image-view patch."
+    },
+    "4k_srgb_linear": {
+      "artifact": "/Users/cheng/staging-stack/raw/4k-srgb-linear.json",
+      "sha256": "d1011252819364ec9df4f63e4ce9b80030ab52340cd58e991e1c73d6f4a0c19f",
+      "planned_line": "[07:24:34] extended matrix: 33 planned runs across 2 cases",
+      "case_table": {
+        "default": {
+          "system/pass": 1,
+          "baseline/pass": 1,
+          "candidate/pass": 1
+        },
+        "srgb": {
+          "system/pass": 3,
+          "candidate/pass": 7,
+          "baseline/pass": 5,
+          "baseline/fail": 2
+        },
+        "bc7": {
+          "candidate/pass": 7,
+          "baseline/pass": 5,
+          "baseline/fail": 1,
+          "system/pass": 3
+        }
+      },
+      "fails": [
+        {
+          "name": "bc1_srgb-baseline-host-cpu",
+          "target": "baseline",
+          "case": "srgb",
+          "config": "host-cpu",
+          "format": "bc1_srgb",
+          "reasons": [
+            "2293 mismatch unit(s) exceed the 2-LSB tolerance"
+          ]
+        },
+        {
+          "name": "bc3_srgb-baseline-host-cpu",
+          "target": "baseline",
+          "case": "srgb",
+          "config": "host-cpu",
+          "format": "bc3_srgb",
+          "reasons": [
+            "4096 mismatch unit(s) exceed the 2-LSB tolerance"
+          ]
+        },
+        {
+          "name": "baseline-host-cpu-bc7_srgb-copy",
+          "target": "baseline",
+          "case": "bc7",
+          "config": "host-cpu",
+          "format": "bc7_srgb",
+          "reasons": [
+            "1408 mismatch unit(s) exceed the 2-LSB tolerance"
+          ]
+        }
+      ],
+      "note": "sRGB family + BC7_SRGB with --srgb-host-convention linear: candidate passes all 7 sRGB + 7 bc7 cases; baseline fails the three host-cpu sRGB cases exactly as the negative control requires."
+    },
+    "4k_render": {
+      "artifact": "/Users/cheng/staging-stack/raw/4k-render.json",
+      "sha256": "ec238641cd37b835757b6c1a26c536530fcf16d9883aec12de759c2a8aba8ddb",
+      "summary": {
+        "unique_cases": 31,
+        "files_scanned": 31,
+        "aliases": 0,
+        "skipped": 0,
+        "passed": 31,
+        "failed": 0,
+        "byte_exact": 15,
+        "problems": []
+      },
+      "stdout_tail": [
+        "  byte-exact cases: 15/31",
+        "== one-command run complete in 5.9s: 31 pass / 0 fail / 0 skipped, 31 unique cases, 0 aliases, 15 byte-exact",
+        "== receipt: /Users/cheng/staging-stack/raw/4k-render.json"
+      ],
+      "note": "render --run accepted --wrapper-build and passed 31/31 unique cases (15 byte-exact)."
+    },
+    "16k_default": {
+      "artifact": "/Users/cheng/staging-stack/raw/16k-default.json",
+      "sha256": "fe2354b03f5a202ff0a72195bce871f831aae8f850e4fa88114f658e76463678",
+      "summary_line": "runs: 43 pass / 0 fail (default matrix) + 0 extended pass / 0 fail / 0 recorded",
+      "case_table": {
+        "default": {
+          "system/pass": 9,
+          "baseline/pass": 17,
+          "candidate/pass": 17
+        }
+      },
+      "fails": []
+    },
+    "16k_render": {
+      "artifact": "/Users/cheng/staging-stack/raw/16k-render.json",
+      "sha256": "89f4612d0ac5641706aa4e2249830964a377979515fc0f614ab32b6363d05f80",
+      "summary": {
+        "unique_cases": 31,
+        "files_scanned": 31,
+        "aliases": 0,
+        "skipped": 0,
+        "passed": 31,
+        "failed": 0,
+        "byte_exact": 15,
+        "problems": []
+      },
+      "stdout_tail": [
+        "  byte-exact cases: 15/31",
+        "== one-command run complete in 9.4s: 31 pass / 0 fail / 0 skipped, 31 unique cases, 0 aliases, 15 byte-exact",
+        "== receipt: /Users/cheng/staging-stack/raw/16k-render.json"
+      ]
+    }
+  },
+  "family_result_table": [
+    {
+      "family": "4K default matrix",
+      "runs": "43",
+      "candidate": "17 pass / 0 fail",
+      "baseline": "17 pass / 0 fail",
+      "verdict": "pass",
+      "deviation": "none"
+    },
+    {
+      "family": "4K extended (default encoded convention, 94 planned across 6 cases)",
+      "runs": "94 (+3 caps)",
+      "candidate": "5 pass / 2 fail (sRGB host-cpu) + 28 recorded",
+      "baseline": "7 pass / 0 fail (srgb case) + others pass",
+      "verdict": "expected convention split",
+      "deviation": "candidate sRGB host-cpu fails only because the default tool convention is encoded while the srgb-storage patch stores linear; same runs pass under linear (next row)"
+    },
+    {
+      "family": "4K extended (--srgb-host-convention linear)",
+      "runs": "94 (+3 caps)",
+      "candidate": "7 pass / 0 fail in sRGB; all other families pass; 28 recorded (by design)",
+      "baseline": "5 pass / 2 fail (sRGB host-cpu negative control)",
+      "verdict": "pass",
+      "deviation": "baseline negative control fails as required; candidate odd-extent host-cpu hard mismatches 0"
+    },
+    {
+      "family": "4K --cases bc7 (encoded)",
+      "runs": "16 (+3 caps)",
+      "candidate": "6 pass / 1 fail (bc7_srgb host-cpu)",
+      "baseline": "6 pass / 0 fail",
+      "verdict": "expected convention split",
+      "deviation": "same encoded-vs-linear split; candidate passes BC7/BC7 compute+compute-view"
+    },
+    {
+      "family": "4K --cases bc6h (encoded)",
+      "runs": "16 (+3 caps)",
+      "candidate": "6 pass / 0 fail; compute-view bit-exact 4096/4096 delta 0",
+      "baseline": "4 pass / 2 fail (compute-view negative control)",
+      "verdict": "pass",
+      "deviation": "baseline compute-view is the documented negative control from the bc6-image-view patch"
+    },
+    {
+      "family": "4K sRGB family + BC7_SRGB with --srgb-host-convention linear",
+      "runs": "33 (+3 caps)",
+      "candidate": "7 pass / 0 fail (sRGB) + 7 pass / 0 fail (bc7)",
+      "baseline": "5 pass / 2 fail (sRGB) + 5 pass / 1 fail (bc7_srgb)",
+      "verdict": "pass",
+      "deviation": "baseline fails exactly the three host-cpu sRGB cases as the required negative control"
+    },
+    {
+      "family": "4K render --run",
+      "runs": "31 unique cases",
+      "candidate": "31 pass / 0 fail, 15 byte-exact",
+      "baseline": "included in 31; 0 fail",
+      "verdict": "pass (tool matrix)",
+      "deviation": "the render tool revision records the pre-patch encoded host-cpu sRGB convention for both targets; it does not expose the linear convention requested for the candidate (see deviations)"
+    },
+    {
+      "family": "16K default matrix (core)",
+      "runs": "43",
+      "candidate": "17 pass / 0 fail",
+      "baseline": "17 pass / 0 fail",
+      "verdict": "pass",
+      "deviation": "none"
+    },
+    {
+      "family": "16K render --run (core)",
+      "runs": "31 unique cases",
+      "candidate": "31 pass / 0 fail, 15 byte-exact",
+      "baseline": "included; 0 fail",
+      "verdict": "pass",
+      "deviation": "same convention note as 4K render"
+    }
+  ],
+  "deviations": [
+    {
+      "item": "4K extended with the default encoded --srgb-host-convention",
+      "detail": "2 candidate sRGB host-cpu runs fail (bc1_srgb, bc3_srgb) because the patched build stores linearised values for host-cpu sRGB while the tool default expects encoded. This is the expected srgb-storage convention split, not a regression: with --srgb-host-convention linear the same extended matrix passes for the candidate and the two failures move to the unpatched baseline as the negative control.",
+      "severity": "expected"
+    },
+    {
+      "item": "4K --cases bc7 with the default encoded convention",
+      "detail": "1 candidate host-cpu bc7_srgb run fails for the same convention reason; with --srgb-host-convention linear the candidate passes and the baseline bc7_srgb host-cpu fails (negative control).",
+      "severity": "expected"
+    },
+    {
+      "item": "4K --cases bc6h",
+      "detail": "2 baseline compute-view runs (bc6h_uf16, bc6h_sfloat) fail; this is the documented negative control for the bc6-image-view patch (baseline has the known BC6H image-view defect). Candidate compute-view is bit-exact.",
+      "severity": "expected"
+    },
+    {
+      "item": "render --run host-cpu sRGB convention",
+      "detail": "tools/tests/vulkan-wrapper-render.py (sha256 8aee1d60...) expects the pre-patch encoded host-cpu sRGB convention for every target (convention = encoded for any config starting with \"host\"), so its 31/31 pass includes candidate host-cpu sRGB matching the encoded expectation byte-exactly and its cross-check shows the candidate readback differs from the linearised expectation (max delta 73). The current render tool therefore does not corroborate the \"host-cpu sRGB on the linear convention for the candidate\" expectation from the task; this is a tool-matrix limitation, not a build failure (the reference tool with --srgb-host-convention linear does show the expected candidate pass / baseline fail).",
+      "severity": "tool limitation"
+    },
+    {
+      "item": "extended default encoded even though the stack contains srgb-storage",
+      "detail": "The extended family run used the tool default encoded convention; both encoded and linear highlights are recorded so the convention split is fully documented rather than hidden.",
+      "severity": "documentation"
+    }
+  ],
+  "limitations": [
+    "Software Vulkan only: Mesa llvmpipe (API 36 gfxstream wrapper on 4 KB; API 37 16 KB on 16K AVD). No physical Adreno/Mali phone result is claimed.",
+    "Emulators were run sequentially (one at a time) on ports 5558 and 5568; staging-review's port 5562 lane was untouched and no other lanes were disturbed.",
+    "Reference and render tools are being edited concurrently by teammates; the exact hashes used are recorded. The render tool revision predates the srgb-linear expectation matrix, so its host-cpu sRGB check does not exercise the convention the task expected (see deviations).",
+    "staging-reclaim.patch stacks only as a dry-run; it is intentionally NOT part of the built/regressed stack (separate experiment per task-29).",
+    "The pristine archive does not ship the prebuilt SPIRV-Tools static archives the recorded recipe requires; they were copied from the recorded pinned build tree (build inputs only, hashes recorded).",
+    "D1 (device-teardown) remains at 12/14 on this emulator: the two interceptor constants VkDeviceMemory objects are left to the driver vkDestroyDevice cleanup because explicit frees crash the gfxstream ResourceTracker (see docs/evidence/2026-10-22-vulkan-wrapper-teardown-map.json); the below-wrapper validation rerun should still show 2 leaked VkDeviceMemory.",
+    "No validation-layer (USE_VVL) rerun was performed here; staging-review is rerunning that route against the same staged build.",
+    "The extended matrix run uses 94 planned runs as the tool reports; the JSON includes the 3 caps runs on top of that (97 records)."
+  ],
+  "raw_artifacts": {
+    "root": "/Users/cheng/staging-stack",
+    "source": "/Users/cheng/staging-stack/source",
+    "build": "/Users/cheng/staging-stack/build",
+    "staged": "/Users/cheng/staging-stack/wrapper-build-patched",
+    "logs": {
+      "setup": "setup.log",
+      "configure_defines": "configure-defines.log",
+      "configure_link": "configure-link.log",
+      "build": "build.log",
+      "elf": "logs-elf.txt",
+      "staging_reclaim": "logs/staging-reclaim-dryrun.log",
+      "emulator_4k": "emulator-4k.log",
+      "emulator_16k": "emulator-16k.log"
+    },
+    "raw_jsons": [
+      "raw/16k-default.json",
+      "raw/16k-render.json",
+      "raw/4k-bc6h.json",
+      "raw/4k-bc7.json",
+      "raw/4k-default.json",
+      "raw/4k-extended-linear.json",
+      "raw/4k-extended.json",
+      "raw/4k-render.json",
+      "raw/4k-srgb-linear.json"
+    ],
+    "raw_stdouts": [
+      "raw/16k-default.stdout",
+      "raw/16k-render.stdout",
+      "raw/4k-bc6h.stdout",
+      "raw/4k-bc7.stdout",
+      "raw/4k-default.stdout",
+      "raw/4k-extended-linear.stdout",
+      "raw/4k-extended.stdout",
+      "raw/4k-render.stdout",
+      "raw/4k-render2.stdout",
+      "raw/4k-srgb-linear.stdout"
+    ],
+    "patch_apply_reverse_logs": "/tmp/fwd-*.log and /tmp/rev-*.log (per-patch apply/reverse transcripts)"
+  },
+  "cleanup": {
+    "emulators": "both emulators were killed with adb -s emulator-<port> emu kill; adb devices is empty; no qemu-system process remains on 5558 or 5568; port 5562 was never touched",
+    "repo": "only docs/evidence/2026-10-22-vulkan-wrapper-patch-stack.json was added; no commit was made and nothing was sent upstream"
+  },
+  "lead_review_2026-10-22": {
+    "render_rows_invalid_as_stack_evidence": "The render-pipeline rows (4 KB 31/31 and 16 KB 31/31) did NOT exercise the full-stack build. tools/tests/vulkan-wrapper-render.py revision 8aee1d60 stages <wrapper-build>/native-probe/candidate.so (render.py prepare_stage, lines 637-639), and the staged directory's native-probe/ was copied from the pinned build, so the runs loaded the pinned unpatched candidate (sha256 574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506), not the stack candidate (candidate-stripped.so sha256 095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712). That is why candidate host-cpu sRGB matched the encoded (pre-patch) convention. The render tool also recorded only library names, not hashes, which hid the mismatch. Treat those rows as pinned-candidate evidence only; a corrected render rerun against the stack build is recorded separately.",
+    "other_families": "reference-tool families (default, extended, bc7, bc6h, sRGB linear) select the build's own candidate and remain valid stack evidence (candidate host-cpu sRGB passes under linear, baseline fails; BC6H compute-view bit-exact; odd-extent hard mismatches 0)."
+  }
+}
