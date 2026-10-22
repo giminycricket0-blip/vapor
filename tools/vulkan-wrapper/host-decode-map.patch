@@ -1,0 +1,342 @@
+--- a/src/vulkan/wrapper/wrapper_objects.h
++++ b/src/vulkan/wrapper/wrapper_objects.h
+@@ -83,6 +83,17 @@
+    VkDeviceMemory constantsBufferMemory;
+ } InterceptorState;
+ 
++// D2: one host mapping of a VkDeviceMemory.  The wrapper only needs enough state
++// to reuse an application mapping in the host-CPU BCn path instead of calling
++// vkMapMemory on memory that is already host mapped (VUID-vkMapMemory-memory-00678).
++typedef struct wrapper_host_mapping {
++   struct list_head link;
++   VkDeviceMemory memory;
++   void* data;              // pointer returned by the application's map call
++   VkDeviceSize offset;     // offset the application mapped from
++   VkDeviceSize size;       // mapped size, or VK_WHOLE_SIZE if unknown/whole
++} wrapper_host_mapping;
++
+ struct wrapper_device {
+     struct vk_device vk;
+ 
+@@ -90,6 +101,14 @@
+     simple_mtx_t resource_mutex;
+     struct list_head command_buffer_list;
+     struct list_head device_memory_list;
++    // D2: host mappings created by the application (and by the wrapper's
++    // non-emulated MapMemory2KHR fallback).
++    struct list_head host_mappings;
++    // Guards host_mappings: vkMapMemory/vkUnmapMemory may run concurrently on
++    // different VkDeviceMemory objects.  This is deliberately a dedicated
++    // (non-recursive) mutex, not resource_mutex, because memory helpers can be
++    // called with resource_mutex held.
++    simple_mtx_t host_mapping_mutex;
+ 
+     struct hash_table_u64* image_map;
+     struct hash_table_u64* buffer_map;
+@@ -119,6 +138,20 @@
+ VK_DEFINE_HANDLE_CASTS(wrapper_device, vk.base, VkDevice,
+                        VK_OBJECT_TYPE_DEVICE)
+ 
++// D2: host-mapping registry used by the host-CPU BCn source read.
++void wrapper_host_mapping_record(struct wrapper_device *device, VkDeviceMemory memory,
++                                 VkDeviceSize offset, VkDeviceSize size, void *data);
++void wrapper_host_mapping_forget(struct wrapper_device *device, VkDeviceMemory memory);
++// Resolve "does a mapping exist" and "does it cover [offset, offset+size)" in a
++// single lock acquisition.  *exists reports any mapping for the memory; the
++// return value reports coverage and sets *data to the mapped pointer.
++bool wrapper_host_mapping_lookup(struct wrapper_device *device, VkDeviceMemory memory,
++                                 VkDeviceSize offset, VkDeviceSize size,
++                                 bool *exists, void **data);
++bool wrapper_device_memory_mapping_exists(struct wrapper_device *device, VkDeviceMemory memory);
++bool wrapper_device_memory_lookup_mapping(struct wrapper_device *device, VkDeviceMemory memory,
++                                          VkDeviceSize offset, VkDeviceSize size, void **data);
++
+ struct wrapper_command_buffer {
+    struct vk_command_buffer vk;
+ 
+--- a/src/vulkan/wrapper/wrapper_device_memory.c
++++ b/src/vulkan/wrapper/wrapper_device_memory.c
+@@ -267,6 +267,7 @@
+ 
+ void
+ wrapper_device_memory_destroy(struct wrapper_device_memory *mem) {
++   wrapper_host_mapping_forget(mem->device, mem->dispatch_handle);
+    wrapper_device_memory_reset(mem);
+    list_del(&mem->link);
+    vk_free2(&mem->device->vk.alloc, mem->alloc, mem);
+@@ -415,8 +416,111 @@
+ 
+     allocations--;
+     CHECKV(FreeMemory((VkDevice) device, _memory, pAllocator));
++}
++
++// D2: host-mapping registry.  The host-CPU BCn path used to map the source
++// buffer memory and never unmap it, which both leaked a host mapping and mapped
++// memory the application already had mapped (VUID-vkMapMemory-memory-00678).
++// These helpers let the wrapper reuse an application mapping and only unmap the
++// mapping it created itself.
++// Caller must hold device->host_mapping_mutex.
++static wrapper_host_mapping *
++wrapper_host_mapping_find_locked(struct wrapper_device *device, VkDeviceMemory memory) {
++   list_for_each_entry(wrapper_host_mapping, mapping, &device->host_mappings, link) {
++      if (mapping->memory == memory)
++         return mapping;
++   }
++   return NULL;
++}
++
++// Caller must hold device->host_mapping_mutex.
++static void
++wrapper_host_mapping_forget_locked(struct wrapper_device *device, VkDeviceMemory memory) {
++   list_for_each_entry_safe(wrapper_host_mapping, mapping,
++                            &device->host_mappings, link) {
++      if (mapping->memory == memory) {
++         list_del(&mapping->link);
++         vk_free(&device->vk.alloc, mapping);
++      }
++   }
++}
++
++void
++wrapper_host_mapping_record(struct wrapper_device *device, VkDeviceMemory memory,
++                            VkDeviceSize offset, VkDeviceSize size, void *data) {
++   simple_mtx_lock(&device->host_mapping_mutex);
++   wrapper_host_mapping_forget_locked(device, memory);
++   wrapper_host_mapping *mapping =
++      vk_alloc(&device->vk.alloc, sizeof(*mapping), 8,
++               VK_SYSTEM_ALLOCATION_SCOPE_OBJECT);
++   if (!mapping) {
++      simple_mtx_unlock(&device->host_mapping_mutex);
++      WLOGE("Failed to track host mapping of memory %p", memory);
++      return;
++   }
++   mapping->memory = memory;
++   mapping->data = data;
++   mapping->offset = offset;
++   mapping->size = size;
++   list_addtail(&mapping->link, &device->host_mappings);
++   simple_mtx_unlock(&device->host_mapping_mutex);
++}
++
++void
++wrapper_host_mapping_forget(struct wrapper_device *device, VkDeviceMemory memory) {
++   simple_mtx_lock(&device->host_mapping_mutex);
++   wrapper_host_mapping_forget_locked(device, memory);
++   simple_mtx_unlock(&device->host_mapping_mutex);
++}
++
++bool
++wrapper_host_mapping_lookup(struct wrapper_device *device, VkDeviceMemory memory,
++                            VkDeviceSize offset, VkDeviceSize size,
++                            bool *exists, void **data) {
++   bool covered = false;
++
++   simple_mtx_lock(&device->host_mapping_mutex);
++   wrapper_host_mapping *mapping = wrapper_host_mapping_find_locked(device, memory);
++   if (exists)
++      *exists = mapping != NULL;
++   if (mapping && offset >= mapping->offset &&
++       (mapping->size == VK_WHOLE_SIZE ||
++        offset + size <= mapping->offset + mapping->size)) {
++      *data = (char *) mapping->data + (offset - mapping->offset);
++      covered = true;
++   }
++   simple_mtx_unlock(&device->host_mapping_mutex);
++
++   return covered;
+ }
+ 
++bool
++wrapper_device_memory_mapping_exists(struct wrapper_device *device, VkDeviceMemory memory) {
++   struct wrapper_device_memory *mem = wrapper_device_memory_from_handle(device, memory);
++   return mem != NULL && mem->map_address != NULL;
++}
++
++bool
++wrapper_device_memory_lookup_mapping(struct wrapper_device *device, VkDeviceMemory memory,
++                                     VkDeviceSize offset, VkDeviceSize size, void **data) {
++   struct wrapper_device_memory *mem = wrapper_device_memory_from_handle(device, memory);
++   if (mem == NULL || mem->map_address == NULL)
++      return false;
++   if (offset + size > mem->map_size)
++      return false;
++   *data = (char *) mem->map_address + offset;
++   return true;
++}
++
++WRAPPER_MapMemory(VkDevice _device, VkDeviceMemory _memory, VkDeviceSize offset,
++                  VkDeviceSize size, VkMemoryMapFlags flags, void **ppData) {
++   VK_FROM_HANDLE(wrapper_device, device, _device);
++   VkResult result = CHECK(MapMemory(_device, _memory, offset, size, flags, ppData));
++   if (result == VK_SUCCESS)
++      wrapper_host_mapping_record(device, _memory, offset, size, *ppData);
++   return result;
++}
++
+ WRAPPER_MapMemory2KHR(VkDevice _device,
+                       const VkMemoryMapInfoKHR* pMemoryMapInfo,
+                       void** ppData)
+@@ -439,9 +543,14 @@
+    mem = wrapper_device_memory_from_handle(device, pMemoryMapInfo->memory);
+    if (!placed_info || !mem) {
+       if (debug) WLOGD("Not emulating MapMemory2KHR");
+-      return CHECK(MapMemory(_device,
++      VkResult result = CHECK(MapMemory(_device,
+          pMemoryMapInfo->memory, pMemoryMapInfo->offset, pMemoryMapInfo->size,
+             0, ppData));
++      if (result == VK_SUCCESS)
++         wrapper_host_mapping_record(device, pMemoryMapInfo->memory,
++                                     pMemoryMapInfo->offset,
++                                     pMemoryMapInfo->size, *ppData);
++      return result;
+    }
+ 
+    if (mem->map_address) {
+@@ -524,6 +633,8 @@
+ }
+ 
+ WRAPPER_UnmapMemory(VkDevice _device, VkDeviceMemory _memory) {
++   VK_FROM_HANDLE(wrapper_device, device, _device);
++   wrapper_host_mapping_forget(device, _memory);
+    vk_common_UnmapMemory(_device, _memory);
+ }
+ 
+@@ -537,6 +648,7 @@
+    mem = wrapper_device_memory_from_handle(device, pMemoryUnmapInfo->memory);
+    if (!mem) {
+       if (debug) WLOGD("Unmapping mem %p without emulation", pMemoryUnmapInfo->memory);
++      wrapper_host_mapping_forget(device, pMemoryUnmapInfo->memory);
+       CHECKV(UnmapMemory(_device, pMemoryUnmapInfo->memory));
+       return VK_SUCCESS;
+    }
+--- a/src/vulkan/wrapper/wrapper_device.c
++++ b/src/vulkan/wrapper/wrapper_device.c
+@@ -211,6 +211,8 @@
+ 
+    list_inithead(&device->command_buffer_list);
+    list_inithead(&device->device_memory_list);
++   list_inithead(&device->host_mappings); // D2: application host-mapping registry
++   simple_mtx_init(&device->host_mapping_mutex, mtx_plain);
+ 
+    // Depth Stencil overrid
+    device->depth_override_mode = get_depth_format_override_mode();
+@@ -618,6 +620,15 @@
+    }
+ 
+    simple_mtx_unlock(&device->resource_mutex);
++
++   // D2: drop host-mapping bookkeeping; the application must already have
++   // unmapped the memory it destroyed before the device (Vulkan valid usage).
++   simple_mtx_lock(&device->host_mapping_mutex);
++   list_for_each_entry_safe(wrapper_host_mapping, mapping, &device->host_mappings, link) {
++      list_del(&mapping->link);
++      vk_free(&device->vk.alloc, mapping);
++   }
++   simple_mtx_unlock(&device->host_mapping_mutex);
+ 
+    hash_table_u64_foreach(device->image_map, entry) {
+       struct wrapper_image *obj = (struct wrapper_image *) entry.data;
+@@ -646,6 +657,7 @@
+          dispatch_handle, pAllocator);
+    }
+    simple_mtx_destroy(&device->resource_mutex);
++   simple_mtx_destroy(&device->host_mapping_mutex);
+    vk_device_finish(&device->vk);
+    vk_free2(&device->vk.alloc, pAllocator, device);
+ }
+@@ -1175,18 +1187,70 @@
+       VkFormat in_format,
+       bool is_striped
+ ) {
+-   // Map the source buffer
+-   void* srcData;
+-   VkMemoryMapInfoKHR mapInfoSrc = {
+-      .sType = VK_STRUCTURE_TYPE_MEMORY_MAP_INFO_KHR,
+-      .memory = srcBuffer->memory,
+-      .offset = srcBuffer->memoryOffset,
+-      .size = VK_WHOLE_SIZE,
+-   }; 
+-   VkResult result = WCHECK(MapMemory2KHR((VkDevice) _device, &mapInfoSrc, &srcData)); 
+-   if (result != VK_SUCCESS) {
+-      WLOGE("ERROR: Failed to map source buffer memory: %d", result);
+-      return result;
++   VkResult result;
++   // D2: reuse an existing application mapping of the source memory instead of
++   // calling vkMapMemory on memory that is already host mapped
++   // (VUID-vkMapMemory-memory-00678).  Only map here when the memory is not host
++   // mapped, and unmap that wrapper-created mapping before returning.
++   // Bound the host read consistently with the declared region layout: BC copies
++   // may pad rows via bufferRowLength/bufferImageHeight (both in texels and
++   // required to be multiples of the block dimensions for compressed formats),
++   // while the current sw decoder reads blocks tightly.  Validate the larger of
++   // the tight and padded spans so an application mapping can never be over-read.
++   uint32_t src_blocks_x = (region->imageExtent.width + 3) / 4;
++   uint32_t src_blocks_y = (region->imageExtent.height + 3) / 4;
++   uint32_t src_block_size = get_bc_block_size(in_format);
++   uint32_t src_row_blocks = region->bufferRowLength ?
++      region->bufferRowLength / 4 : src_blocks_x;
++   uint32_t src_rows = region->bufferImageHeight ?
++      region->bufferImageHeight / 4 : src_blocks_y;
++   VkDeviceSize src_tight_span = (VkDeviceSize) src_blocks_x * src_blocks_y * src_block_size;
++   VkDeviceSize src_padded_span = (src_rows > 1 ?
++      (VkDeviceSize) (src_rows - 1) * src_row_blocks * src_block_size : 0) +
++      (VkDeviceSize) src_blocks_x * src_block_size;
++   VkDeviceSize src_span = region->bufferOffset +
++      (src_tight_span > src_padded_span ? src_tight_span : src_padded_span);
++   void* srcData = NULL;
++   bool unmap_src = false;
++
++   if (wrapper_device_memory_mapping_exists(_device, srcBuffer->memory)) {
++      // The wrapper's placed-mapping emulation already tracks this mapping.
++      if (!wrapper_device_memory_lookup_mapping(_device, srcBuffer->memory,
++                                                srcBuffer->memoryOffset,
++                                                src_span, &srcData)) {
++         WLOGE("ERROR: application source mapping of memory %p does not cover offset %llu + %llu bytes",
++               srcBuffer->memory, (unsigned long long) srcBuffer->memoryOffset,
++               (unsigned long long) src_span);
++         return VK_ERROR_MEMORY_MAP_FAILED;
++      }
++   } else {
++      // One locked lookup resolves both "is the memory host mapped by the
++      // application" and "does that mapping cover the compressed source range";
++      // concurrent vkMapMemory/vkUnmapMemory must not corrupt the registry.
++      bool app_mapping_exists = false;
++      if (wrapper_host_mapping_lookup(_device, srcBuffer->memory,
++                                      srcBuffer->memoryOffset, src_span,
++                                      &app_mapping_exists, &srcData)) {
++         // Reuse the application's mapping; do not unmap it.
++      } else if (app_mapping_exists) {
++         WLOGE("ERROR: application source memory %p is host mapped but the mapping does not cover offset %llu + %llu bytes",
++               srcBuffer->memory, (unsigned long long) srcBuffer->memoryOffset,
++               (unsigned long long) src_span);
++         return VK_ERROR_MEMORY_MAP_FAILED;
++      } else {
++         VkMemoryMapInfoKHR mapInfoSrc = {
++            .sType = VK_STRUCTURE_TYPE_MEMORY_MAP_INFO_KHR,
++            .memory = srcBuffer->memory,
++            .offset = srcBuffer->memoryOffset,
++            .size = VK_WHOLE_SIZE,
++         };
++         result = WCHECK(MapMemory2KHR((VkDevice) _device, &mapInfoSrc, &srcData));
++         if (result != VK_SUCCESS) {
++            WLOGE("ERROR: Failed to map source buffer memory: %d", result);
++            return result;
++         }
++         unmap_src = true;
++      }
+    }
+ 
+    // Map the destination memory
+@@ -1228,8 +1292,10 @@
+ 
+    WCHECKV(UnmapMemory((VkDevice) _device, dstMemory));
+ final:
+-   // TODO: this breaks some applications that maps the srcBuffer, e.g. 32bit emulated placeAddr
+-   // WCHECKV(UnmapMemory((VkDevice) _device, srcBuffer->memory));
++   // D2: only unmap the source mapping the wrapper created here; an
++   // application-owned mapping must be left untouched.
++   if (unmap_src)
++      WCHECKV(UnmapMemory((VkDevice) _device, srcBuffer->memory));
+    return result;
+ }
+ 

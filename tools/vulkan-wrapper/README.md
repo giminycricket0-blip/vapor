@@ -262,10 +262,25 @@ format list. Compute-view becomes bit-exact with no BC1/BC3/BC7 regressions.
 [BC6H receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-bc6h-reference.json),
 [BC6H image-view receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-bc6-image-view.json).
 
+Validation layers placed below the wrapper (its own `USE_VVL` route) found two
+internal defects, both now patched and revalidated:
+[`host-decode-map.patch`](host-decode-map.patch) stops the host-CPU decode from
+leaving the application's source memory mapped. A mutex-protected mapping
+registry plus a wrapped `vkMapMemory` let it reuse an existing app mapping and
+unmap only its own; this is fixed. [`device-teardown.patch`](device-teardown.patch)
+defines the missing `InterceptorState_Cleanup` and destroys the wrapper's
+pipelines, layouts, constants buffers and compute pool at `vkDestroyDevice`.
+That reduces the teardown leak from 14 objects to 2; the two constants
+`VkDeviceMemory` frees are withheld because they crash the emulator's gfxstream
+driver (10-15/40 runs in every mitigation variant, 0/40 without them).
+[Teardown/mapping receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-teardown-map.json),
+[validation receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-validation.json).
+
 All local patches target pristine `3abf4870` and stack in this order:
 `image-create.patch` → `srgb-storage.patch` → `odd-extent.patch` →
-`bc6-image-view.patch` (forward and reverse with `patch -p1 --fuzz=0`);
-`staging-reclaim.patch` also stacks on top.
+`device-teardown.patch` → `host-decode-map.patch` → `bc6-image-view.patch`
+(forward and reverse with `patch -p1 --fuzz=0`); `staging-reclaim.patch` also
+stacks on top.
 
 The host-CPU odd-extent defect is root-caused and fixed experimentally:
 [`odd-extent.patch`](odd-extent.patch) stops `bcdec.c` from writing full 4×4

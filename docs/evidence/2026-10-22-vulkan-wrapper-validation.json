@@ -1026,7 +1026,7 @@
   "raw_scratch": {
     "path": "/Users/cheng/wrapper-validation",
     "per_run_logs": "/Users/cheng/wrapper-validation/logs",
-    "notes": "run-chain.log (first above-wrapper attempt), run-chain2.log (above-wrapper control matrix), run-usevvl.log (below-wrapper USE_VVL matrix), emulator-boot.log, logs/ per-run captures (wrapper-usevvl-*.log for the below-wrapper pass), logs/superseded-first-attempt/."
+    "notes": "run-chain.log (first above-wrapper attempt), run-chain2.log (above-wrapper control matrix), run-usevvl.log (unpatched below-wrapper matrix), run-ab-interim.log (interim patched A/B), run-ab-final.log (final patched A/B), emulator-boot.log, logs/ per-run captures: unpatched logs/wrapper-usevvl-*.log were overwritten by the interim patched run before prefixes were used (parsed tables preserved in receipt); interim captures logs/patched-interim-*.log; final captures logs/patched-final-*.log."
   },
   "limitations": [
     "The layer is manually chained ABOVE libvulkan_wrapper.so, so it validates the application->wrapper API contract only. The wrapper's own calls into the system loader/native driver (BCn staging VkBuffer/VkDeviceMemory, compute dispatch, copies) happen below the layer and are invisible here; a clean result is not evidence that wrapper-internal Vulkan usage is valid.",
@@ -1422,19 +1422,21 @@
     "results_section": "below_wrapper_use_vvl",
     "executed_result": "Route worked: the wrapper found the staged layer via the GraphicsEnv hook, enabled it in the loader instance create info, and the below-wrapper layer reported 2 wrapper-internal defects (D1: 14 leaked driver objects at every vkDestroyDevice; D2: VUID-vkMapMemory-memory-00678 from the CPU decode path). The negative control (USE_VVL with no layer staged) failed with VK_ERROR_LAYER_NOT_PRESENT (-6).",
     "patched_section": "below_wrapper_use_vvl_patched",
-    "patched_build_status": "interim",
-    "patched_build_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
-    "patched_history_section": null,
+    "patched_build_status": "final",
+    "patched_build_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
+    "patched_history_section": "below_wrapper_use_vvl_patched_history",
     "patch_status": "executed - see below_wrapper_use_vvl_patched",
     "patch_executed_at": "2026-10-22",
     "latest_patched_build": {
       "section": "below_wrapper_use_vvl_patched",
-      "build_status": "interim",
-      "wrapper_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
+      "build_status": "final",
+      "wrapper_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
       "wrapper_file": "candidate-stripped.so",
+      "repo_commit_at_run": "5cd6553385e2b54862e78195b38a924de196e6ff",
       "ab_conclusion": "1/2 expected finding(s) fully fixed, 1 partially fixed (intentional residual): D1 = partially fixed (2 of 14 leaked objects remain; residual intentionally left to the driver)",
       "recorded_at": "2026-10-22",
-      "superseded_by_final_build": false
+      "superseded_by_final_build": false,
+      "interim_history_section": "below_wrapper_use_vvl_patched_history"
     }
   },
   "below_wrapper_use_vvl": {
@@ -3574,7 +3576,47 @@
       ],
       "conclusion": "Two wrapper-internal defects exposed that the above-wrapper placement cannot see."
     },
-    "why_they_differ": "Placement determines visibility: the above pass validates the wrapper as an application-facing driver; the below pass validates the wrapper as a Vulkan client of the llvmpipe driver."
+    "why_they_differ": "Placement determines visibility: the above pass validates the wrapper as an application-facing driver; the below pass validates the wrapper as a Vulkan client of the llvmpipe driver.",
+    "patched_ab_final": {
+      "section": "below_wrapper_use_vvl_patched",
+      "build_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
+      "build_status": "final",
+      "unpatched_wrapper_sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+      "messages_unpatched_vs_patched": {
+        "unpatched": 25,
+        "patched": 22
+      },
+      "classes_unpatched_vs_patched": {
+        "wrapper_defect": [
+          9,
+          6
+        ],
+        "fixture_misuse": [
+          1,
+          1
+        ],
+        "layer_information": [
+          8,
+          8
+        ],
+        "layer_configuration_artefact": [
+          7,
+          7
+        ],
+        "chaining_artefact": [
+          0,
+          0
+        ],
+        "emulator_driver_issue": [
+          0,
+          0
+        ]
+      },
+      "D1": "partially fixed: 14 -> 2 leaked VkDeviceMemory (intentional residual left to the driver)",
+      "D2": "fixed: VUID-vkMapMemory-memory-00678 no longer reproduced",
+      "workloads": "all exit 0 with correct pixel/readback checks",
+      "interim_run": "archived in below_wrapper_use_vvl_patched_history (sha 9818b00e)"
+    }
   },
   "below_wrapper_use_vvl_patched": {
     "date": "2026-10-22",
@@ -3583,14 +3625,14 @@
     "wrapper_build": {
       "path": "/Users/cheng/staging-teardown/wrapper-build-patched",
       "wrapper_file": "candidate-stripped.so",
-      "wrapper_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
-      "wrapper_bytes": 10705088,
+      "wrapper_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
+      "wrapper_bytes": 10706096,
       "aux_dir": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe",
       "aux_fallback_to_pinned_build": false,
       "pinned_hash_match": false,
       "hashes_match_pinned": false,
-      "candidate_stripped_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
-      "label": "candidate wrapper (patched staged build 9818b00e, interim)",
+      "candidate_stripped_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
+      "label": "candidate wrapper (final restaged build 5047e7ca)",
       "expected_findings": [
         "D1",
         "D2"
@@ -3598,7 +3640,7 @@
       "partial_findings": [
         "D1"
       ],
-      "run_prefix": "patched-interim-",
+      "run_prefix": "patched-final-",
       "section": "below_wrapper_use_vvl_patched",
       "ab_base_section": "below_wrapper_use_vvl",
       "staged_files": {
@@ -3609,8 +3651,8 @@
         },
         "candidate-stripped.so": {
           "source": "/Users/cheng/staging-teardown/wrapper-build-patched/candidate-stripped.so",
-          "bytes": 10705088,
-          "sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410"
+          "bytes": 10706096,
+          "sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d"
         },
         "libadrenotools.so": {
           "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libadrenotools.so",
@@ -3706,7 +3748,7 @@
     "partial_findings": [
       "D1"
     ],
-    "run_prefix": "patched-interim-",
+    "run_prefix": "patched-final-",
     "ab_base_section": "below_wrapper_use_vvl",
     "how": "wrapper's built-in USE_VVL path: wrapper_instance.c:70-72 calls set_layer_paths() (graphics_env_hooks.cpp:12,15-77, fixed path list ending in /data/local/tmp) before dlopening /system/lib64/libvulkan.so; wrapper_instance.c:372-399 then appends VK_LAYER_KHRONOS_validation to the loader instance create info, so the loader chains the layer between the wrapper and the native llvmpipe driver.",
     "staged_below_layer": {
@@ -3726,9 +3768,9 @@
     },
     "runs": [
       {
-        "name": "wrapper-usevvl-nolayer",
+        "name": "patched-final-wrapper-usevvl-nolayer",
         "target": "wrapper",
-        "target_label": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "target_label": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "caps",
         "cycles": 1,
@@ -3744,7 +3786,7 @@
           "USE_VVL": "1"
         },
         "exit_code": 3,
-        "duration_seconds": 0.106,
+        "duration_seconds": 0.096,
         "probe_events": [
           "PROBE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so layer=none chained=0 mode=caps cycles=1 edge=16 page_size=4096",
           "DRIVER_INTERFACE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so icd_gipa=1 exports_vkGetDeviceProcAddr=0",
@@ -3760,22 +3802,22 @@
         "message_count": 0,
         "logcat_validation_lines": [],
         "wrapper_diagnostics": [
-          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x7cce9d078c \t (set_layer_paths:39)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x7cce9d2c34 \t (set_layer_paths:40)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x7cce9d2c2c \t (set_layer_paths:41)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x71de74d78c \t (set_layer_paths:39)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x71de74fc34 \t (set_layer_paths:40)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x71de74fc2c \t (set_layer_paths:41)",
           "[000.00] Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x7cce9d2b7c \t (set_layer_paths:44)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x71de74fb7c \t (set_layer_paths:44)",
           "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
           "[000.00] get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "[000.04] [ERROR] No layers found, make sure that /data/data/com.winlator.cmod/files/imagefs/usr/lib/libVkLayer_khronos_validation.so exists \t (__wrapper_CreateInstance:382)",
-          "10-22 07:00:44.955  1178  1178 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x7cce9d078c \t (set_layer_paths:39)",
-          "10-22 07:00:44.955  1178  1178 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x7cce9d2c34 \t (set_layer_paths:40)",
-          "10-22 07:00:44.955  1178  1178 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x7cce9d2c2c \t (set_layer_paths:41)",
-          "10-22 07:00:44.955  1178  1178 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "10-22 07:00:44.955  1178  1178 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x7cce9d2b7c \t (set_layer_paths:44)",
-          "10-22 07:00:44.955  1178  1178 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-          "10-22 07:00:44.955  1178  1178 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "10-22 07:00:44.990  1178  1178 E VkWrapper: [ERROR] No layers found, make sure that /data/data/com.winlator.cmod/files/imagefs/usr/lib/libVkLayer_khronos_validation.so exists \t (__wrapper_CreateInstance:382)"
+          "[000.02] [ERROR] No layers found, make sure that /data/data/com.winlator.cmod/files/imagefs/usr/lib/libVkLayer_khronos_validation.so exists \t (__wrapper_CreateInstance:382)",
+          "10-22 07:07:22.626  1109  1109 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x71de74d78c \t (set_layer_paths:39)",
+          "10-22 07:07:22.627  1109  1109 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x71de74fc34 \t (set_layer_paths:40)",
+          "10-22 07:07:22.627  1109  1109 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x71de74fc2c \t (set_layer_paths:41)",
+          "10-22 07:07:22.627  1109  1109 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
+          "10-22 07:07:22.627  1109  1109 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x71de74fb7c \t (set_layer_paths:44)",
+          "10-22 07:07:22.627  1109  1109 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+          "10-22 07:07:22.627  1109  1109 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
+          "10-22 07:07:22.644  1109  1109 E VkWrapper: [ERROR] No layers found, make sure that /data/data/com.winlator.cmod/files/imagefs/usr/lib/libVkLayer_khronos_validation.so exists \t (__wrapper_CreateInstance:382)"
         ],
         "below_layer_loaded_signal": {
           "graphics_env_paths_set": true,
@@ -3789,12 +3831,12 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": true,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-nolayer.log"
+        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-nolayer.log"
       },
       {
-        "name": "wrapper-usevvl-bc1-compute",
+        "name": "patched-final-wrapper-usevvl-bc1-compute",
         "target": "wrapper",
-        "target_label": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "target_label": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "bc1",
         "cycles": 8,
@@ -3812,7 +3854,7 @@
           "USE_IMAGE_VIEW": "0"
         },
         "exit_code": 0,
-        "duration_seconds": 0.916,
+        "duration_seconds": 0.521,
         "probe_events": [
           "PROBE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so layer=none chained=0 mode=bc1 cycles=8 edge=16 page_size=4096",
           "DRIVER_INTERFACE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so icd_gipa=1 exports_vkGetDeviceProcAddr=0",
@@ -3844,11 +3886,11 @@
             "message_id": "0x7f1922d7",
             "text_lines": [
               "vkCreateInstance(): Information with the layer settings provided:",
-              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_45.validation-probe.1212.txt) could not be opened, falling back to stdout instead."
+              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_23.validation-probe.1179.txt) could not be opened, falling back to stdout instead."
             ],
             "objects": [],
-            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_45.validation-probe.1212.txt) could not be opened, falling back to stdout instead.",
-            "text_sha256_16": "b7d42d82b38caf7d"
+            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_23.validation-probe.1179.txt) could not be opened, falling back to stdout instead.",
+            "text_sha256_16": "e9aa83fbbd99a97e"
           },
           {
             "severity": "Validation Information",
@@ -3883,58 +3925,58 @@
             "vuid": "VUID-vkDestroyDevice-device-05137",
             "message_id": "0x4872eaa0",
             "text_lines": [
-              "vkDestroyDevice(): VkDevice 0xb4000073ae0f78c0 has 2 leaked objects that have not been destroyed.",
+              "vkDestroyDevice(): VkDevice 0xb400007e7e203da0 has 2 leaked objects that have not been destroyed.",
               "VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
               "The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
             ],
             "objects": [],
-            "text": "vkDestroyDevice(): VkDevice 0xb4000073ae0f78c0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
-            "text_sha256_16": "20bc285bb2000a99"
+            "text": "vkDestroyDevice(): VkDevice 0xb400007e7e203da0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+            "text_sha256_16": "18aa6ac4d4fbb847"
           }
         ],
         "message_count": 4,
         "logcat_validation_lines": [
-          "10-22 07:00:45.977  1212  1212 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
-          "10-22 07:00:45.977  1212  1212 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
-          "10-22 07:00:45.977  1212  1212 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_45.validation-probe.1212.txt) could not be opened, falling back to stdout instead.",
-          "10-22 07:00:45.977  1212  1212 I VALIDATION: ",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION:   - Core Checks",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION:   - Synchronization",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION:   - Stateless Parameter",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION:   - Object lifetime",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION:   - Thread Safety",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION:   - Handle Wrapping",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION: ",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION: Objects: 1",
-          "10-22 07:00:45.985  1212  1212 I VALIDATION:     [0] VkInstance 0xb4000073be0f9850",
-          "10-22 07:00:46.041  1212  1212 I VALIDATION: Validation Information: [ WARNING-cache-file-error ] | MessageID = 0xb8515d13",
-          "10-22 07:00:46.041  1212  1212 I VALIDATION: vkCreateDevice(): Cannot open shader validation cache at /tmp/shader_validation_cache-2000.bin for reading (it may not exist yet)",
-          "10-22 07:00:46.503  1212  1212 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
-          "10-22 07:00:46.503  1212  1212 I VALIDATION: vkDestroyDevice(): VkDevice 0xb4000073ae0f78c0 has 2 leaked objects that have not been destroyed.",
-          "10-22 07:00:46.503  1212  1212 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
-          "10-22 07:00:46.503  1212  1212 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
+          "10-22 07:07:23.338  1179  1179 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
+          "10-22 07:07:23.338  1179  1179 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
+          "10-22 07:07:23.338  1179  1179 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_23.validation-probe.1179.txt) could not be opened, falling back to stdout instead.",
+          "10-22 07:07:23.338  1179  1179 I VALIDATION: ",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION:   - Core Checks",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION:   - Synchronization",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION:   - Stateless Parameter",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION:   - Object lifetime",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION:   - Thread Safety",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION:   - Handle Wrapping",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION: ",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION: Objects: 1",
+          "10-22 07:07:23.341  1179  1179 I VALIDATION:     [0] VkInstance 0xb400007c9e207d70",
+          "10-22 07:07:23.386  1179  1179 I VALIDATION: Validation Information: [ WARNING-cache-file-error ] | MessageID = 0xb8515d13",
+          "10-22 07:07:23.386  1179  1179 I VALIDATION: vkCreateDevice(): Cannot open shader validation cache at /tmp/shader_validation_cache-2000.bin for reading (it may not exist yet)",
+          "10-22 07:07:23.551  1179  1179 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
+          "10-22 07:07:23.551  1179  1179 I VALIDATION: vkDestroyDevice(): VkDevice 0xb400007e7e203da0 has 2 leaked objects that have not been destroyed.",
+          "10-22 07:07:23.551  1179  1179 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
+          "10-22 07:07:23.551  1179  1179 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
         ],
         "wrapper_diagnostics": [
-          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x715c9d678c \t (set_layer_paths:39)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x715c9d8c34 \t (set_layer_paths:40)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x715c9d8c2c \t (set_layer_paths:41)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x7c7abcc78c \t (set_layer_paths:39)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x7c7abcec34 \t (set_layer_paths:40)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x7c7abcec2c \t (set_layer_paths:41)",
           "[000.00] Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x715c9d8b7c \t (set_layer_paths:44)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x7c7abceb7c \t (set_layer_paths:44)",
           "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
           "[000.00] get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
           "[000.14] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
           "[000.15]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
-          "10-22 07:00:45.718  1212  1212 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x715c9d678c \t (set_layer_paths:39)",
-          "10-22 07:00:45.718  1212  1212 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x715c9d8c34 \t (set_layer_paths:40)",
-          "10-22 07:00:45.718  1212  1212 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x715c9d8c2c \t (set_layer_paths:41)",
-          "10-22 07:00:45.718  1212  1212 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "10-22 07:00:45.718  1212  1212 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x715c9d8b7c \t (set_layer_paths:44)",
-          "10-22 07:00:45.719  1212  1212 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-          "10-22 07:00:45.719  1212  1212 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "10-22 07:00:45.863  1212  1212 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "10-22 07:00:45.863  1212  1212 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
+          "10-22 07:07:23.101  1179  1179 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x7c7abcc78c \t (set_layer_paths:39)",
+          "10-22 07:07:23.101  1179  1179 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x7c7abcec34 \t (set_layer_paths:40)",
+          "10-22 07:07:23.101  1179  1179 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x7c7abcec2c \t (set_layer_paths:41)",
+          "10-22 07:07:23.101  1179  1179 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
+          "10-22 07:07:23.101  1179  1179 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x7c7abceb7c \t (set_layer_paths:44)",
+          "10-22 07:07:23.101  1179  1179 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+          "10-22 07:07:23.101  1179  1179 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
+          "10-22 07:07:23.243  1179  1179 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "10-22 07:07:23.243  1179  1179 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
         ],
         "below_layer_loaded_signal": {
           "graphics_env_paths_set": true,
@@ -3948,12 +3990,12 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-compute.log"
+        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-bc1-compute.log"
       },
       {
-        "name": "wrapper-usevvl-bc1-view",
+        "name": "patched-final-wrapper-usevvl-bc1-view",
         "target": "wrapper",
-        "target_label": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "target_label": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "bc1",
         "cycles": 8,
@@ -3971,7 +4013,7 @@
           "USE_IMAGE_VIEW": "1"
         },
         "exit_code": 0,
-        "duration_seconds": 1.21,
+        "duration_seconds": 0.423,
         "probe_events": [
           "PROBE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so layer=none chained=0 mode=bc1 cycles=8 edge=16 page_size=4096",
           "DRIVER_INTERFACE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so icd_gipa=1 exports_vkGetDeviceProcAddr=0",
@@ -4003,11 +4045,11 @@
             "message_id": "0x7f1922d7",
             "text_lines": [
               "vkCreateInstance(): Information with the layer settings provided:",
-              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_47.validation-probe.1276.txt) could not be opened, falling back to stdout instead."
+              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_23.validation-probe.1257.txt) could not be opened, falling back to stdout instead."
             ],
             "objects": [],
-            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_47.validation-probe.1276.txt) could not be opened, falling back to stdout instead.",
-            "text_sha256_16": "b7cd7b90572b8b01"
+            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_23.validation-probe.1257.txt) could not be opened, falling back to stdout instead.",
+            "text_sha256_16": "67389ae5a9d57303"
           },
           {
             "severity": "Validation Information",
@@ -4031,56 +4073,56 @@
             "vuid": "VUID-vkDestroyDevice-device-05137",
             "message_id": "0x4872eaa0",
             "text_lines": [
-              "vkDestroyDevice(): VkDevice 0xb400007c6e2d2b30 has 2 leaked objects that have not been destroyed.",
+              "vkDestroyDevice(): VkDevice 0xb400007688468010 has 2 leaked objects that have not been destroyed.",
               "VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
               "The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
             ],
             "objects": [],
-            "text": "vkDestroyDevice(): VkDevice 0xb400007c6e2d2b30 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
-            "text_sha256_16": "651748ed170ea917"
+            "text": "vkDestroyDevice(): VkDevice 0xb400007688468010 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+            "text_sha256_16": "1d79eed020e6c437"
           }
         ],
         "message_count": 3,
         "logcat_validation_lines": [
-          "10-22 07:00:47.515  1276  1276 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
-          "10-22 07:00:47.515  1276  1276 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
-          "10-22 07:00:47.515  1276  1276 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_47.validation-probe.1276.txt) could not be opened, falling back to stdout instead.",
-          "10-22 07:00:47.515  1276  1276 I VALIDATION: ",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION:   - Core Checks",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION:   - Synchronization",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION:   - Stateless Parameter",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION:   - Object lifetime",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION:   - Thread Safety",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION:   - Handle Wrapping",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION: ",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION: Objects: 1",
-          "10-22 07:00:47.524  1276  1276 I VALIDATION:     [0] VkInstance 0xb400007bfe2cd650",
-          "10-22 07:00:47.896  1276  1276 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
-          "10-22 07:00:47.896  1276  1276 I VALIDATION: vkDestroyDevice(): VkDevice 0xb400007c6e2d2b30 has 2 leaked objects that have not been destroyed.",
-          "10-22 07:00:47.896  1276  1276 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
-          "10-22 07:00:47.896  1276  1276 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
+          "10-22 07:07:23.927  1257  1257 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
+          "10-22 07:07:23.927  1257  1257 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
+          "10-22 07:07:23.927  1257  1257 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_23.validation-probe.1257.txt) could not be opened, falling back to stdout instead.",
+          "10-22 07:07:23.927  1257  1257 I VALIDATION: ",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION:   - Core Checks",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION:   - Synchronization",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION:   - Stateless Parameter",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION:   - Object lifetime",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION:   - Thread Safety",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION:   - Handle Wrapping",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION: ",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION: Objects: 1",
+          "10-22 07:07:23.931  1257  1257 I VALIDATION:     [0] VkInstance 0xb400007518473fb0",
+          "10-22 07:07:24.136  1257  1257 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
+          "10-22 07:07:24.136  1257  1257 I VALIDATION: vkDestroyDevice(): VkDevice 0xb400007688468010 has 2 leaked objects that have not been destroyed.",
+          "10-22 07:07:24.136  1257  1257 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
+          "10-22 07:07:24.136  1257  1257 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
         ],
         "wrapper_diagnostics": [
-          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x7a343d278c \t (set_layer_paths:39)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x7a343d4c34 \t (set_layer_paths:40)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x7a343d4c2c \t (set_layer_paths:41)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x749818d78c \t (set_layer_paths:39)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x749818fc34 \t (set_layer_paths:40)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x749818fc2c \t (set_layer_paths:41)",
           "[000.00] Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x7a343d4b7c \t (set_layer_paths:44)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x749818fb7c \t (set_layer_paths:44)",
           "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
           "[000.00] get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "[000.57] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "[000.57]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
-          "10-22 07:00:46.828  1276  1276 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x7a343d278c \t (set_layer_paths:39)",
-          "10-22 07:00:46.828  1276  1276 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x7a343d4c34 \t (set_layer_paths:40)",
-          "10-22 07:00:46.828  1276  1276 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x7a343d4c2c \t (set_layer_paths:41)",
-          "10-22 07:00:46.828  1276  1276 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "10-22 07:00:46.828  1276  1276 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x7a343d4b7c \t (set_layer_paths:44)",
-          "10-22 07:00:46.828  1276  1276 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-          "10-22 07:00:46.828  1276  1276 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "10-22 07:00:47.397  1276  1276 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "10-22 07:00:47.398  1276  1276 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
+          "[000.08] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "[000.08]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
+          "10-22 07:07:23.782  1257  1257 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x749818d78c \t (set_layer_paths:39)",
+          "10-22 07:07:23.783  1257  1257 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x749818fc34 \t (set_layer_paths:40)",
+          "10-22 07:07:23.783  1257  1257 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x749818fc2c \t (set_layer_paths:41)",
+          "10-22 07:07:23.783  1257  1257 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
+          "10-22 07:07:23.783  1257  1257 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x749818fb7c \t (set_layer_paths:44)",
+          "10-22 07:07:23.783  1257  1257 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+          "10-22 07:07:23.783  1257  1257 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
+          "10-22 07:07:23.862  1257  1257 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "10-22 07:07:23.862  1257  1257 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
         ],
         "below_layer_loaded_signal": {
           "graphics_env_paths_set": true,
@@ -4094,12 +4136,12 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-view.log"
+        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-bc1-view.log"
       },
       {
-        "name": "wrapper-usevvl-bc3",
+        "name": "patched-final-wrapper-usevvl-bc3",
         "target": "wrapper",
-        "target_label": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "target_label": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "bc3",
         "cycles": 8,
@@ -4117,7 +4159,7 @@
           "USE_IMAGE_VIEW": "0"
         },
         "exit_code": 0,
-        "duration_seconds": 0.883,
+        "duration_seconds": 0.431,
         "probe_events": [
           "PROBE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so layer=none chained=0 mode=bc3 cycles=8 edge=16 page_size=4096",
           "DRIVER_INTERFACE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so icd_gipa=1 exports_vkGetDeviceProcAddr=0",
@@ -4149,11 +4191,11 @@
             "message_id": "0x7f1922d7",
             "text_lines": [
               "vkCreateInstance(): Information with the layer settings provided:",
-              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_48.validation-probe.1323.txt) could not be opened, falling back to stdout instead."
+              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_24.validation-probe.1310.txt) could not be opened, falling back to stdout instead."
             ],
             "objects": [],
-            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_48.validation-probe.1323.txt) could not be opened, falling back to stdout instead.",
-            "text_sha256_16": "ac086f7d63dad65d"
+            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_24.validation-probe.1310.txt) could not be opened, falling back to stdout instead.",
+            "text_sha256_16": "32beb21209c38a30"
           },
           {
             "severity": "Validation Information",
@@ -4177,56 +4219,56 @@
             "vuid": "VUID-vkDestroyDevice-device-05137",
             "message_id": "0x4872eaa0",
             "text_lines": [
-              "vkDestroyDevice(): VkDevice 0xb40000741d23ada0 has 2 leaked objects that have not been destroyed.",
+              "vkDestroyDevice(): VkDevice 0xb4000072e7040da0 has 2 leaked objects that have not been destroyed.",
               "VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
               "The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
             ],
             "objects": [],
-            "text": "vkDestroyDevice(): VkDevice 0xb40000741d23ada0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
-            "text_sha256_16": "f326231625049862"
+            "text": "vkDestroyDevice(): VkDevice 0xb4000072e7040da0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+            "text_sha256_16": "a42e850f198955e5"
           }
         ],
         "message_count": 3,
         "logcat_validation_lines": [
-          "10-22 07:00:48.736  1323  1323 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
-          "10-22 07:00:48.736  1323  1323 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
-          "10-22 07:00:48.736  1323  1323 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_48.validation-probe.1323.txt) could not be opened, falling back to stdout instead.",
-          "10-22 07:00:48.736  1323  1323 I VALIDATION: ",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION:   - Core Checks",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION:   - Synchronization",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION:   - Stateless Parameter",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION:   - Object lifetime",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION:   - Thread Safety",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION:   - Handle Wrapping",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION: ",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION: Objects: 1",
-          "10-22 07:00:48.739  1323  1323 I VALIDATION:     [0] VkInstance 0xb40000738d242590",
-          "10-22 07:00:49.177  1323  1323 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
-          "10-22 07:00:49.177  1323  1323 I VALIDATION: vkDestroyDevice(): VkDevice 0xb40000741d23ada0 has 2 leaked objects that have not been destroyed.",
-          "10-22 07:00:49.177  1323  1323 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
-          "10-22 07:00:49.177  1323  1323 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
+          "10-22 07:07:24.532  1310  1310 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
+          "10-22 07:07:24.532  1310  1310 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
+          "10-22 07:07:24.532  1310  1310 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_24.validation-probe.1310.txt) could not be opened, falling back to stdout instead.",
+          "10-22 07:07:24.532  1310  1310 I VALIDATION: ",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION:   - Core Checks",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION:   - Synchronization",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION:   - Stateless Parameter",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION:   - Object lifetime",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION:   - Thread Safety",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION:   - Handle Wrapping",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION: ",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION: Objects: 1",
+          "10-22 07:07:24.537  1310  1310 I VALIDATION:     [0] VkInstance 0xb4000072a703f730",
+          "10-22 07:07:24.732  1310  1310 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
+          "10-22 07:07:24.732  1310  1310 I VALIDATION: vkDestroyDevice(): VkDevice 0xb4000072e7040da0 has 2 leaked objects that have not been destroyed.",
+          "10-22 07:07:24.732  1310  1310 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
+          "10-22 07:07:24.732  1310  1310 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
         ],
         "wrapper_diagnostics": [
-          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x72a25e678c \t (set_layer_paths:39)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x72a25e8c34 \t (set_layer_paths:40)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x72a25e8c2c \t (set_layer_paths:41)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x71ef65978c \t (set_layer_paths:39)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x71ef65bc34 \t (set_layer_paths:40)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x71ef65bc2c \t (set_layer_paths:41)",
           "[000.00] Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "[000.01] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x72a25e8b7c \t (set_layer_paths:44)",
-          "[000.01] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-          "[000.01] get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "[000.25] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "[000.25]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
-          "10-22 07:00:48.408  1323  1323 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x72a25e678c \t (set_layer_paths:39)",
-          "10-22 07:00:48.409  1323  1323 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x72a25e8c34 \t (set_layer_paths:40)",
-          "10-22 07:00:48.409  1323  1323 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x72a25e8c2c \t (set_layer_paths:41)",
-          "10-22 07:00:48.411  1323  1323 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "10-22 07:00:48.411  1323  1323 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x72a25e8b7c \t (set_layer_paths:44)",
-          "10-22 07:00:48.411  1323  1323 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-          "10-22 07:00:48.412  1323  1323 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "10-22 07:00:48.654  1323  1323 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "10-22 07:00:48.654  1323  1323 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
+          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x71ef65bb7c \t (set_layer_paths:44)",
+          "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+          "[000.00] get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
+          "[000.11] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "[000.11]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
+          "10-22 07:07:24.365  1310  1310 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x71ef65978c \t (set_layer_paths:39)",
+          "10-22 07:07:24.365  1310  1310 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x71ef65bc34 \t (set_layer_paths:40)",
+          "10-22 07:07:24.365  1310  1310 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x71ef65bc2c \t (set_layer_paths:41)",
+          "10-22 07:07:24.365  1310  1310 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
+          "10-22 07:07:24.366  1310  1310 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x71ef65bb7c \t (set_layer_paths:44)",
+          "10-22 07:07:24.366  1310  1310 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+          "10-22 07:07:24.366  1310  1310 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
+          "10-22 07:07:24.474  1310  1310 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "10-22 07:07:24.474  1310  1310 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
         ],
         "below_layer_loaded_signal": {
           "graphics_env_paths_set": true,
@@ -4240,12 +4282,12 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc3.log"
+        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-bc3.log"
       },
       {
-        "name": "wrapper-usevvl-cpu",
+        "name": "patched-final-wrapper-usevvl-cpu",
         "target": "wrapper",
-        "target_label": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "target_label": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "bc1",
         "cycles": 4,
@@ -4263,7 +4305,7 @@
           "USE_CPU_BCN": "all"
         },
         "exit_code": 0,
-        "duration_seconds": 0.889,
+        "duration_seconds": 0.449,
         "probe_events": [
           "PROBE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so layer=none chained=0 mode=bc1 cycles=4 edge=16 page_size=4096",
           "DRIVER_INTERFACE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so icd_gipa=1 exports_vkGetDeviceProcAddr=0",
@@ -4291,11 +4333,11 @@
             "message_id": "0x7f1922d7",
             "text_lines": [
               "vkCreateInstance(): Information with the layer settings provided:",
-              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_49.validation-probe.1368.txt) could not be opened, falling back to stdout instead."
+              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_25.validation-probe.1325.txt) could not be opened, falling back to stdout instead."
             ],
             "objects": [],
-            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_49.validation-probe.1368.txt) could not be opened, falling back to stdout instead.",
-            "text_sha256_16": "caa1c462c033b075"
+            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_25.validation-probe.1325.txt) could not be opened, falling back to stdout instead.",
+            "text_sha256_16": "cdded09fcd70bb9b"
           },
           {
             "severity": "Validation Information",
@@ -4319,56 +4361,56 @@
             "vuid": "VUID-vkDestroyDevice-device-05137",
             "message_id": "0x4872eaa0",
             "text_lines": [
-              "vkDestroyDevice(): VkDevice 0xb40000770bad3b30 has 2 leaked objects that have not been destroyed.",
+              "vkDestroyDevice(): VkDevice 0xb4000070f8a92da0 has 2 leaked objects that have not been destroyed.",
               "VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
               "The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
             ],
             "objects": [],
-            "text": "vkDestroyDevice(): VkDevice 0xb40000770bad3b30 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
-            "text_sha256_16": "00e27154c12a4e7b"
+            "text": "vkDestroyDevice(): VkDevice 0xb4000070f8a92da0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+            "text_sha256_16": "5ce11aebfa253809"
           }
         ],
         "message_count": 3,
         "logcat_validation_lines": [
-          "10-22 07:00:49.937  1368  1368 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
-          "10-22 07:00:49.937  1368  1368 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
-          "10-22 07:00:49.937  1368  1368 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_49.validation-probe.1368.txt) could not be opened, falling back to stdout instead.",
-          "10-22 07:00:49.937  1368  1368 I VALIDATION: ",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION:   - Core Checks",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION:   - Synchronization",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION:   - Stateless Parameter",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION:   - Object lifetime",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION:   - Thread Safety",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION:   - Handle Wrapping",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION: ",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION: Objects: 1",
-          "10-22 07:00:49.940  1368  1368 I VALIDATION:     [0] VkInstance 0xb4000075fbad11b0",
-          "10-22 07:00:50.332  1368  1368 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
-          "10-22 07:00:50.332  1368  1368 I VALIDATION: vkDestroyDevice(): VkDevice 0xb40000770bad3b30 has 2 leaked objects that have not been destroyed.",
-          "10-22 07:00:50.332  1368  1368 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
-          "10-22 07:00:50.332  1368  1368 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
+          "10-22 07:07:25.174  1325  1325 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
+          "10-22 07:07:25.174  1325  1325 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
+          "10-22 07:07:25.174  1325  1325 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_25.validation-probe.1325.txt) could not be opened, falling back to stdout instead.",
+          "10-22 07:07:25.174  1325  1325 I VALIDATION: ",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION:   - Core Checks",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION:   - Synchronization",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION:   - Stateless Parameter",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION:   - Object lifetime",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION:   - Thread Safety",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION:   - Handle Wrapping",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION: ",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION: Objects: 1",
+          "10-22 07:07:25.178  1325  1325 I VALIDATION:     [0] VkInstance 0xb400006fb8a96910",
+          "10-22 07:07:25.338  1325  1325 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
+          "10-22 07:07:25.338  1325  1325 I VALIDATION: vkDestroyDevice(): VkDevice 0xb4000070f8a92da0 has 2 leaked objects that have not been destroyed.",
+          "10-22 07:07:25.338  1325  1325 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
+          "10-22 07:07:25.338  1325  1325 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
         ],
         "wrapper_diagnostics": [
-          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x751b78c78c \t (set_layer_paths:39)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x751b78ec34 \t (set_layer_paths:40)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x751b78ec2c \t (set_layer_paths:41)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x6f1b2b078c \t (set_layer_paths:39)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x6f1b2b2c34 \t (set_layer_paths:40)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x6f1b2b2c2c \t (set_layer_paths:41)",
           "[000.00] Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x751b78eb7c \t (set_layer_paths:44)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x6f1b2b2b7c \t (set_layer_paths:44)",
           "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
           "[000.00] get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "[000.30] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "[000.30]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
-          "10-22 07:00:49.554  1368  1368 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x751b78c78c \t (set_layer_paths:39)",
-          "10-22 07:00:49.554  1368  1368 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x751b78ec34 \t (set_layer_paths:40)",
-          "10-22 07:00:49.554  1368  1368 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x751b78ec2c \t (set_layer_paths:41)",
-          "10-22 07:00:49.554  1368  1368 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "10-22 07:00:49.554  1368  1368 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x751b78eb7c \t (set_layer_paths:44)",
-          "10-22 07:00:49.554  1368  1368 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-          "10-22 07:00:49.554  1368  1368 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "10-22 07:00:49.851  1368  1368 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "10-22 07:00:49.851  1368  1368 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
+          "[000.17] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "[000.17]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
+          "10-22 07:07:24.954  1325  1325 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x6f1b2b078c \t (set_layer_paths:39)",
+          "10-22 07:07:24.954  1325  1325 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x6f1b2b2c34 \t (set_layer_paths:40)",
+          "10-22 07:07:24.954  1325  1325 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x6f1b2b2c2c \t (set_layer_paths:41)",
+          "10-22 07:07:24.954  1325  1325 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
+          "10-22 07:07:24.954  1325  1325 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x6f1b2b2b7c \t (set_layer_paths:44)",
+          "10-22 07:07:24.954  1325  1325 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+          "10-22 07:07:24.954  1325  1325 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
+          "10-22 07:07:25.125  1325  1325 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "10-22 07:07:25.126  1325  1325 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
         ],
         "below_layer_loaded_signal": {
           "graphics_env_paths_set": true,
@@ -4382,12 +4424,12 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-cpu.log"
+        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-cpu.log"
       },
       {
-        "name": "wrapper-usevvl-bc1-multi",
+        "name": "patched-final-wrapper-usevvl-bc1-multi",
         "target": "wrapper",
-        "target_label": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "target_label": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "bc1-multi",
         "cycles": 2,
@@ -4405,7 +4447,7 @@
           "USE_IMAGE_VIEW": "0"
         },
         "exit_code": 0,
-        "duration_seconds": 1.111,
+        "duration_seconds": 0.404,
         "probe_events": [
           "PROBE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so layer=none chained=0 mode=bc1-multi cycles=2 edge=16 page_size=4096",
           "DRIVER_INTERFACE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so icd_gipa=1 exports_vkGetDeviceProcAddr=0",
@@ -4431,11 +4473,11 @@
             "message_id": "0x7f1922d7",
             "text_lines": [
               "vkCreateInstance(): Information with the layer settings provided:",
-              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_50.validation-probe.1394.txt) could not be opened, falling back to stdout instead."
+              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_25.validation-probe.1397.txt) could not be opened, falling back to stdout instead."
             ],
             "objects": [],
-            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_50.validation-probe.1394.txt) could not be opened, falling back to stdout instead.",
-            "text_sha256_16": "5d2c5e7330ce1aab"
+            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_25.validation-probe.1397.txt) could not be opened, falling back to stdout instead.",
+            "text_sha256_16": "f5cb7da27ae476d0"
           },
           {
             "severity": "Validation Information",
@@ -4459,56 +4501,56 @@
             "vuid": "VUID-vkDestroyDevice-device-05137",
             "message_id": "0x4872eaa0",
             "text_lines": [
-              "vkDestroyDevice(): VkDevice 0xb40000751fbb6b30 has 2 leaked objects that have not been destroyed.",
+              "vkDestroyDevice(): VkDevice 0xb400007dfae77b30 has 2 leaked objects that have not been destroyed.",
               "VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
               "The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
             ],
             "objects": [],
-            "text": "vkDestroyDevice(): VkDevice 0xb40000751fbb6b30 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
-            "text_sha256_16": "f5d6b96bef76633c"
+            "text": "vkDestroyDevice(): VkDevice 0xb400007dfae77b30 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+            "text_sha256_16": "7bc5f3c231d85b83"
           }
         ],
         "message_count": 3,
         "logcat_validation_lines": [
-          "10-22 07:00:51.054  1394  1394 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
-          "10-22 07:00:51.054  1394  1394 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
-          "10-22 07:00:51.054  1394  1394 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_50.validation-probe.1394.txt) could not be opened, falling back to stdout instead.",
-          "10-22 07:00:51.054  1394  1394 I VALIDATION: ",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION:   - Core Checks",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION:   - Synchronization",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION:   - Stateless Parameter",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION:   - Object lifetime",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION:   - Thread Safety",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION:   - Handle Wrapping",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION: ",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION: Objects: 1",
-          "10-22 07:00:51.057  1394  1394 I VALIDATION:     [0] VkInstance 0xb40000747fbadc30",
-          "10-22 07:00:51.427  1394  1394 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
-          "10-22 07:00:51.427  1394  1394 I VALIDATION: vkDestroyDevice(): VkDevice 0xb40000751fbb6b30 has 2 leaked objects that have not been destroyed.",
-          "10-22 07:00:51.427  1394  1394 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
-          "10-22 07:00:51.427  1394  1394 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
+          "10-22 07:07:25.719  1397  1397 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
+          "10-22 07:07:25.719  1397  1397 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
+          "10-22 07:07:25.719  1397  1397 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_25.validation-probe.1397.txt) could not be opened, falling back to stdout instead.",
+          "10-22 07:07:25.719  1397  1397 I VALIDATION: ",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION:   - Core Checks",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION:   - Synchronization",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION:   - Stateless Parameter",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION:   - Object lifetime",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION:   - Thread Safety",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION:   - Handle Wrapping",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION: ",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION: Objects: 1",
+          "10-22 07:07:25.722  1397  1397 I VALIDATION:     [0] VkInstance 0xb400007e3ae827f0",
+          "10-22 07:07:25.896  1397  1397 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
+          "10-22 07:07:25.896  1397  1397 I VALIDATION: vkDestroyDevice(): VkDevice 0xb400007dfae77b30 has 2 leaked objects that have not been destroyed.",
+          "10-22 07:07:25.896  1397  1397 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
+          "10-22 07:07:25.896  1397  1397 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
         ],
         "wrapper_diagnostics": [
-          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x73cf87378c \t (set_layer_paths:39)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x73cf875c34 \t (set_layer_paths:40)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x73cf875c2c \t (set_layer_paths:41)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x7ce7b5e78c \t (set_layer_paths:39)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x7ce7b60c34 \t (set_layer_paths:40)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x7ce7b60c2c \t (set_layer_paths:41)",
           "[000.00] Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x73cf875b7c \t (set_layer_paths:44)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x7ce7b60b7c \t (set_layer_paths:44)",
           "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
           "[000.00] get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "[000.38] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "[000.38]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
-          "10-22 07:00:50.610  1394  1394 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x73cf87378c \t (set_layer_paths:39)",
-          "10-22 07:00:50.610  1394  1394 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x73cf875c34 \t (set_layer_paths:40)",
-          "10-22 07:00:50.610  1394  1394 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x73cf875c2c \t (set_layer_paths:41)",
-          "10-22 07:00:50.610  1394  1394 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "10-22 07:00:50.610  1394  1394 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x73cf875b7c \t (set_layer_paths:44)",
-          "10-22 07:00:50.610  1394  1394 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-          "10-22 07:00:50.610  1394  1394 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "10-22 07:00:50.991  1394  1394 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "10-22 07:00:50.991  1394  1394 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
+          "[000.10] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "[000.10]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
+          "10-22 07:07:25.566  1397  1397 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x7ce7b5e78c \t (set_layer_paths:39)",
+          "10-22 07:07:25.566  1397  1397 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x7ce7b60c34 \t (set_layer_paths:40)",
+          "10-22 07:07:25.566  1397  1397 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x7ce7b60c2c \t (set_layer_paths:41)",
+          "10-22 07:07:25.566  1397  1397 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
+          "10-22 07:07:25.566  1397  1397 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x7ce7b60b7c \t (set_layer_paths:44)",
+          "10-22 07:07:25.567  1397  1397 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+          "10-22 07:07:25.567  1397  1397 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
+          "10-22 07:07:25.669  1397  1397 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "10-22 07:07:25.670  1397  1397 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
         ],
         "below_layer_loaded_signal": {
           "graphics_env_paths_set": true,
@@ -4522,12 +4564,12 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-multi.log"
+        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-bc1-multi.log"
       },
       {
-        "name": "wrapper-usevvl-vuid",
+        "name": "patched-final-wrapper-usevvl-vuid",
         "target": "wrapper",
-        "target_label": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "target_label": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "vuid",
         "cycles": 1,
@@ -4543,7 +4585,7 @@
           "USE_VVL": "1"
         },
         "exit_code": 0,
-        "duration_seconds": 1.466,
+        "duration_seconds": 0.389,
         "probe_events": [
           "PROBE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so layer=none chained=0 mode=vuid cycles=1 edge=16 page_size=4096",
           "DRIVER_INTERFACE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so icd_gipa=1 exports_vkGetDeviceProcAddr=0",
@@ -4564,11 +4606,11 @@
             "message_id": "0x7f1922d7",
             "text_lines": [
               "vkCreateInstance(): Information with the layer settings provided:",
-              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_52.validation-probe.1417.txt) could not be opened, falling back to stdout instead."
+              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_26.validation-probe.1439.txt) could not be opened, falling back to stdout instead."
             ],
             "objects": [],
-            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_52.validation-probe.1417.txt) could not be opened, falling back to stdout instead.",
-            "text_sha256_16": "f8496106ae307d9c"
+            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_26.validation-probe.1439.txt) could not be opened, falling back to stdout instead.",
+            "text_sha256_16": "de0c35e1b449c802"
           },
           {
             "severity": "Validation Information",
@@ -4592,56 +4634,56 @@
             "vuid": "VUID-vkDestroyDevice-device-05137",
             "message_id": "0x4872eaa0",
             "text_lines": [
-              "vkDestroyDevice(): VkDevice 0xb4000078401858c0 has 4 leaked objects that have not been destroyed.",
+              "vkDestroyDevice(): VkDevice 0xb4000079de42eda0 has 4 leaked objects that have not been destroyed.",
               "VkDeviceMemory 0x60000000006, VkDeviceMemory 0x130000000013, VkDeviceMemory 0xc000000000c, VkBuffer 0x120000000012",
               "The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
             ],
             "objects": [],
-            "text": "vkDestroyDevice(): VkDevice 0xb4000078401858c0 has 4 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0x130000000013, VkDeviceMemory 0xc000000000c, VkBuffer 0x120000000012 The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
-            "text_sha256_16": "9669f0bf5d7bcf08"
+            "text": "vkDestroyDevice(): VkDevice 0xb4000079de42eda0 has 4 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0x130000000013, VkDeviceMemory 0xc000000000c, VkBuffer 0x120000000012 The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+            "text_sha256_16": "2664a235cf2565cc"
           }
         ],
         "message_count": 3,
         "logcat_validation_lines": [
-          "10-22 07:00:52.791  1417  1417 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
-          "10-22 07:00:52.791  1417  1417 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
-          "10-22 07:00:52.791  1417  1417 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_52.validation-probe.1417.txt) could not be opened, falling back to stdout instead.",
-          "10-22 07:00:52.791  1417  1417 I VALIDATION: ",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION:   - Core Checks",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION:   - Synchronization",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION:   - Stateless Parameter",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION:   - Object lifetime",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION:   - Thread Safety",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION:   - Handle Wrapping",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION: ",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION: Objects: 1",
-          "10-22 07:00:52.797  1417  1417 I VALIDATION:     [0] VkInstance 0xb4000077c01702d0",
-          "10-22 07:00:53.281  1417  1417 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
-          "10-22 07:00:53.281  1417  1417 I VALIDATION: vkDestroyDevice(): VkDevice 0xb4000078401858c0 has 4 leaked objects that have not been destroyed.",
-          "10-22 07:00:53.281  1417  1417 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0x130000000013, VkDeviceMemory 0xc000000000c, VkBuffer 0x120000000012",
-          "10-22 07:00:53.281  1417  1417 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
+          "10-22 07:07:26.296  1439  1439 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
+          "10-22 07:07:26.296  1439  1439 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
+          "10-22 07:07:26.296  1439  1439 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_26.validation-probe.1439.txt) could not be opened, falling back to stdout instead.",
+          "10-22 07:07:26.296  1439  1439 I VALIDATION: ",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION:   - Core Checks",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION:   - Synchronization",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION:   - Stateless Parameter",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION:   - Object lifetime",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION:   - Thread Safety",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION:   - Handle Wrapping",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION: ",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION: Objects: 1",
+          "10-22 07:07:26.301  1439  1439 I VALIDATION:     [0] VkInstance 0xb40000799e436270",
+          "10-22 07:07:26.450  1439  1439 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
+          "10-22 07:07:26.450  1439  1439 I VALIDATION: vkDestroyDevice(): VkDevice 0xb4000079de42eda0 has 4 leaked objects that have not been destroyed.",
+          "10-22 07:07:26.450  1439  1439 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0x130000000013, VkDeviceMemory 0xc000000000c, VkBuffer 0x120000000012",
+          "10-22 07:07:26.450  1439  1439 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
         ],
         "wrapper_diagnostics": [
-          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x75eaba678c \t (set_layer_paths:39)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x75eaba8c34 \t (set_layer_paths:40)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x75eaba8c2c \t (set_layer_paths:41)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x778e1af78c \t (set_layer_paths:39)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x778e1b1c34 \t (set_layer_paths:40)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x778e1b1c2c \t (set_layer_paths:41)",
           "[000.00] Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x75eaba8b7c \t (set_layer_paths:44)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x778e1b1b7c \t (set_layer_paths:44)",
           "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
           "[000.00] get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "[000.27] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "[000.27]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
-          "10-22 07:00:52.341  1417  1417 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x75eaba678c \t (set_layer_paths:39)",
-          "10-22 07:00:52.341  1417  1417 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x75eaba8c34 \t (set_layer_paths:40)",
-          "10-22 07:00:52.341  1417  1417 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x75eaba8c2c \t (set_layer_paths:41)",
-          "10-22 07:00:52.341  1417  1417 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "10-22 07:00:52.341  1417  1417 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x75eaba8b7c \t (set_layer_paths:44)",
-          "10-22 07:00:52.341  1417  1417 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-          "10-22 07:00:52.341  1417  1417 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "10-22 07:00:52.607  1417  1417 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "10-22 07:00:52.607  1417  1417 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
+          "[000.12] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "[000.12]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
+          "10-22 07:07:26.128  1439  1439 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x778e1af78c \t (set_layer_paths:39)",
+          "10-22 07:07:26.128  1439  1439 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x778e1b1c34 \t (set_layer_paths:40)",
+          "10-22 07:07:26.128  1439  1439 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x778e1b1c2c \t (set_layer_paths:41)",
+          "10-22 07:07:26.128  1439  1439 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
+          "10-22 07:07:26.128  1439  1439 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x778e1b1b7c \t (set_layer_paths:44)",
+          "10-22 07:07:26.128  1439  1439 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+          "10-22 07:07:26.128  1439  1439 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
+          "10-22 07:07:26.250  1439  1439 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "10-22 07:07:26.250  1439  1439 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
         ],
         "below_layer_loaded_signal": {
           "graphics_env_paths_set": true,
@@ -4655,12 +4697,12 @@
         "expected_vuid_seen": true,
         "expect_no_messages": false,
         "positive_control": true,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-vuid.log"
+        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-vuid.log"
       },
       {
-        "name": "wrapper-usevvl-caps",
+        "name": "patched-final-wrapper-usevvl-caps",
         "target": "wrapper",
-        "target_label": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "target_label": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "caps",
         "cycles": 1,
@@ -4676,7 +4718,7 @@
           "USE_VVL": "1"
         },
         "exit_code": 0,
-        "duration_seconds": 3.159,
+        "duration_seconds": 0.484,
         "probe_events": [
           "PROBE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so layer=none chained=0 mode=caps cycles=1 edge=16 page_size=4096",
           "DRIVER_INTERFACE driver=/data/local/tmp/vapor-wrapper-validation-20261022/candidate-stripped.so icd_gipa=1 exports_vkGetDeviceProcAddr=0",
@@ -4698,11 +4740,11 @@
             "message_id": "0x7f1922d7",
             "text_lines": [
               "vkCreateInstance(): Information with the layer settings provided:",
-              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_54.validation-probe.1428.txt) could not be opened, falling back to stdout instead."
+              "- log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_26.validation-probe.1450.txt) could not be opened, falling back to stdout instead."
             ],
             "objects": [],
-            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_54.validation-probe.1428.txt) could not be opened, falling back to stdout instead.",
-            "text_sha256_16": "b66d91159765ea19"
+            "text": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_26.validation-probe.1450.txt) could not be opened, falling back to stdout instead.",
+            "text_sha256_16": "f27f55a9b2469ad0"
           },
           {
             "severity": "Validation Information",
@@ -4726,56 +4768,56 @@
             "vuid": "VUID-vkDestroyDevice-device-05137",
             "message_id": "0x4872eaa0",
             "text_lines": [
-              "vkDestroyDevice(): VkDevice 0xb4000073c280fda0 has 2 leaked objects that have not been destroyed.",
+              "vkDestroyDevice(): VkDevice 0xb4000078f989d8c0 has 2 leaked objects that have not been destroyed.",
               "VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
               "The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
             ],
             "objects": [],
-            "text": "vkDestroyDevice(): VkDevice 0xb4000073c280fda0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
-            "text_sha256_16": "19abfa8e672d8e74"
+            "text": "vkDestroyDevice(): VkDevice 0xb4000078f989d8c0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+            "text_sha256_16": "fccb52e40bc23d11"
           }
         ],
         "message_count": 3,
         "logcat_validation_lines": [
-          "10-22 07:00:55.606  1428  1428 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
-          "10-22 07:00:55.606  1428  1428 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
-          "10-22 07:00:55.606  1428  1428 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_54.validation-probe.1428.txt) could not be opened, falling back to stdout instead.",
-          "10-22 07:00:55.606  1428  1428 I VALIDATION: ",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION:   - Core Checks",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION:   - Synchronization",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION:   - Stateless Parameter",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION:   - Object lifetime",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION:   - Thread Safety",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION:   - Handle Wrapping",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION: ",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION: Objects: 1",
-          "10-22 07:00:55.610  1428  1428 I VALIDATION:     [0] VkInstance 0xb4000074a28125f0",
-          "10-22 07:00:56.755  1428  1428 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
-          "10-22 07:00:56.755  1428  1428 I VALIDATION: vkDestroyDevice(): VkDevice 0xb4000073c280fda0 has 2 leaked objects that have not been destroyed.",
-          "10-22 07:00:56.755  1428  1428 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
-          "10-22 07:00:56.755  1428  1428 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
+          "10-22 07:07:26.835  1450  1450 I VALIDATION: Validation Warning: [ VALIDATION-SETTINGS ] | MessageID = 0x7f1922d7",
+          "10-22 07:07:26.835  1450  1450 I VALIDATION: vkCreateInstance(): Information with the layer settings provided:",
+          "10-22 07:07:26.835  1450  1450 I VALIDATION: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_26.validation-probe.1450.txt) could not be opened, falling back to stdout instead.",
+          "10-22 07:07:26.835  1450  1450 I VALIDATION: ",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION: Validation Information: [ CURRENT-VALIDATION-ENABLED ] | MessageID = 0xfd7b2292",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION: vkCreateInstance(): Current Validation Enabled:",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION:   - Core Checks",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION:   - Synchronization",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION:   - Stateless Parameter",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION:   - Object lifetime",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION:   - Thread Safety",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION:   - Handle Wrapping",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION: ",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION: Objects: 1",
+          "10-22 07:07:26.869  1450  1450 I VALIDATION:     [0] VkInstance 0xb400007979893f50",
+          "10-22 07:07:27.024  1450  1450 I VALIDATION: Validation Error: [ VUID-vkDestroyDevice-device-05137 ] | MessageID = 0x4872eaa0",
+          "10-22 07:07:27.024  1450  1450 I VALIDATION: vkDestroyDevice(): VkDevice 0xb4000078f989d8c0 has 2 leaked objects that have not been destroyed.",
+          "10-22 07:07:27.024  1450  1450 I VALIDATION: VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c.",
+          "10-22 07:07:27.024  1450  1450 I VALIDATION: The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)"
         ],
         "wrapper_diagnostics": [
-          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x732d49378c \t (set_layer_paths:39)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x732d495c34 \t (set_layer_paths:40)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x732d495c2c \t (set_layer_paths:41)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x770152578c \t (set_layer_paths:39)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x7701527c34 \t (set_layer_paths:40)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x7701527c2c \t (set_layer_paths:41)",
           "[000.00] Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x732d495b7c \t (set_layer_paths:44)",
+          "[000.00] Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x7701527b7c \t (set_layer_paths:44)",
           "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
           "[000.00] get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "[000.35] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "[000.36]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
-          "10-22 07:00:54.162  1428  1428 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x732d49378c \t (set_layer_paths:39)",
-          "10-22 07:00:54.162  1428  1428 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x732d495c34 \t (set_layer_paths:40)",
-          "10-22 07:00:54.162  1428  1428 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x732d495c2c \t (set_layer_paths:41)",
-          "10-22 07:00:54.162  1428  1428 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
-          "10-22 07:00:54.162  1428  1428 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x732d495b7c \t (set_layer_paths:44)",
-          "10-22 07:00:54.162  1428  1428 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-          "10-22 07:00:54.162  1428  1428 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
-          "10-22 07:00:54.512  1428  1428 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "10-22 07:00:54.514  1428  1428 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
+          "[000.09] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "[000.09]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
+          "10-22 07:07:26.686  1450  1450 E VkWrapper: Found \"_ZN7android11GraphicsEnv11getInstanceEv\" in libgraphicsenv.so at 0x770152578c \t (set_layer_paths:39)",
+          "10-22 07:07:26.688  1450  1450 E VkWrapper: Found \"_ZN7android11GraphicsEnv13getLayerPathsEv\" in libgraphicsenv.so at 0x7701527c34 \t (set_layer_paths:40)",
+          "10-22 07:07:26.688  1450  1450 E VkWrapper: Found \"_ZN7android11GraphicsEnv15getAppNamespaceEv\" in libgraphicsenv.so at 0x7701527c2c \t (set_layer_paths:41)",
+          "10-22 07:07:26.688  1450  1450 E VkWrapper: Cannot find \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so \t (set_layer_paths:42)",
+          "10-22 07:07:26.688  1450  1450 E VkWrapper: Found \"_ZN7android11GraphicsEnv13setLayerPathsEPNS_21NativeLoaderNamespaceERKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEE\" in libgraphicsenv.so at 0x7701527b7c \t (set_layer_paths:44)",
+          "10-22 07:07:26.688  1450  1450 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+          "10-22 07:07:26.688  1450  1450 E VkWrapper: get_vulkan_handle: defaulting to /system/lib64/libvulkan.so \t (get_vulkan_handle_icd:81)",
+          "10-22 07:07:26.776  1450  1450 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "10-22 07:07:26.776  1450  1450 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
         ],
         "below_layer_loaded_signal": {
           "graphics_env_paths_set": true,
@@ -4789,7 +4831,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-caps.log"
+        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-caps.log"
       }
     ],
     "vuid_table": [
@@ -4797,10 +4839,10 @@
         "vuid": "VUID-vkDestroyDevice-device-05137",
         "severity": "Validation Error",
         "message_id": "0x4872eaa0",
-        "sample": "vkDestroyDevice(): VkDevice 0xb4000073ae0f78c0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+        "sample": "vkDestroyDevice(): VkDevice 0xb4000070f8a92da0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-bc1-compute"
+          "patched-final-wrapper-usevvl-cpu"
         ],
         "count": 1,
         "classification": "wrapper-defect (D1 partially fixed: 2 intentionally left to the driver)",
@@ -4812,10 +4854,10 @@
         "vuid": "VUID-vkDestroyDevice-device-05137",
         "severity": "Validation Error",
         "message_id": "0x4872eaa0",
-        "sample": "vkDestroyDevice(): VkDevice 0xb4000073c280fda0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+        "sample": "vkDestroyDevice(): VkDevice 0xb4000072e7040da0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-caps"
+          "patched-final-wrapper-usevvl-bc3"
         ],
         "count": 1,
         "classification": "wrapper-defect (D1 partially fixed: 2 intentionally left to the driver)",
@@ -4827,10 +4869,10 @@
         "vuid": "VUID-vkDestroyDevice-device-05137",
         "severity": "Validation Error",
         "message_id": "0x4872eaa0",
-        "sample": "vkDestroyDevice(): VkDevice 0xb40000741d23ada0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+        "sample": "vkDestroyDevice(): VkDevice 0xb400007688468010 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-bc3"
+          "patched-final-wrapper-usevvl-bc1-view"
         ],
         "count": 1,
         "classification": "wrapper-defect (D1 partially fixed: 2 intentionally left to the driver)",
@@ -4842,10 +4884,10 @@
         "vuid": "VUID-vkDestroyDevice-device-05137",
         "severity": "Validation Error",
         "message_id": "0x4872eaa0",
-        "sample": "vkDestroyDevice(): VkDevice 0xb40000751fbb6b30 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+        "sample": "vkDestroyDevice(): VkDevice 0xb4000078f989d8c0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-bc1-multi"
+          "patched-final-wrapper-usevvl-caps"
         ],
         "count": 1,
         "classification": "wrapper-defect (D1 partially fixed: 2 intentionally left to the driver)",
@@ -4857,25 +4899,10 @@
         "vuid": "VUID-vkDestroyDevice-device-05137",
         "severity": "Validation Error",
         "message_id": "0x4872eaa0",
-        "sample": "vkDestroyDevice(): VkDevice 0xb40000770bad3b30 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+        "sample": "vkDestroyDevice(): VkDevice 0xb4000079de42eda0 has 4 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0x130000000013, VkDeviceMemory 0xc000000000c, VkBuffer 0x120000000012 The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-cpu"
-        ],
-        "count": 1,
-        "classification": "wrapper-defect (D1 partially fixed: 2 intentionally left to the driver)",
-        "reason": "Every below-wrapper teardown (including caps, which runs no workload) leaves 14 wrapper-created driver objects alive at vkDestroyDevice; see findings D1 and the wrapper source citations there.",
-        "finding": "D1",
-        "leaked_object_count": 2
-      },
-      {
-        "vuid": "VUID-vkDestroyDevice-device-05137",
-        "severity": "Validation Error",
-        "message_id": "0x4872eaa0",
-        "sample": "vkDestroyDevice(): VkDevice 0xb4000078401858c0 has 4 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0x130000000013, VkDeviceMemory 0xc000000000c, VkBuffer 0x120000000012 The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
-        "objects": [],
-        "runs": [
-          "wrapper-usevvl-vuid"
+          "patched-final-wrapper-usevvl-vuid"
         ],
         "count": 1,
         "classification": "fixture-misuse (deliberate positive control)",
@@ -4887,10 +4914,25 @@
         "vuid": "VUID-vkDestroyDevice-device-05137",
         "severity": "Validation Error",
         "message_id": "0x4872eaa0",
-        "sample": "vkDestroyDevice(): VkDevice 0xb400007c6e2d2b30 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+        "sample": "vkDestroyDevice(): VkDevice 0xb400007dfae77b30 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-bc1-view"
+          "patched-final-wrapper-usevvl-bc1-multi"
+        ],
+        "count": 1,
+        "classification": "wrapper-defect (D1 partially fixed: 2 intentionally left to the driver)",
+        "reason": "Every below-wrapper teardown (including caps, which runs no workload) leaves 14 wrapper-created driver objects alive at vkDestroyDevice; see findings D1 and the wrapper source citations there.",
+        "finding": "D1",
+        "leaked_object_count": 2
+      },
+      {
+        "vuid": "VUID-vkDestroyDevice-device-05137",
+        "severity": "Validation Error",
+        "message_id": "0x4872eaa0",
+        "sample": "vkDestroyDevice(): VkDevice 0xb400007e7e203da0 has 2 leaked objects that have not been destroyed. VkDeviceMemory 0x60000000006, VkDeviceMemory 0xc000000000c. The Vulkan spec states: All child objects created on device that can be destroyed or freed must have been destroyed or freed prior to destroying device (https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VUID-vkDestroyDevice-device-05137)",
+        "objects": [],
+        "runs": [
+          "patched-final-wrapper-usevvl-bc1-compute"
         ],
         "count": 1,
         "classification": "wrapper-defect (D1 partially fixed: 2 intentionally left to the driver)",
@@ -4905,13 +4947,13 @@
         "sample": "vkCreateInstance(): Current Validation Enabled: - Core Checks - Synchronization - Stateless Parameter - Object lifetime - Thread Safety - Handle Wrapping",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-bc1-compute",
-          "wrapper-usevvl-bc1-view",
-          "wrapper-usevvl-bc3",
-          "wrapper-usevvl-cpu",
-          "wrapper-usevvl-bc1-multi",
-          "wrapper-usevvl-vuid",
-          "wrapper-usevvl-caps"
+          "patched-final-wrapper-usevvl-bc1-compute",
+          "patched-final-wrapper-usevvl-bc1-view",
+          "patched-final-wrapper-usevvl-bc3",
+          "patched-final-wrapper-usevvl-cpu",
+          "patched-final-wrapper-usevvl-bc1-multi",
+          "patched-final-wrapper-usevvl-vuid",
+          "patched-final-wrapper-usevvl-caps"
         ],
         "count": 7,
         "classification": "layer-information (not a defect)",
@@ -4922,10 +4964,10 @@
         "vuid": "VALIDATION-SETTINGS",
         "severity": "Validation Warning",
         "message_id": "0x7f1922d7",
-        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_45.validation-probe.1212.txt) could not be opened, falling back to stdout instead.",
+        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_23.validation-probe.1179.txt) could not be opened, falling back to stdout instead.",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-bc1-compute"
+          "patched-final-wrapper-usevvl-bc1-compute"
         ],
         "count": 1,
         "classification": "layer-configuration-artefact (not a wrapper defect)",
@@ -4936,10 +4978,10 @@
         "vuid": "VALIDATION-SETTINGS",
         "severity": "Validation Warning",
         "message_id": "0x7f1922d7",
-        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_47.validation-probe.1276.txt) could not be opened, falling back to stdout instead.",
+        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_23.validation-probe.1257.txt) could not be opened, falling back to stdout instead.",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-bc1-view"
+          "patched-final-wrapper-usevvl-bc1-view"
         ],
         "count": 1,
         "classification": "layer-configuration-artefact (not a wrapper defect)",
@@ -4950,10 +4992,10 @@
         "vuid": "VALIDATION-SETTINGS",
         "severity": "Validation Warning",
         "message_id": "0x7f1922d7",
-        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_48.validation-probe.1323.txt) could not be opened, falling back to stdout instead.",
+        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_24.validation-probe.1310.txt) could not be opened, falling back to stdout instead.",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-bc3"
+          "patched-final-wrapper-usevvl-bc3"
         ],
         "count": 1,
         "classification": "layer-configuration-artefact (not a wrapper defect)",
@@ -4964,10 +5006,10 @@
         "vuid": "VALIDATION-SETTINGS",
         "severity": "Validation Warning",
         "message_id": "0x7f1922d7",
-        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_49.validation-probe.1368.txt) could not be opened, falling back to stdout instead.",
+        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_25.validation-probe.1325.txt) could not be opened, falling back to stdout instead.",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-cpu"
+          "patched-final-wrapper-usevvl-cpu"
         ],
         "count": 1,
         "classification": "layer-configuration-artefact (not a wrapper defect)",
@@ -4978,10 +5020,10 @@
         "vuid": "VALIDATION-SETTINGS",
         "severity": "Validation Warning",
         "message_id": "0x7f1922d7",
-        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_50.validation-probe.1394.txt) could not be opened, falling back to stdout instead.",
+        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_25.validation-probe.1397.txt) could not be opened, falling back to stdout instead.",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-bc1-multi"
+          "patched-final-wrapper-usevvl-bc1-multi"
         ],
         "count": 1,
         "classification": "layer-configuration-artefact (not a wrapper defect)",
@@ -4992,10 +5034,10 @@
         "vuid": "VALIDATION-SETTINGS",
         "severity": "Validation Warning",
         "message_id": "0x7f1922d7",
-        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_52.validation-probe.1417.txt) could not be opened, falling back to stdout instead.",
+        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_26.validation-probe.1439.txt) could not be opened, falling back to stdout instead.",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-vuid"
+          "patched-final-wrapper-usevvl-vuid"
         ],
         "count": 1,
         "classification": "layer-configuration-artefact (not a wrapper defect)",
@@ -5006,10 +5048,10 @@
         "vuid": "VALIDATION-SETTINGS",
         "severity": "Validation Warning",
         "message_id": "0x7f1922d7",
-        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_54.validation-probe.1428.txt) could not be opened, falling back to stdout instead.",
+        "sample": "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_26.validation-probe.1450.txt) could not be opened, falling back to stdout instead.",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-caps"
+          "patched-final-wrapper-usevvl-caps"
         ],
         "count": 1,
         "classification": "layer-configuration-artefact (not a wrapper defect)",
@@ -5023,7 +5065,7 @@
         "sample": "vkCreateDevice(): Cannot open shader validation cache at /tmp/shader_validation_cache-2000.bin for reading (it may not exist yet)",
         "objects": [],
         "runs": [
-          "wrapper-usevvl-bc1-compute"
+          "patched-final-wrapper-usevvl-bc1-compute"
         ],
         "count": 1,
         "classification": "layer-information (not a defect)",
@@ -5061,12 +5103,12 @@
           "status": "partially fixed (2 of 14 leaked objects remain; residual intentionally left to the driver)",
           "occurrences": {
             "runs": [
-              "wrapper-usevvl-bc1-compute",
-              "wrapper-usevvl-caps",
-              "wrapper-usevvl-bc3",
-              "wrapper-usevvl-bc1-multi",
-              "wrapper-usevvl-cpu",
-              "wrapper-usevvl-bc1-view"
+              "patched-final-wrapper-usevvl-cpu",
+              "patched-final-wrapper-usevvl-bc3",
+              "patched-final-wrapper-usevvl-bc1-view",
+              "patched-final-wrapper-usevvl-caps",
+              "patched-final-wrapper-usevvl-bc1-multi",
+              "patched-final-wrapper-usevvl-bc1-compute"
             ],
             "messages": 6,
             "note": "The positive-control run also contains the same wrapper objects, so its leak count is 14 + the fixture's deliberate 1 VkBuffer + 1 VkDeviceMemory."
@@ -5087,7 +5129,7 @@
           "vuid": "VUID-vkDestroyDevice-device-05137",
           "leaked_object_count": 2,
           "runs": [
-            "wrapper-usevvl-bc1-compute"
+            "patched-final-wrapper-usevvl-cpu"
           ],
           "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
           "messages": 1
@@ -5096,7 +5138,7 @@
           "vuid": "VUID-vkDestroyDevice-device-05137",
           "leaked_object_count": 2,
           "runs": [
-            "wrapper-usevvl-caps"
+            "patched-final-wrapper-usevvl-bc3"
           ],
           "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
           "messages": 1
@@ -5105,7 +5147,7 @@
           "vuid": "VUID-vkDestroyDevice-device-05137",
           "leaked_object_count": 2,
           "runs": [
-            "wrapper-usevvl-bc3"
+            "patched-final-wrapper-usevvl-bc1-view"
           ],
           "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
           "messages": 1
@@ -5114,16 +5156,7 @@
           "vuid": "VUID-vkDestroyDevice-device-05137",
           "leaked_object_count": 2,
           "runs": [
-            "wrapper-usevvl-bc1-multi"
-          ],
-          "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
-          "messages": 1
-        },
-        {
-          "vuid": "VUID-vkDestroyDevice-device-05137",
-          "leaked_object_count": 2,
-          "runs": [
-            "wrapper-usevvl-cpu"
+            "patched-final-wrapper-usevvl-caps"
           ],
           "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
           "messages": 1
@@ -5132,7 +5165,7 @@
           "vuid": "VUID-vkDestroyDevice-device-05137",
           "leaked_object_count": 4,
           "runs": [
-            "wrapper-usevvl-vuid"
+            "patched-final-wrapper-usevvl-vuid"
           ],
           "classification": "fixture-misuse (deliberate positive control)",
           "messages": 1
@@ -5141,7 +5174,16 @@
           "vuid": "VUID-vkDestroyDevice-device-05137",
           "leaked_object_count": 2,
           "runs": [
-            "wrapper-usevvl-bc1-view"
+            "patched-final-wrapper-usevvl-bc1-multi"
+          ],
+          "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
+          "messages": 1
+        },
+        {
+          "vuid": "VUID-vkDestroyDevice-device-05137",
+          "leaked_object_count": 2,
+          "runs": [
+            "patched-final-wrapper-usevvl-bc1-compute"
           ],
           "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
           "messages": 1
@@ -5159,7 +5201,8 @@
           "D1"
         ],
         "not_fixed": []
-      }
+      },
+      "expected_fix_status": "partially-fixed"
     },
     "comparison": {
       "route": "wrapper's built-in USE_VVL path (wrapper_instance.c:70-72,372-399) + graphics_env_hooks.cpp:12,15-77",
@@ -5167,14 +5210,14 @@
       "wrapper_build": {
         "path": "/Users/cheng/staging-teardown/wrapper-build-patched",
         "wrapper_file": "candidate-stripped.so",
-        "wrapper_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
-        "wrapper_bytes": 10705088,
+        "wrapper_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
+        "wrapper_bytes": 10706096,
         "aux_dir": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe",
         "aux_fallback_to_pinned_build": false,
         "pinned_hash_match": false,
         "hashes_match_pinned": false,
-        "candidate_stripped_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
-        "label": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "candidate_stripped_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
+        "label": "candidate wrapper (final restaged build 5047e7ca)",
         "expected_findings": [
           "D1",
           "D2"
@@ -5182,7 +5225,7 @@
         "partial_findings": [
           "D1"
         ],
-        "run_prefix": "patched-interim-",
+        "run_prefix": "patched-final-",
         "section": "below_wrapper_use_vvl_patched",
         "ab_base_section": "below_wrapper_use_vvl",
         "staged_files": {
@@ -5193,8 +5236,8 @@
           },
           "candidate-stripped.so": {
             "source": "/Users/cheng/staging-teardown/wrapper-build-patched/candidate-stripped.so",
-            "bytes": 10705088,
-            "sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410"
+            "bytes": 10706096,
+            "sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d"
           },
           "libadrenotools.so": {
             "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libadrenotools.so",
@@ -5293,7 +5336,7 @@
       },
       "workload_runs": [
         {
-          "name": "wrapper-usevvl-bc1-compute",
+          "name": "patched-final-wrapper-usevvl-bc1-compute",
           "mode": "bc1",
           "cycles": 8,
           "exit_code": 0,
@@ -5301,7 +5344,7 @@
           "messages": 4
         },
         {
-          "name": "wrapper-usevvl-bc1-view",
+          "name": "patched-final-wrapper-usevvl-bc1-view",
           "mode": "bc1",
           "cycles": 8,
           "exit_code": 0,
@@ -5309,7 +5352,7 @@
           "messages": 3
         },
         {
-          "name": "wrapper-usevvl-bc3",
+          "name": "patched-final-wrapper-usevvl-bc3",
           "mode": "bc3",
           "cycles": 8,
           "exit_code": 0,
@@ -5317,7 +5360,7 @@
           "messages": 3
         },
         {
-          "name": "wrapper-usevvl-cpu",
+          "name": "patched-final-wrapper-usevvl-cpu",
           "mode": "bc1",
           "cycles": 4,
           "exit_code": 0,
@@ -5325,7 +5368,7 @@
           "messages": 3
         },
         {
-          "name": "wrapper-usevvl-bc1-multi",
+          "name": "patched-final-wrapper-usevvl-bc1-multi",
           "mode": "bc1-multi",
           "cycles": 2,
           "exit_code": 0,
@@ -5333,7 +5376,7 @@
           "messages": 3
         },
         {
-          "name": "wrapper-usevvl-caps",
+          "name": "patched-final-wrapper-usevvl-caps",
           "mode": "caps",
           "cycles": 1,
           "exit_code": 0,
@@ -5387,12 +5430,12 @@
         "status": "partially fixed (2 of 14 leaked objects remain; residual intentionally left to the driver)",
         "occurrences": {
           "runs": [
-            "wrapper-usevvl-bc1-compute",
-            "wrapper-usevvl-caps",
-            "wrapper-usevvl-bc3",
-            "wrapper-usevvl-bc1-multi",
-            "wrapper-usevvl-cpu",
-            "wrapper-usevvl-bc1-view"
+            "patched-final-wrapper-usevvl-cpu",
+            "patched-final-wrapper-usevvl-bc3",
+            "patched-final-wrapper-usevvl-bc1-view",
+            "patched-final-wrapper-usevvl-caps",
+            "patched-final-wrapper-usevvl-bc1-multi",
+            "patched-final-wrapper-usevvl-bc1-compute"
           ],
           "messages": 6,
           "note": "The positive-control run also contains the same wrapper objects, so its leak count is 14 + the fixture's deliberate 1 VkBuffer + 1 VkDeviceMemory."
@@ -5414,7 +5457,16 @@
         ],
         "impact": "VUID violation / late-free at device destroy. The llvmpipe driver frees the objects inside its DestroyDevice, so this is not a sustained process leak or memory-safety issue, but it is a real out-of-contract teardown and would be reported by any validation-enabled run; repeated device create/destroy cycles inherit the same violation.",
         "fix": "Call an implemented InterceptorState_Cleanup for s3tc/bc6/bc7 (DestroyPipeline, DestroyPipelineLayout, DestroyDescriptorSetLayout, DestroyBuffer + FreeMemory for the constants buffer) and vkDestroyCommandPool(device->computePool) before the driver DestroyDevice call in WRAPPER_DestroyDevice.",
-        "classification": "partially fixed (intentional residual)"
+        "classification": "partially fixed (intentional residual)",
+        "residual": {
+          "leaked_objects_now": 2,
+          "leaked_objects_unpatched": 14,
+          "remaining_objects": [
+            "VkDeviceMemory x2 (the two BCn constants-buffer allocations)"
+          ],
+          "reason": "The device-teardown patch frees 12 of the 14 wrapper-internal objects. The two constants VkDeviceMemory allocations are deliberately left to the driver: all wait-idle/unmap/wrapper-free variants crash gfxstream 10-15/40 runs, versus 0/40 for the 12/14 variant.",
+          "status_note": "Recorded as 'D1 partially fixed' (intentional residual), not as a failure."
+        }
       },
       {
         "id": "D2",
@@ -5442,26 +5494,26 @@
     ],
     "liveness_control": {
       "below_layer_loaded_by_wrapper": {
-        "run": "wrapper-usevvl-bc1-compute",
+        "run": "patched-final-wrapper-usevvl-bc1-compute",
         "wrapper_diagnostics": [
           "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
           "[000.14] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
           "[000.15]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
-          "10-22 07:00:45.719  1212  1212 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-          "10-22 07:00:45.863  1212  1212 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-          "10-22 07:00:45.863  1212  1212 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
+          "10-22 07:07:23.101  1179  1179 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+          "10-22 07:07:23.243  1179  1179 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+          "10-22 07:07:23.243  1179  1179 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
         ],
         "meaning": "The wrapper's set_layer_paths() hook rewrote GraphicsEnv layer paths to include /data/local/tmp, the wrapper enumerated VK_LAYER_KHRONOS_validation from the system loader and enabled it in the loader instance create info, so the layer runs below the wrapper."
       },
       "negative_control": {
-        "run": "wrapper-usevvl-nolayer",
+        "run": "patched-final-wrapper-usevvl-nolayer",
         "expected_failure": true,
         "expected_failure_observed": true,
         "result": "RESULT fail stage=create-instance result=-6 chained=0",
         "meaning": "With USE_VVL=1 but no layer discoverable, the wrapper itself refuses instance creation with VK_ERROR_LAYER_NOT_PRESENT (-6): the wrapper really asks the system loader for VK_LAYER_KHRONOS_validation instead of silently running unvalidated."
       },
       "positive_control": {
-        "run": "wrapper-usevvl-vuid",
+        "run": "patched-final-wrapper-usevvl-vuid",
         "message_count": 3,
         "expected_vuid_seen": true,
         "leaked_object_count": 4,
@@ -5484,23 +5536,23 @@
     "route_evidence": {
       "graphics_env_layer_paths": [
         "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-        "10-22 07:00:45.719  1212  1212 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)"
+        "10-22 07:07:23.101  1179  1179 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)"
       ],
       "layer_discovered_by_wrapper": [
         "[000.14] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
         "[000.15]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
-        "10-22 07:00:45.863  1212  1212 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)"
+        "10-22 07:07:23.243  1179  1179 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)"
       ],
       "wrapper_layer_settings_log_path": [
-        "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_00_45.validation-probe.1212.txt) could not be opened, falling back to stdout instead."
+        "vkCreateInstance(): Information with the layer settings provided: - log_filename (/sdcard/Documents/Wrapper/vvl_2026_10_22_07_07_23.validation-probe.1179.txt) could not be opened, falling back to stdout instead."
       ],
       "key_diagnostics": [
         "[000.00] GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
         "[000.14] Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
         "[000.15]     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)",
-        "10-22 07:00:45.719  1212  1212 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
-        "10-22 07:00:45.863  1212  1212 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
-        "10-22 07:00:45.863  1212  1212 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
+        "10-22 07:07:23.101  1179  1179 E VkWrapper: GraphicsEnv::mLayerPaths set to /data/data/com.winlator.cmod/files/imagefs/usr/lib:/data/data/com.micewine.emu/files/usr/lib:/data/local/tmp \t (set_layer_paths:75)",
+        "10-22 07:07:23.243  1179  1179 E VkWrapper: Found 1 layers in /data/data/com.winlator.cmod/files/imagefs/usr/lib/ \t (__wrapper_CreateInstance:388)",
+        "10-22 07:07:23.243  1179  1179 E VkWrapper:     Layer[0]: VK_LAYER_KHRONOS_validation \t (__wrapper_CreateInstance:390)"
       ],
       "negative_control_creation_failure": "RESULT fail stage=create-instance result=-6 chained=0"
     },
@@ -5527,14 +5579,14 @@
       "sys_boot_completed_visible": "",
       "readiness": "services-fallback (activity service + package manager up; sys.boot_completed not visible)",
       "host_load_average": [
-        13.3994140625,
-        12.77490234375,
-        21.634765625
+        7.330078125,
+        9.77587890625,
+        17.06494140625
       ],
       "emulator_binary_version": "Android emulator version 37.2.12.0 (build_id 16428233) (CL:N/A)"
     },
     "provenance": {
-      "base_vapor_commit": "c5a76582b25ffb924fea255b71101edd88d76fa6",
+      "base_vapor_commit": "5cd6553385e2b54862e78195b38a924de196e6ff",
       "date": "2026-10-22",
       "wrapper": {
         "repository": "https://github.com/leegao/bionic-vulkan-wrapper",
@@ -5542,11 +5594,11 @@
         "candidate_reviewed_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
         "build_under_test": "/Users/cheng/staging-teardown/wrapper-build-patched",
         "build_under_test_wrapper_file": "candidate-stripped.so",
-        "build_under_test_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
-        "candidate_stripped_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
+        "build_under_test_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
+        "candidate_stripped_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
         "hashes_match_pinned": false,
         "pinned_hash_match": false,
-        "label": "candidate wrapper (patched staged build 9818b00e, interim)"
+        "label": "candidate wrapper (final restaged build 5047e7ca)"
       },
       "validation_layer": {
         "repository": "KhronosGroup/Vulkan-ValidationLayers",
@@ -5599,8 +5651,8 @@
     },
     "run_matrix": [
       {
-        "name": "wrapper-usevvl-nolayer",
-        "target": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "name": "patched-final-wrapper-usevvl-nolayer",
+        "target": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "caps",
         "cycles": 1,
@@ -5615,8 +5667,8 @@
         "expected_failure_observed": true
       },
       {
-        "name": "wrapper-usevvl-bc1-compute",
-        "target": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "name": "patched-final-wrapper-usevvl-bc1-compute",
+        "target": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "bc1",
         "cycles": 8,
@@ -5631,8 +5683,8 @@
         "expected_failure_observed": false
       },
       {
-        "name": "wrapper-usevvl-bc1-view",
-        "target": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "name": "patched-final-wrapper-usevvl-bc1-view",
+        "target": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "bc1",
         "cycles": 8,
@@ -5647,8 +5699,8 @@
         "expected_failure_observed": false
       },
       {
-        "name": "wrapper-usevvl-bc3",
-        "target": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "name": "patched-final-wrapper-usevvl-bc3",
+        "target": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "bc3",
         "cycles": 8,
@@ -5663,8 +5715,8 @@
         "expected_failure_observed": false
       },
       {
-        "name": "wrapper-usevvl-cpu",
-        "target": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "name": "patched-final-wrapper-usevvl-cpu",
+        "target": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "bc1",
         "cycles": 4,
@@ -5679,8 +5731,8 @@
         "expected_failure_observed": false
       },
       {
-        "name": "wrapper-usevvl-bc1-multi",
-        "target": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "name": "patched-final-wrapper-usevvl-bc1-multi",
+        "target": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "bc1-multi",
         "cycles": 2,
@@ -5695,8 +5747,8 @@
         "expected_failure_observed": false
       },
       {
-        "name": "wrapper-usevvl-vuid",
-        "target": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "name": "patched-final-wrapper-usevvl-vuid",
+        "target": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "vuid",
         "cycles": 1,
@@ -5711,8 +5763,8 @@
         "expected_failure_observed": false
       },
       {
-        "name": "wrapper-usevvl-caps",
-        "target": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "name": "patched-final-wrapper-usevvl-caps",
+        "target": "candidate wrapper (final restaged build 5047e7ca)",
         "layer": "none",
         "mode": "caps",
         "cycles": 1,
@@ -5730,7 +5782,7 @@
     "raw_scratch": {
       "path": "/Users/cheng/wrapper-validation",
       "per_run_logs": "/Users/cheng/wrapper-validation/logs",
-      "notes": "run-chain.log (first above-wrapper attempt), run-chain2.log (above-wrapper control matrix), run-usevvl.log (below-wrapper USE_VVL matrix), emulator-boot.log, logs/ per-run captures (wrapper-usevvl-*.log for the below-wrapper pass), logs/superseded-first-attempt/."
+      "notes": "logs/superseded-first-attempt/ holds the first pre-control system-bc1 capture (superseded by system-chained-bc1-native); run-chain.log / run-chain2.log / run-usevvl.log hold the runner invocations; emulator-boot.log is the AVD boot log."
     },
     "ab_table": {
       "conclusion": "1/2 expected finding(s) fully fixed, 1 partially fixed (intentional residual): D1 = partially fixed (2 of 14 leaked objects remain; residual intentionally left to the driver)",
@@ -5789,13 +5841,13 @@
             "wrapper-usevvl-caps"
           ],
           "patched_runs": [
-            "wrapper-usevvl-bc1-compute",
-            "wrapper-usevvl-bc1-view",
-            "wrapper-usevvl-bc3",
-            "wrapper-usevvl-cpu",
-            "wrapper-usevvl-bc1-multi",
-            "wrapper-usevvl-vuid",
-            "wrapper-usevvl-caps"
+            "patched-final-wrapper-usevvl-bc1-compute",
+            "patched-final-wrapper-usevvl-bc1-view",
+            "patched-final-wrapper-usevvl-bc3",
+            "patched-final-wrapper-usevvl-cpu",
+            "patched-final-wrapper-usevvl-bc1-multi",
+            "patched-final-wrapper-usevvl-vuid",
+            "patched-final-wrapper-usevvl-caps"
           ]
         },
         {
@@ -5814,13 +5866,13 @@
             "wrapper-usevvl-caps"
           ],
           "patched_runs": [
-            "wrapper-usevvl-bc1-compute",
-            "wrapper-usevvl-bc1-view",
-            "wrapper-usevvl-bc3",
-            "wrapper-usevvl-cpu",
-            "wrapper-usevvl-bc1-multi",
-            "wrapper-usevvl-vuid",
-            "wrapper-usevvl-caps"
+            "patched-final-wrapper-usevvl-bc1-compute",
+            "patched-final-wrapper-usevvl-bc1-view",
+            "patched-final-wrapper-usevvl-bc3",
+            "patched-final-wrapper-usevvl-cpu",
+            "patched-final-wrapper-usevvl-bc1-multi",
+            "patched-final-wrapper-usevvl-vuid",
+            "patched-final-wrapper-usevvl-caps"
           ]
         },
         {
@@ -5839,13 +5891,13 @@
             "wrapper-usevvl-bc1-view"
           ],
           "patched_runs": [
-            "wrapper-usevvl-bc1-compute",
-            "wrapper-usevvl-caps",
-            "wrapper-usevvl-bc3",
-            "wrapper-usevvl-bc1-multi",
-            "wrapper-usevvl-cpu",
-            "wrapper-usevvl-vuid",
-            "wrapper-usevvl-bc1-view"
+            "patched-final-wrapper-usevvl-cpu",
+            "patched-final-wrapper-usevvl-bc3",
+            "patched-final-wrapper-usevvl-bc1-view",
+            "patched-final-wrapper-usevvl-caps",
+            "patched-final-wrapper-usevvl-vuid",
+            "patched-final-wrapper-usevvl-bc1-multi",
+            "patched-final-wrapper-usevvl-bc1-compute"
           ]
         },
         {
@@ -5869,7 +5921,7 @@
             "wrapper-usevvl-bc1-compute"
           ],
           "patched_runs": [
-            "wrapper-usevvl-bc1-compute"
+            "patched-final-wrapper-usevvl-bc1-compute"
           ]
         }
       ],
@@ -5899,13 +5951,403 @@
       "patched_section": "below_wrapper_use_vvl_patched",
       "unpatched_wrapper": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
       "unpatched_wrapper_sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
-      "patched_wrapper_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
+      "patched_wrapper_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
       "patched_wrapper_file": "candidate-stripped.so",
-      "patched_wrapper_label": "candidate wrapper (patched staged build 9818b00e, interim)"
+      "patched_wrapper_label": "candidate wrapper (final restaged build 5047e7ca)"
     },
-    "build_status": "interim",
-    "build_note": "interim staged build from task-26 (patch stack srgb-storage, odd-extent, device-teardown, host-decode-map); D1 expected partial (12 of 14 objects freed, 2 constants VkDeviceMemory intentionally left to the driver) and D2 expected fixed; final rebuild with D2 mutex/source-span fix and possible full D1 closure pending",
-    "build_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
-    "capture_note": "Interim patched-build captures are stored as logs/patched-interim-*.log. The earlier unpatched below-wrapper captures used the unprefixed logs/wrapper-usevvl-*.log names and were overwritten by this interim run before --run-prefix was used; the unpatched section's parsed runs/messages are preserved inside this receipt (below_wrapper_use_vvl), only its raw log files are gone."
-  }
+    "build_status": "final",
+    "build_note": "final restaged build: host-decode-map now includes the mutex + source-span fixes; device-teardown stays at 12/14 freed because all wait-idle/unmap/wrapper-free variants crash gfxstream 10-15/40 vs 0/40, so the 2 constants VkDeviceMemory are deliberately left to the driver",
+    "build_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
+    "base_vapor_commit_at_run": "5cd6553385e2b54862e78195b38a924de196e6ff",
+    "staged_build": {
+      "build_status": "final",
+      "wrapper_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
+      "wrapper_file": "candidate-stripped.so",
+      "wrapper_bytes": 10706096,
+      "staged_json": "/Users/cheng/staging-teardown/wrapper-build-patched/STAGED.json",
+      "staged_json_sha256": "7d1fb8a32b1dc60c4381114d2d3c832d55eb347cf1d914f16f8b278aed409d2c",
+      "patch_stack": [
+        "srgb-storage.patch",
+        "odd-extent.patch",
+        "device-teardown.patch",
+        "host-decode-map.patch"
+      ],
+      "base_source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+      "baseline_stripped_sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+      "auxiliary_libraries": [
+        "libX11-xcb.so",
+        "libXau.so",
+        "libXdmcp.so",
+        "libadrenotools.so",
+        "libandroid-shmem.so",
+        "libandroid-support.so",
+        "libc++_shared.so",
+        "libdrm.so",
+        "libxcb-dri3.so",
+        "libxcb-present.so",
+        "libxcb-randr.so",
+        "libxcb-shm.so",
+        "libxcb-sync.so",
+        "libxcb.so",
+        "libz.so.1",
+        "libzstd.so.1"
+      ],
+      "repo_commit_at_run": "5cd6553385e2b54862e78195b38a924de196e6ff",
+      "what_changed_vs_interim": "host-decode-map patch now includes the mutex on the D2 mapping registry and the source-span calculation fix (D2 fully gone); device-teardown remains at 12/14 freed",
+      "d1_decision": "The two constants VkDeviceMemory allocations are deliberately left to the driver: all wait-idle/unmap/wrapper-free variants crash gfxstream 10-15/40 runs, versus 0/40 for the 12/14 device-teardown variant, so D1 is intentionally partial.",
+      "supersedes": "interim staged build sha256 9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
+      "archived_interim_history_section": "below_wrapper_use_vvl_patched_history"
+    },
+    "expected_fix_status": "partially-fixed",
+    "capture_note": "Final patched captures are logs/patched-final-*.log; the interim patched build's captures remain as logs/patched-interim-*.log and its section is archived in below_wrapper_use_vvl_patched_history. The unpatched below-wrapper raw captures at logs/wrapper-usevvl-*.log were overwritten by the interim run before prefixes were used; the unpatched parsed runs/tables are preserved in below_wrapper_use_vvl.",
+    "emulator_cleanup": {
+      "emulator_killed_by_runner": true,
+      "kill_command": "adb -s emulator-5562 emu kill",
+      "emulator_gone_after_kill": true,
+      "remote_staging_removed": "/data/local/tmp/vapor-wrapper-validation-20261022 and /data/local/tmp/VkLayer_khronos_validation.{json,so}",
+      "port_5562_after_cleanup": "free (no listener)",
+      "other_emulators_touched": "none (only emulator-5562 was used)"
+    }
+  },
+  "below_wrapper_use_vvl_patched_history": [
+    {
+      "date": "2026-10-22",
+      "section_name": "below_wrapper_use_vvl_patched",
+      "build_status": "interim",
+      "wrapper_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
+      "wrapper_file": "candidate-stripped.so",
+      "label": "candidate wrapper (patched staged build 9818b00e, interim)",
+      "summary": {
+        "runs": 8,
+        "runs_with_messages": 7,
+        "total_messages": 22,
+        "unique_vuid_names": 4,
+        "unique_message_records": 16,
+        "wrapper_defect_messages": 6,
+        "fixture_misuse_messages": 1,
+        "layer_information_messages": 8,
+        "layer_configuration_artefact_messages": 7,
+        "chaining_artefact_messages": 0,
+        "emulator_driver_issue_messages": 0,
+        "messages_by_class": {
+          "wrapper_defect": 6,
+          "fixture_misuse": 1,
+          "layer_information": 8,
+          "layer_configuration_artefact": 7,
+          "chaining_artefact": 0,
+          "emulator_driver_issue": 0
+        },
+        "wrapper_defects_found": [
+          {
+            "id": "D1",
+            "title": "Wrapper does not destroy its internal BCn compute resources before vkDestroyDevice",
+            "severity": "medium",
+            "vuid": "VUID-vkDestroyDevice-device-05137",
+            "kind": "resource leak / spec violation at device teardown",
+            "status": "partially fixed (2 of 14 leaked objects remain; residual intentionally left to the driver)",
+            "occurrences": {
+              "runs": [
+                "wrapper-usevvl-bc1-compute",
+                "wrapper-usevvl-caps",
+                "wrapper-usevvl-bc3",
+                "wrapper-usevvl-bc1-multi",
+                "wrapper-usevvl-cpu",
+                "wrapper-usevvl-bc1-view"
+              ],
+              "messages": 6,
+              "note": "The positive-control run also contains the same wrapper objects, so its leak count is 14 + the fixture's deliberate 1 VkBuffer + 1 VkDeviceMemory."
+            }
+          }
+        ],
+        "expected_findings": [
+          "D1",
+          "D2"
+        ],
+        "expected_defects_status": {
+          "D1": "partially fixed (2 of 14 leaked objects remain; residual intentionally left to the driver)",
+          "D2": "fixed (not reproduced in patched build)"
+        },
+        "expected_fix_verified": false,
+        "leaked_object_records": [
+          {
+            "vuid": "VUID-vkDestroyDevice-device-05137",
+            "leaked_object_count": 2,
+            "runs": [
+              "wrapper-usevvl-bc1-compute"
+            ],
+            "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
+            "messages": 1
+          },
+          {
+            "vuid": "VUID-vkDestroyDevice-device-05137",
+            "leaked_object_count": 2,
+            "runs": [
+              "wrapper-usevvl-caps"
+            ],
+            "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
+            "messages": 1
+          },
+          {
+            "vuid": "VUID-vkDestroyDevice-device-05137",
+            "leaked_object_count": 2,
+            "runs": [
+              "wrapper-usevvl-bc3"
+            ],
+            "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
+            "messages": 1
+          },
+          {
+            "vuid": "VUID-vkDestroyDevice-device-05137",
+            "leaked_object_count": 2,
+            "runs": [
+              "wrapper-usevvl-bc1-multi"
+            ],
+            "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
+            "messages": 1
+          },
+          {
+            "vuid": "VUID-vkDestroyDevice-device-05137",
+            "leaked_object_count": 2,
+            "runs": [
+              "wrapper-usevvl-cpu"
+            ],
+            "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
+            "messages": 1
+          },
+          {
+            "vuid": "VUID-vkDestroyDevice-device-05137",
+            "leaked_object_count": 4,
+            "runs": [
+              "wrapper-usevvl-vuid"
+            ],
+            "classification": "fixture-misuse (deliberate positive control)",
+            "messages": 1
+          },
+          {
+            "vuid": "VUID-vkDestroyDevice-device-05137",
+            "leaked_object_count": 2,
+            "runs": [
+              "wrapper-usevvl-bc1-view"
+            ],
+            "classification": "wrapper-defect (D1: internal BCn resources not destroyed before driver vkDestroyDevice)",
+            "messages": 1
+          }
+        ],
+        "below_layer_liveness_verified": true,
+        "negative_control_verified": true,
+        "classification": "complete",
+        "verdict": "Patched build: expected fixes are partially complete - D1: partially fixed (2 of 14 leaked objects remain; residual intentionally left to the driver). Fully fixed: D2. A partial fix is recorded as such, not as a failure; all workloads still passed their pixel/readback checks.",
+        "expected_fix_outcome": {
+          "fully_fixed": [
+            "D2"
+          ],
+          "partially_fixed": [
+            "D1"
+          ],
+          "not_fixed": []
+        },
+        "expected_fix_status": "partially-fixed"
+      },
+      "ab_table": {
+        "conclusion": "1/2 expected finding(s) fully fixed, 1 partially fixed (intentional residual): D1 = partially fixed (2 of 14 leaked objects remain; residual intentionally left to the driver)",
+        "class_table": [
+          {
+            "class": "chaining_artefact",
+            "unpatched_messages": 0,
+            "patched_messages": 0,
+            "delta": 0
+          },
+          {
+            "class": "emulator_driver_issue",
+            "unpatched_messages": 0,
+            "patched_messages": 0,
+            "delta": 0
+          },
+          {
+            "class": "fixture_misuse",
+            "unpatched_messages": 1,
+            "patched_messages": 1,
+            "delta": 0
+          },
+          {
+            "class": "layer_configuration_artefact",
+            "unpatched_messages": 7,
+            "patched_messages": 7,
+            "delta": 0
+          },
+          {
+            "class": "layer_information",
+            "unpatched_messages": 8,
+            "patched_messages": 8,
+            "delta": 0
+          },
+          {
+            "class": "wrapper_defect",
+            "unpatched_messages": 9,
+            "patched_messages": 6,
+            "delta": -3
+          }
+        ],
+        "vuid_table": [
+          {
+            "vuid": "CURRENT-VALIDATION-ENABLED",
+            "unpatched_messages": 7,
+            "patched_messages": 7,
+            "unpatched_records": 1,
+            "patched_records": 1,
+            "unpatched_runs": [
+              "wrapper-usevvl-bc1-compute",
+              "wrapper-usevvl-bc1-view",
+              "wrapper-usevvl-bc3",
+              "wrapper-usevvl-cpu",
+              "wrapper-usevvl-bc1-multi",
+              "wrapper-usevvl-vuid",
+              "wrapper-usevvl-caps"
+            ],
+            "patched_runs": [
+              "wrapper-usevvl-bc1-compute",
+              "wrapper-usevvl-bc1-view",
+              "wrapper-usevvl-bc3",
+              "wrapper-usevvl-cpu",
+              "wrapper-usevvl-bc1-multi",
+              "wrapper-usevvl-vuid",
+              "wrapper-usevvl-caps"
+            ]
+          },
+          {
+            "vuid": "VALIDATION-SETTINGS",
+            "unpatched_messages": 7,
+            "patched_messages": 7,
+            "unpatched_records": 7,
+            "patched_records": 7,
+            "unpatched_runs": [
+              "wrapper-usevvl-bc1-compute",
+              "wrapper-usevvl-bc1-view",
+              "wrapper-usevvl-bc3",
+              "wrapper-usevvl-cpu",
+              "wrapper-usevvl-bc1-multi",
+              "wrapper-usevvl-vuid",
+              "wrapper-usevvl-caps"
+            ],
+            "patched_runs": [
+              "wrapper-usevvl-bc1-compute",
+              "wrapper-usevvl-bc1-view",
+              "wrapper-usevvl-bc3",
+              "wrapper-usevvl-cpu",
+              "wrapper-usevvl-bc1-multi",
+              "wrapper-usevvl-vuid",
+              "wrapper-usevvl-caps"
+            ]
+          },
+          {
+            "vuid": "VUID-vkDestroyDevice-device-05137",
+            "unpatched_messages": 7,
+            "patched_messages": 7,
+            "unpatched_records": 7,
+            "patched_records": 7,
+            "unpatched_runs": [
+              "wrapper-usevvl-bc1-multi",
+              "wrapper-usevvl-bc3",
+              "wrapper-usevvl-caps",
+              "wrapper-usevvl-cpu",
+              "wrapper-usevvl-bc1-compute",
+              "wrapper-usevvl-vuid",
+              "wrapper-usevvl-bc1-view"
+            ],
+            "patched_runs": [
+              "wrapper-usevvl-bc1-compute",
+              "wrapper-usevvl-caps",
+              "wrapper-usevvl-bc3",
+              "wrapper-usevvl-bc1-multi",
+              "wrapper-usevvl-cpu",
+              "wrapper-usevvl-vuid",
+              "wrapper-usevvl-bc1-view"
+            ]
+          },
+          {
+            "vuid": "VUID-vkMapMemory-memory-00678",
+            "unpatched_messages": 3,
+            "patched_messages": 0,
+            "unpatched_records": 1,
+            "patched_records": 0,
+            "unpatched_runs": [
+              "wrapper-usevvl-cpu"
+            ],
+            "patched_runs": []
+          },
+          {
+            "vuid": "WARNING-cache-file-error",
+            "unpatched_messages": 1,
+            "patched_messages": 1,
+            "unpatched_records": 1,
+            "patched_records": 1,
+            "unpatched_runs": [
+              "wrapper-usevvl-bc1-compute"
+            ],
+            "patched_runs": [
+              "wrapper-usevvl-bc1-compute"
+            ]
+          }
+        ],
+        "expected_defects": [
+          {
+            "id": "D1",
+            "title": "Wrapper does not destroy its internal BCn compute resources before vkDestroyDevice",
+            "vuid": "VUID-vkDestroyDevice-device-05137",
+            "unpatched_messages": 6,
+            "patched_messages": 6,
+            "unpatched_leaked_objects": 14,
+            "patched_leaked_objects": 2,
+            "status": "partially fixed (2 of 14 leaked objects remain; residual intentionally left to the driver)"
+          },
+          {
+            "id": "D2",
+            "title": "HostSideDecompression leaves the source buffer memory host-mapped",
+            "vuid": "VUID-vkMapMemory-memory-00678",
+            "unpatched_messages": 3,
+            "patched_messages": 0,
+            "unpatched_leaked_objects": null,
+            "patched_leaked_objects": null,
+            "status": "fixed (not reproduced in patched build)"
+          }
+        ],
+        "base_section": "below_wrapper_use_vvl",
+        "patched_section": "below_wrapper_use_vvl_patched",
+        "unpatched_wrapper": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+        "unpatched_wrapper_sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+        "patched_wrapper_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
+        "patched_wrapper_file": "candidate-stripped.so",
+        "patched_wrapper_label": "candidate wrapper (patched staged build 9818b00e, interim)",
+        "patch_stack": [
+          "srgb-storage.patch",
+          "odd-extent.patch",
+          "device-teardown.patch",
+          "host-decode-map.patch"
+        ],
+        "unpatched_label": "candidate wrapper (unpatched pinned build)",
+        "patched_label": "candidate wrapper (patched staged build 9818b00e, interim)"
+      },
+      "conclusions": [
+        "The documented below-wrapper route works: the wrapper's USE_VVL path found the staged layer via the GraphicsEnv layer-path hook, enabled VK_LAYER_KHRONOS_validation in the instance create info it passes to /system/lib64/libvulkan.so, and the layer validated the wrapper's internal driver calls. The negative control (USE_VVL=1 with no layer staged) failed instance creation with VK_ERROR_LAYER_NOT_PRESENT (-6), proving the wrapper really requests the layer.",
+        "A/B result against the unpatched below-wrapper section: 1/2 expected finding(s) fully fixed, 1 partially fixed (intentional residual): D1 = partially fixed (2 of 14 leaked objects remain; residual intentionally left to the driver)",
+        "Message classification for this below-wrapper matrix: 6 wrapper-defect, 1 fixture-misuse, 8 layer-information, 7 layer-configuration-artefact, 0 chaining-artefact, 0 emulator-driver messages.",
+        "All below-wrapper workloads (BC1 compute view0/image-view, BC3, host-CPU decode, two-region copy, caps) exited 0 with correct pixel/readback verification; the wrapper's BCn decode output remains functionally correct in this build.",
+        "This patched-build run is the A/B counterpart of the unpatched below-wrapper section; the A/B table is attached when --ab-base-section was supplied.",
+        "Interim-only result: D1 partially fixed (14 -> 2 leaked VkDeviceMemory, deliberately left to the driver) and D2 fixed/absent with all workloads passing; the final restaged build rerun will replace this as the authoritative patched result, keeping this run as history."
+      ],
+      "capture_logs": [
+        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-nolayer.log",
+        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-compute.log",
+        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-view.log",
+        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc3.log",
+        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-cpu.log",
+        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-multi.log",
+        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-vuid.log",
+        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-caps.log"
+      ],
+      "archived_reason": "superseded by the final restaged patched build (5047e7ca)",
+      "superseded_by_final_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d"
+    }
+  ],
+  "patched_run_base_commit": "5cd6553385e2b54862e78195b38a924de196e6ff"
 }

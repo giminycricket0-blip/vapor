@@ -1,0 +1,528 @@
+{
+  "date": "2026-10-22",
+  "task": "task-26",
+  "subject": "Patch wrapper teardown leaks (D1) and host-CPU source-map leak (D2)",
+  "scope": "Two source patches against pinned bionic-vulkan-wrapper 3abf4870: device-teardown.patch (interceptor compute-object cleanup at vkDestroyDevice; 12/14 objects, constants memories withheld to avoid a gfxstream teardown crash) and host-decode-map.patch (thread-safe host-mapping registry, reuse application mappings, padded source-span validation, only unmap wrapper-created mappings in the host-CPU BCn path). Both apply with patch -p1 --fuzz=0 to the pristine pinned source and stack in repo order srgb-storage -> odd-extent -> device-teardown -> host-decode-map; the full stack was built with the recorded Meson/NDK recipe, ELF-checked, staged for staging-review's validation rerun, and regression-tested on VaporProbe36A/emulator-5558 (4 KB). No commit, nothing upstream.",
+  "base_commit": "c5a76582b25ffb924fea255b71101edd88d76fa6",
+  "base_branch": "Vapor",
+  "component": {
+    "name": "bionic-vulkan-wrapper teardown + host-CPU decode mapping",
+    "source_repository": "https://github.com/leegao/bionic-vulkan-wrapper",
+    "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
+    "pinned_source_readonly": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
+    "supporting_finding": "docs/evidence/2026-10-22-vulkan-wrapper-validation.json section below_wrapper_use_vvl (D1 VUID-vkDestroyDevice-device-05137: 14 leaked objects every teardown; D2 VUID-vkMapMemory-memory-00678: HostSideDecompression leaves the source buffer host-mapped)",
+    "scratch_root": "/Users/cheng/staging-teardown"
+  },
+  "patches": {
+    "device_teardown": {
+      "path": "tools/vulkan-wrapper/device-teardown.patch",
+      "sha256": "03b23f9696e83d0990fc1dc28e8d89f8fd82d1fbb994f0c87fd42624b3405a16",
+      "bytes": 5236,
+      "lines": 108,
+      "files_changed": [
+        "src/vulkan/wrapper/wrapper_device.c"
+      ],
+      "hunks": [
+        {
+          "hunk": "@@ -51,7 +51,9 @@",
+          "what": "declare InterceptorState_Cleanup(struct wrapper_device*, InterceptorState*) so it can use the driver dispatch table directly (these objects are not wrapper-tracked)"
+        },
+        {
+          "hunk": "@@ -360,6 +362,10 @@",
+          "what": "s3tc init-failure branch: call wrapper_DestroyDevice for the partially created device instead of leaking it"
+        },
+        {
+          "hunk": "@@ -369,6 +375,10 @@",
+          "what": "bc6 init-failure branch: same"
+        },
+        {
+          "hunk": "@@ -378,6 +384,10 @@",
+          "what": "bc7 init-failure branch: same"
+        },
+        {
+          "hunk": "@@ -1010,6 +1020,35 @@",
+          "what": "define null-safe InterceptorState_Cleanup: destroy pipeline, pipeline layout, descriptor set layout, constants buffer (and memory hook, see limitation); each handle null-checked so partially initialised states are safe"
+        },
+        {
+          "hunk": "@@ -638,6 +667,16 @@",
+          "what": "WRAPPER_DestroyDevice: call InterceptorState_Cleanup for s3tc/bc6/bc7 and destroy device->computePool before the driver DestroyDevice"
+        }
+      ],
+      "design": "The three BCn interceptor states (s3tc, bc6, bc7) and the dedicated compute VkCommandPool are created during vkCreateDevice but were never destroyed: InterceptorState_Cleanup was only declared (wrapper_device.c:52-54) and the driver DestroyDevice was called with the 14 objects still alive. The patch defines the cleanup, calls it for every state, destroys computePool, and routes init-failure paths through wrapper_DestroyDevice so partially initialised states are cleaned. Cleanup uses the driver dispatch table (device->dispatch_table, device->dispatch_handle) because the pipeline/layout/descriptor-set-layout/buffer handles are raw driver handles, not wrapper-tracked app handles.",
+      "known_limitation": "The two interceptor constants VkDeviceMemory objects are intentionally NOT freed by this patch: freeing them from inside vkDestroyDevice reproducibly crashes the emulator's gfxstream ResourceTracker (see d1_investigation). The final patch sets the handles to VK_NULL_HANDLE with an explanatory comment and leaves those two allocations to the driver's own vkDestroyDevice cleanup. Therefore the below-wrapper validation rerun should still report 2 leaked VkDeviceMemory objects (down from 14 total), not 0. This needs a physical-device or non-gfxstream rerun (or a stack-aware driver workaround) before the VUID can be considered fully fixed."
+    },
+    "host_decode_map": {
+      "path": "tools/vulkan-wrapper/host-decode-map.patch",
+      "sha256": "363a8da756bc11e18c1e33a4692ed19c605d0b9ca1984daca9bd1e2b3da78230",
+      "bytes": 14957,
+      "lines": 342,
+      "files_changed": [
+        "src/vulkan/wrapper/wrapper_objects.h",
+        "src/vulkan/wrapper/wrapper_device_memory.c",
+        "src/vulkan/wrapper/wrapper_device.c"
+      ],
+      "hunks": [
+        {
+          "file": "wrapper_objects.h",
+          "what": "add wrapper_host_mapping {link,memory,data,offset,size}, the device->host_mappings registry, the dedicated simple_mtx_t host_mapping_mutex (not resource_mutex: memory helpers can run with resource_mutex held and simple_mtx is not recursive) and the combined lookup prototype"
+        },
+        {
+          "file": "wrapper_device_memory.c",
+          "what": "implement record/forget/lookup with the mutex held around every list access: _locked internal helpers, record() locks once (forget+alloc+add), forget() locks once, lookup() locks once and resolves 'exists' and 'covers [offset,offset+size)' together (single consistent result under concurrent map/unmap). Add WRAPPER_MapMemory (previously a null weak symbol, so app vkMapMemory bypassed tracking) that records successful mappings; record in the WRAPPER_MapMemory2KHR non-emulated fallback; forget in WRAPPER_UnmapMemory, WRAPPER_UnmapMemory2KHR (non-emulated) and wrapper_device_memory_destroy"
+        },
+        {
+          "file": "wrapper_device.c",
+          "what": "initialise/destroy host_mapping_mutex; drain the registry under the mutex at device destroy; HostSideDecompression: validate a bufferRowLength/bufferImageHeight-aware source span (max of tight and padded spans), reuse a wrapper-tracked placed mapping when present, else do one locked registry lookup that returns both 'app mapping exists' and 'covers the span' (over-small app mapping returns VK_ERROR_MEMORY_MAP_FAILED instead of remapping illegally), else map/decode/unmap only the wrapper's own mapping (unmap_src)"
+        }
+      ],
+      "design": "D2 has two failure modes: (a) the wrapper maps an application VkDeviceMemory that is already host-mapped -> VUID-vkMapMemory-memory-00678; (b) the wrapper leaves its own source mapping behind (the old commented-out unmap, disabled because some apps keep the source buffer mapped, e.g. 32-bit emulated placeAddr). The fix tracks every application host mapping: plain vkMapMemory was not wrapped before, so WRAPPER_MapMemory now records (memory, offset, size, data) in device->host_mappings; the vkMapMemory2KHR non-emulated fallback records too, and all unmap/destroy paths forget. REVIEW FIXES folded in after Lead review: (1) device->host_mappings is guarded by a dedicated simple_mtx_t host_mapping_mutex (initialised next to the list, destroyed next to resource_mutex); it is deliberately not resource_mutex, because wrapper_device_memory_destroy can run with resource_mutex held and simple_mtx is not recursive. (2) HostSideDecompression no longer races exists+lookup: a single locked lookup returns both whether any app mapping exists and whether it covers the requested range (over-small mapping -> logged VK_ERROR_MEMORY_MAP_FAILED). (3) The source span now accounts for padded block rows: src_row_blocks comes from bufferRowLength/4 when non-zero, src_rows from bufferImageHeight/4 when non-zero, and the validated span is the larger of the tight span (what the sw decoder actually reads) and the padded span (rows-1)*row_pitch + blocks_x*block_size, both plus bufferOffset. HostSideDecompression then reuses a placed wrapper-tracked mapping (range-checked), else an application registry mapping (now with the padded span), else maps the source itself and unmaps only that mapping in the final block. No unconditional unmap was introduced, so applications that keep the source mapped keep working. The destination staging map/decode/flush/unmap path is unchanged apart from being recorded/forgotten by the same wrappers."
+    }
+  },
+  "apply_and_stack": {
+    "pristine_3abf4870": "both patches apply with patch -p1 --fuzz=0 forward, apply, and reverse dry-run (re-verified after the host-decode-map review fixes)",
+    "repo_stack_order": "srgb-storage.patch -> odd-extent.patch -> device-teardown.patch -> host-decode-map.patch applies cleanly with --fuzz=0 (verified, log below); reverse order (D2, D1) also verified",
+    "alternate_order": "srgb-storage.patch -> odd-extent.patch -> host-decode-map.patch -> device-teardown.patch also applies cleanly with --fuzz=0 (the two D patches touch disjoint wrapper_device.c regions)",
+    "log": "/Users/cheng/staging-teardown/logs/apply-stack-final2.log sha256 18ce5924fd396be0245ceaf7b6d6968cffa88feff3dd171dab23da5f156a4c52"
+  },
+  "build_and_elf": {
+    "source": "/Users/cheng/staging-teardown/source = pinned candidate source (3abf4870 + image-create + trace-gate) + srgb-storage + odd-extent + device-teardown + host-decode-map",
+    "recipe": "recorded Meson 1.9.1 cross build (NDK r27.3.13750724 clang 18.0.4, aarch64-linux-android34, 16 KB max-page-size link flags), ninja -C build -j4 src/vulkan/wrapper/libvulkan_wrapper.so",
+    "result": "SUCCESS 471/471, no errors, no new warnings in the touched files (rebuilt with the host-decode-map review fixes)",
+    "lib_unstripped": {
+      "path": "/Users/cheng/staging-teardown/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+      "bytes": 131388048,
+      "sha256": "32d20ac3e6bc245c2aec88ba0265d1fbeedaa70f9c48d25606222fb5db37a7ed"
+    },
+    "stripped_candidate": {
+      "path": "/Users/cheng/staging-teardown/wrapper-build-patched/candidate-stripped.so",
+      "bytes": 10706096,
+      "sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d"
+    },
+    "elf_check": {
+      "soname": "libvulkan_wrapper.so",
+      "needed_count": 20,
+      "needed": "identical to pinned unpatched candidate",
+      "load_alignments": "4 x 0x4000",
+      "export_count": 4073,
+      "export_sets_identical_to_pinned_candidate": true,
+      "log": "/Users/cheng/staging-teardown/logs/elf-final2.log sha256 d6fdd61cb5aae78ad375c5b067be2b125776183e8c6ffd8beda54001e374056a"
+    }
+  },
+  "staged_build_for_validation_rerun": {
+    "path": "/Users/cheng/staging-teardown/wrapper-build-patched",
+    "layout": "wrapper-build-style: candidate-stripped.so + candidate.so (full stack, sha256 5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d), baseline-stripped.so (pinned unpatched baseline, sha256 2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c), native-probe/ with the 16 pinned auxiliary libraries, STAGED.json identity (patches + file hashes)",
+    "staged_identity": {
+      "path": "/Users/cheng/staging-teardown/wrapper-build-patched/STAGED.json",
+      "sha256": "7d1fb8a32b1dc60c4381114d2d3c832d55eb347cf1d914f16f8b278aed409d2c"
+    },
+    "note": "RESTAGED after the host-decode-map review fixes and D1 variant investigation. staging-review can run tools/tests/vulkan-wrapper-validation.py with --wrapper-build this directory and the below-wrapper USE_VVL route; expect D2's VUID to be gone and D1 reduced from 14 leaked objects to 2 leaked VkDeviceMemory (see patches.device_teardown.known_limitation)."
+  },
+  "d1_investigation": {
+    "finding": "Freeing the interceptor constants VkDeviceMemory objects inside vkDestroyDevice reproducibly crashes the emulator gfxstream driver: SIGSEGV in gfxstream::vk::ResourceTracker::on_vkDestroyDevice_pre -> std::__1::__hash_table<...VkDeviceMemory_Info...>::remove (fault addr 0, null pointer dereference) inside /vendor/lib64/hw/vulkan.ranchu.so, from the wrapper's driver DestroyDevice call. The same allocate/map/bind/destroy/free sequence is safe while the device is alive (diagnostic executed during vkCreateDevice: 0/20 crashes), and leaving the memories to the driver's own vkDestroyDevice cleanup is safe (0/20). Only the explicit free during teardown triggers it. The 20-run odd-size passes observed for some variants are scenario-driven; the reliable reproducer is the default-size 64x64 bc1 copy across the tool's compute/compute-view/host-cpu configs (see review_variants).",
+    "variant_matrix_20_runs_each_command_probe_copy_bc1_63x65_USE_IMAGE_VIEW_1": [
+      {
+        "variant": "full D1 (pipelines+layouts+setlayouts+buffers+memories+pool freed)",
+        "crashes": 5,
+        "of": 20
+      },
+      {
+        "variant": "D1 without memory frees (varA1: buffer freed, memory skipped)",
+        "crashes": 0,
+        "of": 20
+      },
+      {
+        "variant": "D1 memory free only / buffer skipped (varA2)",
+        "crashes": 6,
+        "of": 20
+      },
+      {
+        "variant": "D1 without buffer+memory frees (varA)",
+        "crashes": 0,
+        "of": 20
+      },
+      {
+        "variant": "D2 only, D1 reverted (noD2=with D1 actually; see file)",
+        "crashes": 10,
+        "of": 20,
+        "note": "the variant with D1 but without D2 crashed 10/20, isolating D1 as the crash source"
+      },
+      {
+        "variant": "D2 only (noD1: D1 reverted)",
+        "crashes": 0,
+        "of": 20
+      },
+      {
+        "variant": "D1 teardown at top of WRAPPER_DestroyDevice",
+        "crashes": 6,
+        "of": 20
+      },
+      {
+        "variant": "D1 teardown at top + wrapper entrypoint destroys",
+        "crashes": 6,
+        "of": 20
+      },
+      {
+        "variant": "D1 free memory before destroying buffer",
+        "crashes": 9,
+        "of": 20
+      },
+      {
+        "variant": "diagnostic: alloc+free host memory during vkCreateDevice",
+        "crashes": 0,
+        "of": 20
+      },
+      {
+        "variant": "diagnostic: alloc+map/unmap+bind+destroy+free during vkCreateDevice",
+        "crashes": 0,
+        "of": 20
+      }
+    ],
+    "crash_backtrace": "/data/local/tmp/.../probe -> wrapper_DestroyDevice -> /system/lib64/libvulkan.so vulkan::api::DestroyDevice -> vulkan::driver::DestroyDevice -> gfxstream_vk_DestroyDevice -> gfxstream::vk::VkEncoder::vkDestroyDevice -> gfxstream::vk::ResourceTracker::on_vkDestroyDevice_pre -> __hash_table<...VkDeviceMemory_Info...>::remove (null deref). Captured in emulator logcat crash buffer.",
+    "conclusion": "This is a driver/emulator-side failure triggered by freeing these two device memories inside vkDestroyDevice, not a wrapper-side logic error (the identical lifecycle is safe mid-device). The safe patch therefore withholds those two frees; D1 is reduced from 14 leaked objects to 2 leaked VkDeviceMemory on this emulator. Additional post-review variants (a) driver vkDeviceWaitIdle before teardown, (b) unmap-before-free, (c) both, (d) WCHECKV(FreeMemory) path were all tested at 40 runs each and do not help (10-14/40 crashes vs 15/40 for unmitigated full D1, 0/40 for the 12/14 candidate); the withholding remains the only safe option on this emulator.",
+    "review_variants": {
+      "request": "Lead asked to try closing D1 fully: (a) driver vkDeviceWaitIdle at the start of WRAPPER_DestroyDevice, (b) explicitly unmap the constants memory before freeing, (c) both, (d) free via WCHECKV(FreeMemory). 20 runs each on VaporProbe36A/emulator-5558.",
+      "harness": "The odd-size 63x65 compute-view command captured earlier proved scenario-sensitive: on a fresh boot all full-D1 variants passed 20/20 on it, while the default-size 64x64 bc1 copy command (FORCE_BCN_EMULATION=1, USE_IMAGE_VIEW=0, tool-staged probe/inputs) reproduces the teardown crash at 25-40% per run; each variant was therefore re-checked with 40 runs of that command on one boot, with the unmodified full-D1 and the safe 12/14 candidate as controls.",
+      "results_40_runs_each": [
+        {
+          "variant": "full D1 (no mitigation) control",
+          "crashes": 15,
+          "of": 40
+        },
+        {
+          "variant": "(a) vkDeviceWaitIdle at start of WRAPPER_DestroyDevice",
+          "crashes": 14,
+          "of": 40
+        },
+        {
+          "variant": "(b) unmap constants memory before FreeMemory",
+          "crashes": 10,
+          "of": 40
+        },
+        {
+          "variant": "(c) (a)+(b)",
+          "crashes": 11,
+          "of": 40
+        },
+        {
+          "variant": "(d) WCHECKV(FreeMemory) wrapper path",
+          "crashes": 14,
+          "of": 40
+        },
+        {
+          "variant": "safe 12/14 candidate (no constants-memory frees) control",
+          "crashes": 0,
+          "of": 40
+        }
+      ],
+      "conclusion": "None of the requested variants closes D1: every full-14 teardown variant still crashes the gfxstream ResourceTracker inside on_vkDestroyDevice_pre at a 25-40% per-run rate, while the 12/14 candidate is 0/40. The earlier 20-run passes on the odd-size command were a scenario artifact (the odd path exercises different staging sizes), not evidence of a fix. D1 therefore stays at 12/14 (2 interceptor constants VkDeviceMemory left to the driver's own vkDestroyDevice cleanup) with the crash matrix recorded here."
+    }
+  },
+  "regression": {
+    "environment": {
+      "avd": "VaporProbe36A",
+      "serial": "emulator-5558",
+      "port": 5558,
+      "page_size": 4096,
+      "guest": {
+        "sdk": "36",
+        "abi": "arm64-v8a",
+        "boot_avd": "VaporProbe36A"
+      },
+      "boot_command": "emulator -avd VaporProbe36A -port 5558 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 2",
+      "note": "emulator was rebooted fresh before this run"
+    },
+    "tool": {
+      "repo_path": "tools/tests/vulkan-wrapper-reference.py",
+      "sha256": "abdfbb614cc3b506f6780ba93deeb82cc5d9f144d1f73b954d4e4e2481665bf7",
+      "fixture_binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
+      "note": "used read-only; recorded hash is the concurrent teammate version in the repo at run time"
+    },
+    "command": "python3 tools/tests/vulkan-wrapper-reference.py --wrapper-build /Users/cheng/staging-teardown/wrapper-build-patched --scratch /Users/cheng/staging-teardown/raw/final2-regression --out /Users/cheng/staging-teardown/raw/final2-regression.json --serial emulator-5558 --emulator-port 5558 --cases all --extended-cases odd-extents --configs compute,compute-view,host-cpu --targets system,baseline,candidate --label teardown-map-final2-4k",
+    "result": "75 probe runs total: 43/43 default-matrix runs pass, 32/32 odd-extent runs recorded (by design), 0 crashes, no unexpected failures.",
+    "default_matrix_headline": [
+      "candidate/compute/bc1 copy: 4096/4096 pixels exactly match the independent reference decoder (0 LSB delta)",
+      "candidate/compute/bc3 copy: 4096/4096 pixels exactly match the independent reference decoder (0 LSB delta)",
+      "candidate/compute-view/bc1 copy: 4096/4096 pixels exactly match the independent reference decoder (0 LSB delta)",
+      "candidate/compute-view/bc3 copy: 4096/4096 pixels exactly match the independent reference decoder (0 LSB delta)",
+      "candidate/host-cpu/bc1 copy: 4094/4096 pixels match exactly, 2 within 2 LSB (max channel delta 1)",
+      "candidate/host-cpu/bc3 copy: 3308/4096 pixels match exactly, 788 within 2 LSB (max channel delta 1)",
+      "baseline/compute/bc1 copy: 4096/4096 pixels exactly match the independent reference decoder (0 LSB delta)",
+      "baseline/compute/bc3 copy: 4096/4096 pixels exactly match the independent reference decoder (0 LSB delta)",
+      "baseline/compute-view/bc1 copy: 4096/4096 pixels exactly match the independent reference decoder (0 LSB delta)",
+      "baseline/compute-view/bc3 copy: 4096/4096 pixels exactly match the independent reference decoder (0 LSB delta)",
+      "baseline/host-cpu/bc1 copy: 4094/4096 pixels match exactly, 2 within 2 LSB (max channel delta 1)",
+      "baseline/host-cpu/bc3 copy: 3308/4096 pixels match exactly, 788 within 2 LSB (max channel delta 1)",
+      "system-loader native BC decode (vkCmdBlitImage) bc1: 2999/4096 pixels exactly match the reference, 1097 within 2 LSB (max delta 2); decoder-convention spread",
+      "system-loader native BC decode (vkCmdBlitImage) bc3: 1382/4096 pixels exactly match the reference, 2714 within 2 LSB (max delta 2); decoder-convention spread",
+      "depth (d16/d24s8/d32) transfer round trip: bit-exact on every probe"
+    ],
+    "odd_extent_vs_prior_receipt": [
+      {
+        "run": "bc1-odd-5x7-host-cpu",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 35,
+          "pixels": 35,
+          "max_channel_delta": 0
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 35,
+          "pixels": 35,
+          "max_channel_delta": 0
+        },
+        "same": true
+      },
+      {
+        "run": "bc1-odd-13x17-host-cpu",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 221,
+          "pixels": 221,
+          "max_channel_delta": 0
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 221,
+          "pixels": 221,
+          "max_channel_delta": 0
+        },
+        "same": true
+      },
+      {
+        "run": "bc1-odd-1x1-host-cpu",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 1,
+          "pixels": 1,
+          "max_channel_delta": 0
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 1,
+          "pixels": 1,
+          "max_channel_delta": 0
+        },
+        "same": true
+      },
+      {
+        "run": "bc1-odd-63x65-host-cpu",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 2,
+          "exact_pixels": 4093,
+          "pixels": 4095,
+          "max_channel_delta": 1
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 2,
+          "exact_pixels": 4093,
+          "pixels": 4095,
+          "max_channel_delta": 1
+        },
+        "same": true
+      },
+      {
+        "run": "bc3-odd-5x7-host-cpu",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 8,
+          "exact_pixels": 27,
+          "pixels": 35,
+          "max_channel_delta": 1
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 8,
+          "exact_pixels": 27,
+          "pixels": 35,
+          "max_channel_delta": 1
+        },
+        "same": true
+      },
+      {
+        "run": "bc3-odd-13x17-host-cpu",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 45,
+          "exact_pixels": 176,
+          "pixels": 221,
+          "max_channel_delta": 1
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 45,
+          "exact_pixels": 176,
+          "pixels": 221,
+          "max_channel_delta": 1
+        },
+        "same": true
+      },
+      {
+        "run": "bc3-odd-1x1-host-cpu",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 1,
+          "pixels": 1,
+          "max_channel_delta": 0
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 1,
+          "pixels": 1,
+          "max_channel_delta": 0
+        },
+        "same": true
+      },
+      {
+        "run": "bc3-odd-63x65-host-cpu",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 787,
+          "exact_pixels": 3308,
+          "pixels": 4095,
+          "max_channel_delta": 1
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 787,
+          "exact_pixels": 3308,
+          "pixels": 4095,
+          "max_channel_delta": 1
+        },
+        "same": true
+      },
+      {
+        "run": "bc1-odd-63x65-compute",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 4095,
+          "pixels": 4095,
+          "max_channel_delta": 0
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 4095,
+          "pixels": 4095,
+          "max_channel_delta": 0
+        },
+        "same": true
+      },
+      {
+        "run": "bc1-odd-63x65-compute-view",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 4095,
+          "pixels": 4095,
+          "max_channel_delta": 0
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 4095,
+          "pixels": 4095,
+          "max_channel_delta": 0
+        },
+        "same": true
+      },
+      {
+        "run": "bc3-odd-63x65-compute",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 4095,
+          "pixels": 4095,
+          "max_channel_delta": 0
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 4095,
+          "pixels": 4095,
+          "max_channel_delta": 0
+        },
+        "same": true
+      },
+      {
+        "run": "bc3-odd-63x65-compute-view",
+        "odd_extent_receipt": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 4095,
+          "pixels": 4095,
+          "max_channel_delta": 0
+        },
+        "final_stack": {
+          "hard_mismatches": 0,
+          "mismatch_pixels": 0,
+          "exact_pixels": 4095,
+          "pixels": 4095,
+          "max_channel_delta": 0
+        },
+        "same": true
+      }
+    ],
+    "conclusion": "No regression versus the odd-extent receipt: compute/compute-view decode is bit-exact everywhere; host-cpu odd-extent results are identical; the D2 host-decode path (host-cpu configs) runs cleanly with the review-fixed mapping registry and padded-span checks, and the device teardown path (D1 safe 12/14) completes without crashes on a fresh boot."
+  },
+  "limitations": [
+    "D1 is only partially fixed on this emulator: 12 of 14 objects are destroyed; the 2 interceptor constants VkDeviceMemory objects are left to the driver's own vkDestroyDevice cleanup because explicit frees crash the gfxstream ResourceTracker. The below-wrapper validation rerun should still see 2 leaked VkDeviceMemory objects.",
+    "The D1 crash investigation is emulator/gfxstream-specific (VkEncoder/ResourceTracker); it was not reproduced on a physical device (none available), so whether the withheld frees are needed in production is unproven. The withheld frees are a small, documented deviation from the requested 'destroy all 14' fix.",
+    "The D2 VUID fix itself was not verified with the Khronos validation layer in this task; the staged build is provided for staging-review's below-wrapper USE_VVL rerun. Regression only shows the host-cpu path still works and no crash.",
+    "D2 tracking assumes Vulkan external synchronisation: mappings are recorded/list-mutated without a lock, consistent with the rest of the wrapper. Concurrent map/unmap from multiple threads is not supported.",
+    "D2 reuse path only handles mappings that cover the computed compressed source span; an application mapping a subrange smaller than the span makes the host-CPU decode return VK_ERROR_MEMORY_MAP_FAILED (logged) rather than mapping illegally. No such application is available to test.",
+    "Regression uses software Vulkan (Mesa llvmpipe via gfxstream) on a 4 KB emulator only; no physical phone/Adreno/Mali result is claimed. The full stack also contains the previously validated srgb-storage and odd-extent patches; their own receipts cover those semantics.",
+    "Only the default matrix + odd-extents family was run; the sRGB/BC7/depth-reduction extended families were not re-run for this stack (their patches are unchanged since their receipts).",
+    "The D2 review fixes (host_mapping_mutex, combined locked lookup, padded source span) compile and run cleanly in the regression, but the concurrent map/unmap behaviour and over-small-application-mapping path have no dedicated test because the reference fixture is single-threaded and no app with a partial mapping is available; they are code-reviewed only.",
+    "A crash scenario was found to be scenario-sensitive: the odd-size 63x65 command passes for the naive full-D1 build on a fresh boot while the default 64x64 bc1 copy reproduces its teardown crash. The D1 conclusion rests on the 40-run default-size matrix, not only the original runs."
+  ],
+  "cleanup": {
+    "emulator": "emulator-5558 (VaporProbe36A) was killed with `adb -s emulator-5558 emu kill`; no qemu-system process remains on 5558 or 5568 and `adb devices` is empty. Only port 5558 was used in this task.",
+    "repo": "Only tools/vulkan-wrapper/device-teardown.patch, tools/vulkan-wrapper/host-decode-map.patch and docs/evidence/2026-10-22-vulkan-wrapper-teardown-map.json were added; no commit was made."
+  },
+  "artifacts": {
+    "repo_files": [
+      "tools/vulkan-wrapper/device-teardown.patch",
+      "tools/vulkan-wrapper/host-decode-map.patch",
+      "docs/evidence/2026-10-22-vulkan-wrapper-teardown-map.json"
+    ],
+    "scratch_root": "/Users/cheng/staging-teardown",
+    "staged_build": "/Users/cheng/staging-teardown/wrapper-build-patched (see staged_build_for_validation_rerun)",
+    "final_regression_json": {
+      "path": "/Users/cheng/staging-teardown/raw/final2-regression.json",
+      "sha256": "4b42eeb40f99c0e2aab9ae434c910311cd89668f8edc9dceda4a98cfc2875cd4",
+      "bytes": 1202832
+    },
+    "final_regression_stdout": {
+      "path": "/Users/cheng/staging-teardown/logs/final2-regression.stdout",
+      "sha256": "6bc42e2a6645d25688746ec836dd08dc64c831d2319b813f4af70485e1cb2efc"
+    },
+    "apply_stack_log": {
+      "path": "/Users/cheng/staging-teardown/logs/apply-stack-final2.log",
+      "sha256": "18ce5924fd396be0245ceaf7b6d6968cffa88feff3dd171dab23da5f156a4c52"
+    },
+    "elf_log": {
+      "path": "/Users/cheng/staging-teardown/logs/elf-final2.log",
+      "sha256": "d6fdd61cb5aae78ad375c5b067be2b125776183e8c6ffd8beda54001e374056a"
+    },
+    "build_log": {
+      "path": "/Users/cheng/staging-teardown/logs/build-final2.log",
+      "sha256": "7a73339925fa8430d8a23fd0afbf6b8071f004f09ea6d6b9514a3cf94b1fb75a"
+    },
+    "crash_evidence": {
+      "note": "Default-size 64x64 bc1 copy harness logs for full-D1 and variants (d1a-d1d) are in /tmp/l4-*; the crashing binaries are /tmp/cand-full.so, /tmp/cand-d1a..d1d.so. Variant sources are /tmp/d1{a,c}-wrapper_device.c and the full-D1 source /tmp/full-wrapper_device.c. The safe staged candidate is the deliverable."
+    },
+    "restaged_build": "/Users/cheng/staging-teardown/wrapper-build-patched (candidate sha256 5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d, STAGED.json sha256 7d1fb8a32b1dc60c4381114d2d3c832d55eb347cf1d914f16f8b278aed409d2c)"
+  }
+}

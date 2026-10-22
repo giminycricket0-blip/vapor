@@ -410,7 +410,29 @@ hashes pinned in the runner.
   fallback. The remaining messages are layer startup information and a log-path
   fallback.
 
-[Validation receipt](evidence/2026-10-22-vulkan-wrapper-validation.json).
+Both are now fixed by local patches, validated by rerunning the same below-wrapper
+matrix on the patched build (wrapper-defect messages 9 → 6; no new findings; the
+negative and positive controls still behave).
+
+- `tools/vulkan-wrapper/host-decode-map.patch` fixes **D2 fully**: zero
+  `VUID-vkMapMemory-memory-00678`. It adds a mutex-protected registry of host
+  mappings and wraps `vkMapMemory`, so the host-CPU decode reuses an
+  application's existing mapping when that mapping covers the source span (row
+  padding included), and maps and unmaps only what it maps itself.
+- `tools/vulkan-wrapper/device-teardown.patch` reduces **D1 from 14 leaked
+  objects to 2**. It defines the missing `InterceptorState_Cleanup` and destroys
+  the pipelines, layouts, constants buffers and the compute pool before the
+  driver's `DestroyDevice`. The two constants-buffer `VkDeviceMemory` allocations
+  are deliberately left to the driver: freeing them makes the emulator's
+  gfxstream driver crash inside `DestroyDevice` in 10–15 of 40 runs, whether or
+  not the wrapper first waits for idle, unmaps, or frees through its own entry
+  point. The 12-of-14 build crashed 0/40 and 0/75 (twice).
+
+Closing that residual needs a non-gfxstream driver or a phone. The full patch
+stack keeps the recorded ELF identity and passes the default matrix 43/43, with
+no crashes over 75 runs.
+[Validation receipt](evidence/2026-10-22-vulkan-wrapper-validation.json),
+[teardown/mapping patch receipt](evidence/2026-10-22-vulkan-wrapper-teardown-map.json).
 
 ### Placed-memory loader path and capability skip
 

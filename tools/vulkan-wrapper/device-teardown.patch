@@ -1,0 +1,108 @@
+--- a/src/vulkan/wrapper/wrapper_device.c
++++ b/src/vulkan/wrapper/wrapper_device.c
+@@ -51,7 +51,9 @@
+ 
+ // Cleans up the Vulkan objects.
+ // Call this before intercepting vkDestroyDevice.
+-static void InterceptorState_Cleanup(InterceptorState* state);
++// Pass the wrapper device so cleanup can use the driver dispatch table directly:
++// these driver handles are not wrapper-tracked (D1 teardown fix).
++static void InterceptorState_Cleanup(struct wrapper_device* device, InterceptorState* state);
+ 
+ const struct vk_device_extension_table wrapper_device_extensions =
+ {
+@@ -360,6 +362,10 @@
+       use_image_view, 1);
+    if (result != VK_SUCCESS) {
+       WLOGE("Failed to initialize InterceptorState for s3tc");
++      // D1: tear down the partially created device (and any partial interceptor
++      // state) instead of leaking the driver device.
++      wrapper_DestroyDevice(wrapper_device_to_handle(device),
++                            &device->vk.alloc);
+       return vk_error(physical_device, result);
+    }
+    result = InterceptorState_Init(&device->bc6, 
+@@ -369,6 +375,10 @@
+       use_image_view, 6);
+    if (result != VK_SUCCESS) {
+       WLOGE("Failed to initialize InterceptorState for bc6");
++      // D1: tear down the partially created device (and any partial interceptor
++      // state) instead of leaking the driver device.
++      wrapper_DestroyDevice(wrapper_device_to_handle(device),
++                            &device->vk.alloc);
+       return vk_error(physical_device, result);
+    }
+    result = InterceptorState_Init(&device->bc7, 
+@@ -378,6 +388,10 @@
+       use_image_view, 7);
+    if (result != VK_SUCCESS) {
+       WLOGE("Failed to initialize InterceptorState for bc7");
++      // D1: tear down the partially created device (and any partial interceptor
++      // state) instead of leaking the driver device.
++      wrapper_DestroyDevice(wrapper_device_to_handle(device),
++                            &device->vk.alloc);
+       return vk_error(physical_device, result);
+    }
+ 
+@@ -640,6 +654,17 @@
+    list_for_each_entry_safe(struct vk_queue, queue, &device->vk.queues, link) {
+       vk_queue_finish(queue);
+       vk_free2(&device->vk.alloc, pAllocator, queue);
++   }
++   // D1: destroy the wrapper-owned BCn compute objects and the dedicated compute
++   // command pool before the driver device; validation reported 14 leaked
++   // objects at every teardown (VUID-vkDestroyDevice-device-05137).
++   InterceptorState_Cleanup(device, &device->s3tc);
++   InterceptorState_Cleanup(device, &device->bc6);
++   InterceptorState_Cleanup(device, &device->bc7);
++   if (device->computePool != VK_NULL_HANDLE) {
++      device->dispatch_table.DestroyCommandPool(device->dispatch_handle,
++                                                device->computePool, pAllocator);
++      device->computePool = VK_NULL_HANDLE;
+    }
+    if (device->dispatch_handle != VK_NULL_HANDLE) {
+       device->dispatch_table.DestroyDevice(device->
+@@ -1007,6 +1032,43 @@
+    result = WCHECK(CreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, NULL, &state->pipeline));
+    WCHECKV(DestroyShaderModule(device, computeShaderModule, NULL));
+    return result;
++}
++
++// Destroys the driver objects owned by an InterceptorState.  Null-safe, because
++// it is also called from vkDestroyDevice on partially initialised states, and
++// uses the driver dispatch table directly: these handles are created with the
++// raw driver entry points and are not tracked in the wrapper object maps (D1).
++static void InterceptorState_Cleanup(struct wrapper_device* device, InterceptorState* state) {
++   VkDevice vk_device = device->dispatch_handle;
++   const struct vk_device_dispatch_table* dt = &device->dispatch_table;
++
++   if (state->pipeline != VK_NULL_HANDLE) {
++      dt->DestroyPipeline(vk_device, state->pipeline, NULL);
++      state->pipeline = VK_NULL_HANDLE;
++   }
++   if (state->pipelineLayout != VK_NULL_HANDLE) {
++      dt->DestroyPipelineLayout(vk_device, state->pipelineLayout, NULL);
++      state->pipelineLayout = VK_NULL_HANDLE;
++   }
++   if (state->descriptorSetLayout != VK_NULL_HANDLE) {
++      dt->DestroyDescriptorSetLayout(vk_device, state->descriptorSetLayout, NULL);
++      state->descriptorSetLayout = VK_NULL_HANDLE;
++   }
++   if (state->constantsBuffer != VK_NULL_HANDLE) {
++      dt->DestroyBuffer(vk_device, state->constantsBuffer, NULL);
++      state->constantsBuffer = VK_NULL_HANDLE;
++   }
++   // NOTE: the interceptor state's constants VkDeviceMemory is intentionally left
++   // to the driver's vkDestroyDevice cleanup.  Explicitly freeing it from inside
++   // vkDestroyDevice reproducibly corrupts the emulator gfxstream ResourceTracker
++   // (SIGSEGV in ResourceTracker::on_vkDestroyDevice_pre removing a VkDeviceMemory
++   // entry, ~25-45% of runs) even though the same alloc/map/bind/free sequence is
++   // safe while the device is alive.  See the teardown-map receipt for the A/B
++   // matrix; this keeps D1 safe on the emulator while still destroying the other
++   // 12 of the 14 reported wrapper objects.
++   if (state->constantsBufferMemory != VK_NULL_HANDLE) {
++      state->constantsBufferMemory = VK_NULL_HANDLE;
++   }
+ }
+ 
+ // TODO: deprecate this pass in the future

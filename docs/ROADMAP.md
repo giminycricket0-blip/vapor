@@ -70,8 +70,11 @@ Continue in this order:
    linear`), the host-CPU odd-extent out-of-bounds write (`odd-extent.patch`) and
    the all-zero BC6H image-view output (`bc6-image-view.patch`). Validation layers
    chained above the wrapper find no app-facing defect; placed below it, they find
-   two internal ones (teardown leaks and a never-unmapped source mapping). Fixes
-   for those are in progress. Next: run the probes on an Adreno/KGSL phone
+   two internal ones, now patched and revalidated: the never-unmapped host-decode
+   source mapping is fixed (`host-decode-map.patch`), and device-teardown leaks
+   drop from 14 objects to 2 (`device-teardown.patch`; freeing the last two
+   constants allocations crashes the emulator's gfxstream driver). Next: run the
+   probes on an Adreno/KGSL phone
    (runbook ready); the staging-reclamation patch is now runtime-validated on
    4 KB and 16 KB (unfenced/one-time, reset/begin, `vkQueueSubmit2`-with-fence,
    stress peak 2–16 tracked vs 512 for the control), with a documented
@@ -80,9 +83,10 @@ Continue in this order:
    Android emulator paths documented as absent), and an independent APK
    reproducibility lane builds the pinned APK on two separate runners, fails on
    any byte difference, and now passes (byte-identical signed APKs).
-   Remaining: real-driver placement semantics (RADV/ANV/NVK/Turnip), finishing
-   and validating the teardown/mapping fixes, concurrency, physical-phone
-   duration, and a packaging decision for the local wrapper patches. Owner
+   Remaining: real-driver placement semantics (RADV/ANV/NVK/Turnip), the last
+   two teardown frees on a non-gfxstream driver or phone, concurrency,
+   physical-phone duration, and a packaging decision for the local wrapper
+   patches. Owner
    decision (22 October 2026): wrapper patches and test
    findings are committed to Vapor's own repository only; nothing is submitted
    upstream.

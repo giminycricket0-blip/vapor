@@ -574,6 +574,9 @@ def apply_partial_ab_status(section):
     }
     summary["expected_fix_verified"] = (not summary["expected_fix_outcome"]["not_fixed"]
                                         and not partial)
+    summary["expected_fix_status"] = ("partially-fixed" if partial else
+                                      ("fully-fixed" if not summary["expected_fix_outcome"]["not_fixed"]
+                                       else "not-fixed"))
     if partial:
         text = "; ".join("%s: %s" % (row["id"], row["status"]) for row in partial)
         summary["verdict"] = (
