@@ -315,5 +315,91 @@
       "extras.tzst Steamless = SteamStub DRM remover",
       "dnas/dnas_bypass.json = PS2 DNAS online-authentication bypass"
     ]
+  },
+  "ddrawrapper": {
+    "archive": "app/src/main/assets/ddrawrapper/",
+    "payloads": {
+      "cnc-ddraw.tzst": {
+        "identity": "cnc-ddraw 7.1.0.0 (git~541b5de, master), github.com/FunkyFr3sh",
+        "license": "MIT",
+        "note": "different build from wincomponents/ddraw.tzst (6.6.0.0)"
+      },
+      "dd7to9.tzst": {
+        "identity": "ddraw.dll = DxWrapper stub (Sadrate Presents / Elisha Riedlinger 2025, 1.8.8600.25); dxwrapper.dll = Microsoft Direct3D HLSL Compiler for Redistribution 10.0.18362.1",
+        "license": "DxWrapper terms; dxwrapper.dll is a Microsoft binary"
+      },
+      "ddraw-11.8.tzst": {
+        "identity": "Wine 11.2 ddraw.dll + wined3d.dll, (c) 1993-2026 the Wine project authors",
+        "license": "LGPL-2.1-or-later"
+      },
+      "ddraw-4.21.tzst": {
+        "identity": "Wine 4.21 ddraw.dll + wined3d.dll, (c) 1993-2019 the Wine project authors",
+        "license": "LGPL-2.1-or-later"
+      },
+      "nglide.tzst": {
+        "identity": "nGlide 2.10 (Zeus Software) + 3DfxSpl*.dll (CompanyName 3dfx Interactive, Inc.)",
+        "license": "nGlide freeware; the 3dfx splash DLLs are original proprietary 3dfx files"
+      }
+    },
+    "observations": [
+      "two different cnc-ddraw versions ship (6.6.0.0 and 7.1.0.0)",
+      "two Wine builds ship (11.2 and 4.21), both older than the runtime in use",
+      "a Microsoft compiler ships a second time inside dd7to9.tzst"
+    ]
+  },
+  "imagefs_tzst": {
+    "archive": "app/src/main/assets/imagefs.tzst",
+    "type": "Arch-style rootfs",
+    "files": 10892,
+    "doc_components": [
+      "ffmpeg",
+      "lame",
+      "mangohud",
+      "openssl",
+      "readline",
+      "libtheora-1.1.1",
+      "libvorbis-1.3.7",
+      "libogg",
+      "flac",
+      "libunistring",
+      "libsoxr",
+      "libsamplerate",
+      "libjpeg-turbo",
+      "pcre2",
+      "lzo",
+      "tiff-4.7.0",
+      "zimg",
+      "bigreqsproto",
+      "fontsproto",
+      "kbproto",
+      "recordproto",
+      "scrnsaverproto",
+      "xcmiscproto",
+      "xextproto",
+      "xorgproto",
+      "xproto",
+      "iconv"
+    ],
+    "license_files_inside": [
+      "pcre2/COPYING",
+      "libjpeg-turbo/LICENSE.md",
+      "lzo/COPYING",
+      "tiff-4.7.0/LICENSE.md",
+      "zimg/COPYING"
+    ],
+    "covered_by_app_license_bundle": [
+      "openssl -> licenses/OpenSSL-1.1.1q.txt",
+      "curl -> licenses/curl-7.85.0.txt"
+    ],
+    "gap": "21 components (ffmpeg, lame, readline, mangohud, theora/vorbis/ogg/flac, unistring, soxr, samplerate, and the X11 protocol headers) ship no licence text; their licences are not recorded. Rootfs is not redistribution-ready."
+  },
+  "identification_status": {
+    "scope": "all bundled archives under app/src/main/assets",
+    "status": "identity established for every archive",
+    "remaining_for_gate_2": [
+      "bundle the missing licence texts",
+      "per-component keep/replace/drop decision by the owner",
+      "exact source revision and patch set for the bundled Proton (Wine 9.0 + Proton media patches)"
+    ]
   }
 }

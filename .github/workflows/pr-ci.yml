@@ -49,8 +49,29 @@ jobs:
           }
           vapor_fetch "$vapor_sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
           rustup show
-          vapor_fetch sudo apt-get update
-          vapor_fetch sudo apt-get install -y make perl g++-mingw-w64-x86-64-posix g++-mingw-w64-i686-posix
+          # apt stalls silently when a mirror drops the connection (observed 22 Oct:
+          # sdkmanager and apt-get update each took seconds, then the mingw install
+          # sat until the per-attempt timeout, three times). Per-operation timeouts
+          # make apt abandon a dead connection quickly and retry on its own.
+          vapor_apt() {
+            local attempt
+            for attempt in 1 2 3; do
+              echo "apt attempt $attempt: $*"
+              if timeout 900 sudo apt-get \
+                   -o Acquire::Retries=3 \
+                   -o Acquire::http::Timeout=30 \
+                   -o Acquire::https::Timeout=30 \
+                   -o Acquire::ftp::Timeout=30 \
+                   -o DPkg::Lock::Timeout=120 \
+                   -o Acquire::http::Pipeline-Depth=0 \
+                   "$@"; then return 0; fi
+              echo "apt attempt $attempt failed or timed out"
+              sleep 10
+            done
+            return 1
+          }
+          vapor_apt update
+          vapor_apt install -y make perl g++-mingw-w64-x86-64-posix g++-mingw-w64-i686-posix
       - name: Rebuild Steam hosts from source
         run: bash app/src/main/cpp/wn-steam-launcher/build.sh
       - name: Check cloud-conflict answers

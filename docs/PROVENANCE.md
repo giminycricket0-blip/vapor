@@ -687,6 +687,48 @@ Things that are in good order in the same areas:
 own helper tools; `box86_64/`, `steaminput/`, `retro/`, `wayland/` hold configuration
 files.
 
+### `ddrawrapper/` — four DirectDraw stacks, one of them Microsoft again
+
+Identified from the shipped DLL version resources:
+
+| Archive | Identity | Licence status |
+| --- | --- | --- |
+| `cnc-ddraw.tzst` | **cnc-ddraw 7.1.0.0 (git~541b5de)**, `github.com/FunkyFr3sh` | MIT — a **different build** from the 6.6.0.0 in `wincomponents/ddraw.tzst` |
+| `dd7to9.tzst` | `ddraw.dll` = **DxWrapper** stub ("Sadrate Presents", Elisha Riedlinger, 2025, v1.8.8600.25); `dxwrapper.dll` = **Microsoft Direct3D HLSL Compiler for Redistribution**, 10.0.18362.1 | DxWrapper terms, plus **another Microsoft binary** |
+| `ddraw-11.8.tzst` | `ddraw.dll` + `wined3d.dll` = **Wine 11.2**, "(c) 1993-2026 the Wine project authors" | LGPL-2.1-or-later (Wine) |
+| `ddraw-4.21.tzst` | `ddraw.dll` + `wined3d.dll` = **Wine 4.21**, "(c) 1993-2019 the Wine project authors" | LGPL-2.1-or-later (Wine) |
+| `nglide.tzst` | **nGlide 2.10** (`LegalCopyright: nGlide 2.10`) plus `3DfxSpl*.dll`, `CompanyName: 3dfx Interactive, Inc.` | nGlide is freeware (Zeus Software); the 3dfx splash DLLs are **original 3dfx proprietary** files |
+
+So this one directory mixes an MIT project, DxWrapper, a Microsoft compiler, two
+different Wine builds, a freeware Glide wrapper and original 3dfx proprietary
+binaries. Note the two Wine builds are **older than the runtime in use** (the
+container runs Wine from Proton 11), and two cnc-ddraw versions are shipped at
+once.
+
+### `imagefs.tzst` — rootfs licence coverage is 5 of 33
+
+The Arch-style rootfs (10892 files) carries `usr/share/doc` entries for 33
+components: `ffmpeg`, `lame`, `mangohud`, `openssl`, `readline`, `libtheora`,
+`libvorbis`, `libogg`, `libflac`, `libunistring`, `libsoxr`, `libsamplerate`,
+`libjpeg-turbo`, `pcre2`, `lzo`, `tiff`, `zimg`, `bigreqsproto`, `fontsproto`,
+`kbproto`, `recordproto`, `scrnsaverproto`, `xcmiscproto`, `xextproto`,
+`xorgproto`, `xproto` and iconv's man pages.
+
+Only **5** ship a licence file inside the archive: `pcre2` (COPYING),
+`libjpeg-turbo` (LICENSE.md), `lzo` (COPYING), `tiff-4.7.0` (LICENSE.md), `zimg`
+(COPYING). The app's `licenses/` bundle separately covers `openssl` (as
+`OpenSSL-1.1.1q.txt`) and `curl`. The remaining packages are well-known
+permissively- or LGPL-licensed projects (`ffmpeg`, `lame`, `readline`, `mangohud`,
+`libtheora`/`libvorbis`/`libogg`, the X11 protocol headers …) but **their
+licences are not shipped or recorded**, so the rootfs is not yet
+redistribution-ready either.
+
+With this, the identification half of distribution blocker 2 is complete for the
+whole `assets/` tree: every bundled archive now has a verified identity recorded
+in [the provenance receipt](evidence/2026-10-22-wincomponents-provenance.json).
+What remains is bundling the licence texts and the per-component keep/replace/
+drop decision.
+
 ## Public distribution blockers
 
 1. **Valve client binaries:** `app/src/main/assets/wnsteam/bionic/valve-steam-x86_64.tzst` and other genuine Steam assets are inherited. Their presence in a public upstream is not redistribution permission. Establish a supported acquisition route and applicable terms before publishing an APK containing them.
