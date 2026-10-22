@@ -1,0 +1,24 @@
+name: Download links
+
+on:
+  push:
+    branches: [Vapor]
+    paths:
+      - app/src/main/feature/setup/**
+      - tools/check-download-urls.py
+      - .github/workflows/download-links.yml
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check component download URLs
+        run: python3 tools/check-download-urls.py

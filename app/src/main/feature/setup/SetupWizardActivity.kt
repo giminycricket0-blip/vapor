@@ -468,7 +468,8 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
             PackageSpec(
                 label = "VKD3D Proton 3.0.1",
                 type = ContentProfile.ContentType.CONTENT_TYPE_VKD3D,
-                url = "https://github.com/nicholasx417/WinNative-Components/releases/download/Stable-VKD3D/Vkd3d-proton-3.0.1.wcp",
+                // The release asset was renamed; this is the x86-64 build default.json recommends.
+                url = "https://github.com/nicholasx417/WinNative-Components/releases/download/Stable-VKD3D/Vkd3d-3.0.1-S6_9.wcp",
             ),
             PackageSpec(
                 label = "VKD3D ARM64EC 3.0.1",
@@ -500,8 +501,10 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
     private val x86ProtonSpec =
         RuntimeSpec(
             label = "Recommended x86-64",
-            fallbackType = ContentProfile.ContentType.CONTENT_TYPE_WINE,
-            fallbackUrl = "https://github.com/nicholasx417/WinNative-Components/releases/download/Wine/wine-9.20-x86_64.wcp",
+            // Used only when default.json is unavailable; mirrors its current x86-64 recommendation
+            // (the previous wine-9.20-x86_64.wcp asset no longer exists).
+            fallbackType = ContentProfile.ContentType.CONTENT_TYPE_PROTON,
+            fallbackUrl = "https://github.com/nicholasx417/WinNative-Components/releases/download/Proton/Proton-11.0-2-x86-64-steam.wcp",
         )
 
     private val recommendedUrlsState = mutableStateOf<Set<String>>(emptySet())
@@ -527,7 +530,9 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
         RuntimeSpec(
             label = "Recommended ARM64EC",
             fallbackType = ContentProfile.ContentType.CONTENT_TYPE_PROTON,
-            fallbackUrl = "https://github.com/nicholasx417/WinNative-Components/releases/download/Proton/Proton-10-arm64ec-coffincolors.wcp",
+            // Mirrors default.json's ARM64EC recommendation, which is also the Prepare Vapor runtime
+            // (the previous Proton-10-arm64ec-coffincolors.wcp asset no longer exists).
+            fallbackUrl = "https://github.com/nicholasx417/WinNative-Components/releases/download/Proton/Proton-11.0-2-arm64ec-steam-unix.wcp",
         )
 
     private val TAG = "SetupWizardActivity";
