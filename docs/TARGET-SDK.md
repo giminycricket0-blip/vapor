@@ -158,6 +158,32 @@ Follow-up checks at target 35:
 `GraphicsDriver`/`DriverError` values explorer writes) at both targets, ideally with a
 timestamped trace that does not slow start-up the way `WINEDEBUG` does.
 
+## Resolved: the "explorer failed" launches were not a target-SDK problem (22 October)
+
+Bisecting the target (29, 32, 35) and repeating fresh install cycles showed the failure
+did not follow the target at all. It was an intermittent **first-launch** failure in the
+shipped app, present at target 28 without the shim:
+
+| Fresh install, first launch | Before the fix | After the fix |
+| --- | --- | --- |
+| target 28 (shipped, no shim) | failed 2/2 in one session, passed 1/1 in another | **3/3 up** |
+| target 35 (shim) | failed 4, passed 4 across sessions | **1/1 up** |
+| second launches, any target | always up | always up (4/4) |
+
+The first launch after Prepare Vapor runs a prefix update (`wineboot -h`). When Wine
+processes were still alive 30 s later, the launcher only sent SIGTERM and continued.
+`winedevice.exe` survives SIGTERM, so the session's `wine explorer /desktop` started
+beside the dying prefix-update session and exited at once, logging "The explorer
+process failed to start". The launcher now waits for those processes to exit and
+force-kills after 5 s (`terminateSessionProcessesAndWait`). The heavy-`WINEDEBUG`
+"reproduction" at 28 was the same race, made more likely by slower start-up.
+
+With that fixed, the shim path at target 35 boots the container's Wine desktop on
+first and second launches (21–22 and 12–13 Wine/Windows processes). The shim gained
+a diagnostic switch, `VAPOR_EXEC_FORCE=1`, which takes the linker route even where
+direct exec works. With it, target 28 ran the whole session through the linker
+(13 processes) once the race was out of the way.
+
 ## The real work
 
 Rewriting Vapor's own launch commands is not enough. Wine and the translators spawn
@@ -183,9 +209,9 @@ those `execve` calls hits the same rule. The established approach is Termux's:
 1. Inventory the downloadable components: **done for the guided-setup set** (table
    above). Extend it to the rest of the user-installable catalog. No phone needed.
 2. Build the exec shim and wire it into the launchers: **done** (above). At target 35 the
-   real app starts the Wine process tree; the explorer desktop then hits a display-driver
-   start-up race that heavy logging also triggers at 28. `wine-preloader` is not needed
-   for the container session. Next: fix that race.
+   real app boots the container's Wine desktop (after fixing a first-launch race that
+   also affected target 28). `wine-preloader` is not needed for the container session.
+   Next: a game launch at the new target, then the migration items below.
 3. Behind a build flag, raise the target and run the existing UI and launch suites on the
    emulator. Keep 28 as the shipped default until the phone pass.
 4. On an Adreno phone, confirm game launch, audio, input and Cloud saves at the new

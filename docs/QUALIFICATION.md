@@ -464,6 +464,20 @@ confirms the patched binary was the one sampled.
 [Patch-stack receipt](evidence/2026-10-22-vulkan-wrapper-patch-stack.json),
 [render-stack receipt](evidence/2026-10-22-vulkan-wrapper-render-stack.json).
 
+### First launch after setup — 22 October 2026
+
+The first container launch after Prepare Vapor failed intermittently on the API 36
+emulator: the Wine desktop logged "The explorer process failed to start" and the
+session closed at once, while a second launch always worked. The first launch runs a
+prefix update (`wineboot -h`); Wine processes still alive after it were only sent
+SIGTERM, and `winedevice.exe` survives SIGTERM, so the session started beside the
+dying update session. The launcher now waits for them to exit and force-kills after
+5 s. Before: first launches at the shipped target failed 2/2 in one session. After:
+4/4 first launches and 4/4 second launches came up across fresh install cycles
+(targets 28 and 35). Emulator only; the phone pass should confirm first-launch
+behaviour on real storage speeds.
+[Receipt](evidence/2026-10-22-first-launch-race.json).
+
 ### Wrapper concurrency
 
 `tools/tests/vulkan-wrapper-concurrency.c` (reusing the reference fixture's setup code)

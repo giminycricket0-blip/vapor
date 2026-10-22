@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-22",
+  "scope": "Intermittent failure of the first container launch after Prepare Vapor.",
+  "symptom": "wine explorer /desktop=shell exits with status 1 about 0.1 s after start; Wine logs \"nodrv_CreateWindow ... The explorer process failed to start\"; second launch always works.",
+  "root_cause": {
+    "file": "app/src/main/runtime/display/environment/components/GuestProgramLauncherComponent.java",
+    "step": "prefix update before the session (wineboot -h when .update-timestamp != wine.inf mtime)",
+    "detail": "After waiting up to 30 s for Wine processes to exit, the code called ProcessHelper.terminateAllWineProcesses(), which only signals and returns. winedevice.exe survives SIGTERM (the later session cleanup had to force-kill the same pid, e.g. 8737), so the session started while the prefix-update session was still shutting down."
+  },
+  "fix": "Use ProcessHelper.terminateSessionProcessesAndWait(5000, true): wait for exit, force-kill after 5 s, log survivors.",
+  "evidence": {
+    "device": "VaporProbe36A, Android 16/API 36, 4 KB, lavapipe; fresh install + Prepare Vapor + launch container 1 twice per cycle",
+    "before": [
+      "target 35 first launch: fail x4 (earlier sessions), pass x4 (later session)",
+      "target 28 first launch: pass x1 (earlier session), fail x2 (this session)",
+      "targets 29 and 32 first launch: fail",
+      "all second launches: up"
+    ],
+    "after": {
+      "target 28": "3 cycles: first launches 13/13/13 processes up, second launches 13/13/13",
+      "target 35": "1 cycle: 13 and 13 up"
+    },
+    "log_after": "prefix update: wine processes still alive; terminating them -> Session process cleanup finished with no remaining Wine/session processes -> Guest process started"
+  },
+  "side_results": [
+    "No state persists across uninstall (/sdcard/Vapor and /sdcard/wrapper contain only empty directories).",
+    "libvapor_exec.so gained VAPOR_EXEC_FORCE=1 (diagnostic: take the linker route even where direct exec works); ExecShimDeviceTest 9/9 at target 28.",
+    "With the race fixed, target 35 with the shim boots the Wine desktop on first and second launches."
+  ],
+  "tests": {
+    "jvm": "521/521"
+  },
+  "limitations": [
+    "Emulator only.",
+    "Small sample (4 first launches after the fix); intermittent races need the phone pass and field data to confirm."
+  ]
+}

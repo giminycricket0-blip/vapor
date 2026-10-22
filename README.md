@@ -107,7 +107,9 @@ controller handling are unchanged. Settings, sheets, Cloud Saves, Achievements a
 retro screens now share the shell's blue-slate surfaces instead of WinNative's purple
 tint. Store search no longer reports "could not be loaded" for broad terms such as
 "rpg", and a descriptive or misspelled search ("hollw nite", "open world car") shows
-clearly labelled closest matches instead of nothing. 186 instrumented UI tests pass.
+clearly labelled closest matches instead of nothing. The first game-session launch after
+setup no longer fails intermittently (the launcher now waits for setup's Wine processes
+to exit). 186 instrumented UI tests pass.
 [Screenshots above](#the-experience) · [UI notes](docs/UI-UX.md#modern-visual-refresh--22-october-2026).
 
 **21–22 October: the graphics stack and the build itself got test benches.**
