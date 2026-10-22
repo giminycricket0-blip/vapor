@@ -138,6 +138,46 @@
         1280,
         640
       ]
+    },
+    "docs/images/ui-2026-10-22-store-landscape.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/landscape/store.png",
+      "source_sha256": "1e6922b71127915f71ec3fab35f7923c8f3aa8dbb2613a0739d08d682faaeb44",
+      "sha256": "f9c72021238fd505531ad5a9d2b9db9136aa177a2ff77c4934aa5154b8b2f52b",
+      "bytes": 628042,
+      "size": [
+        1600,
+        636
+      ]
+    },
+    "docs/images/ui-2026-10-22-settings-landscape.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/landscape/settings.png",
+      "source_sha256": "8bca4bb0466828266ac32f0711deb4f0ff4b2079c6cd8d5cbeb8cf544deae5b4",
+      "sha256": "e1de369b5ed8d24eaa5eaa0d7052fd85582f3d69d34eeab34f48124ed1b4dced",
+      "bytes": 117054,
+      "size": [
+        1600,
+        636
+      ]
+    },
+    "docs/images/ui-2026-10-22-store-portrait.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/portrait/store.png",
+      "source_sha256": "6c9b28269997be9878a099a05d24cdf50f62abcceb82c630096e199fe3a076f0",
+      "sha256": "c9c3ec0b164ceb0a625b3850602e76c38396621c42faac8b556b5c6a2d904928",
+      "bytes": 918133,
+      "size": [
+        720,
+        1473
+      ]
+    },
+    "docs/images/ui-2026-10-22-settings-portrait.png": {
+      "source": "/Users/cheng/vapor-scratch/ui-modernise/readme/portrait/settings.png",
+      "source_sha256": "b1b3950d5e1bd9879bf40deb0b7d82bcf773264d30bcae933223b78bcefe9e64",
+      "sha256": "50237fb45fc77c26c715a45320fc0a4394f81bb3c104fd0be474fbc52ed407db",
+      "bytes": 177892,
+      "size": [
+        720,
+        1473
+      ]
     }
   },
   "image_processing": "Downscaled (Lanczos) to 1600 px landscape / 720 px portrait width and PNG-optimised; no other edits. Landscape captures used a 2400x1080 wm size override because rotation settings did not apply to the test activity.",
@@ -150,5 +190,34 @@
     "Emulator renders only; physical-phone legibility and focus visibility at handheld distance are not checked.",
     "Store, Settings, Friends/Chat and in-game drawer were not restyled beyond what the shared theme shapes and focus helper change.",
     "Before/after JVM gallery images are kept in /Users/cheng/vapor-scratch/ui-modernise (before/, after-device/), not committed."
-  ]
+  ],
+  "second_pass": {
+    "palette_unification": {
+      "literals": 66,
+      "files": 21,
+      "tokens_added": [
+        "WinNativePanelDeep #141A21",
+        "WinNativeSurfaceRaised #232B35",
+        "WinNativeOutlineSoft #2B323C"
+      ],
+      "mapping": {
+        "#11111C,#12121B": "WinNativeBackground",
+        "#1C1C2A": "WinNativePanel",
+        "#15151E,#171722": "WinNativePanelDeep",
+        "#2A2A3A": "WinNativeOutlineSoft",
+        "#242434,#232334": "WinNativeSurfaceRaised",
+        "#21212A": "WinNativeSurface"
+      },
+      "excluded": "app/src/main/runtime/** (in-game overlays, controller tester) and control_editor_background"
+    },
+    "focus_halo_clip_fix": [
+      "SteamCatalogSpotlight",
+      "SteamCatalogCard",
+      "LibraryGameLaunchScreen menu text action"
+    ],
+    "onboarding_focus_fix": "SteamAccountSetupScreen requests primary focus once LocalWindowInfo.isWindowFocused; pre-existing failure (reproduced with both UI passes reverted); SteamOnboardingUiTest 15/15 x3.",
+    "jvm": "514/514",
+    "instrumented": "186/186, 23 classes, APK sha256 112b8f11a04aca10c74ee188a84ec4c9fcd3ca2f520550074ca67c90edb53cb1",
+    "gallery_before_after": "/Users/cheng/vapor-scratch/ui-modernise/round2/{before,after} (not committed)"
+  }
 }

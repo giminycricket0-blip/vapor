@@ -50,6 +50,40 @@ These are emulator renders, not phone captures. Physical-phone legibility and fo
 visibility at handheld distance remain part of the phone pass.
 [UI refresh receipt](evidence/2026-10-22-ui-refresh.json).
 
+**Second pass: Settings, sheets, Store and onboarding.**
+
+- **One palette.** Settings pages (Components, Drivers, Presets, Containers, Input,
+  Debug), Google/Cloud Saves, Achievements, the retro screens, download-target and
+  directory dialogs, and the shared popup carried WinNative's purple-tinted surfaces
+  (`#11111C`, `#1C1C2A`, `#2A2A3A`...), so opening Settings shifted hue. 66 literals in
+  21 files now use theme tokens (`WinNativeBackground`, `WinNativePanel`, and the new
+  `WinNativePanelDeep`, `WinNativeSurfaceRaised` and `WinNativeOutlineSoft`), and four
+  `settings_*` XML colours match. In-game overlays, the controller tester and the
+  in-game control editor keep their own look.
+- **Focus halo visible on Store cards.** The Store spotlight and catalog cards (and one
+  game-page menu action) applied the focus glow after `clip`, which cut off the new outer
+  halo; the glow now precedes the clip.
+- **Onboarding focus.** In the account dialog, the primary "Connect Steam" button
+  requested focus before the dialog window had focus, so the request was dropped and a
+  controller user landed on Back. It now requests focus once the window is focused.
+  This failure predates the visual refresh (it reproduced with both passes reverted);
+  `SteamOnboardingUiTest` now passes 15/15 on three consecutive runs.
+- **Store search.** Steam's search reports `count` as its full match count (100 for
+  "rpg", 65, 62...), and the parser rejected anything above the 50-item search limit as
+  invalid pagination. That error surfaced as "Steam Store could not be loaded. Check your
+  connection", so most broad or vague searches looked like an outage. Search pages now
+  report the items actually returned. Steam's search matches titles, so descriptive or
+  misspelled phrases returned nothing, with junk spelling suggestions ("oper world ca").
+  When an exact search is empty, Vapor tries up to six shorter forms (word groups, then
+  significant words, then a shortened single word) and labels the first that finds
+  games: "No exact match for "hollw nite". Showing the closest matches for "hollw"" (Hollow
+  Knight first). Nonsense still shows "No games match". Verified on the emulator against
+  live Steam; "rpg" now gives 1,483 results instead of an error.
+
+JVM 514/514; on the API 36 emulator 186/186 instrumented tests across 23 UI classes pass
+on the final APK.
+[Store search receipt](evidence/2026-10-22-store-search.json).
+
 ## Community reports — 21 October 2026
 
 Steam Library game pages and Steam catalog details now offer **Community reports**.

@@ -49,6 +49,14 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
     <td align="center"><sub>Library · install status at a glance, controller focus halo</sub></td>
     <td align="center"><sub>Downloads · sample progress, no transfer running</sub></td>
   </tr>
+  <tr>
+    <td align="center" width="50%"><img src="docs/images/ui-2026-10-22-store-landscape.png" alt="Steam Store with search, Hot games and category filters, and a large Hades spotlight card"></td>
+    <td align="center" width="50%"><img src="docs/images/ui-2026-10-22-settings-landscape.png" alt="Settings with the sidebar and the Drivers page listing the system driver and two Turnip builds"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Store · public Steam artwork, sample prices</sub></td>
+    <td align="center"><sub>Settings → Drivers · sample installed drivers</sub></td>
+  </tr>
 </table>
 
 <details>
@@ -69,9 +77,19 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
     <td align="center"><sub>Game page</sub></td>
     <td align="center"><sub>Downloads</sub></td>
   </tr>
+  <tr>
+    <td align="center"><img src="docs/images/ui-2026-10-22-store-portrait.png" alt="Store in portrait with search, filters, a spotlight and a two-column game grid" width="200"></td>
+    <td align="center"><img src="docs/images/ui-2026-10-22-settings-portrait.png" alt="Settings Drivers page in portrait" width="200"></td>
+    <td></td><td></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Store</sub></td>
+    <td align="center"><sub>Settings → Drivers</sub></td>
+    <td></td><td></td>
+  </tr>
 </table>
 
-<p align="center"><sub>Captured on an Android 16 emulator (1080×2400, 420 dpi) from the production Compose components with public Steam artwork and sample state. The earlier <a href="docs/images/store-portrait.png">signed-out Store capture</a> shows the live catalog.</sub></p>
+<p align="center"><sub>Captured on an Android 16 emulator (1080×2400, 420 dpi) from the production Compose components with public Steam artwork and sample state (prices and installs are samples).</sub></p>
 
 ![Helltaker running on the Xiaomi 17 Pro with Vapor touch controls](docs/images/helltaker-xiaomi.jpg)
 
@@ -85,7 +103,11 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 halo, tinted per-game placeholders when artwork is missing, install-status chips, a
 gradient Play button, pill-shaped tabs, smooth progress bars, tonal buttons, and real
 bold display type (Bricolage Grotesque) for titles. Behaviour, navigation and
-controller handling are unchanged; 40 instrumented UI tests pass.
+controller handling are unchanged. Settings, sheets, Cloud Saves, Achievements and the
+retro screens now share the shell's blue-slate surfaces instead of WinNative's purple
+tint. Store search no longer reports "could not be loaded" for broad terms such as
+"rpg", and a descriptive or misspelled search ("hollw nite", "open world car") shows
+clearly labelled closest matches instead of nothing. 186 instrumented UI tests pass.
 [Screenshots above](#the-experience) · [UI notes](docs/UI-UX.md#modern-visual-refresh--22-october-2026).
 
 **21–22 October: the graphics stack and the build itself got test benches.**
