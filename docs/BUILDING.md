@@ -678,7 +678,12 @@ python3 tools/tests/vulkan-wrapper-render.py --self-test   # device-free checks
 `--run` generates deterministic inputs, decodes them with a host bcdec
 reference, compiles the shaders, builds and stages the fixture, boots the AVD (or
 uses `--serial`), runs the matrix, pulls and checks the readbacks, and writes an
-evidence JSON. The manual equivalent: compile the fixture with the recorded NDK
+evidence JSON. Point `--wrapper-build` at a staged patched build to test it: the
+tool stages `candidate-stripped.so` (then `candidate.so`, then
+`native-probe/candidate.so`), overridable with `--candidate-so`/`--baseline-so`,
+records every staged library's sha256, and warns if it would stage the pinned
+candidate. Use `--srgb-host-convention linear` for builds carrying
+`srgb-storage.patch`. The manual equivalent: compile the fixture with the recorded NDK
 and the committed shaders with glslang (record the exact invocation and SPIR-V
 hashes):
 

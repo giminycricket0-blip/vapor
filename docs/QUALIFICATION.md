@@ -434,6 +434,36 @@ no crashes over 75 runs.
 [Validation receipt](evidence/2026-10-22-vulkan-wrapper-validation.json),
 [teardown/mapping patch receipt](evidence/2026-10-22-vulkan-wrapper-teardown-map.json).
 
+### Full local wrapper patch stack
+
+All six local patches (`image-create` → `srgb-storage` → `odd-extent` →
+`device-teardown` → `host-decode-map` → `bc6-image-view`) apply to a fresh
+pristine `3abf4870` extraction with `patch -p1 --fuzz=0` and reverse cleanly;
+`staging-reclaim.patch` still stacks on top but stays a separate experiment. The
+stack builds 471/471 with the recorded identity (SONAME, 20 `NEEDED`, 4073
+exports, 0x4000 `LOAD`). The reference-tool regression, which loads the stack's
+own candidate, covers 4 KB and 16 KB:
+
+- the default matrix passes 43/43;
+- the extended families keep their 94 planned runs, with candidate odd-extent
+  host-CPU hard mismatches at 0;
+- the BC6H candidate image-view path is bit-exact;
+- under `--srgb-host-convention linear`, the candidate passes every sRGB and
+  BC7_SRGB host path while the unpatched baseline fails (negative control).
+
+The render rows first recorded for this stack were not stack evidence: the render
+tool staged `native-probe/candidate.so`, which in the staged directory was the
+pinned unpatched candidate. The render tool now stages the build's own candidate
+and records every staged library's hash, and it gains `--srgb-host-convention`.
+The corrected rerun loads the stack binary (staged hash `095c9a81…`). On 4 KB
+and 16 KB, the candidate's host-CPU BC1/BC3_SRGB output **renders byte-exactly on
+the linear convention**, so the sRGB fix holds at sampling time. The unpatched
+baseline misses it by 73 LSB (negative control), and with the encoded convention
+the candidate fails while the pinned build still passes 31/31. That
+confirms the patched binary was the one sampled.
+[Patch-stack receipt](evidence/2026-10-22-vulkan-wrapper-patch-stack.json),
+[render-stack receipt](evidence/2026-10-22-vulkan-wrapper-render-stack.json).
+
 ### Placed-memory loader path and capability skip
 
 The wrapper's placed-memory path (`VK_EXT_map_memory_placed` with

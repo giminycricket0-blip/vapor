@@ -13,9 +13,19 @@ device orchestrator:
   * --run              run the whole device pipeline in one command: generate
                        deterministic inputs, decode them with the pinned host
                        bcdec reference, compile the shaders, build and stage the
-                       fixture + pinned wrapper builds, boot the AVD, run the
+                       fixture + resolved wrapper builds, boot the AVD, run the
                        31-case matrix, pull the readbacks, check them and write
-                       the evidence JSON;
+                       the evidence JSON. Wrapper libraries are resolved from
+                       <wrapper-build>/candidate-stripped.so (then candidate.so,
+                       then native-probe/) and baseline-stripped.so (then
+                       native-probe/); --candidate-so/--baseline-so override the
+                       selection and the staged hashes are recorded. A staged
+                       patched build keeps its patched wrapper at the top level,
+                       so native-probe/ must not be preferred over it.
+                       --srgb-host-convention {encoded,linear} selects the
+                       host-cpu sRGB expectation (default encoded);
+                       --allow-failures records expected negative-control
+                       failures instead of aborting;
   * --self-test        device-free checks of the expected-image derivation and
                        of the readback naming parser/checker;
   * --print-runbook    print the equivalent manual device commands.
@@ -158,11 +168,13 @@ def output_cases(output_dir):
         yield target, fmt, config, os.path.join(output_dir, name)
 
 
-def _check(evidence_dir, verbose=False):
+def _check(evidence_dir, verbose=False, srgb_host_convention="encoded"):
     input_dir = os.path.join(evidence_dir, "input")
     output_dir = os.path.join(evidence_dir, "output")
     problems = []
     print(f"evidence directory: {evidence_dir}")
+    if verbose:
+        print(f"host-cpu sRGB expectation: {srgb_host_convention}")
     if not os.path.isdir(input_dir):
         print(f"FAIL missing input directory: {input_dir}")
         return 1, [], {"error": "missing-input-directory"}
@@ -229,7 +241,11 @@ def _check(evidence_dir, verbose=False):
         base = fmt[:-5] if fmt.endswith("_srgb") else fmt
         derived = derive_expected(input_dir, base, fmt)
         if fmt.endswith("_srgb"):
-            convention = "srgb-encoded" if config.startswith("host") else "srgb-linear"
+            if config.startswith("host"):
+                convention = ("srgb-linear" if srgb_host_convention == "linear"
+                              else "srgb-encoded")
+            else:
+                convention = "srgb-linear"
         else:
             convention = "unorm"
         expected = derived[convention]
@@ -281,6 +297,7 @@ def _check(evidence_dir, verbose=False):
         "passed": passed,
         "failed": failed,
         "byte_exact": exact,
+        "srgb_host_convention": srgb_host_convention,
         "problems": [str(problem) for problem in problems],
     }
     if problems:
@@ -291,9 +308,9 @@ def _check(evidence_dir, verbose=False):
     return 0, records, summary
 
 
-def check(evidence_dir, verbose=False, collect=False):
+def check(evidence_dir, verbose=False, collect=False, srgb_host_convention="encoded"):
     """Check an evidence directory. With collect=True return (code, records, summary)."""
-    code, records, summary = _check(evidence_dir, verbose)
+    code, records, summary = _check(evidence_dir, verbose, srgb_host_convention)
     if collect:
         return code, records, summary
     return code
@@ -329,6 +346,26 @@ DEFAULT_SALVAGED = os.path.join(
     REPO_ROOT, "docs", "evidence", "2026-10-22-vulkan-wrapper-render-pipeline.json")
 DATE = "2026-10-22"
 REMOTE_DIR_BASE = "vapor-wrapper-render-%s" % DATE.replace("-", "")
+PINNED_WRAPPER_BUILD = DEFAULT_WRAPPER_BUILD
+PINNED_WRAPPER_HASHES = {
+    "baseline-stripped.so": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
+    "candidate-stripped.so": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+}
+PINNED_CANDIDATE_SHA = PINNED_WRAPPER_HASHES["candidate-stripped.so"]
+PINNED_BASELINE_SHA = PINNED_WRAPPER_HASHES["baseline-stripped.so"]
+AUX_LIBRARY_NAMES = [
+    "libadrenotools.so", "libandroid-shmem.so", "libc++_shared.so", "libz.so.1",
+    "libzstd.so.1", "libxcb.so", "libX11-xcb.so", "libxcb-dri3.so",
+    "libxcb-present.so", "libxcb-sync.so", "libxcb-randr.so", "libxcb-shm.so",
+    "libdrm.so", "libXau.so", "libXdmcp.so", "libandroid-support.so",
+]
+# A staged patched build keeps its real wrapper at the top level; its
+# native-probe/ directory is often a copy of the pinned build (wrong binary!).
+WRAPPER_LIBRARY_ORDER = {
+    "candidate": ("candidate-stripped.so", "candidate.so", "native-probe/candidate.so"),
+    "baseline": ("baseline-stripped.so", "native-probe/baseline.so"),
+}
+SRGB_HOST_CONVENTIONS = ("encoded", "linear")
 CONFIGS = {
     "compute": {"USE_IMAGE_VIEW": "0"},
     "compute-view": {"USE_IMAGE_VIEW": "1"},
@@ -617,7 +654,94 @@ def build_fixture(evidence_dir, ndk, include_dir, source_path):
     }
 
 
-def prepare_stage(evidence_dir, fixture, wrapper_build, shaders, inputs):
+def resolve_wrapper_library(wrapper_build, role, override=None):
+    """Resolve a wrapper shared object without silently taking a pinned copy.
+
+    Order (candidate): <build>/candidate-stripped.so, <build>/candidate.so,
+    <build>/native-probe/candidate.so. Order (baseline): <build>/baseline-stripped.so,
+    <build>/native-probe/baseline.so. An explicit --candidate-so/--baseline-so
+    override wins. This mirrors how vulkan-wrapper-validation.py resolves a
+    staged build: patched builds keep their real wrapper at the top level while
+    native-probe/ may hold the pinned build's copy.
+    """
+    considered = ([override] if override else
+                  [os.path.join(wrapper_build, relative)
+                   for relative in WRAPPER_LIBRARY_ORDER[role]])
+    for path in considered:
+        if os.path.isfile(path):
+            return {
+                "role": role,
+                "source": path,
+                "file": os.path.basename(path),
+                "sha256": sha256_file(path),
+                "bytes": os.path.getsize(path),
+                "override": bool(override),
+                "resolution_order": considered,
+                "pinned_sha256_match": PINNED_WRAPPER_HASHES.get(
+                    os.path.basename(path)) == sha256_file(path),
+                "from_native_probe": os.path.basename(os.path.dirname(path)) == "native-probe",
+            }
+    raise RuntimeError("no %s wrapper library found (tried %s); pass --%s-so"
+                       % (role, ", ".join(considered), role))
+
+
+def resolve_aux_libraries(wrapper_build, pinned_build=PINNED_WRAPPER_BUILD):
+    """Auxiliary runtime libraries: <build>/native-probe, else the pinned build's."""
+    candidates = [os.path.join(wrapper_build, "native-probe"),
+                  os.path.join(pinned_build, "native-probe")]
+    for index, directory in enumerate(candidates):
+        if all(os.path.isfile(os.path.join(directory, name)) for name in AUX_LIBRARY_NAMES):
+            return {
+                "directory": directory,
+                "fallback_to_pinned_build": index > 0,
+                "files": {name: file_info(os.path.join(directory, name))
+                          for name in AUX_LIBRARY_NAMES},
+            }
+    missing = [name for name in AUX_LIBRARY_NAMES
+               if not os.path.isfile(os.path.join(candidates[0], name))]
+    raise RuntimeError("auxiliary libraries missing from %s: %s"
+                       % (candidates[0], ", ".join(missing[:6])))
+
+
+def library_warnings(wrapper_build, candidate):
+    """Loud warnings when an alternate build would stage the pinned candidate."""
+    warnings = []
+    build_abs = os.path.abspath(wrapper_build)
+    pinned_abs = os.path.abspath(PINNED_WRAPPER_BUILD)
+    if candidate["sha256"] == PINNED_CANDIDATE_SHA and build_abs != pinned_abs:
+        warnings.append(
+            "staged candidate is the PINNED unpatched candidate sha256=%s while --wrapper-build "
+            "is %s; a staged patched build keeps its real wrapper in candidate-stripped.so"
+            % (PINNED_CANDIDATE_SHA, wrapper_build))
+    if candidate["from_native_probe"]:
+        warnings.append(
+            "candidate was resolved from native-probe/ (%s); native-probe/ is copied from the "
+            "pinned build in staged patched builds and may not be the patched wrapper"
+            % candidate["source"])
+    return warnings
+
+
+def resolve_wrapper_stack(wrapper_build, candidate_so=None, baseline_so=None):
+    """Resolve candidate, baseline and auxiliary libraries; record warnings."""
+    if not os.path.isdir(wrapper_build):
+        raise RuntimeError("wrapper build directory not found: %s" % wrapper_build)
+    candidate = resolve_wrapper_library(wrapper_build, "candidate", candidate_so)
+    baseline = resolve_wrapper_library(wrapper_build, "baseline", baseline_so)
+    auxiliary = resolve_aux_libraries(wrapper_build)
+    warnings = library_warnings(wrapper_build, candidate)
+    candidate_is_pinned = candidate["sha256"] == PINNED_CANDIDATE_SHA
+    return {
+        "build_dir": os.path.abspath(wrapper_build),
+        "pinned_build": os.path.abspath(PINNED_WRAPPER_BUILD),
+        "candidate": candidate,
+        "baseline": baseline,
+        "auxiliary": auxiliary,
+        "candidate_is_pinned_unpatched": candidate_is_pinned,
+        "warnings": warnings,
+    }
+
+
+def prepare_stage(evidence_dir, fixture, wrapper_stack, shaders, inputs):
     """Assemble the flat staging directory pushed to the device."""
     stage_dir = os.path.join(evidence_dir, "stage")
     if os.path.isdir(stage_dir):
@@ -634,12 +758,10 @@ def prepare_stage(evidence_dir, fixture, wrapper_build, shaders, inputs):
         staged[name] = file_info(target)
 
     add(fixture["binary"]["path"], "vulkan-wrapper-render")
-    native_probe = os.path.join(wrapper_build, "native-probe")
-    add(os.path.join(native_probe, "baseline.so"), "baseline.so")
-    add(os.path.join(native_probe, "candidate.so"), "candidate.so")
-    for name in sorted(os.listdir(native_probe)):
-        if name.startswith("lib") and ".so" in name:
-            add(os.path.join(native_probe, name), name)
+    add(wrapper_stack["baseline"]["source"], "baseline.so")
+    add(wrapper_stack["candidate"]["source"], "candidate.so")
+    for name in AUX_LIBRARY_NAMES:
+        add(os.path.join(wrapper_stack["auxiliary"]["directory"], name), name)
     add(shaders["shaders"]["fullscreen.vert"]["spirv"]["path"], "fullscreen.vert.spv")
     add(shaders["shaders"]["sample.frag"]["spirv"]["path"], "sample.frag.spv")
     for base in ("bc1", "bc3", "rgba8"):
@@ -932,7 +1054,7 @@ def format_stats(records, group):
     return stats
 
 
-def salvage_report(records, summary):
+def salvage_report(records, summary, srgb_host_convention="encoded"):
     """Compare the observed groups with the salvaged run's recorded expectations."""
     by_group = group_results(records)
     statements = []
@@ -952,8 +1074,10 @@ def salvage_report(records, summary):
                    and unorm.get("byte_exact", -1) == unorm.get("cases", 0))
     srgb_within_1 = (srgb.get("cases", 0) > 0 and srgb.get("fail", 1) == 0
                      and srgb.get("max_delta", 99) <= 1)
+    selected_host_convention = ("srgb-linear" if srgb_host_convention == "linear"
+                                else "srgb-encoded")
     host_srgb_encoded = (host_srgb.get("cases", 0) > 0 and host_srgb.get("fail", 1) == 0
-                         and host_srgb.get("expected_conventions") == ["srgb-encoded"])
+                         and host_srgb.get("expected_conventions") == [selected_host_convention])
     native_within_3 = (native.get("cases", 0) > 0 and native.get("fail", 1) == 0
                        and native.get("max_delta", 99) <= 3)
     controls_exact = (controls.get("cases", 0) > 0 and controls.get("fail", 1) == 0
@@ -981,10 +1105,10 @@ def salvage_report(records, summary):
          srgb_within_1,
          "%d/%d pass, max delta %s" % (srgb.get("pass", 0), srgb.get("cases", 0),
                                        srgb.get("max_delta"))),
-        ("pre-patch host-cpu sRGB = encoded convention",
+        ("host-cpu sRGB = %s convention" % srgb_host_convention,
          host_srgb_encoded,
-         "%d/%d pass against the encoded convention, max delta %s"
-         % (host_srgb.get("pass", 0), host_srgb.get("cases", 0),
+         "%d/%d pass against the %s convention, max delta %s"
+         % (host_srgb.get("pass", 0), host_srgb.get("cases", 0), srgb_host_convention,
             host_srgb.get("max_delta"))),
         ("native within 3 LSB",
          native_within_3,
@@ -1006,7 +1130,8 @@ def salvage_report(records, summary):
 def build_receipt(args, context):
     records = context["records"]
     summary = context["summary"]
-    statements, groups, deviations = salvage_report(records, summary)
+    statements, groups, deviations = salvage_report(records, summary,
+                                                      context["srgb_host_convention"])
     runs_by_key = {(run["target"], run["format"], run["config"]): run
                    for run in context["runs"]}
     cases = []
@@ -1024,12 +1149,30 @@ def build_receipt(args, context):
         "label": context["label"],
         "scope": ("One-command offscreen sampling/render-pipeline run: generate deterministic "
                   "BC1/BC3/RGBA8 inputs, decode them with the pinned host bcdec reference, "
-                  "compile the committed shaders, build and stage the Android fixture, boot the "
-                  "4 KB AVD VaporProbe36C, run the 31-case matrix through the system loader and "
-                  "the pinned wrapper candidate/baseline (compute, compute-view, host-cpu "
-                  "decode), read the rendered images back and check them against the expected "
-                  "images. Software Vulkan emulator only; no phone/Adreno result claimed."),
+                  "compile the committed shaders, build and stage the Android fixture, boot "
+                  "%s (page size %s), run the 31-case matrix through the system loader and the "
+                  "staged wrapper candidate/baseline (compute, compute-view, host-cpu decode), "
+                  "read the rendered images back and check them against the expected images "
+                  "using the %s host-cpu sRGB convention. Software Vulkan emulator only; no "
+                  "phone/Adreno result claimed."
+                  % (context["emulator"]["avd"],
+                     context["emulator"]["device_facts"].get("PAGE_SIZE", "unknown"),
+                     context["srgb_host_convention"])),
         "base_commit": context["base_commit"],
+        "staged_libraries": {
+            "candidate": context["wrapper_stack"]["candidate"],
+            "baseline": context["wrapper_stack"]["baseline"],
+            "auxiliary": {
+                "directory": context["wrapper_stack"]["auxiliary"]["directory"],
+                "fallback_to_pinned_build":
+                    context["wrapper_stack"]["auxiliary"]["fallback_to_pinned_build"],
+                "files": context["wrapper_stack"]["auxiliary"]["files"],
+            },
+            "wrapper_build": context["wrapper_stack"]["build_dir"],
+            "pinned_build": context["wrapper_stack"]["pinned_build"],
+        },
+        "warnings": context["warnings"],
+        "srgb_host_convention": context["srgb_host_convention"],
         "tool": {
             "path": "tools/tests/vulkan-wrapper-render.py",
             "sha256": sha256_file(os.path.abspath(__file__)),
@@ -1069,12 +1212,21 @@ def build_receipt(args, context):
         "emulator": context["emulator"],
         "matrix": {
             "cases": len(context["runs"]),
-            "targets": [{"target": "system", "library": "/system/lib64/libvulkan.so",
-                         "configs": ["native"]},
-                        {"target": "baseline", "library": "baseline.so",
-                         "configs": ["compute", "compute-view", "host-cpu"]},
-                        {"target": "candidate", "library": "candidate.so",
-                         "configs": ["compute", "compute-view", "host-cpu"]}],
+            "targets": [
+                {"target": "system", "library": "/system/lib64/libvulkan.so",
+                 "staged_sha256": None, "configs": ["native"]},
+                {"target": "baseline", "library": "baseline.so",
+                 "staged_sha256": context["wrapper_stack"]["baseline"]["sha256"],
+                 "staged_bytes": context["wrapper_stack"]["baseline"]["bytes"],
+                 "source_path": context["wrapper_stack"]["baseline"]["source"],
+                 "staged_file": context["wrapper_stack"]["baseline"]["file"],
+                 "configs": ["compute", "compute-view", "host-cpu"]},
+                {"target": "candidate", "library": "candidate.so",
+                 "staged_sha256": context["wrapper_stack"]["candidate"]["sha256"],
+                 "staged_bytes": context["wrapper_stack"]["candidate"]["bytes"],
+                 "source_path": context["wrapper_stack"]["candidate"]["source"],
+                 "staged_file": context["wrapper_stack"]["candidate"]["file"],
+                 "configs": ["compute", "compute-view", "host-cpu"]}],
             "formats": list(FORMATS),
             "conventions": "nearest sampler, fullscreen triangle, RGBA8 UNORM offscreen target, "
                            "32x32 texture sampled into a 64x64 target",
@@ -1082,20 +1234,21 @@ def build_receipt(args, context):
         "runs": context["runs"],
         "results": {
             "checker": "same _check() used by --dir; invoked internally by --run",
+            "srgb_host_convention": context["srgb_host_convention"],
             "summary": summary,
             "cases": cases,
             "groups": groups,
             "cross_checks": context["cross_checks"],
+            "expected_failures": context["expected_failures"],
         },
         "salvaged_comparison": {
             "salvaged_receipt": args.salvaged,
             "expectations": statements,
             "deviations": deviations,
             "reference_decoder_change": context["reference_change"],
-            "device_consistency": "The salvaged run used AVD Vapor_UI_API36 on "
-                                  "emulator-5556; this one-command run used AVD VaporProbe36C on "
-                                  "emulator-5560. Both are Android 16/API 36, 4 KB, llvmpipe; the "
-                                  "observed device/driver strings are recorded in the run log.",
+            "device_consistency": "This one-command run used AVD %s on emulator-%s; the "
+                                  "observed device/driver strings are recorded in the run log."
+                                  % (context["emulator"]["avd"], context["emulator"]["port"]),
         },
         "confirmed": context["confirmed"],
         "open": context["open"],
@@ -1183,7 +1336,21 @@ def run_mode(args):
         fixture = build_fixture(evidence_dir, args.ndk, args.vulkan_include,
                                 os.path.join(REPO_ROOT, "tools", "tests",
                                              "vulkan-wrapper-render.c"))
-        stage_dir, staged = prepare_stage(evidence_dir, fixture, args.wrapper_build,
+        log("== resolving wrapper libraries from %s" % args.wrapper_build)
+        wrapper_stack = resolve_wrapper_stack(args.wrapper_build, args.candidate_so,
+                                              args.baseline_so)
+        for role in ("candidate", "baseline"):
+            info = wrapper_stack[role]
+            log("   %-9s %s sha256=%s bytes=%d%s"
+                % (role + ":", info["source"], info["sha256"], info["bytes"],
+                   " (override)" if info["override"] else ""))
+        log("   auxiliary %s%s" % (wrapper_stack["auxiliary"]["directory"],
+                                   " (pinned-build fallback)"
+                                   if wrapper_stack["auxiliary"]["fallback_to_pinned_build"]
+                                   else ""))
+        for warning in wrapper_stack["warnings"]:
+            print("WARNING: %s" % warning, flush=True)
+        stage_dir, staged = prepare_stage(evidence_dir, fixture, wrapper_stack,
                                           shaders, inputs)
         log("== staging to %s" % args.work)
         remote_dir = "/data/local/tmp/" + REMOTE_DIR_BASE
@@ -1229,18 +1396,55 @@ def run_mode(args):
         log("== pulling readbacks")
         pulled = pull_outputs(adb, serial, remote_dir, os.path.join(evidence_dir, "output"),
                               matrix_cases())
-        log("== checking readbacks")
-        check_code, records, summary = check(evidence_dir, verbose=True, collect=True)
-        if check_code != 0:
+        log("== checking readbacks (host-cpu sRGB convention: %s)"
+            % args.srgb_host_convention)
+        check_code, records, summary = check(evidence_dir, verbose=True, collect=True,
+                                            srgb_host_convention=args.srgb_host_convention)
+        if check_code != 0 and not args.allow_failures:
             raise RuntimeError("checker reported failures; see %s" % evidence_dir)
+        failing_records = [record for record in records if record["verdict"] != "PASS"]
+        expected_failures = None
+        if args.allow_failures:
+            if args.srgb_host_convention == "linear":
+                explanation = (
+                    "Linear convention: the patched candidate's host-CPU decode linearises sRGB, "
+                    "so candidate host-cpu sRGB cases PASS; the unpatched baseline does not, so "
+                    "baseline host-cpu sRGB cases FAIL. Those failures are the negative control "
+                    "that distinguishes a patched build from the pinned unpatched build.")
+            else:
+                explanation = (
+                    "Encoded convention: the stack's srgb-storage patch makes the candidate's "
+                    "host-CPU decode store linearised values, so candidate host-cpu sRGB cases "
+                    "FAIL the encoded expectation; the pinned unpatched candidate would pass. "
+                    "Those failures prove the patched stack binary is staged.")
+            expected_failures = {
+                "declared_by_flag": True,
+                "srgb_host_convention": args.srgb_host_convention,
+                "failing_cases": [
+                    {"target": record["target"], "format": record["format"],
+                     "config": record["config"],
+                     "expected_convention": record["expected_convention"],
+                     "mismatch_bytes": record["mismatch_bytes"],
+                     "max_delta": record["max_delta"]}
+                    for record in failing_records],
+                "negative_control_explanation": explanation,
+            }
         cross_checks = host_cpu_srgb_cross_check(evidence_dir, records)
         base_commit = run_process(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT)
         context = {
             "label": args.label,
             "base_commit": base_commit["stdout"].strip(),
-            "one_command": "python3 tools/tests/vulkan-wrapper-render.py --run --label %s "
-                           "--avd %s --port %d" % (args.label, args.avd, args.port),
+            "one_command": ("python3 tools/tests/vulkan-wrapper-render.py --run --label %s "
+                            "--avd %s --port %d --wrapper-build %s "
+                            "--srgb-host-convention %s"
+                            % (args.label, args.avd, args.port, args.wrapper_build,
+                               args.srgb_host_convention)
+                            + (" --allow-failures" if args.allow_failures else "")),
             "label": args.label,
+            "srgb_host_convention": args.srgb_host_convention,
+            "wrapper_stack": wrapper_stack,
+            "warnings": wrapper_stack["warnings"],
+            "expected_failures": expected_failures,
             "fixture": fixture, "shaders": shaders, "host": host,
             "cross_check": cross_check, "inputs": inputs, "decoded": decoded,
             "expected": expected, "input_match": salvaged_input_match(inputs),
@@ -1260,11 +1464,17 @@ def run_mode(args):
             "reference_change": reference_change_text(cross_check),
             "confirmed": [
                 "One command runs the whole device pipeline and produces checked evidence",
-                "All %d matrix cases rendered and passed the checker" % len(records),
+                "%d matrix cases rendered; %d passed the checker%s"
+                % (len(records), summary["passed"],
+                   (" (%d expected failure(s) recorded)" % summary["failed"]
+                    if expected_failures else "")),
+                "Staged candidate: %s sha256=%s (pinned unpatched build: %s)"
+                % (wrapper_stack["candidate"]["file"], wrapper_stack["candidate"]["sha256"],
+                   "yes" if wrapper_stack["candidate_is_pinned_unpatched"] else "no"),
+                "Host-cpu sRGB cases checked against the %s convention"
+                % args.srgb_host_convention,
                 "Wrapper compute/compute-view UNORM and sRGB sampling works through the "
                 "graphics pipeline",
-                "The known pre-patch host-cpu sRGB encode/linearise split is visible at "
-                "sampling time",
             ],
             "open": [
                 "Effective-driver/phone sampling (Adreno/KGSL) with real game textures",
@@ -1280,6 +1490,9 @@ def run_mode(args):
                 "BC1 decodes are identical, BC3 differs on 194 of 4096 source bytes by "
                 "1 LSB, which is why the byte-exact counts differ slightly from that run",
                 "No performance claims",
+                "Host-cpu sRGB expectations follow --srgb-host-convention (%s); the default "
+                "encoded convention keeps the earlier committed receipts reproducible"
+                % args.srgb_host_convention,
             ],
         }
         receipt = build_receipt(args, context)
@@ -1290,7 +1503,7 @@ def run_mode(args):
             % (duration, summary["passed"], summary["failed"], summary["skipped"],
                summary["unique_cases"], summary["aliases"], summary["byte_exact"]))
         log("== receipt: %s" % args.evidence)
-        return 0
+        return 0 if (check_code == 0 or args.allow_failures) else 1
     except Exception as error:  # noqa: BLE001 - report the concrete failure
         print("FAIL %s: %s" % (type(error).__name__, error))
         return 1
@@ -1439,6 +1652,98 @@ def self_test(verbose=False):
     check_case("system environment does not set wrapper switches",
                "FORCE_BCN_EMULATION" not in case_environment(
                    "system", "native", "/data/local/tmp/x"))
+
+    # wrapper library selection: staged builds keep the real wrapper at the top
+    # level; native-probe/ may be a copy of the pinned build.
+    temp_stack = tempfile.mkdtemp(prefix="vulkan-render-stack-")
+    try:
+        build = os.path.join(temp_stack, "build")
+        os.makedirs(os.path.join(build, "native-probe"))
+        write(os.path.join(build, "candidate-stripped.so"), b"patched-stripped")
+        write(os.path.join(build, "candidate.so"), b"patched-unstripped")
+        write(os.path.join(build, "native-probe", "candidate.so"), b"pinned-copy")
+        first = resolve_wrapper_library(build, "candidate")
+        check_case("candidate selection prefers <build>/candidate-stripped.so",
+                   first["file"] == "candidate-stripped.so"
+                   and not first["from_native_probe"], str(first))
+        os.remove(os.path.join(build, "candidate-stripped.so"))
+        second = resolve_wrapper_library(build, "candidate")
+        check_case("candidate selection falls back to <build>/candidate.so",
+                   second["file"] == "candidate.so", str(second))
+        os.remove(os.path.join(build, "candidate.so"))
+        third = resolve_wrapper_library(build, "candidate")
+        check_case("candidate selection only then falls back to native-probe/candidate.so",
+                   third["file"] == "candidate.so" and third["from_native_probe"],
+                   str(third))
+        override_path = os.path.join(temp_stack, "override.so")
+        write(override_path, b"explicit-override")
+        override = resolve_wrapper_library(build, "candidate", override_path)
+        check_case("--candidate-so override wins over the search order",
+                   override["source"] == override_path and override["override"], str(override))
+        write(os.path.join(build, "baseline-stripped.so"), b"baseline")
+        baseline = resolve_wrapper_library(build, "baseline")
+        check_case("baseline selection prefers <build>/baseline-stripped.so",
+                   baseline["file"] == "baseline-stripped.so", str(baseline))
+        os.remove(os.path.join(build, "baseline-stripped.so"))
+        write(os.path.join(build, "native-probe", "baseline.so"), b"pinned-baseline")
+        baseline_second = resolve_wrapper_library(build, "baseline")
+        check_case("baseline selection falls back to native-probe/baseline.so",
+                   baseline_second["from_native_probe"], str(baseline_second))
+        warnings = library_warnings(
+            "/tmp/not-the-pinned-build",
+            {"sha256": PINNED_CANDIDATE_SHA, "from_native_probe": False})
+        check_case("warns loudly when an alternate build stages the pinned candidate",
+                   any("PINNED" in warning for warning in warnings), str(warnings))
+        no_warning = library_warnings(
+            PINNED_WRAPPER_BUILD,
+            {"sha256": PINNED_CANDIDATE_SHA, "from_native_probe": False})
+        check_case("no pinned-candidate warning for the pinned build itself",
+                   no_warning == [], str(no_warning))
+        pinned_dir = os.path.join(temp_stack, "pinned")
+        os.makedirs(os.path.join(pinned_dir, "native-probe"))
+        for name in AUX_LIBRARY_NAMES:
+            write(os.path.join(pinned_dir, "native-probe", name), b"aux-pinned")
+        aux_fallback = resolve_aux_libraries(build, pinned_dir)
+        check_case("auxiliary libraries fall back to the pinned build's native-probe",
+                   aux_fallback["fallback_to_pinned_build"]
+                   and aux_fallback["directory"] == os.path.join(pinned_dir, "native-probe"),
+                   str(aux_fallback["directory"]))
+        for name in AUX_LIBRARY_NAMES:
+            write(os.path.join(build, "native-probe", name), b"aux-local")
+        aux_local = resolve_aux_libraries(build, pinned_dir)
+        check_case("local native-probe auxiliary libraries are preferred",
+                   not aux_local["fallback_to_pinned_build"], str(aux_local["directory"]))
+    finally:
+        shutil.rmtree(temp_stack, ignore_errors=True)
+
+    # host-cpu sRGB convention selects which expectation is used for checking
+    temp_convention = tempfile.mkdtemp(prefix="vulkan-render-convention-")
+    try:
+        input_dir = os.path.join(temp_convention, "input")
+        output_dir = os.path.join(temp_convention, "output")
+        os.makedirs(input_dir)
+        os.makedirs(output_dir)
+        decoded = bytes((index * 11) & 0xFF for index in range(SOURCE_WIDTH * SOURCE_HEIGHT * 4))
+        write(os.path.join(input_dir, "bc1-decoded-32x32.bin"), decoded)
+        write(os.path.join(input_dir, "bc1-expected-unorm-64x64.bin"),
+              upscale_nearest(decoded, SOURCE_WIDTH, SOURCE_HEIGHT))
+        write(os.path.join(input_dir, "bc1-expected-srgb-encoded-64x64.bin"),
+              upscale_nearest(decoded, SOURCE_WIDTH, SOURCE_HEIGHT))
+        linear_expected = upscale_nearest(linear_image(decoded), SOURCE_WIDTH, SOURCE_HEIGHT)
+        write(os.path.join(input_dir, "bc1-expected-srgb-linear-64x64.bin"), linear_expected)
+        write(os.path.join(output_dir, "out-candidate-bc1_srgb-host-cpu.bin"), linear_expected)
+        linear_code, _, linear_summary = check(temp_convention, collect=True,
+                                               srgb_host_convention="linear")
+        encoded_code, _, encoded_summary = check(temp_convention, collect=True,
+                                                 srgb_host_convention="encoded")
+        check_case("--srgb-host-convention linear expects the linearised host-cpu image",
+                   linear_code == 0 and linear_summary["passed"] == 1, str(linear_summary))
+        check_case("--srgb-host-convention encoded (default) rejects that image",
+                   encoded_code != 0 and encoded_summary["failed"] == 1,
+                   str(encoded_summary))
+    finally:
+        shutil.rmtree(temp_convention, ignore_errors=True)
+
     print("self-test: %d checks, %d failed" % (count, len(failures)))
     return 0 if not failures else 1
 
@@ -1456,8 +1761,12 @@ Shaders:  tools/tests/vulkan-wrapper-render.vert / .frag  (glslangValidator -V -
 Checker:  tools/tests/vulkan-wrapper-render.py --dir <evidence>
 One shot: tools/tests/vulkan-wrapper-render.py --run
           (generates inputs, decodes with host bcdec, compiles shaders, builds/stages
-           the fixture, boots the AVD, runs the 31-case matrix, pulls and checks the
-           readbacks and writes docs/evidence/2026-10-22-vulkan-wrapper-render-orchestrated.json)
+           the fixture, resolves wrapper libraries (--candidate-so/--baseline-so
+           override; <build>/candidate-stripped.so preferred over native-probe/),
+           boots the AVD, runs the 31-case matrix, pulls and checks the readbacks
+           and writes the evidence JSON). Use --wrapper-build for staged builds,
+           --srgb-host-convention encoded|linear for the host-cpu sRGB expectation,
+           and --allow-failures to complete a run with expected negative controls.
 
 1. Compile the fixture for Android ARM64 with the recorded NDK recipe:
    $NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang \\
@@ -1478,9 +1787,11 @@ One shot: tools/tests/vulkan-wrapper-render.py --run
    <evidence>/input/, and run the checker:
    python3 tools/tests/vulkan-wrapper-render.py --dir <evidence> --verbose
 Expected conventions: wrapper compute/compute-view and the native control render
-sRGB sources as linearised values (sampled as UNORM); the pre-patch host-CPU
-fallback renders encoded values (known defect, fixed by
-tools/vulkan-wrapper/srgb-storage.patch). RGBA8 controls must be byte-exact.
+sRGB sources as linearised values (sampled as UNORM). The default --srgb-host-
+convention encoded expects the pre-patch host-CPU fallback to render encoded
+values (known defect); a build containing tools/vulkan-wrapper/srgb-storage.patch
+linearises host-CPU sRGB, so check it with --srgb-host-convention linear. RGBA8
+controls must be byte-exact.
 """
 
 
@@ -1514,7 +1825,22 @@ def main(argv=None):
     parser.add_argument("--emulator", default=DEFAULT_EMULATOR)
     parser.add_argument("--ndk", default=DEFAULT_NDK)
     parser.add_argument("--wrapper-build", default=DEFAULT_WRAPPER_BUILD,
-                        help="pinned wrapper build tree (candidate/baseline + aux libs)")
+                        help="wrapper build tree; staged builds keep the patched wrapper in "
+                             "candidate-stripped.so (default: the pinned build)")
+    parser.add_argument("--candidate-so",
+                        help="override the candidate wrapper .so staged (default resolution: "
+                             "<wrapper-build>/candidate-stripped.so, candidate.so, "
+                             "native-probe/candidate.so)")
+    parser.add_argument("--baseline-so",
+                        help="override the baseline wrapper .so staged (default resolution: "
+                             "<wrapper-build>/baseline-stripped.so, native-probe/baseline.so)")
+    parser.add_argument("--srgb-host-convention", dest="srgb_host_convention",
+                        choices=SRGB_HOST_CONVENTIONS, default="encoded",
+                        help="expected convention for host-cpu sRGB readbacks "
+                             "(default encoded, matching the earlier committed receipts)")
+    parser.add_argument("--allow-failures", action="store_true",
+                        help="complete the run and record expected checker failures instead of "
+                             "aborting (negative controls)")
     parser.add_argument("--vulkan-include", default=DEFAULT_VULKAN_INCLUDE,
                         help="directory containing vulkan/vulkan.h for the fixture build")
     parser.add_argument("--bcdec", default=DEFAULT_BCDEC, help="pinned bcdec.h path")
@@ -1535,7 +1861,8 @@ def main(argv=None):
     if args.run:
         return run_mode(args)
     if args.dir:
-        return check(args.dir, verbose=args.verbose)
+        return check(args.dir, verbose=args.verbose,
+                     srgb_host_convention=args.srgb_host_convention)
     parser.print_help()
     return 2
 
