@@ -71,6 +71,19 @@ class ExecShimDeviceTest {
         assertTrue("VAPOR_EXEC_SELF leaked into the program environment", env.lines().none { it.startsWith("VAPOR_EXEC_SELF=") })
     }
 
+    @Test fun forceSwitchTakesTheLinkerRouteEvenWhereDirectExecWorks() {
+        val pb = ProcessBuilder("/system/bin/sh", "-c", "${toybox.path} readlink /proc/self/exe; ${toybox.path} cat /proc/self/cmdline | ${toybox.path} tr '\\0' ' '")
+            .redirectErrorStream(true)
+        pb.environment()["LD_PRELOAD"] = shim.path
+        pb.environment()["VAPOR_EXEC_FORCE"] = "1"
+        val p = pb.start(); val out = p.inputStream.bufferedReader().readText().trim(); p.waitFor(15, TimeUnit.SECONDS)
+        Log.i("ExecShim", "target=$target force -> '$out'")
+        assertEquals(0, p.exitValue())
+        // The program still sees its own path, while the kernel's command line shows the linker route.
+        assertTrue(out, out.lines().first() == toybox.path)
+        assertTrue(out, out.contains("linker64"))
+    }
+
     @Test fun pathLookupThroughExecvpIsRerouted() {
         // toybox env resolves the command through PATH with execvp.
         val result = sh("/system/bin/env toybox echo via-path", preload = true, path = "${dir.path}:/system/bin")

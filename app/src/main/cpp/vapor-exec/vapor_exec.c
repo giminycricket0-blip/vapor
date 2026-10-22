@@ -142,9 +142,22 @@ static char **with_self(char *const envp[], const char *program) {
     return next;
 }
 
+// Diagnostic: VAPOR_EXEC_FORCE=1 takes the reroute even where direct exec would work, so
+// the reroute itself can be tested at target 28 (docs/TARGET-SDK.md). Read from envp, not
+// environ, so it follows the environment actually passed to the child.
+static int force_reroute(char *const envp[]) {
+    for (size_t i = 0; envp && envp[i]; i++)
+        if (strcmp(envp[i], "VAPOR_EXEC_FORCE=1") == 0) return 1;
+    return 0;
+}
+
 static int exec_depth(const char *path, char *const argv[], char *const envp[], int depth) {
-    raw_execve(path, argv, envp);
-    if (errno != EACCES || depth >= MAX_DEPTH) return -1;
+    if (!(depth == 0 && force_reroute(envp))) {
+        raw_execve(path, argv, envp);
+        if (errno != EACCES || depth >= MAX_DEPTH) return -1;
+    } else {
+        errno = EACCES;
+    }
     int saved = errno;
     char interp[PATH_MAX], arg[PATH_MAX];
     const char *target = NULL;
