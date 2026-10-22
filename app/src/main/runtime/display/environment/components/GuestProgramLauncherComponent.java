@@ -140,7 +140,11 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
       }
       if (!ProcessHelper.listRunningWineProcesses().isEmpty()) {
         Log.w(TAG, "prefix update: wine processes still alive; terminating them");
-        ProcessHelper.terminateAllWineProcesses();
+        // Wait for them to exit, force-killing after the timeout. A plain SIGTERM returns at
+        // once and winedevice.exe can outlive it, so the session's explorer started beside the
+        // dying prefix-update session and exited immediately: the intermittent first-launch failure.
+        java.util.List<String> remaining = ProcessHelper.terminateSessionProcessesAndWait(5_000, true);
+        if (!remaining.isEmpty()) Log.w(TAG, "prefix update: processes survived termination: " + remaining);
       }
       Log.i(TAG, "prefix update: finished in " + (System.currentTimeMillis() - started) + " ms");
     } catch (Throwable t) {
