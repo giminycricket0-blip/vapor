@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-22",
+  "scope": "Windows-program execution and full instrumented suite at the new target SDK.",
+  "device": "VaporProbe36A, Android 16/API 36, 4 KB, lavapipe",
+  "target_sdk_built": 35,
+  "windows_program": {
+    "binary": "C:\\\\windows\\\\system32\\\\notepad.exe (Wine/Proton 11.0-2 ARM64EC, Prepared Vapor container)",
+    "launch": "XServerDisplayActivity (exported) --ei container_id 1 --es boot_exe <windows path>",
+    "result": "runs as its own process via the shim linker route; stable 150 s; no session teardown",
+    "processes_at_session": [
+      "wineserver",
+      "wineboot.exe",
+      "services.exe",
+      "winedevice.exe x2",
+      "plugplay.exe",
+      "svchost.exe",
+      "rpcss.exe",
+      "tabtip.exe",
+      "explorer.exe",
+      "winhandler.exe",
+      "notepad.exe"
+    ]
+  },
+  "instrumented_suite": {
+    "classes": 26,
+    "tests": 202,
+    "result": "all pass at target 35, same count as at target 28"
+  },
+  "manifest_readiness": {
+    "foreground_service_types": "dataSync (Steam/Epic/GOG services), specialUse|dataSync (SessionKeepAlive); ChatOverlayService does not call startForeground so needs no type; AppLocalesMetadataHolderService is AndroidX metadata",
+    "permissions": "POST_NOTIFICATIONS, MANAGE_EXTERNAL_STORAGE, REQUEST_INSTALL_PACKAGES, FOREGROUND_SERVICE(+DATA_SYNC,+SPECIAL_USE) already declared"
+  },
+  "methodology_note": "An apparent loss of backslashes in boot_exe (C:windowssystem32notepad.exe) was an adb test-harness artefact: adb passes shell arguments to the device sh, which strips unquoted backslashes. splitCommand, the app quoting and the shim's sh -c exec wrapper were each verified to preserve them. Drive Windows paths through a device-side single-quoted script.",
+  "evidence_files": [
+    "/Users/cheng/vapor-scratch/target35-notepad.png"
+  ],
+  "limitations": [
+    "notepad is a Wine built-in; a real Steam game launch needs an account and downloaded content, which is the phone/field gate.",
+    "Emulator + software Vulkan; nothing here is an Adreno result."
+  ]
+}

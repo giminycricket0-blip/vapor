@@ -184,6 +184,34 @@ a diagnostic switch, `VAPOR_EXEC_FORCE=1`, which takes the linker route even whe
 direct exec works. With it, target 28 ran the whole session through the linker
 (13 processes) once the race was out of the way.
 
+## A Windows program runs at the new target (22 October)
+
+With the first-launch race fixed, the container session at target 35 runs Windows
+programs, not just the desktop:
+
+```
+linker64 C:\windows\system32\notepad.exe          <- a real Windows PE
+linker64 C:\windows\system32\services.exe
+linker64 C:\windows\system32\winedevice.exe
+linker64 C:\windows\system32\svchost.exe -k LocalServiceNetworkRestricted
+linker64 C:\windows\system32\explorer.exe /desktop=shell,1280x720 winhandler.exe "C:\windows\system32\notepad.exe"
+```
+
+`notepad.exe` runs as its own process through the shim's linker route and stayed up
+for 150 s with no session teardown. The whole 202-test instrumented suite
+(UI screens, settings, onboarding, game menu, plus the shim, exec-policy and wrapper
+package tests) passes at target 35 with the same count as at target 28. The manifest
+already carries the target-34 foreground-service types (`dataSync`, `specialUse`) and
+`POST_NOTIFICATIONS`; `ChatOverlayService` never calls `startForeground`, so it needs
+no type.
+
+**Methodology note.** An earlier run appeared to show `boot_exe` losing its
+backslashes (`C:windowssystem32notepad.exe`). It was a test-harness artefact: adb
+hands `shell` arguments to the device's `sh`, which eats unquoted backslashes. The
+app, `splitCommand` and the shim's `sh -c 'exec "$0" "$@"'` wrapper all preserve them
+exactly. Pass Windows paths through a device-side script (single-quoted) when driving
+these intents.
+
 ## The real work
 
 Rewriting Vapor's own launch commands is not enough. Wine and the translators spawn
@@ -211,7 +239,8 @@ those `execve` calls hits the same rule. The established approach is Termux's:
 2. Build the exec shim and wire it into the launchers: **done** (above). At target 35 the
    real app boots the container's Wine desktop (after fixing a first-launch race that
    also affected target 28). `wine-preloader` is not needed for the container session.
-   Next: a game launch at the new target, then the migration items below.
+   A Windows program (notepad) now runs at the new target and the whole instrumented
+   suite passes there. Next: the remaining migration items below, then the phone pass.
 3. Behind a build flag, raise the target and run the existing UI and launch suites on the
    emulator. Keep 28 as the shipped default until the phone pass.
 4. On an Adreno phone, confirm game launch, audio, input and Cloud saves at the new
