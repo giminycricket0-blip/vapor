@@ -12,7 +12,7 @@ import org.robolectric.annotation.Config
 import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28], application = Application::class, manifest = Config.NONE)
+@Config(sdk = [29], application = Application::class, manifest = Config.NONE)
 class SteamControllerNavigationTest {
     private val events = mutableListOf<KeyEvent>()
     private val navigation = SteamControllerNavigation { events.add(it) }

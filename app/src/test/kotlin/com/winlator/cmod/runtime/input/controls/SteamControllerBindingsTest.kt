@@ -12,7 +12,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28], application = Application::class)
+@Config(sdk = [29], application = Application::class)
 class SteamControllerBindingsTest {
     private val context = RuntimeEnvironment.getApplication()
     private val profile = ControlsProfile(context, 987654)

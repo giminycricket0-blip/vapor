@@ -11,7 +11,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28], application = Application::class, manifest = Config.NONE)
+@Config(sdk = [29], application = Application::class, manifest = Config.NONE)
 class SteamControllerUiSessionTest {
     @Test fun signInSessionRetainsBackendOnPauseAndReleasesItOnStop() {
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()

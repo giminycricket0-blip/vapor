@@ -12,7 +12,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28], application = Application::class, manifest = Config.NONE)
+@Config(sdk = [29], application = Application::class, manifest = Config.NONE)
 class ControllerWindowInputTest {
     @Test fun focusedDialogConsumesInputAndDisposalRestoresFallback() {
         val window = mock(Window::class.java)

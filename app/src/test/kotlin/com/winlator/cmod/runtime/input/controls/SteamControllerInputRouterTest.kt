@@ -10,7 +10,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28], application = Application::class, manifest = Config.NONE)
+@Config(sdk = [29], application = Application::class, manifest = Config.NONE)
 class SteamControllerInputRouterTest {
     private val keys = mutableListOf<KeyEvent>()
     private val navigation = SteamControllerNavigation({ keys.add(it) }, false)

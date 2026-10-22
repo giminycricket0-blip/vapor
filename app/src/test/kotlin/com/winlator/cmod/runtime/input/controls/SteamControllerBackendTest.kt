@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28], application = Application::class, manifest = Config.NONE)
+@Config(sdk = [29], application = Application::class, manifest = Config.NONE)
 class SteamControllerBackendTest {
     private val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
     private val backends = mutableListOf<SteamControllerBackend>()
