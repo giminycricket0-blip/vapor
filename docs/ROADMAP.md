@@ -58,15 +58,20 @@ Continue in this order:
    inputs; the default and GameNative payloads are now source-identified as builds
    of the public Pipetto-crypto/mesa and GameNative/mesa forks respectively (the
    GameNative payload is byte-identical to a published wrapper-gamenative release
-   artifact; exact build refs remain partly open). Native loading, synthetic BC decode, depth transfers, sampling/rendering
-   and BC7 pass the emulator probes: a reference-image probe matches independent
-   S3TC, RGTC and BC7 decoders exactly for the wrapper compute path (BC7 on both
-   4 KB and 16 KB), and a graphics-pipeline probe renders wrapper-decoded
-   BC1/BC3 UNORM/sRGB textures correctly (31/31 unique cases pass, RGBA8
-   controls byte-exact). The BC_SRGB storage inconsistency is root-caused and
-   fixed experimentally by `tools/vulkan-wrapper/srgb-storage.patch` (host-CPU
-   path now linearises; A/B closes the 74-LSB gap to 1 LSB; reference-tool
-   expectation update pending). Next: run the probes on an Adreno/KGSL phone
+   artifact; exact build refs remain partly open). Native loading, synthetic BC
+   decode, depth transfers, sampling/rendering, BC7 and BC6H pass the emulator
+   probes: a reference-image probe matches independent S3TC, RGTC, BC7 and BC6H
+   decoders exactly for the wrapper compute path on 4 KB and 16 KB, and a
+   one-command graphics-pipeline probe renders wrapper-decoded BC1/BC3 UNORM/sRGB
+   textures correctly (31/31 unique cases pass, RGBA8 controls byte-exact).
+   Three software-emulation defects are root-caused and fixed by local patches,
+   each with 4 KB/16 KB A/B evidence: the BC_SRGB host-path storage split
+   (`srgb-storage.patch`; the tool checks it with `--srgb-host-convention
+   linear`), the host-CPU odd-extent out-of-bounds write (`odd-extent.patch`) and
+   the all-zero BC6H image-view output (`bc6-image-view.patch`). Validation layers
+   chained above the wrapper find no app-facing defect; placed below it, they find
+   two internal ones (teardown leaks and a never-unmapped source mapping). Fixes
+   for those are in progress. Next: run the probes on an Adreno/KGSL phone
    (runbook ready); the staging-reclamation patch is now runtime-validated on
    4 KB and 16 KB (unfenced/one-time, reset/begin, `vkQueueSubmit2`-with-fence,
    stress peak 2–16 tracked vs 512 for the control), with a documented
@@ -75,10 +80,12 @@ Continue in this order:
    Android emulator paths documented as absent), and an independent APK
    reproducibility lane builds the pinned APK on two separate runners, fails on
    any byte difference, and now passes (byte-identical signed APKs).
-   Remaining: real-driver placement semantics (RADV/ANV/NVK/Turnip), a
-   validation-layer run over the wrapper itself, concurrency, physical-phone
-   duration, the host-CPU odd-extent overrun, and an upstream decision/packaging
-   note for the sRGB host-path fix.
+   Remaining: real-driver placement semantics (RADV/ANV/NVK/Turnip), finishing
+   and validating the teardown/mapping fixes, concurrency, physical-phone
+   duration, and a packaging decision for the local wrapper patches. Owner
+   decision (22 October 2026): wrapper patches and test
+   findings are committed to Vapor's own repository only; nothing is submitted
+   upstream.
 3. Deepen DXVK queue/compiler and VKD3D shader/capability/descriptor review on the
    exact packaged ARM64EC bases. Measure submission cost, shader stalls, waits,
    memory and cold/warm behavior. Reuse upstream priority/cache mechanisms;

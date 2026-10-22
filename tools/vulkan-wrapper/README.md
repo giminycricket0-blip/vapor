@@ -5,6 +5,10 @@
 It changes the existing library's `WRAPPER_CreateImage`, not Vapor's driver
 selector. `trace-gate.patch` changes that tree's existing call generator and its
 Meson dependency. These are local generated patches, not upstream submissions.
+Owner decision (22 October 2026): every wrapper patch here (including
+`srgb-storage.patch`) and related test findings, such as the Vulkan-Tools mock
+ICD gaps, are kept and committed in Vapor's own repository only; none is
+submitted upstream.
 
 ## Packaged source relationship
 
@@ -226,11 +230,14 @@ A sampling/render probe (`tools/tests/vulkan-wrapper-render.c` with committed GL
 shaders and the `tools/tests/vulkan-wrapper-render.py` checker) draws
 wrapper-decoded BC1/BC3 UNORM/sRGB textures through a fullscreen triangle with a
 nearest sampler into an RGBA8 target. On the 4 KB emulator all 31 unique
-cases pass (15 byte-exact): UNORM compute/compute-view renders byte-exactly,
-sRGB compute paths render the linearised convention within 1 LSB, the pre-patch
+cases pass (15 byte-exact): BC1 UNORM compute/compute-view renders byte-exactly
+(BC3 is within 1 LSB, the rounding difference between reference decoders), sRGB
+compute paths render the linearised convention within 1 LSB, the pre-patch
 host-CPU sRGB path renders the encoded convention (the known split), the native
-llvmpipe control stays within 3 LSB, and RGBA8 controls are byte-exact.
-[Render-pipeline receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-render-pipeline.json).
+llvmpipe control stays within 3 LSB, and RGBA8 controls are byte-exact. `--run`
+reproduces this in one command.
+[Render-pipeline receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-render-pipeline.json),
+[one-command run receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-render-orchestrated.json).
 
 The BC_SRGB storage split is root-caused and fixed experimentally:
 [`srgb-storage.patch`](srgb-storage.patch) linearises the host-CPU bcdec output
@@ -238,9 +245,38 @@ The BC_SRGB storage split is root-caused and fixed experimentally:
 linear). The patch applies cleanly to the pinned source, builds with the recorded
 recipe, keeps the ELF identity, and a 4 KB A/B reduces host-vs-compute
 disagreement from up to 74 LSB to 1 LSB with every other path byte-identical.
-The reference tool's host-cpu sRGB expectation still encodes the pre-patch
-convention, so patched runs report stale-convention failures until it is updated.
-[Patch receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-srgb-storage.json).
+The reference tool checks it with `--srgb-host-convention linear`: the patched
+candidate passes while unpatched builds fail (default `encoded` keeps old
+receipts reproducible).
+[Patch receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-srgb-storage.json),
+[sRGB expectation receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-srgb-expectation.json).
+
+An opt-in BC6H family (`--cases bc6h`, all 14 modes) shows the staging compute
+path bit-exact against bcdec on 4 KB and 16 KB, but the `USE_IMAGE_VIEW=1` path
+left BC6H output all zeros. Two causes: `bc6.comp` writes through an `rgba16ui`
+storage image that the wrapper bound to an `R16G16B16A16_SFLOAT` view, and the
+wrapper's own `WRAPPER_CreateImageView` hook rewrote a corrected view back.
+[`bc6-image-view.patch`](bc6-image-view.patch) creates the internal view as
+`R16G16B16A16_UINT` via the raw dispatch and allows that format in the forwarded
+format list. Compute-view becomes bit-exact with no BC1/BC3/BC7 regressions.
+[BC6H receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-bc6h-reference.json),
+[BC6H image-view receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-bc6-image-view.json).
+
+All local patches target pristine `3abf4870` and stack in this order:
+`image-create.patch` → `srgb-storage.patch` → `odd-extent.patch` →
+`bc6-image-view.patch` (forward and reverse with `patch -p1 --fuzz=0`);
+`staging-reclaim.patch` also stacks on top.
+
+The host-CPU odd-extent defect is root-caused and fixed experimentally:
+[`odd-extent.patch`](odd-extent.patch) stops `bcdec.c` from writing full 4×4
+blocks through a tight `width × texel_size` stride. Those writes spilled partial
+edge columns into later rows and wrote past the mapped staging range (+759 B at
+63×65). The patched path decodes into a 4×4 temporary and copies only in-bounds
+texels. Apply it after `srgb-storage.patch` (the reverse order conflicts). On
+4 KB and 16 KB the stacked build cuts host-CPU hard mismatches at 5×7/13×17/63×65
+from 15/36/48 to 0, with compute paths, sentinels and RGBA8 controls unchanged.
+Block-aligned (in-spec) copies were never affected.
+[Odd-extent receipt](../../docs/evidence/2026-10-22-vulkan-wrapper-odd-extent.json).
 
 
 ## Android build and limits

@@ -248,7 +248,9 @@ recorded for the wrapper owners, both in software emulation: BC_SRGB data decode
 to different pixels depending on whether the compute shader (linearised) or the
 host-CPU fallback (encoded) runs, and the host-CPU path corrupts partial edge
 blocks for out-of-spec non-block-aligned copy extents. Neither is an app defect and
-neither is claimed as a conformance failure.
+neither is claimed as a conformance failure. Both are now root-caused and fixed
+experimentally by local patches (see the SRGB storage and odd-extent subsections
+below).
 [Extended receipt](evidence/2026-10-21-vulkan-wrapper-reference-extended.json).
 The same extended families also pass on the Android 17/API 37 16 KB emulator
 (43/43 default matrix plus 66 extended passes and 28 recorded robustness cases,
@@ -290,11 +292,19 @@ llvmpipe control stays within 3 LSB (inter-decoder rounding); RGBA8 controls are
 byte-exact everywhere. This closes the "transfer-only" gap for the wrapper on
 software Vulkan. [Render-pipeline receipt](evidence/2026-10-22-vulkan-wrapper-render-pipeline.json).
 
-The fixture was salvaged from an interrupted workstream: the checker
-independently re-derives and verifies the expected images offline and
-`--print-runbook` prints the device commands, but a single-command device
-orchestrator is still a follow-up. Nearest sampling, one fullscreen triangle and
-llvmpipe only; no phone or game assets.
+The probe now runs in one command (`--run`): it generates deterministic inputs,
+decodes them with a host bcdec reference, compiles the shaders (glslangValidator
+16.6.0, reproducing the committed SPIR-V hashes), builds and stages the fixture,
+boots the AVD, runs the full matrix, pulls and checks the readbacks, and writes an
+evidence JSON. On a freshly recreated API 36 4 KB AVD it reproduced the result in
+265 s: 31/31 unique cases pass, 15 byte-exact, no aliases. Against bcdec, BC1
+UNORM rendering stays byte-exact, but BC3 UNORM differs by 1 LSB on 776 of 16,384
+bytes, because bcdec and the earlier pure-Python S3TC reference round BC3
+differently by 1 LSB; every case stays within tolerance. A device-free
+`--self-test` (13 checks) covers the expected-image derivation and the readback
+naming/alias checks. Nearest sampling, one fullscreen triangle and llvmpipe
+only; no phone or game assets.
+[One-command run receipt](evidence/2026-10-22-vulkan-wrapper-render-orchestrated.json).
 
 ### Wrapper SRGB storage fix
 
@@ -309,10 +319,98 @@ store linear values as well. The patch applies cleanly to the pinned source
 class (same SONAME, 20 NEEDED names, 4073 exports, 0x4000 load alignment), and a
 4 KB emulator A/B shows the host-vs-compute disagreement falling from up to 74 LSB
 to 1 LSB while compute, compute-view, native and RGBA8 readbacks stay byte-identical.
-The reference tool's host-cpu sRGB expectation still encodes the pre-patch
-convention, so patched runs report two stale-convention failures until that
-expectation is updated; that is a tool follow-up, not a patch failure.
-[SRGB patch receipt](evidence/2026-10-22-vulkan-wrapper-srgb-storage.json).
+The reference tool now takes `--srgb-host-convention {encoded,linear}`. The
+default `encoded` keeps unpatched pinned builds and every earlier receipt
+reproducible (17/17 extended sRGB runs still pass). With `linear`, the patched
+candidate's host-CPU BC1/BC3/BC7_SRGB runs pass (BC1 and BC7 4096/4096 exact, BC3
+within 1 LSB), while the unpatched baseline and an unpatched candidate both fail
+with up to 73 LSB, so the option tells patched from unpatched builds.
+[SRGB patch receipt](evidence/2026-10-22-vulkan-wrapper-srgb-storage.json),
+[sRGB expectation receipt](evidence/2026-10-22-vulkan-wrapper-srgb-expectation.json).
+
+### Wrapper BC6H coverage and image-view fix
+
+An opt-in BC6H family (`--cases bc6h`) uses 256 deterministic valid blocks across
+all 14 modes, compared against the pinned bcdec `bcdec_bc6h_half` reference under
+a documented binary16 ULP/NaN/Inf policy. The wrapper emulates BC6H as
+`R16G16B16A16_SFLOAT`. On both 4 KB and 16 KB emulators, the wrapper's staging
+compute path (`bc6.comp`, independent of bcdec) is **bit-exact** for BC6H_UFLOAT
+and BC6H_SFLOAT (4096/4096, max 0 ULP) on candidate and baseline. The host-CPU
+path is exact (it uses bcdec itself, so this is a self-consistency check), native
+compressed copies are exact, and the llvmpipe native blit stays within 1 ULP.
+
+It also exposed a defect: with `USE_IMAGE_VIEW=1` the BC6H output image stayed
+**all zeros** on both builds and both page sizes. The root cause has two layers.
+First, `bc6.comp:68` writes raw half-float bits through an `rgba16ui` unsigned
+storage image, but the wrapper created that view as `R16G16B16A16_SFLOAT`. That
+uint/float mismatch is undefined, and llvmpipe drops the writes; BC1/BC3/BC7 use
+matching `rgba8`/UNORM views. Second, even with the view corrected, the wrapper's
+own `WRAPPER_CreateImageView` hook rewrote it back to SFLOAT (logcat:
+`Patching ImageView format … from 95 to 97`). `tools/vulkan-wrapper/bc6-image-view.patch`
+creates that internal view as `R16G16B16A16_UINT` (same 64-bit compatibility
+class; the bits are reinterpreted, not converted) through the raw dispatch. It
+also adds `UINT` to the image-format list the wrapper forwards for emulated
+images, and leaves the shaders unchanged. Results: candidate compute-view is
+bit-exact on 4 KB and 16 KB, the unpatched baseline stays zero (negative
+control), the default matrix passes 43/43, and BC1/BC3/BC7 image-view paths stay
+exact.
+[BC6H receipt](evidence/2026-10-22-vulkan-wrapper-bc6h-reference.json),
+[BC6H image-view patch receipt](evidence/2026-10-22-vulkan-wrapper-bc6-image-view.json).
+
+### Wrapper odd-extent overrun fix
+
+The host-CPU edge-block defect is root-caused in the pinned `bcdec.c`. The
+destination row stride is `texel_size × imageExtent.width` (lines 55–57), yet the
+loops always decode full 4×4 blocks (lines 74–75) and write each one straight to
+`mappedDst + y·stride + x·texel_size` with no clipping (line 87). For a
+non-block-aligned extent, partial edge columns therefore spill into the following
+rows (in-bounds corruption), and the last block row writes **past the mapped
+staging range**, which `wrapper_device.c:1194–1199` sizes at exactly
+`w × h × target_size` bytes: +32 B at 5×7, +168 B at 13×17, +759 B at 63×65. That
+makes it an out-of-bounds write, not just wrong pixels. Such copies are out of
+spec for block-compressed formats, and in-spec block-aligned copies are
+unaffected. `tools/vulkan-wrapper/odd-extent.patch` (5 hunks, `bcdec.c` only)
+decodes into a 4×4 temporary and copies only the in-bounds texels. It applies
+cleanly to the pinned source and on top of `srgb-storage.patch` (repo order), and
+the stacked build keeps the recorded ELF identity (SONAME, 20 `NEEDED`, 4073
+exports, 0x4000 `LOAD`). On both 4 KB and 16 KB emulators the host-CPU hard
+mismatches for BC1/BC3 at 5×7 / 13×17 / 63×65 fall from 15 / 36 / 48 to **0**,
+with the remaining deltas ≤ 1 LSB (decoder rounding). Compute paths stay at 0
+mismatches, the 11 partial-region sentinel cases pass and the RGBA8 controls stay
+bit-exact.
+[Odd-extent patch receipt](evidence/2026-10-22-vulkan-wrapper-odd-extent.json).
+
+### Validation layers over the wrapper
+
+The emulator's system loader always picks its own ICD, so it cannot place layers
+in front of the wrapper. `tools/tests/vulkan-wrapper-validation.c` therefore
+chains the official Khronos validation layer by hand, the way the loader does
+(`VkLayerInstanceCreateInfo`/`VkLayerDeviceCreateInfo` link info plus
+loader-data callbacks). It uses the Android arm64 layer from
+`Vulkan-ValidationLayers` `vulkan-sdk-1.4.363.0`, with the archive and library
+hashes pinned in the runner.
+
+- **Above the wrapper** (app → layer → wrapper), 13 runs: the BC1 compute,
+  BC1 image-view, BC3, host-CPU, two-region-copy and capability workloads
+  produce **0 messages**, as do the same workloads through the system driver
+  and the no-layer control. A deliberate leak produces the expected VUID through
+  both chains, which proves the layer is live. There are no wrapper defects at
+  the application-facing interface.
+- **Below the wrapper** (wrapper → layer → llvmpipe, via the wrapper's own
+  `USE_VVL` route): the layer sees the wrapper's internal driver calls. A
+  missing layer makes instance creation fail with `VK_ERROR_LAYER_NOT_PRESENT`,
+  which proves the placement. It found **two wrapper defects**. D1: every
+  device teardown leaks 14 wrapper-created objects (3 compute pipelines,
+  layouts and descriptor-set layouts, 2 constants buffers and memories, the
+  compute command pool), because `InterceptorState_Cleanup` is declared but never
+  defined or called and `WRAPPER_DestroyDevice` never destroys them. D2: the
+  host-CPU decode path maps the application's source memory and never unmaps it;
+  the unmap is commented out with a TODO. Both are medium severity: llvmpipe frees
+  D1's objects at device destruction, and D2 is reachable only on the host-CPU
+  fallback. The remaining messages are layer startup information and a log-path
+  fallback.
+
+[Validation receipt](evidence/2026-10-22-vulkan-wrapper-validation.json).
 
 ### Placed-memory loader path and capability skip
 

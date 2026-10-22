@@ -652,10 +652,14 @@ the recorded NDK, stages the pinned wrapper libraries and auxiliary libraries,
 runs deterministic BC1/BC3 and depth cases, and compares readbacks against an
 independent S3TC decoder. `--self-test` validates the decoder, `--print-runbook`
 prints the phone procedure, `--replay` re-assembles evidence from saved runs and
-`--cases default|extended|bc7|all` (with `--extended-cases`) selects the original
-matrix, the odd-extent/partial-copy/mip-array/sRGB/BC4/BC5/depth-reduce families,
-or the opt-in deterministic BC7 family (modes 0-7 blocks, BC7_UNORM and
-BC7_SRGB, compared against a host bcdec reference). Run it with
+`--cases default|extended|bc7|bc6h|all` (with `--extended-cases`) selects the
+original matrix, the odd-extent/partial-copy/mip-array/sRGB/BC4/BC5/depth-reduce
+families, the opt-in deterministic BC7 family (modes 0-7 blocks, BC7_UNORM and
+BC7_SRGB), or the opt-in BC6H family (all 14 modes, UFLOAT and SFLOAT, binary16
+ULP policy via `--bc6h-ulp-tolerance`), each compared against a host bcdec
+reference. `--srgb-host-convention linear` checks a wrapper build carrying
+`tools/vulkan-wrapper/srgb-storage.patch`; the default `encoded` matches unpatched
+builds. Run it with
 `--serial emulator-5556` for the emulator, or
 `--serial <PHONE_SERIAL> --label phone-adreno` for the effective-driver pass. It
 does not modify the app or the pinned libraries.
@@ -664,9 +668,19 @@ does not modify the app or the pinned libraries.
 
 `tools/tests/vulkan-wrapper-render.c` samples wrapper-decoded textures through a
 real graphics pipeline (fullscreen triangle, nearest sampler, RGBA8 render
-target) and reads back the rendered image. Compile the fixture with the recorded
-NDK and compile the committed shaders with glslang (record the exact invocation
-and SPIR-V hashes):
+target) and reads back the rendered image. The whole device run is one command:
+
+```sh
+python3 tools/tests/vulkan-wrapper-render.py --run --label api36-4k --avd <AVD> --port 5560
+python3 tools/tests/vulkan-wrapper-render.py --self-test   # device-free checks
+```
+
+`--run` generates deterministic inputs, decodes them with a host bcdec
+reference, compiles the shaders, builds and stages the fixture, boots the AVD (or
+uses `--serial`), runs the matrix, pulls and checks the readbacks, and writes an
+evidence JSON. The manual equivalent: compile the fixture with the recorded NDK
+and the committed shaders with glslang (record the exact invocation and SPIR-V
+hashes):
 
 ```sh
 $NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang \
