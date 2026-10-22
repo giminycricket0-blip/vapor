@@ -587,12 +587,25 @@ required for whatever is kept.
 
 Bounded, verifiable identifications from the shipped bytes themselves:
 
-- **`proton-9.0-arm64ec.txz`** — the Unix side embeds the version string `wine-9.0` and
-  Proton's own media-converter source paths (`../dlls/winegstreamer/media-converter/
-  protondemuxer.c`, plus `protonaudioconverter`/`protonvideoconvert` messages). So this
-  is **Wine 9.0 plus Valve Proton media patches**, not stock Wine and not a release
-  build. No git commit hash is embedded. The archive ships **no** `LICENSE`/`COPYING`,
-  even though Wine's code is LGPL-2.1-or-later.
+- **`proton-9.0-arm64ec.txz`** — **source identified and hash-verified**. Its payload is
+  byte-identical to the WinNative-Components release
+  [`Proton.9.0-arm64ec-steam.wcp`](https://github.com/nicholasx417/WinNative-Components/releases/tag/Proton):
+  all **1690 of 1690** shared files match by SHA-256 (key binaries: `ntdll.so`
+  `ba4f6fb5bbbee81b…`, `wineserver` `3479531b766d9914…`, `wine-preloader`
+  `c078b1ee39ccfa30…`, `winegstreamer.so` `b1e8f19d3043a648…`). The WCP adds only
+  `profile.json` and `prefixPack.txz`, which the app does not ship. The provider's
+  `profile.json` declares `type: Proton`, `versionName: 9.0-arm64ec-steam`, and
+  *"Proton 9.0 arm64ec - Compiled as a wcp by Xnick417x"*.
+
+  What that payload is: the Unix side embeds `wine-9.0` and Proton's media-converter
+  source paths (`../dlls/winegstreamer/media-converter/protondemuxer.c`, plus
+  `protonaudioconverter`/`protonvideoconvert`), so it is **Wine 9.0 with Valve Proton
+  media patches** — the older sibling of the Proton 11.0-2 component already mapped in
+  [runtime research](RUNTIME-RESEARCH.md#wine-source-mapping-and-android-patch-review)
+  to `GameNative/proton-wine@71040f04bd3`. Unlike that one it carries **no git revision**,
+  and neither the archive nor the provider's WCP ships a `LICENSE`/`COPYING`, though
+  Wine's code is LGPL-2.1-or-later. The exact source revision and the patch set remain
+  open.
 - **`wincomponents/ddraw.tzst` → `ddraw.dll`** — `cnc-ddraw` 6.6.0.0, `github.com/
   FunkyFr3sh`, **MIT** (verified from the project's `LICENSE`, copyright 2025). The
   license text is now bundled as

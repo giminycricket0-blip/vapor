@@ -132,10 +132,37 @@
         "protondemuxer",
         "Converts audio for Proton"
       ],
-      "conclusion": "Wine 9.0 base with Valve Proton media-converter patches; not a stock or tagged release",
+      "conclusion": "Bundled payload identified: Wine 9.0 + Valve Proton media patches, compiled and published by Xnick417x via WinNative-Components. Exact upstream revision and patch set remain open.",
       "git_hash": "not embedded",
       "license_file_in_archive": "none",
-      "expected_license": "Wine LGPL-2.1-or-later (text not bundled)"
+      "expected_license": "Wine LGPL-2.1-or-later (text not bundled)",
+      "matched_provider_artifact": {
+        "repo": "nicholasx417/WinNative-Components",
+        "release_tag": "Proton",
+        "asset": "Proton.9.0-arm64ec-steam.wcp",
+        "profile_json": {
+          "type": "Proton",
+          "versionName": "9.0-arm64ec-steam",
+          "description": "Proton 9.0 arm64ec - Compiled as a wcp by Xnick417x"
+        }
+      },
+      "payload_identity": {
+        "shared_files": 1690,
+        "byte_identical": 1690,
+        "differing": 0,
+        "wcp_only": [
+          "profile.json",
+          "prefixPack.txz"
+        ],
+        "bundled_only": []
+      },
+      "key_file_sha256": {
+        "lib/wine/aarch64-unix/ntdll.so": "ba4f6fb5bbbee81b",
+        "bin/wineserver": "3479531b766d9914",
+        "bin/wine-preloader": "c078b1ee39ccfa30",
+        "lib/wine/aarch64-unix/winegstreamer.so": "b1e8f19d3043a648"
+      },
+      "sibling_mapping": "Proton 11.0-2 (downloaded component, not bundled) is mapped in docs/RUNTIME-RESEARCH.md to GameNative/proton-wine@71040f04bd3a451fd2c5d2552f0b64a23dd7c69b"
     },
     "ddraw.dll": {
       "identity": "cnc-ddraw 6.6.0.0 (github.com/FunkyFr3sh)",
