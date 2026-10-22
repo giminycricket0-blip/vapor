@@ -41,7 +41,7 @@
   "part_b_ci_lane": {
     "workflow": {
       "path": ".github/workflows/reproducibility-ci.yml",
-      "sha256": "5a0f93adf164b8877047257649dfdf8cd2946e512cd504746351d904583da532",
+      "sha256": "0a9594b00657d385d94d6f54dd307e31a0e6fdc9fe7e4f1a3ca5197a8d7992ba",
       "runner": "ubuntu-24.04",
       "triggers": [
         "push branches: Vapor",
@@ -65,7 +65,7 @@
       "Gradle dependency resolution from remote repositories could change if a pinned dependency version is not immutable (the build already uses fixed versions, but no lockfile guarantee is added here)",
       "Debug signing only; release signing and fully pristine caches are out of scope"
     ],
-    "status": "First lane run executed: both builds succeeded, ZIP content identical, compare failed only on the per-runner debug signing block. Fixed CI debug keystore + automatic signing-block classification committed; second run pending.",
+    "status": "Runs 1 and 2 both built byte-identical ZIP content on two runners and failed only on per-runner debug signing; run 3 uses explicit KEYSTORE_FILE signing guarded by signingReport (pending).",
     "ci_runs": [
       {
         "run": 1,
@@ -92,20 +92,41 @@
         "artifact_diagnosis": {
           "artifacts": "gh run download 39713433060 (apk-job-a, apk-job-b)",
           "diff_report": "/Users/cheng/apk-repro-ci-diff3/report.json (signing block classification)"
-        }
+        },
+        "fix_attempted_next": "install the fixed key as ~/.android/debug.keystore (see run 2)"
       },
       {
         "run": 2,
+        "id": 39716071085,
+        "head_commit": "07786bd2",
+        "jobs": {
+          "build-a": "success",
+          "build-b": "success",
+          "compare": "failure"
+        },
+        "builds": {
+          "size_bytes": 676228094
+        },
+        "hashes": {
+          "build_a": "c4311ab47ae18acb53b78372894bb76c720c9d7d5a2c4fa8fb87140eef785956",
+          "build_b": "c86092210dd287b4db086f209b56796f43c69e931862bca26cb16679b409ac78"
+        },
+        "diagnosis": "The fixed keystore was installed identically in both jobs (log: sha256 ab60f83d\u2026 at /home/runner/.android/debug.keystore) but AGP did not use it: both APKs are signed with AGP-generated CN=Android Debug certificates that differ per runner (SHA-256 a406544509443dd6ba38ac360a93472b0a76eebd9f89edf97782d24dd9a045a5 vs 0cf59c2a70d413f8cc9bdfd1dabae9b64b701d0a622790a8346a93ee51e5f49b), not the CI key (CN=CI Debug, 6F:07:6A\u2026). All 1,011 differing bytes lie inside the 4,096-byte signing block (offsets 676,073,115-676,074,335 within 676,072,930-676,077,026), so the build content was byte-identical again. Why AGP ignored ~/.android on the runner was not established.",
+        "artifacts": "gh run download 39716071085 -> /tmp/repro-ci-run2"
+      },
+      {
+        "run": 3,
         "status": "pending",
-        "fix": "Commit the throwaway CI debug keystore .github/ci-debug.keystore and install it as $HOME/.android/debug.keystore in both jobs before the build, so both runners sign with the same debug key. The lane then tests build determinism rather than per-runner key generation. The result is recorded here after the workflow runs."
+        "fix": "Sign through the app's explicit hook instead of AGP's default debug-key lookup: workflow env KEYSTORE_FILE=.github/ci-debug.keystore, KEYSTORE_PASSWORD/KEY_PASSWORD=android, KEY_ALIAS=androiddebugkey (app/build.gradle signs the debug build type with this keystore when KEYSTORE_FILE is set). A new \"Verify pinned signing config\" step runs :app:signingReport and fails unless standardDebug resolves to .github/ci-debug.keystore with SHA-256 6F:07:6A\u2026. Verified locally: passes with the variables set and fails without them (falls back to the machine debug key)."
       }
     ],
     "fixed_ci_keystore": {
       "path": ".github/ci-debug.keystore",
       "sha256": "ab60f83d76554f6ca8f194ba5d8ad379e65d96d888ae10cd13111fdaaf207c6b",
       "type": "JKS, RSA 2048, alias androiddebugkey, passwords android (public throwaway CI-only debug key, documented in .github/CI-DEBUG-KEYSTORE.md); never for releases",
-      "installed_as": "$HOME/.android/debug.keystore in both build jobs",
-      "rationale": "Android debug signing uses a per-machine random keystore, which would make the signing block differ even for byte-identical builds; the first lane run proved exactly that."
+      "installed_as": "used via KEYSTORE_FILE env in both build jobs (not copied to ~/.android)",
+      "rationale": "Android debug signing uses a per-machine random keystore, which would make the signing block differ even for byte-identical builds; the first lane run proved exactly that.",
+      "certificate_sha256": "6F:07:6A:D8:B2:85:10:A3:10:7A:CA:3F:36:7B:1C:D3:EE:96:87:C2:C0:61:1E:F0:40:9C:A8:AD:59:BA:62:F6"
     }
   },
   "limitations": [

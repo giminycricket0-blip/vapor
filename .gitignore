@@ -76,3 +76,6 @@ dist/
 /app/build
 *.apk
 *.apk.idsig
+
+# Fixed throwaway CI debug keystore for the reproducibility lane (public test key)
+!.github/ci-debug.keystore

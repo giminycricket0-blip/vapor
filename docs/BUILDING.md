@@ -251,7 +251,7 @@ remain out of scope; see the
 [root-cause receipt](evidence/2026-10-22-apk-reproducibility-rootcause.json) and
 the [initial comparison](evidence/2026-10-21-apk-rebuild-reproducibility.json).
 
-Debug builds use the normal local debug key unless signing is explicitly configured (the `APK reproducibility` workflow installs `.github/ci-debug.keystore` as `~/.android/debug.keystore` in both of its jobs so two runners sign identically; that key is a public throwaway test key documented in `.github/CI-DEBUG-KEYSTORE.md` and must never sign releases). They are development artifacts, not official Vapor releases. Runtime redistribution review and release signing remain open gates.
+Debug builds use the normal local debug key unless signing is explicitly configured (the `APK reproducibility` workflow sets `KEYSTORE_FILE=.github/ci-debug.keystore` and its passwords/alias in both of its jobs so two runners sign identically, and asserts the resolved certificate with `:app:signingReport`; that key is a public throwaway test key documented in `.github/CI-DEBUG-KEYSTORE.md` and must never sign releases). They are development artifacts, not official Vapor releases. Runtime redistribution review and release signing remain open gates.
 
 The 15 October Cloud-exit reporting update is recorded in
 [qualification](QUALIFICATION.md#exit-cloud-status-and-diagnostics--15-october-2026).

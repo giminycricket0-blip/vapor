@@ -13,11 +13,14 @@ name: APK reproducibility
 #   * app/build and app/.cxx are removed before the build, so APK packaging
 #     starts from scratch (the root-cause pass showed incremental packaging
 #     leaves history-dependent ZIP holes/padding: a 4.87 MB size delta),
-#   * both jobs install the same fixed CI-only debug keystore
-#     (.github/ci-debug.keystore, see .github/CI-DEBUG-KEYSTORE.md), because an
-#     Android debug keystore generated independently per runner would make the
-#     signing block differ even when every ZIP entry is identical (this was the
-#     cause of the first lane run's failure).
+#   * both jobs sign with the same fixed CI-only key
+#     (.github/ci-debug.keystore, see .github/CI-DEBUG-KEYSTORE.md) through the
+#     app's explicit KEYSTORE_FILE/KEYSTORE_PASSWORD/KEY_ALIAS/KEY_PASSWORD hook
+#     (app/build.gradle signs debug with it when set). AGP's default debug key
+#     is generated per runner, so the signing block differed even though every
+#     ZIP entry was identical (run 1); copying the key to ~/.android was not
+#     picked up by AGP on the runners (run 2). A guard step asserts the resolved
+#     signing certificate before building.
 #
 # No Gradle/actions cache is used on purpose for this first version: the lane
 # must compare two pristine, independent builds. Do not add actions/cache here
@@ -48,6 +51,14 @@ env:
   BUILD_ID: vapor-repro
   VERSION_CODE: "1"
   APK_PATH: app/build/outputs/apk/standard/debug/standard.apk
+  # Public throwaway CI-only key (never for releases); see
+  # .github/CI-DEBUG-KEYSTORE.md. app/build.gradle signs the debug build type
+  # with this keystore whenever KEYSTORE_FILE is set.
+  KEYSTORE_FILE: .github/ci-debug.keystore
+  KEYSTORE_PASSWORD: android
+  KEY_ALIAS: androiddebugkey
+  KEY_PASSWORD: android
+  EXPECTED_SIGNING_SHA256: "6F:07:6A:D8:B2:85:10:A3:10:7A:CA:3F:36:7B:1C:D3:EE:96:87:C2:C0:61:1E:F0:40:9C:A8:AD:59:BA:62:F6"
 
 jobs:
   build-a:
@@ -60,17 +71,6 @@ jobs:
           submodules: recursive
           lfs: true
           persist-credentials: false
-
-      - name: Install fixed CI debug keystore
-        run: |
-          set -euo pipefail
-          # Android debug APKs are signed by AGP with a per-machine debug
-          # keystore. The fixed keystore committed under .github/ makes both
-          # jobs sign identically, so the comparison tests build determinism,
-          # not key generation (see .github/CI-DEBUG-KEYSTORE.md).
-          install -d -m 700 "$HOME/.android"
-          install -m 600 .github/ci-debug.keystore "$HOME/.android/debug.keystore"
-          sha256sum "$HOME/.android/debug.keystore"
 
       - uses: actions/setup-java@v5
         with:
@@ -115,6 +115,17 @@ jobs:
           rm -rf app/build app/.cxx
           test ! -e app/build
           test ! -e app/.cxx
+
+      - name: Verify pinned signing config
+        run: |
+          set -euo pipefail
+          test -s "$KEYSTORE_FILE"
+          ./gradlew :app:signingReport --console=plain --no-configuration-cache -q \
+            | tee "$RUNNER_TEMP/signing-report.txt" \
+            | grep -A8 -E '^Variant: standardDebug$' | tee "$RUNNER_TEMP/signing-standardDebug.txt"
+          grep -q "Store: .*/\.github/ci-debug\.keystore$" "$RUNNER_TEMP/signing-standardDebug.txt"
+          grep -q "SHA-256: $EXPECTED_SIGNING_SHA256$" "$RUNNER_TEMP/signing-standardDebug.txt"
+          echo "standardDebug signs with the fixed CI key ($EXPECTED_SIGNING_SHA256)"
 
       - name: Build pinned standard debug APK
         run: |
@@ -156,17 +167,6 @@ jobs:
           lfs: true
           persist-credentials: false
 
-      - name: Install fixed CI debug keystore
-        run: |
-          set -euo pipefail
-          # Android debug APKs are signed by AGP with a per-machine debug
-          # keystore. The fixed keystore committed under .github/ makes both
-          # jobs sign identically, so the comparison tests build determinism,
-          # not key generation (see .github/CI-DEBUG-KEYSTORE.md).
-          install -d -m 700 "$HOME/.android"
-          install -m 600 .github/ci-debug.keystore "$HOME/.android/debug.keystore"
-          sha256sum "$HOME/.android/debug.keystore"
-
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -210,6 +210,17 @@ jobs:
           rm -rf app/build app/.cxx
           test ! -e app/build
           test ! -e app/.cxx
+
+      - name: Verify pinned signing config
+        run: |
+          set -euo pipefail
+          test -s "$KEYSTORE_FILE"
+          ./gradlew :app:signingReport --console=plain --no-configuration-cache -q \
+            | tee "$RUNNER_TEMP/signing-report.txt" \
+            | grep -A8 -E '^Variant: standardDebug$' | tee "$RUNNER_TEMP/signing-standardDebug.txt"
+          grep -q "Store: .*/\.github/ci-debug\.keystore$" "$RUNNER_TEMP/signing-standardDebug.txt"
+          grep -q "SHA-256: $EXPECTED_SIGNING_SHA256$" "$RUNNER_TEMP/signing-standardDebug.txt"
+          echo "standardDebug signs with the fixed CI key ($EXPECTED_SIGNING_SHA256)"
 
       - name: Build pinned standard debug APK
         run: |
