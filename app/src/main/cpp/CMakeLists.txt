@@ -234,6 +234,13 @@ add_library(steamctrl SHARED
 target_compile_options(steamctrl PRIVATE -Wall -Wextra -fvisibility=hidden)
 target_link_libraries(steamctrl SDL3::SDL3 log)
 
+# Exec shim for target SDK > 28: reroutes app-storage programs denied by W^X through the
+# system linker or their #! interpreter (docs/TARGET-SDK.md). Not preloaded anywhere yet.
+add_library(vapor_exec SHARED vapor-exec/vapor_exec.c)
+# No fortify: the shim defines the fortified _chk entry points itself.
+target_compile_options(vapor_exec PRIVATE -Wall -Wextra -fvisibility=hidden -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0)
+target_link_libraries(vapor_exec dl)
+
 # Embedded Wayland compositor (winewayland.drv sessions); see waylandcomp/CMakeLists.txt.
 add_subdirectory(waylandcomp)
 add_subdirectory(proot)
