@@ -68,7 +68,12 @@ internal fun VaporGameShelf(
         val density = LocalDensity.current
         val stackedAction = maxWidth / density.fontScale < 520.dp
         val compact = maxHeight / density.fontScale < 320.dp
+        // A tall screen has room the shelf was leaving empty: at the landscape cap the column
+        // stopped around two thirds of the way down, leaving a dead band below the legend.
+        // Portrait gets a larger share of the height and a higher ceiling.
+        val portrait = maxHeight > maxWidth
         val cardHeight = if (compact) (maxHeight - 160.dp * density.fontScale).coerceIn(88.dp, 196.dp)
+            else if (portrait) (maxHeight * 0.58f).coerceIn(240.dp, 460.dp)
             else (maxHeight * 0.5f).coerceIn(176.dp, 288.dp)
         val cardWidth = (cardHeight * 2f / 3f).coerceAtMost(maxWidth - 48.dp)
         val peek = with(density) { (maxWidth * 0.1f).coerceAtMost(cardWidth).roundToPx() }
