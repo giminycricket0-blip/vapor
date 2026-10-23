@@ -24,5 +24,16 @@ enum class WrapperVariant(val id: String, val stateName: String, val asset: Stri
         /** Unknown or empty ids keep the existing behaviour: the stock wrapper. */
         @JvmStatic fun forDriver(graphicsDriver: String?): WrapperVariant =
             entries.firstOrNull { it.id == graphicsDriver } ?: STOCK
+
+        /**
+         * The wrapper an attempt actually chose, falling back to what the driver implies.
+         *
+         * The route names its wrapper explicitly now; older configs and manual launches do not
+         * carry one, so that fallback has to stay.
+         */
+        @JvmStatic fun forChosen(
+            chosenId: String?,
+            graphicsDriver: String?,
+        ): WrapperVariant = entries.firstOrNull { it.id == chosenId } ?: forDriver(graphicsDriver)
     }
 }

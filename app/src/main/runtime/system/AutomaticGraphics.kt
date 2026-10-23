@@ -36,17 +36,30 @@ object AutomaticGraphics {
         val vkd3d: String = "None",
         val wineD3D: Boolean = false,
         val emulateBC: Boolean = false,
+        /**
+         * The Vulkan wrapper this attempt runs on.
+         *
+         * Previously the wrapper was derived from the driver name alone, outside the route, so
+         * a combination could be chosen with a wrapper that rejects the commands it needs and
+         * the retry had no way to try another. It is part of the route now, so pairing can
+         * pick it and a failed attempt can move to a different one.
+         */
+        val wrapper: WrapperVariant = WrapperVariant.STOCK,
     ) {
-        val id = digest(listOf(driver, dxvk, vkd3d, wineD3D.toString(), emulateBC.toString())).take(24)
+        val id = digest(listOf(driver, dxvk, vkd3d, wineD3D.toString(), emulateBC.toString(), wrapper.id)).take(24)
         val direct3d12 get() = vkd3d != "None"
         val description get() = "$driver · " + when {
             wineD3D -> "WineD3D"
             direct3d12 -> "DXVK ${dxvk.substringBefore('-')} + VKD3D ${vkd3d.substringBefore('-')}"
             else -> "DXVK ${dxvk.substringBefore('-')}"
-        }
+        } + if (wrapper == WrapperVariant.STOCK) "" else " · ${wrapper.id}"
+
+        /** The wrapper is installed from the driver config, so record the choice there. */
+        val wrapperConfigKey get() = "wrapperVariant"
 
         fun apply(graphics: KeyValueSet, driverConfig: MutableMap<String, String>): String {
             driverConfig["version"] = driver
+            driverConfig[wrapperConfigKey] = wrapper.id
             if (emulateBC) {
                 driverConfig["bcnEmulation"] = "full"
                 driverConfig["bcnEmulationType"] = "cpu"
@@ -104,6 +117,7 @@ object AutomaticGraphics {
         val attempt get() = previous.size + 1
         @Volatile private var cancelled = false
         private var failed = false
+        private var lastFailure: Failure? = null
         private var processObserved = false
         private var firstFrameAt = -1L
         private var frames = 0
@@ -132,6 +146,7 @@ object AutomaticGraphics {
             if (cancelled || failed || healthy || (startedAt >= 0 && now - startedAt > 90_000)) return false
             val failure = classify(line) ?: return false
             failed = true
+            lastFailure = failure
             if (failure == Failure.DIRECT3D12_STARTUP) needsD3D12 = true
             return true
         }
@@ -147,6 +162,10 @@ object AutomaticGraphics {
                 putString("fingerprint", fingerprint)
                 putStringArrayList("tried", ArrayList(tried))
                 putBoolean("d3d12", needsD3D12)
+                putString("last", route.id)
+                // A wrapper that rejected a command is best answered by trying a different
+                // wrapper; anything else is best answered by changing the DXVK generation.
+                putBoolean("wrapper_first", lastFailure == Failure.WRAPPER_CAPABILITY)
             }
         }
 
@@ -176,7 +195,25 @@ object AutomaticGraphics {
         val need12 = d3d12 || continuation?.getBoolean("d3d12", false) == true
         val choices = routes.filter { it.direct3d12 == need12 && it.id !in tried }
         val saved = remembered.takeIf { it.substringBefore('|') == fingerprint }?.substringAfter('|')
+        val last = continuation?.getString("last")?.let { id -> routes.firstOrNull { it.id == id } }
+        val preferWrapper = continuation?.getBoolean("wrapper_first", false) == true
+        val retry =
+            if (last == null) {
+                null
+            } else if (preferWrapper) {
+                // Same combination, different wrapper.
+                choices.firstOrNull {
+                    it.wrapper != last.wrapper && it.driver == last.driver && it.dxvk == last.dxvk &&
+                        it.vkd3d == last.vkd3d && it.wineD3D == last.wineD3D
+                } ?: choices.firstOrNull()
+            } else {
+                // Different combination first; only then the same one on another wrapper.
+                choices.firstOrNull {
+                    it.dxvk != last.dxvk || it.vkd3d != last.vkd3d || it.wineD3D != last.wineD3D
+                } ?: choices.firstOrNull()
+            }
         val route = choices.firstOrNull { continuation == null && it.id == saved }
+            ?: retry
             ?: choices.firstOrNull()
             ?: throw IllegalStateException(if (need12)
                 "No installed driver passes the minimum Vulkan checks for the prepared DirectX 12 runtime. A different driver or supported hardware is required."
@@ -219,7 +256,7 @@ object AutomaticGraphics {
         check(!d3d12 || (ready[modern] != null && ready[vkd3d] != null)) { context.getString(R.string.vapor_d3d12_prepare_required) }
         val driverNames = linkedSetOf(driverConfig["version"].orEmpty().ifBlank { "System" }, "System")
         val drivers = driverNames.mapNotNull { driver -> GraphicsDriverCatalog.probe(context, driver)?.let { driver to it } }
-        val routes = drivers.flatMap { (driver, caps) ->
+        val baseRoutes = drivers.flatMap { (driver, caps) ->
             buildList {
                 if (caps.legacyFloor && ready[legacy] != null)
                     add(Route(driver, legacy.entryName.substringAfter('-'), emulateBC = !caps.textureCompressionBC))
@@ -231,6 +268,13 @@ object AutomaticGraphics {
                 if (caps.legacyFloor && hints.graphicsImports.any { it in setOf(PEHelper.GraphicsApi.D3D8, PEHelper.GraphicsApi.D3D9) })
                     add(Route(driver, legacy.entryName.substringAfter('-'), wineD3D = true, emulateBC = !caps.textureCompressionBC))
             }
+        }.distinctBy { listOf(it.driver, it.dxvk, it.vkd3d, it.wineD3D, it.emulateBC) }
+        // Every base combination is offered on each wrapper, starting with the one the driver
+        // would previously have implied. That is what lets a run that the wrapper cannot serve
+        // move to a different wrapper instead of failing, which is how vkd3d failed on Adreno.
+        val routes = baseRoutes.flatMap { base ->
+            val primary = WrapperVariant.forDriver(base.driver)
+            (listOf(primary) + WrapperVariant.entries.filter { it != primary }).map { base.copy(wrapper = it) }
         }.distinctBy { it.id }
         val inputs = mutableListOf("automatic-graphics-1", Build.FINGERPRINT, shortcut.file.absolutePath,
             shortcut.getSettingExtra("wineVersion", shortcut.container.wineVersion),

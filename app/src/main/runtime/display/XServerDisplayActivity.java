@@ -10401,8 +10401,11 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
             }
         }
 
+        // The chosen route names its wrapper; a manual launch or an older config does not, so
+        // fall back to the wrapper the driver implies.
+        String chosenWrapper = graphicsDriverConfig != null ? graphicsDriverConfig.get("wrapperVariant") : null;
         com.winlator.cmod.runtime.system.WrapperVariant wrapperVariant =
-                com.winlator.cmod.runtime.system.WrapperVariant.forDriver(graphicsDriver);
+                com.winlator.cmod.runtime.system.WrapperVariant.forChosen(chosenWrapper, graphicsDriver);
         boolean wantLeegao = wrapperVariant == com.winlator.cmod.runtime.system.WrapperVariant.LEEGAO;
         boolean wantGamenative = wrapperVariant == com.winlator.cmod.runtime.system.WrapperVariant.GAMENATIVE;
         File leegaoMarker = new File(rootDir, "usr/lib/.wrapper_leegao");
