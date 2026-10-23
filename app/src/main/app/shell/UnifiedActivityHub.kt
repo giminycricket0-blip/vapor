@@ -1554,6 +1554,10 @@ internal fun UnifiedActivity.LibraryCarousel(
     onClearSearch: () -> Unit,
 ) {
     val context = LocalContext.current
+    // Per-game settings are tinkering: hidden unless Advanced is on, so there is no invisible
+    // long-press backdoor around the hidden Settings entry.
+    val settingsTinkeringVisible =
+        com.winlator.cmod.feature.settings.SettingsVisibility.isAdvancedVisible(context)
     val libraryScope = rememberCoroutineScope()
 
     // Where this screen left off; see LibraryCache.session.
@@ -2456,7 +2460,8 @@ internal fun UnifiedActivity.LibraryCarousel(
                     customIconPath = visibleCustomIconPathByAppId[app.id],
                     customCarouselPath = visibleCustomCarouselPathByAppId[app.id],
                     onClick = activate,
-                    onLongClick = { openSettingsForApp(index, app) }, modifier = cardModifier)
+                    onLongClick = if (settingsTinkeringVisible) ({ openSettingsForApp(index, app) }) else null,
+                    modifier = cardModifier)
             }
         } else Column(Modifier.fillMaxSize()) {
                 Text(stringResource(R.string.vapor_catalog_count, displayedApps.size), color = TextSecondary,
@@ -2491,8 +2496,10 @@ internal fun UnifiedActivity.LibraryCarousel(
                                         activity?.libraryFocusIndex?.value = index
                                         openGame(app)
                                     },
-                                    onLongClick = {
-                                        openSettingsForApp(index, app)
+                                    onLongClick = if (settingsTinkeringVisible) {
+                                        ({ openSettingsForApp(index, app) })
+                                    } else {
+                                        null
                                     },
                                     modifier =
                                         Modifier
@@ -2538,7 +2545,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                                         activity?.libraryFocusIndex?.value = index
                                         openGame(app)
                                     },
-                                    onLongClick = { openSettingsForApp(index, app) },
+                                    onLongClick = if (settingsTinkeringVisible) ({ openSettingsForApp(index, app) }) else null,
                                     listMode = true,
                                     modifier =
                                         Modifier

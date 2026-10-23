@@ -167,6 +167,8 @@ internal fun LibraryGameLaunchScreen(
     onBack: () -> Unit,
     onPlay: () -> Unit,
     onSettings: () -> Unit,
+    /** False hides the tinkering entry: with no controller/logs, Play should be the only path. */
+    settingsVisible: Boolean = true,
     onBootToDesktop: () -> Unit,
     onAchievements: (() -> Unit)? = null,
     onCheats: (() -> Unit)? = null,
@@ -202,10 +204,16 @@ internal fun LibraryGameLaunchScreen(
     val bootVisible = showBootToDesktop
     val playFocus = remember { FocusRequester() }
     val settingsFocus = remember { FocusRequester() }
+    // Used when Settings is hidden and Play is not available, so focus always has a target.
+    val fallbackFocus = remember { FocusRequester() }
     val inputMode = LocalInputModeManager.current.inputMode
     LaunchedEffect(inputMode) {
         if (inputMode == InputMode.Keyboard) {
-            if (playEnabled) playFocus.requestFocus() else settingsFocus.requestFocus()
+            when {
+                playEnabled -> playFocus.requestFocus()
+                settingsVisible -> settingsFocus.requestFocus()
+                else -> fallbackFocus.requestFocus()
+            }
         }
     }
     LaunchScreenCutoutMode()
@@ -521,16 +529,18 @@ internal fun LibraryGameLaunchScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
-                                    LaunchIconActionButton(
-                                        icon = Icons.Outlined.Settings,
-                                        contentDescription = stringResource(R.string.common_ui_settings),
-                                        modifier = Modifier.weight(1f).focusRequester(settingsFocus),
-                                        onClick = onSettings,
-                                    )
+                                    if (settingsVisible) {
+                                        LaunchIconActionButton(
+                                            icon = Icons.Outlined.Settings,
+                                            contentDescription = stringResource(R.string.common_ui_settings),
+                                            modifier = Modifier.weight(1f).focusRequester(settingsFocus),
+                                            onClick = onSettings,
+                                        )
+                                    }
                                     LaunchIconActionButton(
                                         icon = Icons.Outlined.CloudSync,
                                         contentDescription = stringResource(R.string.cloud_saves_title),
-                                        modifier = Modifier.weight(1f),
+                                        modifier = Modifier.weight(1f).focusRequester(fallbackFocus),
                                         onClick = onCloudSaves,
                                     )
                                     if (onAchievements != null) {

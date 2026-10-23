@@ -2665,6 +2665,9 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                     }
                                     onDismissRequest()
                                 },
+                                // Tinkering stays hidden unless Advanced is on.
+                                settingsVisible = com.winlator.cmod.feature.settings.SettingsVisibility
+                                    .isAdvancedVisible(context),
                                 onSettings = {
                                     val shortcut = resolveOrCreateShortcut()
                                     if (shortcut != null) {
