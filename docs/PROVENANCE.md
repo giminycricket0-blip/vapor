@@ -796,6 +796,22 @@ and this keeps the list in step with what actually ships (it is read from the
 Bundling these texts satisfies part of what their licences ask for. It is not
 permission to redistribute the payloads that have no text — see the blockers.
 
+## Distribution decision — 23 October 2026
+
+For a public build the order of distribution options is:
+
+1. **GitHub Releases** first. Lower bar than a store review, reaches testers
+   quickly, and the licensing questions below stay manageable. Use the signed
+   release workflow and publish by hand after a rights check.
+2. **Google Play** only after the modern target-SDK work (see
+   [TARGET-SDK.md](TARGET-SDK.md)), since Play requires a current target API.
+
+Whichever is chosen, nothing is published until the blockers below are cleared.
+As of 23 October, what remains in the APK is: the Valve client binaries, the
+Microsoft packages that still ship as opt-in components, and the original 3dfx
+splash DLLs. The Goldberg Steam emulator and the Steamless DRM stripper have
+been removed entirely, and the rootfs licences are fully bundled.
+
 ## Public distribution blockers
 
 1. **Valve client binaries:** `app/src/main/assets/wnsteam/bionic/valve-steam-x86_64.tzst` and other genuine Steam assets are inherited. Their presence in a public upstream is not redistribution permission. Establish a supported acquisition route and applicable terms before publishing an APK containing them.

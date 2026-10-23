@@ -271,6 +271,37 @@ Its focused JVM check uses:
 This is a log/status and shutdown-guard check, not a Steam Cloud transfer test. Reproduce the
 phone exit with its actual account and save before claiming upload or restore success.
 
+## Release builds and signing
+
+A signed release APK is built with:
+
+```sh
+KEYSTORE_FILE=/path/to/release.jks KEYSTORE_PASSWORD=... KEY_ALIAS=... KEY_PASSWORD=... \
+  ./gradlew :app:assembleStandardRelease
+```
+
+The result is `app/build/outputs/apk/standard/release/app-standard-release.apk`
+(currently ~528 MB against ~666 MB for debug: R8 shrinks it and the debug
+overhead is gone). Two release-only build failures were fixed on 22 October: the
+proot loader's `pokedata_workaround` marker being garbage-collected (which broke
+`loader-info.cmake`), and R8's missing `java.beans` for snakeyaml.
+
+CI builds and signs it via
+[.github/workflows/release.yml](../.github/workflows/release.yml), triggered by a
+`v*` tag or manually. It needs four repository secrets — `KEYSTORE_BASE64` (the
+keystore, base64-encoded), `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD` —
+and the run fails clearly if any is missing. It materialises the key, builds,
+verifies the signature with `apksigner`, deletes the key and uploads the signed
+APK as a run artifact.
+
+**It does not publish.** APK publication stays gated on the redistribution review
+in [PROVENANCE.md](PROVENANCE.md#public-distribution-blockers); the signed
+artifact is there for a maintainer to publish by hand once that clears.
+
+Generate a release keystore with `keytool -genkeypair -v -keystore release.jks
+-keyalg RSA -keysize 4096 -validity 10000 -alias release`, keep it outside the
+repository, and add its base64 to the `KEYSTORE_BASE64` secret.
+
 ## Emulator smoke test
 
 Use a fresh ARM64 AVD (Apple Silicon hosts can accelerate ARM64). The tested image is `system-images;android-36;google_apis;arm64-v8a`, revision 7. Keep other projects' AVDs separate.
