@@ -1,67 +1,59 @@
+# IDE and local config
 *.iml
-.gradle
 .mcp.json
 .vscode/
-/local.properties
 /.idea/
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-# app/src/main/assets/imagefs.txz
-# app/src/main/assets/proton-9.0-arm64ec.txz
-app/src/main/assets/proton-9.0-x86_64.txz
+local.properties
+signing.properties
+.claude/
 
-# Logs
-*.log
-**/*.log
-
-# Kotlin/Gradle artifacts
+# Gradle / Kotlin / native build output
+.gradle/
 .kotlin/
 .tmp/
-.gradle/
-.gradle-user/
-.gradle-user-fresh/
 build/
 app/build/
-app/.cxx/
 app/release/
+.cxx/
+app/.cxx/
+.captures/
+.externalNativeBuild/
 
-# Python artifacts
+# Python artifacts (tools keep their sources, see the negations below)
 __pycache__/
 *.pyc
-/*.py
-
-# Local properties
-local.properties
-
-logcat*.txt
 *.py
-steam.tzst
 
-# Room schema exports
-app/schemas/
-
-# Signing keys
-*.jks
-*.keystore
-signing.properties
-
-# Local-only dev artifacts (never check in)
-.claude/
-References/
+# Build and log output
+*.log
+logcat*.txt
+dist/
+*.apk
+*.apk.idsig
 *.hprof
+steam.tzst
 android_sysvshm/build64/
 
-# local build artifacts (FEX/Proton wcp)
-dist/
-
+# Generated local inputs
+app/src/main/assets/proton-9.0-x86_64.txz
+app/schemas/
+References/
 /cores/*/
-!/cores/patches/
-
 /armsx2/emucore-src/
 /armsx2/emucore-out/
+
+# Signing keys and keystores
+*.jks
+*.keystore
+
+# Python sources that are tracked and must never be hidden by *.py above
+!app/src/main/cpp/wn-steam-launcher/steamlite-handoff/reference-scripts/*.py
+!app/src/main/cpp/wn-steamapi-bridge/*.py
+!tools/linuxfs/tests/*.py
+!tools/sdl/*.py
+
+# Tool and test sources that the *.py rule above would otherwise hide
 !tools/tests/apk-repro-diff.py
 !tools/tests/turnip-kgsl-wait.py
 !tools/tests/turnip-kgsl-wait-any.py
@@ -69,16 +61,11 @@ dist/
 !tools/tests/vulkan-wrapper-image.py
 !tools/tests/vulkan-wrapper-reference.py
 !tools/tests/vulkan-wrapper-render.py
+!tools/tests/vulkan-wrapper-trace.py
 !tools/tests/vulkan-wrapper-validation.py
+!tools/tests/wayland-fences.py
 !tools/vulkan-wrapper/package-wrapper-vapor.py
 !tools/check-download-urls.py
-!tools/tests/vulkan-wrapper-trace.py
-!tools/tests/wayland-fences.py
-
-# Local build-directory symlinks and generated developer packages
-/app/build
-*.apk
-*.apk.idsig
 
 # Fixed throwaway CI debug keystore for the reproducibility lane (public test key)
 !.github/ci-debug.keystore
