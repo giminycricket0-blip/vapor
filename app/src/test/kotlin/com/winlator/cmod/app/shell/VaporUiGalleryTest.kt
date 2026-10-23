@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -110,9 +111,10 @@ class VaporUiGalleryTest {
         onFriends = {}, onSettings = {}, onQuickAccess = {}, onMoreStores = {},
     )
 
-    @Composable private fun Shelf() {
+    @Composable private fun Shelf(hero: Any? = null, ambient: Color? = null) {
         var selected by remember { mutableIntStateOf(0) }
-        VaporGameShelf(games, true, selected, null, true, { selected = it }, {}, onSettings = {}) {
+        VaporGameShelf(games, true, selected, hero, true, { selected = it }, {}, onSettings = {},
+            controllerConnected = true, ambientOverride = ambient) {
                 game, _, focused, modifier, activate ->
             GameCapsule(game, useLibraryCapsule = true, showCaption = false, isFocusedOverride = focused,
                 isControllerActive = true, onClick = activate, modifier = modifier)
@@ -205,6 +207,31 @@ class VaporUiGalleryTest {
         }
     }
 
+    /**
+     * The ambient background only shows if the tint actually comes back from a decoded cover.
+     * A local bitmap goes through the same Coil request path as real artwork, so this exercises
+     * extraction, not just layout.
+     */
+    @Test
+    fun homeAmbientLandscape() =
+        capture("home-ambient-landscape", 960, 540) {
+            val cover =
+                java.io.File(compose.activity.cacheDir, "gallery-cover.png").apply {
+                    parentFile?.mkdirs()
+                    val bitmap = Bitmap.createBitmap(96, 144, Bitmap.Config.ARGB_8888)
+                    for (y in 0 until 144) {
+                        for (x in 0 until 96) {
+                            bitmap.setPixel(x, y, android.graphics.Color.rgb(118 + x / 6, 58 + y / 9, 196))
+                        }
+                    }
+                    outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+                }
+            Column(Modifier.fillMaxSize()) {
+                Header(0)
+                Box(Modifier.weight(1f)) { Shelf(cover, Color(0xFF6C43C4)) }
+            }
+        }
+
     @Test fun homeLandscape() = capture("home-landscape", 960, 540) { Home() }
     @Test fun homePortrait() = capture("home-portrait", 412, 892) { Home() }
     @Test fun libraryLandscape() = capture("library-landscape", 960, 540) { Library(6) }
@@ -215,5 +242,12 @@ class VaporUiGalleryTest {
     @Test fun downloadsPortrait() = capture("downloads-portrait", 412, 892) { Downloads() }
     @Test fun storeLandscape() = capture("store-landscape", 960, 540) { Store() }
     @Test fun storePortrait() = capture("store-portrait", 412, 892) { Store() }
+    /** The default settings surface: no drivers, containers, components or presets. */
+    @Test
+    fun settingsSimpleLandscape() =
+        capture("settings-simple-landscape", 960, 1000) {
+            Row(Modifier.fillMaxSize()) { SettingsNavSidebar(selectedItem = SettingsNavItem.STORES, onItemSelected = {}, onBackPressed = {}) }
+        }
+
     @Test fun settingsDriversLandscape() = capture("settings-drivers-landscape", 960, 540) { SettingsDrivers() }
 }

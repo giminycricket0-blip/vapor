@@ -2,6 +2,18 @@ package com.winlator.cmod.feature.settings
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.selection.selectable
+import android.content.Context
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.semantics.Role
 import com.winlator.cmod.shared.theme.*
@@ -99,6 +111,25 @@ private val InterFamily = WinNativeFontFamily
 
 // ─── Navigation model ───────────────────────────────────────────────
 
+/**
+ * Whether the tinkering screens are on show.
+ *
+ * Vapor's promise is install -> play, so drivers, containers, components and presets are hidden
+ * by default: a normal session should never have to think about them. They stay one switch away
+ * for the games that misbehave, and the preference is remembered.
+ */
+internal object SettingsVisibility {
+    private const val PREFS = "vapor_settings_ui"
+    private const val KEY_ADVANCED = "show_advanced"
+
+    fun isAdvancedVisible(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_ADVANCED, false)
+
+    fun setAdvancedVisible(context: Context, visible: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_ADVANCED, visible).apply()
+    }
+}
+
 enum class NavSection(val titleRes: Int) {
     EVERYDAY(R.string.vapor_settings_everyday),
     ADVANCED(R.string.vapor_settings_advanced),
@@ -149,6 +180,18 @@ fun SettingsNavSidebar(
     showHeader: Boolean = true,
 ) {
     val layoutDirection = LocalLayoutDirection.current
+    val context = LocalContext.current
+    // If something has already navigated into a hidden screen, keep it visible rather than
+    // rendering a sidebar with no selection.
+    var showAdvanced by remember {
+        mutableStateOf(
+            SettingsVisibility.isAdvancedVisible(context) || selectedItem.section == NavSection.ADVANCED,
+        )
+    }
+    // Hidden entirely unless asked for: a normal session never needs these.
+    val visibleSections = remember(showAdvanced) {
+        NavSection.entries.filter { it != NavSection.ADVANCED || showAdvanced }
+    }
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues()
     val navStartInset = navBarPadding.calculateStartPadding(layoutDirection)
     val navBottomInset = navBarPadding.calculateBottomPadding()
@@ -158,7 +201,7 @@ fun SettingsNavSidebar(
         remember(selectedItem) {
             var idx = 0
             var found = 0
-            NavSection.entries.forEachIndexed { sIdx, section ->
+            visibleSections.forEachIndexed { sIdx, section ->
                 if (sIdx > 0) idx++
                 idx++
                 val secItems = sectionedNavItems[section].orEmpty()
@@ -207,7 +250,7 @@ fun SettingsNavSidebar(
                         .padding(top = 2.dp),
                 contentPadding = PaddingValues(bottom = 24.dp + navBottomInset),
             ) {
-                NavSection.entries.forEachIndexed { index, section ->
+                visibleSections.forEachIndexed { index, section ->
                     if (index > 0) {
                         item(
                             key = "spacer_${section.name}",
@@ -233,6 +276,41 @@ fun SettingsNavSidebar(
                             railActive = railActive,
                             onClick = { onItemSelected(item) },
                         )
+                    }
+                }
+                // The way back in to the hidden screens, phrased as what it is.
+                item(key = "advanced_toggle", contentType = "advancedToggle") {
+                    Row(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showAdvanced = !showAdvanced
+                                    SettingsVisibility.setAdvancedVisible(context, showAdvanced)
+                                }
+                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.vapor_settings_show_advanced),
+                                color = WinNativeTextSecondary,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            if (!showAdvanced) {
+                                Text(
+                                    stringResource(R.string.vapor_settings_show_advanced_hint),
+                                    color = WinNativeTextSecondary.copy(alpha = 0.7f),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontSize = 10.sp,
+                                )
+                            }
+                        }
+                        Switch(checked = showAdvanced, onCheckedChange = {
+                            showAdvanced = it
+                            SettingsVisibility.setAdvancedVisible(context, it)
+                        })
                     }
                 }
             }
