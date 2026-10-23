@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-23",
+  "scope": "Roadmap item 5: use EmuReady reports to choose reproducible game/device/configuration cases, starting with the owner's Helltaker, TF2 and Ghostrunner Demo.",
+  "method": "EmuReady public mobile API (the same reader the app implements in app/src/main/feature/library/EmuReady.kt): games.batchBySteamAppIds, games.get (title fallback), listings.get, listings.byId. Note the payload is wrapped in result.data.json.",
+  "coverage": {
+    "Helltaker (Steam 1289310)": {
+      "indexed": true,
+      "reports": 2,
+      "verdict": "Perfect (plays perfectly), both APPROVED",
+      "cases": [
+        {
+          "report": "200957f3-5045-4c33-a2c0-f5d9f7d9b7c2",
+          "emulator": "GameHub",
+          "device": "Xiaomi 11 Lite 5G NE",
+          "soc": "Snapdragon 778G (Qualcomm)",
+          "created": "2026-03-31",
+          "notes": ""
+        },
+        {
+          "report": "dd404bc8-2cfd-4faf-b0a4-e3cb94401b64",
+          "emulator": "GameHub",
+          "device": "Poco X6 Pro",
+          "soc": "Dimensity 8300 Ultra (MediaTek)",
+          "created": "2025-12-05",
+          "notes": ""
+        }
+      ]
+    },
+    "Team Fortress 2 (Steam 440)": {
+      "indexed": false,
+      "reports": 0,
+      "note": "No entry at all - neither batch lookup nor title search returns it. Community data cannot anchor this case."
+    },
+    "Ghostrunner Demo": {
+      "indexed": false,
+      "reports": 0,
+      "note": "No demo entry. AppID 1382070 is Viewfinder, not the Ghostrunner demo; the demo is not indexed."
+    },
+    "Ghostrunner full (Steam 1139900)": {
+      "indexed": true,
+      "reports": 1,
+      "verdict": "Perfect",
+      "cases": [
+        {
+          "report": "1ccb55bb-6b07-4b03-bb0b-6dd1be1e7b28",
+          "emulator": "GameNative",
+          "device": "Odin 3 Max",
+          "soc": "Snapdragon 8 Elite (Qualcomm)",
+          "created": "2026-03-15",
+          "edition": "Epic Games version (not Steam)",
+          "reported_settings": "Proton-10.0-arm64ec-2; Turnip_Gen8_V25; DXVK 2.7.1; FEXCore 2603; Box64 preset Performance; FEXCore preset Extreme",
+          "notes": "Runs at 60 fps with very occasional graphical artifact, does not affect gameplay."
+        }
+      ]
+    }
+  },
+  "findings": [
+    "The two Helltaker reports are both on the GameHub emulator and both rate it Perfect on a Snapdragon 778G and a Dimensity 8300 Ultra - two different GPU vendors.",
+    "The only Ghostrunner report is the Epic Games edition on a Snapdragon 8 Elite handheld via GameNative. The owner's case is a Steam demo, so edition and storefront differ.",
+    "Team Fortress 2 and the Ghostrunner Demo have no community reports at all.",
+    "No report is on Vapor; every one is on another emulator. These are reference configurations, not Vapor-verified results."
+  ],
+  "implication_for_the_phone_session": [
+    "Helltaker is the strongest anchor: two independent devices/SoCs, both Perfect, and it is the owner's own confirmed working case.",
+    "Ghostrunner can be run, but any comparison must note the Epic/Steam edition difference and the different emulator.",
+    "TF2 and Ghostrunner Demo must be qualified from scratch - there is no community baseline to reproduce.",
+    "Suggested order: Helltaker first (known good), then Ghostrunner (note edition), then TF2 / Ghostrunner Demo (no baseline)."
+  ],
+  "limitations": [
+    "Community reports are other people's results on other emulators and hardware; they are not evidence for Vapor.",
+    "Reports carry no controlled frame-time or battery data.",
+    "Verdict labels (\"Perfect\") are self-reported."
+  ]
+}

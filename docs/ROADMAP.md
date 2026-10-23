@@ -106,6 +106,19 @@ Continue in this order:
    as a separate investigation. Reports do not replace source traces or matched
    phone evidence. Other GPU families require their own kernel/driver review.
 
+   **23 October — the community baseline for those three is thinner than expected.**
+   Queried through the same public reader the app uses: Helltaker has 2 reports, both
+   "Perfect", both on the GameHub emulator (Xiaomi 11 Lite 5G NE / Snapdragon 778G and
+   Poco X6 Pro / Dimensity 8300 Ultra). Ghostrunner has 1, also "Perfect", on
+   GameNative with a **Snapdragon 8 Elite** handheld but the **Epic Games** edition
+   (Proton-10.0-arm64ec-2, Turnip Gen8 V25, DXVK 2.7.1, FEXCore 2603) — a different
+   storefront from the owner's Steam demo. **Team Fortress 2 and the Ghostrunner Demo
+   are not indexed at all**, so they have no community baseline to reproduce. None of
+   the reports is on Vapor. Practical order for the phone session: Helltaker first
+   (two devices, both Perfect, and the owner's own working case), Ghostrunner with the
+   edition difference noted, then TF2 and the Ghostrunner Demo qualified from scratch.
+   [Case record](evidence/2026-10-23-emuready-test-cases.json).
+
 Each source change needs an input revision, explained cost reduction, source
 regression, native build and the relevant device result before promotion. Track
 reviewed paths and open boundaries in the existing
