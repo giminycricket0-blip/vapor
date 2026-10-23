@@ -18,7 +18,8 @@ jobs:
     runs-on: ubuntu-24.04
     # Without a bound, a hung toolchain download occupies a runner for GitHub's
     # 6-hour default and the lane never reports. Bound it and retry the downloads.
-    timeout-minutes: 90
+    # Toolchain fetch alone can legitimately take ~35 min on a slow mirror.
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v6
         with:
@@ -38,10 +39,15 @@ jobs:
           # These two fetches are the only network-bound setup here and have hung
           # runners silently (three times on 22 October). Bound each attempt and
           # retry, so a slow mirror fails the step visibly instead of sitting there.
+          # A short retry is worse than none for apt: each invocation restarts the
+          # download from zero, so N short attempts can never finish one long one.
+          # On 22 October azure.archive.ubuntu.com ran at ~50 KB/s, and the mingw
+          # toolchain is ~100 MB - about 35 minutes, which every 15-minute attempt
+          # cut off mid-flight. One long attempt, then one retry for a real failure.
           vapor_fetch() {
-            for attempt in 1 2 3; do
+            for attempt in 1 2; do
               echo "fetch attempt $attempt: $*"
-              if timeout 600 "$@"; then return 0; fi
+              if timeout 2700 "$@"; then return 0; fi
               echo "fetch attempt $attempt failed or timed out"
               sleep 10
             done
@@ -55,9 +61,9 @@ jobs:
           # make apt abandon a dead connection quickly and retry on its own.
           vapor_apt() {
             local attempt
-            for attempt in 1 2 3; do
+            for attempt in 1 2; do
               echo "apt attempt $attempt: $*"
-              if timeout 900 sudo apt-get \
+              if timeout 2700 sudo apt-get \
                    -o Acquire::Retries=3 \
                    -o Acquire::http::Timeout=30 \
                    -o Acquire::https::Timeout=30 \
