@@ -9,9 +9,9 @@
     "python": "3.14.4",
     "host_platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
     "fixture": {
-      "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+      "compiler": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
       "command": [
-        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+        "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
         "-std=c11",
         "-O2",
         "-g",
@@ -19,16 +19,16 @@
         "-Wextra",
         "-Werror",
         "-D_GNU_SOURCE",
-        "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.c",
+        "<workspace>/vapor/tools/tests/vulkan-wrapper-reference.c",
         "-ldl",
         "-Wl,-z,max-page-size=16384",
         "-Wl,-z,common-page-size=16384",
         "-o",
-        "/Users/cheng/wrapper-reference-ext/scratch-4k/bin/probe"
+        "<workspace>/wrapper-reference-ext/scratch-4k/bin/probe"
       ],
       "source": "tools/tests/vulkan-wrapper-reference.c",
       "source_sha256": "3f722d88da4a94a29a36e74dcb5eb7ec2e27ce68227c297d2965ab5024a1308e",
-      "binary": "/Users/cheng/wrapper-reference-ext/scratch-4k/bin/probe",
+      "binary": "<workspace>/wrapper-reference-ext/scratch-4k/bin/probe",
       "binary_sha256": "ab162a66d950dd4f8072da6c5a2ee3236e2c1d5fbea0ac00c3ffdc28bbbf3ce0",
       "binary_bytes": 227464,
       "elf_max_load_align": 16384,
@@ -636,15 +636,15 @@
     }
   },
   "wrapper_builds": {
-    "root": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+    "root": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
     "candidate": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
       "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
       "bytes": 10699464,
       "matches_recorded_pinned_hash": true
     },
     "baseline": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
       "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
       "bytes": 10698760,
       "matches_recorded_pinned_hash": true
@@ -721,7 +721,7 @@
     {
       "label": "api37-16k",
       "source_payload": {
-        "path": "/Users/cheng/wrapper-reference-ext/phase1-16k-result.json",
+        "path": "<workspace>/wrapper-reference-ext/phase1-16k-result.json",
         "sha256": "4e5a1664f0d05bb64aab3497f2f4cf6ede8c1764cffa9de34ebb672a05479572"
       },
       "device": {
@@ -1693,7 +1693,7 @@
     {
       "label": "api36-4k-extended",
       "source_payload": {
-        "path": "/Users/cheng/wrapper-reference-ext/phase2-4k.json",
+        "path": "<workspace>/wrapper-reference-ext/phase2-4k.json",
         "sha256": "22869dad2ef131e6a75624f2941f306ae844f24af1956be87e9de301f31694c5"
       },
       "device": {
@@ -34102,37 +34102,37 @@
       {
         "label": "api37-16k",
         "raw_artifacts": {
-          "scratch": "/Users/cheng/wrapper-reference-ext/scratch-16k-phase1",
-          "inputs": "/Users/cheng/wrapper-reference-ext/scratch-16k-phase1/in",
-          "reference_decodes": "/Users/cheng/wrapper-reference-ext/scratch-16k-phase1/refs",
-          "readbacks": "/Users/cheng/wrapper-reference-ext/scratch-16k-phase1/out",
-          "per_run_logs": "/Users/cheng/wrapper-reference-ext/scratch-16k-phase1/logs",
-          "tool_log": "/Users/cheng/wrapper-reference-ext/scratch-16k-phase1/logs/tool.log",
-          "fixture_binary": "/Users/cheng/wrapper-reference-ext/scratch-16k-phase1/bin/probe",
+          "scratch": "<workspace>/wrapper-reference-ext/scratch-16k-phase1",
+          "inputs": "<workspace>/wrapper-reference-ext/scratch-16k-phase1/in",
+          "reference_decodes": "<workspace>/wrapper-reference-ext/scratch-16k-phase1/refs",
+          "readbacks": "<workspace>/wrapper-reference-ext/scratch-16k-phase1/out",
+          "per_run_logs": "<workspace>/wrapper-reference-ext/scratch-16k-phase1/logs",
+          "tool_log": "<workspace>/wrapper-reference-ext/scratch-16k-phase1/logs/tool.log",
+          "fixture_binary": "<workspace>/wrapper-reference-ext/scratch-16k-phase1/bin/probe",
           "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
         }
       },
       {
         "label": "api36-4k-extended",
         "raw_artifacts": {
-          "scratch": "/Users/cheng/wrapper-reference-ext/scratch-4k",
-          "inputs": "/Users/cheng/wrapper-reference-ext/scratch-4k/in",
-          "reference_decodes": "/Users/cheng/wrapper-reference-ext/scratch-4k/refs",
-          "readbacks": "/Users/cheng/wrapper-reference-ext/scratch-4k/out",
-          "per_run_logs": "/Users/cheng/wrapper-reference-ext/scratch-4k/logs",
-          "tool_log": "/Users/cheng/wrapper-reference-ext/scratch-4k/logs/tool.log",
-          "fixture_binary": "/Users/cheng/wrapper-reference-ext/scratch-4k/bin/probe",
+          "scratch": "<workspace>/wrapper-reference-ext/scratch-4k",
+          "inputs": "<workspace>/wrapper-reference-ext/scratch-4k/in",
+          "reference_decodes": "<workspace>/wrapper-reference-ext/scratch-4k/refs",
+          "readbacks": "<workspace>/wrapper-reference-ext/scratch-4k/out",
+          "per_run_logs": "<workspace>/wrapper-reference-ext/scratch-4k/logs",
+          "tool_log": "<workspace>/wrapper-reference-ext/scratch-4k/logs/tool.log",
+          "fixture_binary": "<workspace>/wrapper-reference-ext/scratch-4k/bin/probe",
           "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
         }
       }
     ],
     "assembled_from": [
       {
-        "path": "/Users/cheng/wrapper-reference-ext/phase1-16k-result.json",
+        "path": "<workspace>/wrapper-reference-ext/phase1-16k-result.json",
         "sha256": "4e5a1664f0d05bb64aab3497f2f4cf6ede8c1764cffa9de34ebb672a05479572"
       },
       {
-        "path": "/Users/cheng/wrapper-reference-ext/phase2-4k.json",
+        "path": "<workspace>/wrapper-reference-ext/phase2-4k.json",
         "sha256": "22869dad2ef131e6a75624f2941f306ae844f24af1956be87e9de301f31694c5"
       }
     ]
@@ -34272,12 +34272,12 @@
     "phase_payloads": [
       {
         "label": "api37-16k",
-        "path": "/Users/cheng/wrapper-reference-ext/phase1-16k-result.json",
+        "path": "<workspace>/wrapper-reference-ext/phase1-16k-result.json",
         "sha256": "4e5a1664f0d05bb64aab3497f2f4cf6ede8c1764cffa9de34ebb672a05479572"
       },
       {
         "label": "api36-4k-extended",
-        "path": "/Users/cheng/wrapper-reference-ext/phase2-4k.json",
+        "path": "<workspace>/wrapper-reference-ext/phase2-4k.json",
         "sha256": "22869dad2ef131e6a75624f2941f306ae844f24af1956be87e9de301f31694c5"
       }
     ],

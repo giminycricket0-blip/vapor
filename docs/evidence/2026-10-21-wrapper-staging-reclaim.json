@@ -10,9 +10,9 @@
     "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
     "prior_review_receipt": "docs/evidence/2026-10-21-vulkan-wrapper-staging.json",
     "prior_binary_checks_receipt": "docs/evidence/2026-10-21-graphics-source.json",
-    "candidate_build_tree_readonly": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
-    "candidate_source_readonly": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
-    "note": "The Codex tree was read only. The patch was applied to a fresh extraction of wrapper-build/source.tar.gz in /Users/cheng/wrapper-staging-reclaim/work/source."
+    "candidate_build_tree_readonly": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+    "candidate_source_readonly": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
+    "note": "The Codex tree was read only. The patch was applied to a fresh extraction of wrapper-build/source.tar.gz in <workspace>/wrapper-staging-reclaim/work/source."
   },
   "patch": {
     "path": "tools/vulkan-wrapper/staging-reclaim.patch",
@@ -21,10 +21,10 @@
     "sha256": "c92b69ebbbf244c74d05455e1bfff3da0c0aaff94bbd8a75ab4dc4f6308a6568",
     "base_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
     "base_tree_provenance": {
-      "archive": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source.tar.gz",
+      "archive": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source.tar.gz",
       "archive_sha256": "fe1f7e32f0c4b151f74b252ffda3f3561d56df96e3b17863f66c89b01b698f3d",
       "archive_bytes": 47251711,
-      "recorded_source_archive": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source-archive.json",
+      "recorded_source_archive": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source-archive.json",
       "archive_hash_matches_recorded_archive_json": true
     },
     "base_file_sha256": {
@@ -104,7 +104,7 @@
       "forward_apply_clean": true,
       "reverse_dry_run_clean": true,
       "applied_files_identical_to_built_tree": true,
-      "log": "/Users/cheng/wrapper-staging-reclaim/apply-test.log",
+      "log": "<workspace>/wrapper-staging-reclaim/apply-test.log",
       "log_sha256": "e34453848f15cb2c22a9d63716359917326b302169e22b679b5f7e8d75b75d4c"
     }
   },
@@ -133,30 +133,30 @@
     }
   },
   "build": {
-    "scratch_root": "/Users/cheng/wrapper-staging-reclaim",
-    "source_tree": "/Users/cheng/wrapper-staging-reclaim/work/source",
-    "build_tree": "/Users/cheng/wrapper-staging-reclaim/work/build",
+    "scratch_root": "<workspace>/wrapper-staging-reclaim",
+    "source_tree": "<workspace>/wrapper-staging-reclaim/work/source",
+    "build_tree": "<workspace>/wrapper-staging-reclaim/work/build",
     "source_preparation": [
       "Extracted wrapper-build/source.tar.gz (commit 3abf4870) into work/source.",
       "Copied the SPIRV-Tools static libraries and headers from the candidate source tree into work/source/src/vulkan/wrapper/{lib,include} because they are not part of the downloaded tarball and the wrapper meson.build expects them there (spirv_tools_lib_dir = current_source_dir()/lib, spirv_tools_inc = include_directories('include')). The copied files are read-only inputs from the Codex candidate tree, unmodified: libSPIRV-Tools.a sha256 f71b46d46110cf1d894a81faac47188aa4cdec4366217c2f41b7646788512dcf, libSPIRV-Tools-opt.a sha256 29f201bef4920013049d19cce334cce915196feb6c8e386641f02def8ec5eebd.",
       "Applied tools/vulkan-wrapper/staging-reclaim.patch with patch -p1 --fuzz=0."
     ],
     "recipe": {
-      "meson": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson (1.9.1)",
-      "ninja": "/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin/ninja (1.10.2)",
-      "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang (Android NDK r27.3.13750724, clang 18.0.4)",
-      "cross_file": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/android.ini",
-      "native_file": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/native.ini",
+      "meson": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson (1.9.1)",
+      "ninja": "<workspace>/Library/Android/sdk/cmake/3.22.1/bin/ninja (1.10.2)",
+      "compiler": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang (Android NDK r27.3.13750724, clang 18.0.4)",
+      "cross_file": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/android.ini",
+      "native_file": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/native.ini",
       "configure": "meson setup work/build work/source --cross-file <android.ini> --native-file <native.ini> --buildtype release --prefix=/usr -Dplatforms=x11 -Dplatform-sdk-version=34 -Dandroid-stub=true -Dvulkan-drivers=wrapper -Dgallium-drivers= -Dglx=disabled -Degl=disabled -Dgbm=disabled -Dllvm=disabled -Dopengl=false -Dandroid-libbacktrace=disabled -Dxmlconfig=disabled",
       "configure_defines": "meson configure work/build -Dc_args=['-D__TERMUX__', '-include', 'fcntl.h'] -Dcpp_args=['-D__TERMUX__', '-include', 'fcntl.h', '-Wno-c++11-narrowing']",
       "configure_link": "meson configure work/build with the recorded 16 KB max-page-size link args, -L<hooks>, -ladrenotools -landroid-shmem and -lc++_shared for C++ (identical to docs/evidence/2026-10-21-graphics-source.json final configuration)",
       "build": "ninja -C work/build -j4 src/vulkan/wrapper/libvulkan_wrapper.so",
-      "script": "/Users/cheng/wrapper-staging-reclaim/build.sh (sha256 460e78959d6348ff19931c4a62a3e4db71e6d594038ea1f889759035311c674f)"
+      "script": "<workspace>/wrapper-staging-reclaim/build.sh (sha256 460e78959d6348ff19931c4a62a3e4db71e6d594038ea1f889759035311c674f)"
     },
     "env": {
       "PATH": "turnip-queue-qualification/build-venv/bin, turnip-queue-qualification/host-tools/bin, dxvk-qualification/glslang/bin, Android sdk cmake/3.22.1/bin, host PATH",
-      "PKG_CONFIG_LIBDIR": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/pkgconfig",
-      "PKG_CONFIG_SYSROOT_DIR": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64"
+      "PKG_CONFIG_LIBDIR": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/pkgconfig",
+      "PKG_CONFIG_SYSROOT_DIR": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64"
     },
     "result": "SUCCESS",
     "ninja_progress": "471/471 targets built; linked src/vulkan/wrapper/libvulkan_wrapper.so on the first attempt after the tarball + read-only SPIRV-Tools inputs were assembled",
@@ -164,14 +164,14 @@
     "compiler_warnings_total_in_build_log": 14,
     "compiler_warnings_note": "All 14 warnings are pre-existing and come from unrelated files/headers (e.g. artifacts.cpp, wrapper_private.h, vk_render_pass.h); wrapper_device.c and wrapper_objects.c emitted none.",
     "output": {
-      "path": "/Users/cheng/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+      "path": "<workspace>/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so",
       "bytes": 131385216,
       "sha256": "e8eae86bd4174b0035c04db875a0080cfaef2d1fe294b0f4bc2d0c494e62079e"
     },
     "logs": {
-      "setup": "/Users/cheng/wrapper-staging-reclaim/setup.log (sha256 072871e842867db50dcdef89fcfc97074143ca7568d9287f41e5cc2158c96279)",
-      "build": "/Users/cheng/wrapper-staging-reclaim/build.log (sha256 2352b86f87d456f4e7d5c68ec20d0e082e4197ae4808ef41994813973a18ad47)",
-      "final_configuration": "/Users/cheng/wrapper-staging-reclaim/final-configuration.log (sha256 c340fb09574b08e4b7751148756609dba81e5d96aaf06e0e31979def434e5432; captured with meson configure after the build, 339 lines)"
+      "setup": "<workspace>/wrapper-staging-reclaim/setup.log (sha256 072871e842867db50dcdef89fcfc97074143ca7568d9287f41e5cc2158c96279)",
+      "build": "<workspace>/wrapper-staging-reclaim/build.log (sha256 2352b86f87d456f4e7d5c68ec20d0e082e4197ae4808ef41994813973a18ad47)",
+      "final_configuration": "<workspace>/wrapper-staging-reclaim/final-configuration.log (sha256 c340fb09574b08e4b7751148756609dba81e5d96aaf06e0e31979def434e5432; captured with meson configure after the build, 339 lines)"
     }
   },
   "elf_comparison": {
@@ -371,66 +371,66 @@
       "role": "The patch under review."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+      "path": "<workspace>/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so",
       "sha256": "e8eae86bd4174b0035c04db875a0080cfaef2d1fe294b0f4bc2d0c494e62079e",
       "role": "Library built from the patched tree with the recorded recipe; ELF-checked against candidate.so."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/elf-report.json",
+      "path": "<workspace>/wrapper-staging-reclaim/elf-report.json",
       "role": "Machine-readable ELF comparison behind elf_comparison (same data embedded above)."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/build.log",
+      "path": "<workspace>/wrapper-staging-reclaim/build.log",
       "sha256": "2352b86f87d456f4e7d5c68ec20d0e082e4197ae4808ef41994813973a18ad47",
       "role": "Full configure+regenerate+build log of the successful build."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/apply-test.log",
+      "path": "<workspace>/wrapper-staging-reclaim/apply-test.log",
       "sha256": "e34453848f15cb2c22a9d63716359917326b302169e22b679b5f7e8d75b75d4c",
       "role": "patch(1) forward dry-run/apply/reverse dry-run on a clean base-file copy."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/run-r0-candidate-32v0.log",
+      "path": "<workspace>/wrapper-staging-reclaim/run-r0-candidate-32v0.log",
       "sha256": "f46c8308d3165649a9b2221895fa9f28a34d6f93a7cccd38fa993ccd7ed854e4",
       "role": "Control run: candidate.so, USE_IMAGE_VIEW=0, 32 cycles; single 64-resource release at image destroy."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/run-r1-patched-32v0.log",
+      "path": "<workspace>/wrapper-staging-reclaim/run-r1-patched-32v0.log",
       "sha256": "c21e16a091126057d487bc042d42fe83f31c1230c4b658f3a31933b0c0f5e218",
       "role": "Patched buffer path, 32 cycles; 32 two-resource releases during the workload."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/run-r2-patched-32v1.log",
+      "path": "<workspace>/wrapper-staging-reclaim/run-r2-patched-32v1.log",
       "sha256": "a9ae167576460cb1cb2632ba38f8fb4d1b164baedf914f643e0b5e8b2341ada8",
       "role": "Patched image-view path, 32 cycles; 32 one-resource releases during the workload."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/run-r3-oneshot-fence.log",
+      "path": "<workspace>/wrapper-staging-reclaim/run-r3-oneshot-fence.log",
       "sha256": "6a92d516b5cfb0e9de7961b0cb51a97fc731c02765d89b4440fbb4118206dc1b",
       "role": "One-time-submit + fence, 8 cycles; releases inside vkWaitForFences."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/run-r4-oneshot-deviceidle.log",
+      "path": "<workspace>/wrapper-staging-reclaim/run-r4-oneshot-deviceidle.log",
       "sha256": "da267c9090d563d28d061d263da2b135bfa7e3e2c23352c63ad997cb72dcde96",
       "role": "One-time-submit + unfenced wait + vkDeviceWaitIdle, 8 cycles; releases inside vkDeviceWaitIdle."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/run-r5-resubmit-fence.log",
+      "path": "<workspace>/wrapper-staging-reclaim/run-r5-resubmit-fence.log",
       "sha256": "75b370494cf7452b061f85a2d28789888fc6ba0ee2b61e056a74f778ccb15f70",
       "role": "Re-submittable command buffer + fence, 8 cycles; releases inside vkFreeCommandBuffers (fence not used for re-submittable CBs)."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/run-r6-oneshot-view1.log",
+      "path": "<workspace>/wrapper-staging-reclaim/run-r6-oneshot-view1.log",
       "sha256": "f5b032fccf06f289359431e5ab2f61bcf43bad1a376ae75b2a845c4e9b3160c9",
       "role": "Image-view + one-time-submit + fence, 8 cycles; view releases inside vkWaitForFences."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/runtime-analysis.json",
+      "path": "<workspace>/wrapper-staging-reclaim/runtime-analysis.json",
       "sha256": "2a75418fb3280d8a6ab129f04458dd4debc80f5fee5b66aefdda11147c5ec968",
       "role": "Machine-readable per-run analysis (tracking, release counts, marker intervals, error scan) behind runtime_validation."
     },
     {
-      "path": "/Users/cheng/wrapper-staging-reclaim/emulator.log",
+      "path": "<workspace>/wrapper-staging-reclaim/emulator.log",
       "sha256": "ca3f612fe46eb0885c27d611455f7e4cbf181609305a09d845c26899d2f2ad25",
       "role": "Emulator boot/run log for emulator-5556 (AVD Vapor_UI_API36)."
     }
@@ -441,11 +441,11 @@
     "environment": {
       "device": "Android emulator emulator-5556, AVD Vapor_UI_API36, ro.product.cpu.abi=arm64-v8a, ro.build.version.sdk=36, PAGE_SIZE=4096",
       "vulkan_device_reported_by_probe": "llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096",
-      "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 3072 -cores 4",
+      "boot_command": "<workspace>/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 3072 -cores 4",
       "boot_completed": "true (adb -s emulator-5556 shell getprop sys.boot_completed = 1 before any run)",
-      "emulator_log": "/Users/cheng/wrapper-staging-reclaim/emulator.log (sha256 ca3f612fe46eb0885c27d611455f7e4cbf181609305a09d845c26899d2f2ad25)",
+      "emulator_log": "<workspace>/wrapper-staging-reclaim/emulator.log (sha256 ca3f612fe46eb0885c27d611455f7e4cbf181609305a09d845c26899d2f2ad25)",
       "device_dir": "/data/local/tmp/vapor-staging-reclaim",
-      "library_under_test": "patched-stripped.so (stripped with NDK 27.3.13750724 llvm-strip from the 131,385,216-byte build at /Users/cheng/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so), bytes 10703312, sha256 08ef8247e34c0e083cede47d61112784f472fc57a503fc0402d85d0d1b9dbca6",
+      "library_under_test": "patched-stripped.so (stripped with NDK 27.3.13750724 llvm-strip from the 131,385,216-byte build at <workspace>/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so), bytes 10703312, sha256 08ef8247e34c0e083cede47d61112784f472fc57a503fc0402d85d0d1b9dbca6",
       "control_library": "candidate.so (recorded candidate payload, stripped), bytes 10699464, sha256 574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
       "probe_base": "probe bytes 162504 sha256 eaabe9afc3c443ffa2de65e741f114f2a1de4b7fd23625c76983f06724af79da, built from tools/tests/vulkan-wrapper-native.c sha256 03909d3d077cd49bf35bef0d31288196b8fd26d82a1bc470b63d23041a54a0f7",
       "probe_variant": "probe-staging bytes 21080 sha256 769ca2dfa762a639e88fecb8b8a305765237aad606906d3b3b6c6c968ef29b41; identical probe source plus MARKER prints and PROBE_ONE_TIME / PROBE_WAIT_MODE (fence|deviceidle) environment controls; no other behavior change",

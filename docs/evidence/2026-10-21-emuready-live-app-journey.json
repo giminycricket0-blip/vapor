@@ -32,7 +32,7 @@
   "emulator": {
     "assigned_avd_and_port": "Vapor_API_36 on port 5562",
     "actual_avd_used": "Vapor_API_36_live (authorized one-off clone; same system image and device profile, distinct AVD name so the concurrent instance did not conflict)",
-    "clone_creation": "/Users/cheng/Library/Android/sdk/cmdline-tools/latest/bin/avdmanager create avd -n Vapor_API_36_live -k \"system-images;android-36;google_apis;arm64-v8a\" -d pixel_7 --force",
+    "clone_creation": "<workspace>/Library/Android/sdk/cmdline-tools/latest/bin/avdmanager create avd -n Vapor_API_36_live -k \"system-images;android-36;google_apis;arm64-v8a\" -d pixel_7 --force",
     "clone_config_patches": [
       "hw.ramSize=3072 (config)",
       "disk.dataPartition.size=10G",
@@ -40,7 +40,7 @@
       "hw.gpu.mode=auto",
       "hw.keyboard=yes"
     ],
-    "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_API_36_live -port 5562 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 4 -partition-size 12000",
+    "boot_command": "<workspace>/Library/Android/sdk/emulator/emulator -avd Vapor_API_36_live -port 5562 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 4 -partition-size 12000",
     "memory_flag_note": "The briefed -memory 3072 was lowered to 2048 on the Lead's instruction because three emulators were sharing a 16 GB host.",
     "serial": "emulator-5562",
     "android_release": "16",
@@ -58,13 +58,13 @@
       "resolution": "Lead authorized a one-off clone AVD from the same system image on port 5562; documented in the emulator-5562-first-attempt.log and emulator-5562.log.",
       "logs": [
         {
-          "path": "/Users/cheng/emuready-live-app-journey/emulator-5562-first-attempt.log",
+          "path": "<workspace>/emuready-live-app-journey/emulator-5562-first-attempt.log",
           "sha256": "52841817561546944864cd9cd595bd1fc78207feeae00cf447f8270872d3f359",
           "bytes": 1021,
           "role": "first attempt refused (same-AVD conflict)"
         },
         {
-          "path": "/Users/cheng/emuready-live-app-journey/emulator-5562.log",
+          "path": "<workspace>/emuready-live-app-journey/emulator-5562.log",
           "sha256": "62c5a631bce7879f0538358e6c160b9317d059854a1eadd8b4b7525eeff71c4c",
           "bytes": 8426,
           "role": "successful clone boot log"
@@ -107,7 +107,7 @@
         "content_type": "application/json",
         "bytes": 11503,
         "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/okhttp_batch220.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/okhttp_batch220.json",
         "response_headers_of_interest": {
           "x-ratelimit-limit": "100",
           "x-ratelimit-window": "180000",
@@ -154,7 +154,7 @@
         "content_type": "application/json",
         "bytes": 11503,
         "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/browser_batch220.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/browser_batch220.json",
         "response_headers_of_interest": {
           "x-ratelimit-limit": "100",
           "x-ratelimit-window": "180000",
@@ -188,7 +188,7 @@
         "content_type": "application/json",
         "bytes": 6030,
         "sha256": "96c6d71961daf7ba4b5d436204288b1b83f647d53b6cf9902e9b7f7434b4278e",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/okhttp_gamesget_portal.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/okhttp_gamesget_portal.json",
         "response_headers_of_interest": {
           "x-ratelimit-limit": "100",
           "x-ratelimit-window": "180000",
@@ -223,7 +223,7 @@
         "content_type": "application/json",
         "bytes": 362,
         "sha256": "26c50ec80d595f99ac4e1400a444e79146c957497bd3b85f2d42cda1b4b522fd",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_missing_input.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/edge_missing_input.json",
         "response_headers_of_interest": {
           "x-ratelimit-limit": "100",
           "x-ratelimit-window": "180000",
@@ -266,7 +266,7 @@
         "content_type": "application/json",
         "bytes": 201,
         "sha256": "d4a80705f2b0a9f587357cb134f1118362c19638f73db2f3b3e1c61f66c3407b",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_unknown_procedure.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/edge_unknown_procedure.json",
         "response_headers_of_interest": {
           "x-ratelimit-limit": "100",
           "x-ratelimit-window": "180000",
@@ -303,7 +303,7 @@
         "content_type": "application/json",
         "bytes": 213,
         "sha256": "8ba61bf3b74aef3ccda4590afae8b0b613af6885a0fa00030012edc9bbde934e",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_malformed_input.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/edge_malformed_input.json",
         "response_headers_of_interest": {
           "x-ratelimit-limit": "100",
           "x-ratelimit-window": "180000",
@@ -344,7 +344,7 @@
         "content_type": "application/json",
         "bytes": 449,
         "sha256": "ec6dc7b95c39cee18173791857c89e758cf0ce9bf2e24b70e7ce3e9fbe986919",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_wrong_types.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/edge_wrong_types.json",
         "response_headers_of_interest": {
           "x-ratelimit-limit": "100",
           "x-ratelimit-window": "180000",
@@ -381,7 +381,7 @@
         "content_type": "application/json",
         "bytes": 406,
         "sha256": "4c3050d6da0dbf2f865987deebc16e07223d9d9cc79c48953135c87187adc40a",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_empty_json.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/edge_empty_json.json",
         "response_headers_of_interest": {
           "x-ratelimit-limit": "100",
           "x-ratelimit-window": "180000",
@@ -424,7 +424,7 @@
         "content_type": "application/json",
         "bytes": 154,
         "sha256": "1a13a56c58b007e9a6a471db1a04cf74a48b550bfde780bec902be429ac6a165",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/edge_unknown_gameid.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/edge_unknown_gameid.json",
         "response_headers_of_interest": {
           "x-ratelimit-limit": "100",
           "x-ratelimit-window": "180000",
@@ -465,7 +465,7 @@
         "content_type": "application/json",
         "bytes": 483,
         "sha256": "697523e6d1a27ebb66f0084058142aaeae033a648f90f5444618400163bfd550",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/oversized_12k.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/oversized_12k.json",
         "response_headers_of_interest": {
           "x-ratelimit-limit": "100",
           "x-ratelimit-window": "180000",
@@ -506,7 +506,7 @@
         "content_type": null,
         "bytes": 0,
         "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "raw_payload_path": "/Users/cheng/emuready-live-app-journey/oversized_40k.json",
+        "raw_payload_path": "<workspace>/emuready-live-app-journey/oversized_40k.json",
         "response_headers_of_interest": {
           "server": "cloudflare",
           "cf-ray": "a4e277ac4cd09817-LIS"
@@ -825,13 +825,13 @@
     },
     "logcat": {
       "app_process_logcat_full": {
-        "path": "/Users/cheng/emuready-live-app-journey/logcat_app_full.txt",
+        "path": "<workspace>/emuready-live-app-journey/logcat_app_full.txt",
         "sha256": "5448ef63d4cd270e5c41359d6f5c2b5691c2dffd47bbbdb6d0876377d6c5ca0e",
         "bytes": 15464,
         "role": "logcat of app process 7393 after it restarted under host memory pressure"
       },
       "app_related_excerpt": {
-        "path": "/Users/cheng/emuready-live-app-journey/logcat_app_excerpt.txt",
+        "path": "<workspace>/emuready-live-app-journey/logcat_app_excerpt.txt",
         "sha256": "1197b7749b6cfeb158121288e8efbefa17b380bf335b93c9e32a13ed7dc86774",
         "bytes": 18791,
         "role": "filtered logcat excerpt for app.vapor.android / SteamCatalog / activity transitions"
@@ -852,91 +852,91 @@
     },
     "uiautomator_dumps": [
       {
-        "path": "/Users/cheng/emuready-live-app-journey/initial_screen.xml",
+        "path": "<workspace>/emuready-live-app-journey/initial_screen.xml",
         "sha256": "e1b511b7279ca06e7c4d67739f7963d5874b3502a714bdc7d278ff95acf5b3fb",
         "bytes": 8905,
         "role": "first-run setup screen"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/step_after_file_access.xml",
+        "path": "<workspace>/emuready-live-app-journey/step_after_file_access.xml",
         "sha256": "6b80277afd6a315003165ad8dd77210e9e4f53292c20dcc2db3b1f49ba2e4827",
         "bytes": 7407,
         "role": "All files access system screen"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/step_file_access_toggled.xml",
+        "path": "<workspace>/emuready-live-app-journey/step_file_access_toggled.xml",
         "sha256": "705edb2992652e4b5b5053250bf1ec77d2c3c4ee65fe7776e1f8e8c1e0314342",
         "bytes": 7406,
         "role": "file access granted (checked=true)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/prepare_poll_6.xml",
+        "path": "<workspace>/emuready-live-app-journey/prepare_poll_6.xml",
         "sha256": "8034db3d24cdba462a3c7cec82398504c5c161b12305a7d34be87a7e105cdc1b",
         "bytes": 8475,
         "role": "Vapor is prepared / Continue to library"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/app_home.xml",
+        "path": "<workspace>/emuready-live-app-journey/app_home.xml",
         "sha256": "ac118efcc7d139738a23dde51fbdc7fbb71b026a1cca55f4e42646834d72ceee",
         "bytes": 9520,
         "role": "Steam account welcome before Set up later"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/app_library.xml",
+        "path": "<workspace>/emuready-live-app-journey/app_library.xml",
         "sha256": "9c1614241b5497dfe66a6af01a71ecc24e3594677de439bca406c3c146d23998",
         "bytes": 21570,
         "role": "signed-out Home after Set up later"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/state3.xml",
+        "path": "<workspace>/emuready-live-app-journey/state3.xml",
         "sha256": "b202bf1bc5ce75130d1e5a704001a0af9eaf98d6356942fead5ac016119a7e85",
         "bytes": 26083,
         "role": "Store loaded (Hot games: 88)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/store_results_hl2b.xml",
+        "path": "<workspace>/emuready-live-app-journey/store_results_hl2b.xml",
         "sha256": "14ee513c97c2593dc45eec92da7e725c2ea4e2ed247db2c9e22d20c33c1f4232",
         "bytes": 29397,
         "role": "Half-Life 2 search results"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/catalog_details_hl2.xml",
+        "path": "<workspace>/emuready-live-app-journey/catalog_details_hl2.xml",
         "sha256": "c4c7689a7c6b25373a1d54cb70a7fad3c9ef57f5752dd17374f98ba959a14f84",
         "bytes": 8458,
         "role": "Half-Life 2 catalog details"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/catalog_details_hl2_scrolled.xml",
+        "path": "<workspace>/emuready-live-app-journey/catalog_details_hl2_scrolled.xml",
         "sha256": "2acc61a65eeab77457890f422cec50dfd2b88545c2583135bb3e8201ee5b2430",
         "bytes": 7117,
         "role": "Community reports action visible"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/reports_modal.xml",
+        "path": "<workspace>/emuready-live-app-journey/reports_modal.xml",
         "sha256": "d3164ab09f2fd0b70869fab09121053133bd7eafd2193b71a32571ad8abb303a",
         "bytes": 8048,
         "role": "live reports modal, first report"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/reports_modal_scrolled2.xml",
+        "path": "<workspace>/emuready-live-app-journey/reports_modal_scrolled2.xml",
         "sha256": "af8daf235c98c405c5808a3f2d4fab8f950127e51516ee66a0461bf048543333",
         "bytes": 8705,
         "role": "live report votes/notes visible"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/reports_modal_scrolled4.xml",
+        "path": "<workspace>/emuready-live-app-journey/reports_modal_scrolled4.xml",
         "sha256": "0d6f91f56ce706d2e5c578cfe398705cb5cb656add971a7835e9e7a2162a178c",
         "bytes": 8984,
         "role": "View reported settings / Read original visible"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/settings_modal.xml",
+        "path": "<workspace>/emuready-live-app-journey/settings_modal.xml",
         "sha256": "77140732dfc42fd309a6858313c1ae305f7ee8a8c27795cb6e3508738cf8ca67",
         "bytes": 8660,
         "role": "reported settings loaded (Emulator Version/Container)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/settings_final.xml",
+        "path": "<workspace>/emuready-live-app-journey/settings_final.xml",
         "sha256": "ffff63b7f227e20e43d3fad1076e3b43e8a1829adf57da34aa56f5a8961b4b1a",
         "bytes": 9026,
         "role": "reported settings: Emulator Version 1.1.1, bionic, proton-9.0-arm64ec"
@@ -944,25 +944,25 @@
     ],
     "screenshots_in_repo": [
       {
-        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-catalog-action.png",
+        "path": "<workspace>/vapor/docs/images/emuready-live-app-2026-10-21-catalog-action.png",
         "sha256": "1db95c0f55c6de4f5eb88fb65142a814c840cc5ae50581c2ceed94b147dfea73",
         "bytes": 1561502,
         "role": "live catalog details with Community reports action (Windows gating positive branch)"
       },
       {
-        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-reports.png",
+        "path": "<workspace>/vapor/docs/images/emuready-live-app-2026-10-21-reports.png",
         "sha256": "6edd91b57a574f077b337908ae8a7589aaa217e7b6fbbf463844ca95473722df",
         "bytes": 472289,
         "role": "live Community reports modal for Half-Life 2 (report card with votes and notes)"
       },
       {
-        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-settings.png",
+        "path": "<workspace>/vapor/docs/images/emuready-live-app-2026-10-21-settings.png",
         "sha256": "9b32d6d5495c76be0bf2488f5d3a5f35ffbc9e946afa54643c4cc76919d4fd96",
         "bytes": 466704,
         "role": "live reported settings for the same report (read-only, nothing applied)"
       },
       {
-        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-no-entry.png",
+        "path": "<workspace>/vapor/docs/images/emuready-live-app-2026-10-21-no-entry.png",
         "sha256": "ac3b48087afde29fc00f5cfd4deef67bdd0d333ff1041323d93076b41a2c96c8",
         "bytes": 420651,
         "role": "live no-entry state for Team Fortress 2"
@@ -1101,85 +1101,85 @@
   ],
   "artifact_manifest": {
     "scratch_directory": {
-      "path": "/Users/cheng/emuready-live-app-journey",
+      "path": "<workspace>/emuready-live-app-journey",
       "outside_repo": true,
       "note": "Part A bodies, cross-check payloads, logcat, logs and uiautomator dumps are kept here; only the four screenshots and this receipt are in the repo."
     },
     "part_a": [
       {
-        "path": "/Users/cheng/emuready-live-app-journey/part_a_probe.sh",
+        "path": "<workspace>/emuready-live-app-journey/part_a_probe.sh",
         "sha256": "0f6ba29903a14cf4e318e451dd92071f12fcf7647a51b1c21ef19a95b6c2115b",
         "bytes": 970,
         "role": "Part A request wrapper used for the probes"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/mkurl.py",
+        "path": "<workspace>/emuready-live-app-journey/mkurl.py",
         "sha256": "b1bf12d32a28800fb5016a0a6f52545cb03da87d67d1eef5fac60920a7bba0d8",
         "bytes": 347,
         "role": "URL encoder used to reproduce the app's ?input= encoding"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/okhttp_batch220.json",
+        "path": "<workspace>/emuready-live-app-journey/okhttp_batch220.json",
         "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
         "bytes": 11503,
         "role": "Part A response body (games.batchBySteamAppIds)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/browser_batch220.json",
+        "path": "<workspace>/emuready-live-app-journey/browser_batch220.json",
         "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
         "bytes": 11503,
         "role": "Part A response body (games.batchBySteamAppIds)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/okhttp_gamesget_portal.json",
+        "path": "<workspace>/emuready-live-app-journey/okhttp_gamesget_portal.json",
         "sha256": "96c6d71961daf7ba4b5d436204288b1b83f647d53b6cf9902e9b7f7434b4278e",
         "bytes": 6030,
         "role": "Part A response body (games.get)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/edge_missing_input.json",
+        "path": "<workspace>/emuready-live-app-journey/edge_missing_input.json",
         "sha256": "26c50ec80d595f99ac4e1400a444e79146c957497bd3b85f2d42cda1b4b522fd",
         "bytes": 362,
         "role": "Part A response body (games.batchBySteamAppIds)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/edge_unknown_procedure.json",
+        "path": "<workspace>/emuready-live-app-journey/edge_unknown_procedure.json",
         "sha256": "d4a80705f2b0a9f587357cb134f1118362c19638f73db2f3b3e1c61f66c3407b",
         "bytes": 201,
         "role": "Part A response body (games.doesNotExist)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/edge_malformed_input.json",
+        "path": "<workspace>/emuready-live-app-journey/edge_malformed_input.json",
         "sha256": "8ba61bf3b74aef3ccda4590afae8b0b613af6885a0fa00030012edc9bbde934e",
         "bytes": 213,
         "role": "Part A response body (games.batchBySteamAppIds)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/edge_wrong_types.json",
+        "path": "<workspace>/emuready-live-app-journey/edge_wrong_types.json",
         "sha256": "ec6dc7b95c39cee18173791857c89e758cf0ce9bf2e24b70e7ce3e9fbe986919",
         "bytes": 449,
         "role": "Part A response body (games.batchBySteamAppIds)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/edge_empty_json.json",
+        "path": "<workspace>/emuready-live-app-journey/edge_empty_json.json",
         "sha256": "4c3050d6da0dbf2f865987deebc16e07223d9d9cc79c48953135c87187adc40a",
         "bytes": 406,
         "role": "Part A response body (games.batchBySteamAppIds)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/edge_unknown_gameid.json",
+        "path": "<workspace>/emuready-live-app-journey/edge_unknown_gameid.json",
         "sha256": "1a13a56c58b007e9a6a471db1a04cf74a48b550bfde780bec902be429ac6a165",
         "bytes": 154,
         "role": "Part A response body (listings.get)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/oversized_12k.json",
+        "path": "<workspace>/emuready-live-app-journey/oversized_12k.json",
         "sha256": "697523e6d1a27ebb66f0084058142aaeae033a648f90f5444618400163bfd550",
         "bytes": 483,
         "role": "Part A response body (games.get)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/oversized_40k.json",
+        "path": "<workspace>/emuready-live-app-journey/oversized_40k.json",
         "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "bytes": 0,
         "role": "Part A response body (games.get)"
@@ -1187,19 +1187,19 @@
     ],
     "cross_check_payloads": [
       {
-        "path": "/Users/cheng/emuready-live-app-journey/cross_batch220.json",
+        "path": "<workspace>/emuready-live-app-journey/cross_batch220.json",
         "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
         "bytes": 11503,
         "role": "live batch payload used for the on-screen cross-check"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/cross_listings_hl2.json",
+        "path": "<workspace>/emuready-live-app-journey/cross_listings_hl2.json",
         "sha256": "665a9f8fd2c835e1daa8f5e8516ac642b79885e1955abdb0a3e7a9be5f7d176e",
         "bytes": 23683,
         "role": "live listings payload used for the on-screen cross-check"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/cross_byid_hl2.json",
+        "path": "<workspace>/emuready-live-app-journey/cross_byid_hl2.json",
         "sha256": "5dab92d91f49f3db4a2960d24830e70c09805488426e221b05a59962366e34cf",
         "bytes": 49001,
         "role": "live listings.byId payload used for the settings cross-check"
@@ -1207,61 +1207,61 @@
     ],
     "journey_logs": [
       {
-        "path": "/Users/cheng/emuready-live-app-journey/logcat_app_full.txt",
+        "path": "<workspace>/emuready-live-app-journey/logcat_app_full.txt",
         "sha256": "5448ef63d4cd270e5c41359d6f5c2b5691c2dffd47bbbdb6d0876377d6c5ca0e",
         "bytes": 15464,
         "role": "app-process logcat"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/logcat_app_excerpt.txt",
+        "path": "<workspace>/emuready-live-app-journey/logcat_app_excerpt.txt",
         "sha256": "1197b7749b6cfeb158121288e8efbefa17b380bf335b93c9e32a13ed7dc86774",
         "bytes": 18791,
         "role": "app/EmuReady/Chrome excerpt"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/emulator-5562.log",
+        "path": "<workspace>/emuready-live-app-journey/emulator-5562.log",
         "sha256": "62c5a631bce7879f0538358e6c160b9317d059854a1eadd8b4b7525eeff71c4c",
         "bytes": 8426,
         "role": "emulator boot log"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/emulator-5562-first-attempt.log",
+        "path": "<workspace>/emuready-live-app-journey/emulator-5562-first-attempt.log",
         "sha256": "52841817561546944864cd9cd595bd1fc78207feeae00cf447f8270872d3f359",
         "bytes": 1021,
         "role": "same-AVD conflict log"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/install-start.txt",
+        "path": "<workspace>/emuready-live-app-journey/install-start.txt",
         "sha256": "8f6975257cf76e373bad575545c5dbdf76855a33030ab453bb00e581b8599c85",
         "bytes": 21,
         "role": "install start timestamp"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/install-end.txt",
+        "path": "<workspace>/emuready-live-app-journey/install-end.txt",
         "sha256": "2008ec0e10589a0251a1328ea7fe16c0d6b08fe9f5372ee26e4b179284ba5925",
         "bytes": 21,
         "role": "install end timestamp"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/install-result.txt",
+        "path": "<workspace>/emuready-live-app-journey/install-result.txt",
         "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7",
         "bytes": 36,
         "role": "install result"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/launch-time.txt",
+        "path": "<workspace>/emuready-live-app-journey/launch-time.txt",
         "sha256": "462178eedbe0ad9ab674deaba9673af7bda7a2abd48a5ed34620d9d0ed53bcd2",
         "bytes": 21,
         "role": "first launch timestamp"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/prepare-start.txt",
+        "path": "<workspace>/emuready-live-app-journey/prepare-start.txt",
         "sha256": "8f1731f740298269b25f63e795bb02a6d5367f8cd7a990860aae2029a5635501",
         "bytes": 21,
         "role": "guided setup start timestamp"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/device_apk_sha.txt",
+        "path": "<workspace>/emuready-live-app-journey/device_apk_sha.txt",
         "sha256": "3705ad722d45e37b4b70381edfe78361fed662637f3a9ee0e2705350b651894d",
         "bytes": 155,
         "role": "device-side base.apk sha256"
@@ -1269,25 +1269,25 @@
     ],
     "screenshots_repo": [
       {
-        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-catalog-action.png",
+        "path": "<workspace>/vapor/docs/images/emuready-live-app-2026-10-21-catalog-action.png",
         "sha256": "1db95c0f55c6de4f5eb88fb65142a814c840cc5ae50581c2ceed94b147dfea73",
         "bytes": 1561502,
         "role": "live catalog details with Community reports action (Windows gating positive branch)"
       },
       {
-        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-reports.png",
+        "path": "<workspace>/vapor/docs/images/emuready-live-app-2026-10-21-reports.png",
         "sha256": "6edd91b57a574f077b337908ae8a7589aaa217e7b6fbbf463844ca95473722df",
         "bytes": 472289,
         "role": "live Community reports modal for Half-Life 2 (report card with votes and notes)"
       },
       {
-        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-settings.png",
+        "path": "<workspace>/vapor/docs/images/emuready-live-app-2026-10-21-settings.png",
         "sha256": "9b32d6d5495c76be0bf2488f5d3a5f35ffbc9e946afa54643c4cc76919d4fd96",
         "bytes": 466704,
         "role": "live reported settings for the same report (read-only, nothing applied)"
       },
       {
-        "path": "/Users/cheng/vapor/docs/images/emuready-live-app-2026-10-21-no-entry.png",
+        "path": "<workspace>/vapor/docs/images/emuready-live-app-2026-10-21-no-entry.png",
         "sha256": "ac3b48087afde29fc00f5cfd4deef67bdd0d333ff1041323d93076b41a2c96c8",
         "bytes": 420651,
         "role": "live no-entry state for Team Fortress 2"
@@ -1295,67 +1295,67 @@
     ],
     "intermediate_screenshots": [
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_store.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_store.png",
         "sha256": "469f55a3c3291de412697edff5751baf4044d8d70c245e35cadbfca5c5f36850",
         "bytes": 2033692,
         "role": "live Store with Hot games"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_results_hl2b.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_results_hl2b.png",
         "sha256": "83edf293c99b6d990099cfdcc85d12a8bee7b71877964eb4db1b2bf32e678c36",
         "bytes": 1108844,
         "role": "Half-Life 2 search results"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_catalog_details.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_catalog_details.png",
         "sha256": "f226bf7dadb20448c3d1ee0ad9d9fbeff270e62bc6af20ca09b07eadb94e99bb",
         "bytes": 540589,
         "role": "Half-Life 2 details top"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_catalog_scrolled.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_catalog_scrolled.png",
         "sha256": "1db95c0f55c6de4f5eb88fb65142a814c840cc5ae50581c2ceed94b147dfea73",
         "bytes": 1561502,
         "role": "Community reports action (repo copy)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_reports_modal.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_reports_modal.png",
         "sha256": "27faae97efbd71a2e1c47f5d9c1ef815b65cfca650727c85098b35fbe05c12eb",
         "bytes": 474754,
         "role": "first live report card"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_reports_scrolled2.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_reports_scrolled2.png",
         "sha256": "6edd91b57a574f077b337908ae8a7589aaa217e7b6fbbf463844ca95473722df",
         "bytes": 472289,
         "role": "report with votes/notes (repo copy)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_settings_modal.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_settings_modal.png",
         "sha256": "8d3a1a211584bb2939c232b64429ceea091b1114e951535ba16a338a86813428",
         "bytes": 476380,
         "role": "settings load start"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_settings_final.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_settings_final.png",
         "sha256": "9b32d6d5495c76be0bf2488f5d3a5f35ffbc9e946afa54643c4cc76919d4fd96",
         "bytes": 466704,
         "role": "settings (repo copy)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_browse_tap.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_browse_tap.png",
         "sha256": "81aaa9a063c2a549259c0d4c50e71d2df5b587752237df496d146ecd5907f0e8",
         "bytes": 12872,
         "role": "Chrome first run after Browse on EmuReady"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_read_original.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_read_original.png",
         "sha256": "16e727cc6da9dbf3be88f6d1c0a5167ccf8e520c7605fc530a2f2aa03f750e53",
         "bytes": 77524,
         "role": "Chrome first run after Read original report"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/scratch_tf2_noentry.png",
+        "path": "<workspace>/emuready-live-app-journey/scratch_tf2_noentry.png",
         "sha256": "ac3b48087afde29fc00f5cfd4deef67bdd0d333ff1041323d93076b41a2c96c8",
         "bytes": 420651,
         "role": "TF2 no-entry modal (repo copy)"
@@ -1363,91 +1363,91 @@
     ],
     "uiautomator_dumps": [
       {
-        "path": "/Users/cheng/emuready-live-app-journey/initial_screen.xml",
+        "path": "<workspace>/emuready-live-app-journey/initial_screen.xml",
         "sha256": "e1b511b7279ca06e7c4d67739f7963d5874b3502a714bdc7d278ff95acf5b3fb",
         "bytes": 8905,
         "role": "first-run setup screen"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/step_after_file_access.xml",
+        "path": "<workspace>/emuready-live-app-journey/step_after_file_access.xml",
         "sha256": "6b80277afd6a315003165ad8dd77210e9e4f53292c20dcc2db3b1f49ba2e4827",
         "bytes": 7407,
         "role": "All files access system screen"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/step_file_access_toggled.xml",
+        "path": "<workspace>/emuready-live-app-journey/step_file_access_toggled.xml",
         "sha256": "705edb2992652e4b5b5053250bf1ec77d2c3c4ee65fe7776e1f8e8c1e0314342",
         "bytes": 7406,
         "role": "file access granted (checked=true)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/prepare_poll_6.xml",
+        "path": "<workspace>/emuready-live-app-journey/prepare_poll_6.xml",
         "sha256": "8034db3d24cdba462a3c7cec82398504c5c161b12305a7d34be87a7e105cdc1b",
         "bytes": 8475,
         "role": "Vapor is prepared / Continue to library"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/app_home.xml",
+        "path": "<workspace>/emuready-live-app-journey/app_home.xml",
         "sha256": "ac118efcc7d139738a23dde51fbdc7fbb71b026a1cca55f4e42646834d72ceee",
         "bytes": 9520,
         "role": "Steam account welcome before Set up later"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/app_library.xml",
+        "path": "<workspace>/emuready-live-app-journey/app_library.xml",
         "sha256": "9c1614241b5497dfe66a6af01a71ecc24e3594677de439bca406c3c146d23998",
         "bytes": 21570,
         "role": "signed-out Home after Set up later"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/state3.xml",
+        "path": "<workspace>/emuready-live-app-journey/state3.xml",
         "sha256": "b202bf1bc5ce75130d1e5a704001a0af9eaf98d6356942fead5ac016119a7e85",
         "bytes": 26083,
         "role": "Store loaded (Hot games: 88)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/store_results_hl2b.xml",
+        "path": "<workspace>/emuready-live-app-journey/store_results_hl2b.xml",
         "sha256": "14ee513c97c2593dc45eec92da7e725c2ea4e2ed247db2c9e22d20c33c1f4232",
         "bytes": 29397,
         "role": "Half-Life 2 search results"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/catalog_details_hl2.xml",
+        "path": "<workspace>/emuready-live-app-journey/catalog_details_hl2.xml",
         "sha256": "c4c7689a7c6b25373a1d54cb70a7fad3c9ef57f5752dd17374f98ba959a14f84",
         "bytes": 8458,
         "role": "Half-Life 2 catalog details"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/catalog_details_hl2_scrolled.xml",
+        "path": "<workspace>/emuready-live-app-journey/catalog_details_hl2_scrolled.xml",
         "sha256": "2acc61a65eeab77457890f422cec50dfd2b88545c2583135bb3e8201ee5b2430",
         "bytes": 7117,
         "role": "Community reports action visible"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/reports_modal.xml",
+        "path": "<workspace>/emuready-live-app-journey/reports_modal.xml",
         "sha256": "d3164ab09f2fd0b70869fab09121053133bd7eafd2193b71a32571ad8abb303a",
         "bytes": 8048,
         "role": "live reports modal, first report"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/reports_modal_scrolled2.xml",
+        "path": "<workspace>/emuready-live-app-journey/reports_modal_scrolled2.xml",
         "sha256": "af8daf235c98c405c5808a3f2d4fab8f950127e51516ee66a0461bf048543333",
         "bytes": 8705,
         "role": "live report votes/notes visible"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/reports_modal_scrolled4.xml",
+        "path": "<workspace>/emuready-live-app-journey/reports_modal_scrolled4.xml",
         "sha256": "0d6f91f56ce706d2e5c578cfe398705cb5cb656add971a7835e9e7a2162a178c",
         "bytes": 8984,
         "role": "View reported settings / Read original visible"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/settings_modal.xml",
+        "path": "<workspace>/emuready-live-app-journey/settings_modal.xml",
         "sha256": "77140732dfc42fd309a6858313c1ae305f7ee8a8c27795cb6e3508738cf8ca67",
         "bytes": 8660,
         "role": "reported settings loaded (Emulator Version/Container)"
       },
       {
-        "path": "/Users/cheng/emuready-live-app-journey/settings_final.xml",
+        "path": "<workspace>/emuready-live-app-journey/settings_final.xml",
         "sha256": "ffff63b7f227e20e43d3fad1076e3b43e8a1829adf57da34aa56f5a8961b4b1a",
         "bytes": 9026,
         "role": "reported settings: Emulator Version 1.1.1, bionic, proton-9.0-arm64ec"

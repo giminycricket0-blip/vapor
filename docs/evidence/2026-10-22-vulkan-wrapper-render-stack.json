@@ -28,8 +28,8 @@
     "lead_verified": true,
     "symptom": "prepare_stage always staged <wrapper-build>/native-probe/{candidate,baseline}.so, so a full-stack render run silently loaded the pinned unpatched candidate 574cfb4d\u2026 while claiming to test the six-patch stack; the evidence JSON only recorded library names.",
     "root_cause": "Staged patched builds keep their real wrapper at the top level (candidate-stripped.so 095c9a81\u2026; candidate.so is the unstripped copy) while native-probe/ is copied from the pinned build.",
-    "wrong_binary_available_at": "/Users/cheng/staging-stack/wrapper-build-patched/native-probe/candidate.so sha256 574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
-    "correct_binary_now_selected": "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so sha256 095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
+    "wrong_binary_available_at": "<workspace>/staging-stack/wrapper-build-patched/native-probe/candidate.so sha256 574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+    "correct_binary_now_selected": "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so sha256 095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
     "affected": "Full-stack render runs against staged builds. The pinned-build receipts (e.g. docs/evidence/2026-10-22-vulkan-wrapper-render-orchestrated.json) are unaffected because that build's top level and native-probe/ copy are both 574cfb4d\u2026."
   },
   "fix_validation": {
@@ -38,25 +38,25 @@
         "candidate": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
         "baseline": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
         "candidate_file": "candidate-stripped.so",
-        "aux_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe"
+        "aux_directory": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe"
       },
       "stack-4k-linear": {
         "candidate": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
         "baseline": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
         "candidate_file": "candidate-stripped.so",
-        "aux_directory": "/Users/cheng/staging-stack/wrapper-build-patched/native-probe"
+        "aux_directory": "<workspace>/staging-stack/wrapper-build-patched/native-probe"
       },
       "stack-4k-encoded": {
         "candidate": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
         "baseline": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
         "candidate_file": "candidate-stripped.so",
-        "aux_directory": "/Users/cheng/staging-stack/wrapper-build-patched/native-probe"
+        "aux_directory": "<workspace>/staging-stack/wrapper-build-patched/native-probe"
       },
       "stack-16k-linear": {
         "candidate": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
         "baseline": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
         "candidate_file": "candidate-stripped.so",
-        "aux_directory": "/Users/cheng/staging-stack/wrapper-build-patched/native-probe"
+        "aux_directory": "<workspace>/staging-stack/wrapper-build-patched/native-probe"
       }
     },
     "warnings_emitted": {
@@ -67,117 +67,117 @@
     },
     "resolution_evidence": {
       "pinned-4k-encoded": [
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate.so",
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/candidate.so"
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate.so",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/candidate.so"
       ],
       "stack-4k-linear": [
-        "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
-        "/Users/cheng/staging-stack/wrapper-build-patched/candidate.so",
-        "/Users/cheng/staging-stack/wrapper-build-patched/native-probe/candidate.so"
+        "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so",
+        "<workspace>/staging-stack/wrapper-build-patched/candidate.so",
+        "<workspace>/staging-stack/wrapper-build-patched/native-probe/candidate.so"
       ],
       "stack-4k-encoded": [
-        "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
-        "/Users/cheng/staging-stack/wrapper-build-patched/candidate.so",
-        "/Users/cheng/staging-stack/wrapper-build-patched/native-probe/candidate.so"
+        "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so",
+        "<workspace>/staging-stack/wrapper-build-patched/candidate.so",
+        "<workspace>/staging-stack/wrapper-build-patched/native-probe/candidate.so"
       ],
       "stack-16k-linear": [
-        "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
-        "/Users/cheng/staging-stack/wrapper-build-patched/candidate.so",
-        "/Users/cheng/staging-stack/wrapper-build-patched/native-probe/candidate.so"
+        "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so",
+        "<workspace>/staging-stack/wrapper-build-patched/candidate.so",
+        "<workspace>/staging-stack/wrapper-build-patched/native-probe/candidate.so"
       ]
     }
   },
   "fixture_and_inputs": {
     "fixture_source": {
-      "path": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-render.c",
+      "path": "<workspace>/vapor/tools/tests/vulkan-wrapper-render.c",
       "bytes": 35822,
       "sha256": "ceefed85f21bf53c2dba74943a9ac5f79d42aca828eadb219b6cb3c40890279a"
     },
     "fixture_binary": {
-      "path": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded/bin/vulkan-wrapper-render",
+      "path": "<workspace>/wrapper-render-stack/pinned-4k-encoded/bin/vulkan-wrapper-render",
       "bytes": 225712,
       "sha256": "b3e9facf55695c8aa21ea38c6e94542c33a5aa151c31787fcaf8223b968152e5"
     },
     "shaders": {
-      "compiler": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator",
+      "compiler": "<workspace>/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator",
       "compiler_sha256": "18c23a68d6f4a21e822a8dcee212a2a448a66494b8f58aaf1655ef6328543d11",
       "compiler_version": "Glslang Version: 11:16.6.0",
       "target_environment": "vulkan1.2",
       "shaders": {
         "fullscreen.vert": {
           "glsl": {
-            "path": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-render.vert",
+            "path": "<workspace>/vapor/tools/tests/vulkan-wrapper-render.vert",
             "bytes": 219,
             "sha256": "94d7ea6e56c2c9afd64e2676368189a56f88de414b2a2a5480ca200bba85932c"
           },
           "spirv": {
-            "path": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded/shaders/fullscreen.vert.spv",
+            "path": "<workspace>/wrapper-render-stack/pinned-4k-encoded/shaders/fullscreen.vert.spv",
             "bytes": 1232,
             "sha256": "49f744d5dccbda1b556ad26b37f9c160a20a839da371788f5cd3c4abad0a6c55"
           },
-          "command": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator -V --target-env vulkan1.2 -o /Users/cheng/wrapper-render-stack/pinned-4k-encoded/shaders/fullscreen.vert.spv /Users/cheng/vapor/tools/tests/vulkan-wrapper-render.vert"
+          "command": "<workspace>/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator -V --target-env vulkan1.2 -o <workspace>/wrapper-render-stack/pinned-4k-encoded/shaders/fullscreen.vert.spv <workspace>/vapor/tools/tests/vulkan-wrapper-render.vert"
         },
         "sample.frag": {
           "glsl": {
-            "path": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-render.frag",
+            "path": "<workspace>/vapor/tools/tests/vulkan-wrapper-render.frag",
             "bytes": 207,
             "sha256": "087e8bf12f97a654fd29778b0b5d706e3fbf519e1b68c5fad0b09a5d37623bfb"
           },
           "spirv": {
-            "path": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded/shaders/sample.frag.spv",
+            "path": "<workspace>/wrapper-render-stack/pinned-4k-encoded/shaders/sample.frag.spv",
             "bytes": 560,
             "sha256": "ebee06a7e6fd464ca9bd51010c1ac029f571b9dd0c3363e00537ddb5b9f0fdf1"
           },
-          "command": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator -V --target-env vulkan1.2 -o /Users/cheng/wrapper-render-stack/pinned-4k-encoded/shaders/sample.frag.spv /Users/cheng/vapor/tools/tests/vulkan-wrapper-render.frag"
+          "command": "<workspace>/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator -V --target-env vulkan1.2 -o <workspace>/wrapper-render-stack/pinned-4k-encoded/shaders/sample.frag.spv <workspace>/vapor/tools/tests/vulkan-wrapper-render.frag"
         }
       }
     },
     "inputs": {
       "bc1": {
-        "path": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded/input/bc1-32x32.bin",
+        "path": "<workspace>/wrapper-render-stack/pinned-4k-encoded/input/bc1-32x32.bin",
         "bytes": 512,
         "sha256": "294cb01a523693ddb55d1685f88467d3c673cd1cc031e52ee8328da36bc8d8ec"
       },
       "bc3": {
-        "path": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded/input/bc3-32x32.bin",
+        "path": "<workspace>/wrapper-render-stack/pinned-4k-encoded/input/bc3-32x32.bin",
         "bytes": 1024,
         "sha256": "0f013cd8f74087f5901c14bc4f9247759f6cbb94175a488859511458fa9978ae"
       },
       "rgba8": {
-        "path": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded/input/rgba8-32x32.bin",
+        "path": "<workspace>/wrapper-render-stack/pinned-4k-encoded/input/rgba8-32x32.bin",
         "bytes": 4096,
         "sha256": "173f4ab4d9c93e38881ba4b548eefaebf9be2b917814821d14662c7a061fa83e"
       }
     },
     "decoded": {
       "bc1": {
-        "path": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded/input/bc1-decoded-32x32.bin",
+        "path": "<workspace>/wrapper-render-stack/pinned-4k-encoded/input/bc1-decoded-32x32.bin",
         "bytes": 4096,
         "sha256": "879e64da743e94874ed14abf86018b02ee9dd52e5b4bd89a00757c737f4ecfbb"
       },
       "bc3": {
-        "path": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded/input/bc3-decoded-32x32.bin",
+        "path": "<workspace>/wrapper-render-stack/pinned-4k-encoded/input/bc3-decoded-32x32.bin",
         "bytes": 4096,
         "sha256": "805a52a4c03609f21be48811febf1f7c6d39c5f6e7ae62ae0916fdd411ed2b98"
       }
     },
     "host_reference": {
       "bcdec": {
-        "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.h",
+        "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.h",
         "sha256": "8c972cdebba2c799d8d7478fc676be6d89a95294f012985a4253d80e82d0785d",
         "license": "MIT OR Unlicense (bcdec.h alternative A = MIT, alternative B = The Unlicense)",
         "version": "0.98"
       },
       "helper": {
-        "source": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded/host/bcdec_decode.c",
+        "source": "<workspace>/wrapper-render-stack/pinned-4k-encoded/host/bcdec_decode.c",
         "source_sha256": "73c8ac20f016e5ee1c4f175b5278a6f4a2f3ca860f1365bd8eed0bc50131dc52",
         "binary_sha256": "660ce1de5a7ff10e0368a37d50ebaacfad47dba2ade39d8323b13f40c34d395a",
-        "compile_command": "cc -O2 -std=c11 -I/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper /Users/cheng/wrapper-render-stack/pinned-4k-encoded/host/bcdec_decode.c -o /Users/cheng/wrapper-render-stack/pinned-4k-encoded/host/bcdec_decode",
+        "compile_command": "cc -O2 -std=c11 -I<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper <workspace>/wrapper-render-stack/pinned-4k-encoded/host/bcdec_decode.c -o <workspace>/wrapper-render-stack/pinned-4k-encoded/host/bcdec_decode",
         "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
       },
       "independent_python_reference": {
-        "path": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.py",
+        "path": "<workspace>/vapor/tools/tests/vulkan-wrapper-reference.py",
         "sha256": "abdfbb614cc3b506f6780ba93deeb82cc5d9f144d1f73b954d4e4e2481665bf7",
         "use": "deterministic input generation and a second decoder for the cross-check"
       },
@@ -203,7 +203,7 @@
     {
       "label": "pinned-4k-encoded",
       "intent": "Pinned-build confirmation: the unchanged pinned build directory still stages the pinned candidate 574cfb4d\u2026 and passes 31/31 with the default encoded convention.",
-      "wrapper_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+      "wrapper_build": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
       "avd": "VaporProbe36C",
       "serial": "emulator-5560",
       "port": 5560,
@@ -229,31 +229,31 @@
       "staged_libraries": {
         "candidate": {
           "file": "candidate-stripped.so",
-          "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+          "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
           "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
           "bytes": 10699464,
           "override": false,
           "pinned_sha256_match": true,
           "resolution_order": [
-            "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
-            "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate.so",
-            "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/candidate.so"
+            "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+            "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate.so",
+            "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/candidate.so"
           ]
         },
         "baseline": {
           "file": "baseline-stripped.so",
-          "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+          "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
           "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
           "bytes": 10698760,
           "override": false,
           "pinned_sha256_match": true,
           "resolution_order": [
-            "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
-            "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/baseline.so"
+            "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+            "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/baseline.so"
           ]
         },
         "auxiliary": {
-          "directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
+          "directory": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
           "fallback_to_pinned_build": false,
           "file_count": 16
         }
@@ -737,7 +737,7 @@
         ]
       },
       "emulator_launch_command": [
-        "/Users/cheng/Library/Android/sdk/emulator/emulator",
+        "<workspace>/Library/Android/sdk/emulator/emulator",
         "-avd",
         "VaporProbe36C",
         "-port",
@@ -754,12 +754,12 @@
         "-cores",
         "2"
       ],
-      "receipt_part": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded.json"
+      "receipt_part": "<workspace>/wrapper-render-stack/pinned-4k-encoded.json"
     },
     {
       "label": "stack-4k-linear",
       "intent": "Full six-patch stack build, 4 KB AVD, linear host-cpu sRGB expectation: patched candidate host-cpu sRGB must pass; the unpatched baseline is the negative control.",
-      "wrapper_build": "/Users/cheng/staging-stack/wrapper-build-patched",
+      "wrapper_build": "<workspace>/staging-stack/wrapper-build-patched",
       "avd": "VaporProbe36C",
       "serial": "emulator-5560",
       "port": 5560,
@@ -785,31 +785,31 @@
       "staged_libraries": {
         "candidate": {
           "file": "candidate-stripped.so",
-          "source": "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
+          "source": "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so",
           "sha256": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
           "bytes": 10704784,
           "override": false,
           "pinned_sha256_match": false,
           "resolution_order": [
-            "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
-            "/Users/cheng/staging-stack/wrapper-build-patched/candidate.so",
-            "/Users/cheng/staging-stack/wrapper-build-patched/native-probe/candidate.so"
+            "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so",
+            "<workspace>/staging-stack/wrapper-build-patched/candidate.so",
+            "<workspace>/staging-stack/wrapper-build-patched/native-probe/candidate.so"
           ]
         },
         "baseline": {
           "file": "baseline-stripped.so",
-          "source": "/Users/cheng/staging-stack/wrapper-build-patched/baseline-stripped.so",
+          "source": "<workspace>/staging-stack/wrapper-build-patched/baseline-stripped.so",
           "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
           "bytes": 10698760,
           "override": false,
           "pinned_sha256_match": true,
           "resolution_order": [
-            "/Users/cheng/staging-stack/wrapper-build-patched/baseline-stripped.so",
-            "/Users/cheng/staging-stack/wrapper-build-patched/native-probe/baseline.so"
+            "<workspace>/staging-stack/wrapper-build-patched/baseline-stripped.so",
+            "<workspace>/staging-stack/wrapper-build-patched/native-probe/baseline.so"
           ]
         },
         "auxiliary": {
-          "directory": "/Users/cheng/staging-stack/wrapper-build-patched/native-probe",
+          "directory": "<workspace>/staging-stack/wrapper-build-patched/native-probe",
           "fallback_to_pinned_build": false,
           "file_count": 16
         }
@@ -1318,7 +1318,7 @@
         ]
       },
       "emulator_launch_command": [
-        "/Users/cheng/Library/Android/sdk/emulator/emulator",
+        "<workspace>/Library/Android/sdk/emulator/emulator",
         "-avd",
         "VaporProbe36C",
         "-port",
@@ -1335,12 +1335,12 @@
         "-cores",
         "2"
       ],
-      "receipt_part": "/Users/cheng/wrapper-render-stack/stack-4k-linear.json"
+      "receipt_part": "<workspace>/wrapper-render-stack/stack-4k-linear.json"
     },
     {
       "label": "stack-4k-encoded",
       "intent": "Full stack build, 4 KB AVD, default encoded convention: the patched candidate now FAILS the encoded expectation, proving the stack binary (not the pinned candidate) is loaded; the unpatched baseline passes.",
-      "wrapper_build": "/Users/cheng/staging-stack/wrapper-build-patched",
+      "wrapper_build": "<workspace>/staging-stack/wrapper-build-patched",
       "avd": "VaporProbe36C",
       "serial": "emulator-5560",
       "port": 5560,
@@ -1366,31 +1366,31 @@
       "staged_libraries": {
         "candidate": {
           "file": "candidate-stripped.so",
-          "source": "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
+          "source": "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so",
           "sha256": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
           "bytes": 10704784,
           "override": false,
           "pinned_sha256_match": false,
           "resolution_order": [
-            "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
-            "/Users/cheng/staging-stack/wrapper-build-patched/candidate.so",
-            "/Users/cheng/staging-stack/wrapper-build-patched/native-probe/candidate.so"
+            "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so",
+            "<workspace>/staging-stack/wrapper-build-patched/candidate.so",
+            "<workspace>/staging-stack/wrapper-build-patched/native-probe/candidate.so"
           ]
         },
         "baseline": {
           "file": "baseline-stripped.so",
-          "source": "/Users/cheng/staging-stack/wrapper-build-patched/baseline-stripped.so",
+          "source": "<workspace>/staging-stack/wrapper-build-patched/baseline-stripped.so",
           "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
           "bytes": 10698760,
           "override": false,
           "pinned_sha256_match": true,
           "resolution_order": [
-            "/Users/cheng/staging-stack/wrapper-build-patched/baseline-stripped.so",
-            "/Users/cheng/staging-stack/wrapper-build-patched/native-probe/baseline.so"
+            "<workspace>/staging-stack/wrapper-build-patched/baseline-stripped.so",
+            "<workspace>/staging-stack/wrapper-build-patched/native-probe/baseline.so"
           ]
         },
         "auxiliary": {
-          "directory": "/Users/cheng/staging-stack/wrapper-build-patched/native-probe",
+          "directory": "<workspace>/staging-stack/wrapper-build-patched/native-probe",
           "fallback_to_pinned_build": false,
           "file_count": 16
         }
@@ -1899,7 +1899,7 @@
         ]
       },
       "emulator_launch_command": [
-        "/Users/cheng/Library/Android/sdk/emulator/emulator",
+        "<workspace>/Library/Android/sdk/emulator/emulator",
         "-avd",
         "VaporProbe36C",
         "-port",
@@ -1916,12 +1916,12 @@
         "-cores",
         "2"
       ],
-      "receipt_part": "/Users/cheng/wrapper-render-stack/stack-4k-encoded.json"
+      "receipt_part": "<workspace>/wrapper-render-stack/stack-4k-encoded.json"
     },
     {
       "label": "stack-16k-linear",
       "intent": "Full stack build, 16 KB AVD (VaporProbe37K16B, page size 16384), linear host-cpu sRGB expectation.",
-      "wrapper_build": "/Users/cheng/staging-stack/wrapper-build-patched",
+      "wrapper_build": "<workspace>/staging-stack/wrapper-build-patched",
       "avd": "VaporProbe37K16B",
       "serial": "emulator-5566",
       "port": 5566,
@@ -1947,31 +1947,31 @@
       "staged_libraries": {
         "candidate": {
           "file": "candidate-stripped.so",
-          "source": "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
+          "source": "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so",
           "sha256": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
           "bytes": 10704784,
           "override": false,
           "pinned_sha256_match": false,
           "resolution_order": [
-            "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
-            "/Users/cheng/staging-stack/wrapper-build-patched/candidate.so",
-            "/Users/cheng/staging-stack/wrapper-build-patched/native-probe/candidate.so"
+            "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so",
+            "<workspace>/staging-stack/wrapper-build-patched/candidate.so",
+            "<workspace>/staging-stack/wrapper-build-patched/native-probe/candidate.so"
           ]
         },
         "baseline": {
           "file": "baseline-stripped.so",
-          "source": "/Users/cheng/staging-stack/wrapper-build-patched/baseline-stripped.so",
+          "source": "<workspace>/staging-stack/wrapper-build-patched/baseline-stripped.so",
           "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
           "bytes": 10698760,
           "override": false,
           "pinned_sha256_match": true,
           "resolution_order": [
-            "/Users/cheng/staging-stack/wrapper-build-patched/baseline-stripped.so",
-            "/Users/cheng/staging-stack/wrapper-build-patched/native-probe/baseline.so"
+            "<workspace>/staging-stack/wrapper-build-patched/baseline-stripped.so",
+            "<workspace>/staging-stack/wrapper-build-patched/native-probe/baseline.so"
           ]
         },
         "auxiliary": {
-          "directory": "/Users/cheng/staging-stack/wrapper-build-patched/native-probe",
+          "directory": "<workspace>/staging-stack/wrapper-build-patched/native-probe",
           "fallback_to_pinned_build": false,
           "file_count": 16
         }
@@ -2480,7 +2480,7 @@
         ]
       },
       "emulator_launch_command": [
-        "/Users/cheng/Library/Android/sdk/emulator/emulator",
+        "<workspace>/Library/Android/sdk/emulator/emulator",
         "-avd",
         "VaporProbe37K16B",
         "-port",
@@ -2497,7 +2497,7 @@
         "-cores",
         "2"
       ],
-      "receipt_part": "/Users/cheng/wrapper-render-stack/stack-16k-linear.json"
+      "receipt_part": "<workspace>/wrapper-render-stack/stack-16k-linear.json"
     }
   ],
   "negative_controls": [
@@ -2524,14 +2524,14 @@
       "claim": "The pinned build directory still stages 574cfb4d\u2026 and reproduces 31/31 with 15 byte-exact cases under the default encoded convention.",
       "evidence": [
         "pinned-4k-encoded: candidate-stripped.so sha256 574cfb4d\u2026 (10699464 B), baseline-stripped.so 2494cda2\u2026, no warnings, 31 pass / 0 fail / 0 skipped, 15/31 byte-exact",
-        "--dir /Users/cheng/wrapper-render: 31 pass / 0 fail / 0 skipped, 33 files, 2 aliases, 15/31 byte-exact (default encoded)",
-        "--dir /Users/cheng/wrapper-render-run: 31 pass / 0 fail / 0 skipped, 31 files, 0 aliases, 15/31 byte-exact (default encoded)"
+        "--dir <workspace>/wrapper-render: 31 pass / 0 fail / 0 skipped, 33 files, 2 aliases, 15/31 byte-exact (default encoded)",
+        "--dir <workspace>/wrapper-render-run: 31 pass / 0 fail / 0 skipped, 31 files, 0 aliases, 15/31 byte-exact (default encoded)"
       ]
     }
   ],
   "checker_regression": {
-    "--dir /Users/cheng/wrapper-render (salvaged evidence, default encoded)": "31 pass / 0 fail / 0 skipped, 31 unique cases, 33 files, 2 byte-identical aliases, 15/31 byte-exact",
-    "--dir /Users/cheng/wrapper-render-run (one-command evidence, default encoded)": "31 pass / 0 fail / 0 skipped, 31 unique cases, 31 files, 0 aliases, 15/31 byte-exact",
+    "--dir <workspace>/wrapper-render (salvaged evidence, default encoded)": "31 pass / 0 fail / 0 skipped, 31 unique cases, 33 files, 2 byte-identical aliases, 15/31 byte-exact",
+    "--dir <workspace>/wrapper-render-run (one-command evidence, default encoded)": "31 pass / 0 fail / 0 skipped, 31 unique cases, 31 files, 0 aliases, 15/31 byte-exact",
     "note": "Default --srgb-host-convention encoded preserves the earlier committed results; the new flag only changes the host-cpu sRGB expectation when explicitly set to linear."
   },
   "conclusions": [
@@ -2548,23 +2548,23 @@
     "Synthetic deterministic textures and a single fullscreen triangle with a nearest sampler; no depth, blending, mip or array-layer coverage.",
     "The 2 failures in each stack phase are declared negative controls (unpatched baseline in linear mode; patched candidate in encoded mode), not product defects; they are recorded with --allow-failures and listed per case.",
     "Host-cpu sRGB is only observed through this render pipeline; no sampling of real game textures or shader permutations.",
-    "The stack build is a scratch build under /Users/cheng/staging-stack/wrapper-build-patched, not packaged or installed by Vapor.",
+    "The stack build is a scratch build under <workspace>/staging-stack/wrapper-build-patched, not packaged or installed by Vapor.",
     "The expected images use the pinned host bcdec decoder as the reference; BC3 differs from the earlier Python-reference receipt by 1 LSB on 194/4096 decoded bytes, as recorded in docs/evidence/2026-10-22-vulkan-wrapper-render-orchestrated.json.",
     "No performance claims; no commit or upstream action was taken."
   ],
   "raw_paths": {
-    "scratch_root": "/Users/cheng/wrapper-render-stack",
+    "scratch_root": "<workspace>/wrapper-render-stack",
     "phase_receipts": {
-      "pinned-4k-encoded": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded.json",
-      "stack-4k-linear": "/Users/cheng/wrapper-render-stack/stack-4k-linear.json",
-      "stack-4k-encoded": "/Users/cheng/wrapper-render-stack/stack-4k-encoded.json",
-      "stack-16k-linear": "/Users/cheng/wrapper-render-stack/stack-16k-linear.json"
+      "pinned-4k-encoded": "<workspace>/wrapper-render-stack/pinned-4k-encoded.json",
+      "stack-4k-linear": "<workspace>/wrapper-render-stack/stack-4k-linear.json",
+      "stack-4k-encoded": "<workspace>/wrapper-render-stack/stack-4k-encoded.json",
+      "stack-16k-linear": "<workspace>/wrapper-render-stack/stack-16k-linear.json"
     },
     "phase_work_directories": {
-      "pinned-4k-encoded": "/Users/cheng/wrapper-render-stack/pinned-4k-encoded",
-      "stack-4k-linear": "/Users/cheng/wrapper-render-stack/stack-4k-linear",
-      "stack-4k-encoded": "/Users/cheng/wrapper-render-stack/stack-4k-encoded",
-      "stack-16k-linear": "/Users/cheng/wrapper-render-stack/stack-16k-linear"
+      "pinned-4k-encoded": "<workspace>/wrapper-render-stack/pinned-4k-encoded",
+      "stack-4k-linear": "<workspace>/wrapper-render-stack/stack-4k-linear",
+      "stack-4k-encoded": "<workspace>/wrapper-render-stack/stack-4k-encoded",
+      "stack-16k-linear": "<workspace>/wrapper-render-stack/stack-16k-linear"
     },
     "host_run_logs": {
       "pinned-4k-encoded": "/tmp/phase1-pinned-4k-encoded.log",
@@ -2572,8 +2572,8 @@
       "stack-4k-encoded": "/tmp/phase3-stack-4k-encoded.log",
       "stack-16k-linear": "/tmp/phase4-stack-16k-linear.log"
     },
-    "staging_stack_build": "/Users/cheng/staging-stack/wrapper-build-patched",
-    "pinned_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build"
+    "staging_stack_build": "<workspace>/staging-stack/wrapper-build-patched",
+    "pinned_build": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build"
   },
   "application": {
     "commits": false,

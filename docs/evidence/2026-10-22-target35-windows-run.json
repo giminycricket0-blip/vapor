@@ -32,7 +32,7 @@
   },
   "methodology_note": "An apparent loss of backslashes in boot_exe (C:windowssystem32notepad.exe) was an adb test-harness artefact: adb passes shell arguments to the device sh, which strips unquoted backslashes. splitCommand, the app quoting and the shim's sh -c exec wrapper were each verified to preserve them. Drive Windows paths through a device-side single-quoted script.",
   "evidence_files": [
-    "/Users/cheng/vapor-scratch/target35-notepad.png"
+    "<workspace>/vapor-scratch/target35-notepad.png"
   ],
   "limitations": [
     "notepad is a Wine built-in; a real Steam game launch needs an account and downloaded content, which is the phone/field gate.",

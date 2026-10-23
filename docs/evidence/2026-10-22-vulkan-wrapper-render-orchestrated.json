@@ -16,17 +16,17 @@
   },
   "fixture": {
     "source": {
-      "path": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-render.c",
+      "path": "<workspace>/vapor/tools/tests/vulkan-wrapper-render.c",
       "bytes": 35822,
       "sha256": "ceefed85f21bf53c2dba74943a9ac5f79d42aca828eadb219b6cb3c40890279a"
     },
     "binary": {
-      "path": "/Users/cheng/wrapper-render-run/bin/vulkan-wrapper-render",
+      "path": "<workspace>/wrapper-render-run/bin/vulkan-wrapper-render",
       "bytes": 225712,
       "sha256": "b3e9facf55695c8aa21ea38c6e94542c33a5aa151c31787fcaf8223b968152e5"
     },
     "build_command": [
-      "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+      "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
       "-std=c11",
       "-O2",
       "-g",
@@ -34,67 +34,67 @@
       "-Wextra",
       "-Werror",
       "-D_GNU_SOURCE",
-      "-I/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/include",
-      "/Users/cheng/vapor/tools/tests/vulkan-wrapper-render.c",
+      "-I<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/include",
+      "<workspace>/vapor/tools/tests/vulkan-wrapper-render.c",
       "-ldl",
       "-Wl,-z,max-page-size=16384",
       "-Wl,-z,common-page-size=16384",
       "-o",
-      "/Users/cheng/wrapper-render-run/bin/vulkan-wrapper-render"
+      "<workspace>/wrapper-render-run/bin/vulkan-wrapper-render"
     ],
     "toolchain": "NDK 27.3.13750724 aarch64-linux-android34-clang, 16 KB max/common page-size flags",
-    "vulkan_headers": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/include"
+    "vulkan_headers": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/include"
   },
   "shaders": {
-    "compiler": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator",
+    "compiler": "<workspace>/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator",
     "compiler_sha256": "18c23a68d6f4a21e822a8dcee212a2a448a66494b8f58aaf1655ef6328543d11",
     "compiler_version": "Glslang Version: 11:16.6.0",
     "target_environment": "vulkan1.2",
     "shaders": {
       "fullscreen.vert": {
         "glsl": {
-          "path": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-render.vert",
+          "path": "<workspace>/vapor/tools/tests/vulkan-wrapper-render.vert",
           "bytes": 219,
           "sha256": "94d7ea6e56c2c9afd64e2676368189a56f88de414b2a2a5480ca200bba85932c"
         },
         "spirv": {
-          "path": "/Users/cheng/wrapper-render-run/shaders/fullscreen.vert.spv",
+          "path": "<workspace>/wrapper-render-run/shaders/fullscreen.vert.spv",
           "bytes": 1232,
           "sha256": "49f744d5dccbda1b556ad26b37f9c160a20a839da371788f5cd3c4abad0a6c55"
         },
-        "command": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator -V --target-env vulkan1.2 -o /Users/cheng/wrapper-render-run/shaders/fullscreen.vert.spv /Users/cheng/vapor/tools/tests/vulkan-wrapper-render.vert"
+        "command": "<workspace>/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator -V --target-env vulkan1.2 -o <workspace>/wrapper-render-run/shaders/fullscreen.vert.spv <workspace>/vapor/tools/tests/vulkan-wrapper-render.vert"
       },
       "sample.frag": {
         "glsl": {
-          "path": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-render.frag",
+          "path": "<workspace>/vapor/tools/tests/vulkan-wrapper-render.frag",
           "bytes": 207,
           "sha256": "087e8bf12f97a654fd29778b0b5d706e3fbf519e1b68c5fad0b09a5d37623bfb"
         },
         "spirv": {
-          "path": "/Users/cheng/wrapper-render-run/shaders/sample.frag.spv",
+          "path": "<workspace>/wrapper-render-run/shaders/sample.frag.spv",
           "bytes": 560,
           "sha256": "ebee06a7e6fd464ca9bd51010c1ac029f571b9dd0c3363e00537ddb5b9f0fdf1"
         },
-        "command": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator -V --target-env vulkan1.2 -o /Users/cheng/wrapper-render-run/shaders/sample.frag.spv /Users/cheng/vapor/tools/tests/vulkan-wrapper-render.frag"
+        "command": "<workspace>/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin/glslangValidator -V --target-env vulkan1.2 -o <workspace>/wrapper-render-run/shaders/sample.frag.spv <workspace>/vapor/tools/tests/vulkan-wrapper-render.frag"
       }
     }
   },
   "host_reference": {
     "bcdec": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.h",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.h",
       "sha256": "8c972cdebba2c799d8d7478fc676be6d89a95294f012985a4253d80e82d0785d",
       "license": "MIT OR Unlicense (bcdec.h alternative A = MIT, alternative B = The Unlicense)",
       "version": "0.98"
     },
     "helper": {
-      "source": "/Users/cheng/wrapper-render-run/host/bcdec_decode.c",
+      "source": "<workspace>/wrapper-render-run/host/bcdec_decode.c",
       "source_sha256": "73c8ac20f016e5ee1c4f175b5278a6f4a2f3ca860f1365bd8eed0bc50131dc52",
       "binary_sha256": "660ce1de5a7ff10e0368a37d50ebaacfad47dba2ade39d8323b13f40c34d395a",
-      "compile_command": "cc -O2 -std=c11 -I/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper /Users/cheng/wrapper-render-run/host/bcdec_decode.c -o /Users/cheng/wrapper-render-run/host/bcdec_decode",
+      "compile_command": "cc -O2 -std=c11 -I<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper <workspace>/wrapper-render-run/host/bcdec_decode.c -o <workspace>/wrapper-render-run/host/bcdec_decode",
       "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
     },
     "independent_python_reference": {
-      "path": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.py",
+      "path": "<workspace>/vapor/tools/tests/vulkan-wrapper-reference.py",
       "sha256": "2c8786561ba140cbfe4957ba70cffcba46bb9fc6cdcb7db2ed1c564167e5a264",
       "use": "deterministic input generation and a second decoder for the cross-check"
     },
@@ -118,71 +118,71 @@
   "inputs": {
     "generated": {
       "bc1": {
-        "path": "/Users/cheng/wrapper-render-run/input/bc1-32x32.bin",
+        "path": "<workspace>/wrapper-render-run/input/bc1-32x32.bin",
         "bytes": 512,
         "sha256": "294cb01a523693ddb55d1685f88467d3c673cd1cc031e52ee8328da36bc8d8ec"
       },
       "bc3": {
-        "path": "/Users/cheng/wrapper-render-run/input/bc3-32x32.bin",
+        "path": "<workspace>/wrapper-render-run/input/bc3-32x32.bin",
         "bytes": 1024,
         "sha256": "0f013cd8f74087f5901c14bc4f9247759f6cbb94175a488859511458fa9978ae"
       },
       "rgba8": {
-        "path": "/Users/cheng/wrapper-render-run/input/rgba8-32x32.bin",
+        "path": "<workspace>/wrapper-render-run/input/rgba8-32x32.bin",
         "bytes": 4096,
         "sha256": "173f4ab4d9c93e38881ba4b548eefaebf9be2b917814821d14662c7a061fa83e"
       }
     },
     "decoded": {
       "bc1": {
-        "path": "/Users/cheng/wrapper-render-run/input/bc1-decoded-32x32.bin",
+        "path": "<workspace>/wrapper-render-run/input/bc1-decoded-32x32.bin",
         "bytes": 4096,
         "sha256": "879e64da743e94874ed14abf86018b02ee9dd52e5b4bd89a00757c737f4ecfbb"
       },
       "bc3": {
-        "path": "/Users/cheng/wrapper-render-run/input/bc3-decoded-32x32.bin",
+        "path": "<workspace>/wrapper-render-run/input/bc3-decoded-32x32.bin",
         "bytes": 4096,
         "sha256": "805a52a4c03609f21be48811febf1f7c6d39c5f6e7ae62ae0916fdd411ed2b98"
       }
     },
     "expected": {
       "bc1-expected-unorm-64x64.bin": {
-        "path": "/Users/cheng/wrapper-render-run/input/bc1-expected-unorm-64x64.bin",
+        "path": "<workspace>/wrapper-render-run/input/bc1-expected-unorm-64x64.bin",
         "bytes": 16384,
         "sha256": "cf4613501743e50a0912bb1cd861bf2df71de480911c9643ec1466dadec5648d"
       },
       "bc1-expected-srgb-encoded-64x64.bin": {
-        "path": "/Users/cheng/wrapper-render-run/input/bc1-expected-srgb-encoded-64x64.bin",
+        "path": "<workspace>/wrapper-render-run/input/bc1-expected-srgb-encoded-64x64.bin",
         "bytes": 16384,
         "sha256": "cf4613501743e50a0912bb1cd861bf2df71de480911c9643ec1466dadec5648d"
       },
       "bc1-expected-srgb-linear-64x64.bin": {
-        "path": "/Users/cheng/wrapper-render-run/input/bc1-expected-srgb-linear-64x64.bin",
+        "path": "<workspace>/wrapper-render-run/input/bc1-expected-srgb-linear-64x64.bin",
         "bytes": 16384,
         "sha256": "4d189d5f77a7dae1aaa03a0cd0a00bf345d6e6fe46d19a8898754da7637c944b"
       },
       "bc3-expected-unorm-64x64.bin": {
-        "path": "/Users/cheng/wrapper-render-run/input/bc3-expected-unorm-64x64.bin",
+        "path": "<workspace>/wrapper-render-run/input/bc3-expected-unorm-64x64.bin",
         "bytes": 16384,
         "sha256": "7b70d696e84cfb79806532050f694035b76791d9f58d2574c46719c0e8e36814"
       },
       "bc3-expected-srgb-encoded-64x64.bin": {
-        "path": "/Users/cheng/wrapper-render-run/input/bc3-expected-srgb-encoded-64x64.bin",
+        "path": "<workspace>/wrapper-render-run/input/bc3-expected-srgb-encoded-64x64.bin",
         "bytes": 16384,
         "sha256": "7b70d696e84cfb79806532050f694035b76791d9f58d2574c46719c0e8e36814"
       },
       "bc3-expected-srgb-linear-64x64.bin": {
-        "path": "/Users/cheng/wrapper-render-run/input/bc3-expected-srgb-linear-64x64.bin",
+        "path": "<workspace>/wrapper-render-run/input/bc3-expected-srgb-linear-64x64.bin",
         "bytes": 16384,
         "sha256": "5f1d3aa632f301e6e9196b0bfdd097be4b29299eedac5323f9bd45c3272c3c8e"
       },
       "rgba8-expected-unorm-64x64.bin": {
-        "path": "/Users/cheng/wrapper-render-run/input/rgba8-expected-unorm-64x64.bin",
+        "path": "<workspace>/wrapper-render-run/input/rgba8-expected-unorm-64x64.bin",
         "bytes": 16384,
         "sha256": "b2fd8a58682c7a922bd7ebd9621dcd17632f24a42984cfbf851d3442dc268317"
       },
       "rgba8-expected-srgb-encoded-64x64.bin": {
-        "path": "/Users/cheng/wrapper-render-run/input/rgba8-expected-srgb-encoded-64x64.bin",
+        "path": "<workspace>/wrapper-render-run/input/rgba8-expected-srgb-encoded-64x64.bin",
         "bytes": 16384,
         "sha256": "b2fd8a58682c7a922bd7ebd9621dcd17632f24a42984cfbf851d3442dc268317"
       }
@@ -210,7 +210,7 @@
     "serial": "emulator-5560",
     "port": 5560,
     "launch_command": [
-      "/Users/cheng/Library/Android/sdk/emulator/emulator",
+      "<workspace>/Library/Android/sdk/emulator/emulator",
       "-avd",
       "VaporProbe36C",
       "-port",
@@ -233,7 +233,7 @@
       "fallback": true,
       "state": "device"
     },
-    "log": "/Users/cheng/wrapper-render-run/logs/emulator.log",
+    "log": "<workspace>/wrapper-render-run/logs/emulator.log",
     "device_facts": {
       "PAGE_SIZE": "4096",
       "BOOT_COMPLETED": "",
@@ -1756,7 +1756,7 @@
     }
   },
   "salvaged_comparison": {
-    "salvaged_receipt": "/Users/cheng/vapor/docs/evidence/2026-10-22-vulkan-wrapper-render-pipeline.json",
+    "salvaged_receipt": "<workspace>/vapor/docs/evidence/2026-10-22-vulkan-wrapper-render-pipeline.json",
     "expectations": [
       {
         "expectation": "31 unique cases, 0 aliases",
@@ -1824,14 +1824,14 @@
     "No performance claims"
   ],
   "raw_artifacts": {
-    "evidence_directory": "/Users/cheng/wrapper-render-run",
-    "input": "/Users/cheng/wrapper-render-run/input",
-    "output": "/Users/cheng/wrapper-render-run/output",
-    "logs": "/Users/cheng/wrapper-render-run/logs",
-    "shaders": "/Users/cheng/wrapper-render-run/shaders",
-    "stage": "/Users/cheng/wrapper-render-run/stage",
-    "host_reference": "/Users/cheng/wrapper-render-run/host",
-    "emulator_log": "/Users/cheng/wrapper-render-run/logs/emulator.log"
+    "evidence_directory": "<workspace>/wrapper-render-run",
+    "input": "<workspace>/wrapper-render-run/input",
+    "output": "<workspace>/wrapper-render-run/output",
+    "logs": "<workspace>/wrapper-render-run/logs",
+    "shaders": "<workspace>/wrapper-render-run/shaders",
+    "stage": "<workspace>/wrapper-render-run/stage",
+    "host_reference": "<workspace>/wrapper-render-run/host",
+    "emulator_log": "<workspace>/wrapper-render-run/logs/emulator.log"
   },
   "application": {
     "commits": false,

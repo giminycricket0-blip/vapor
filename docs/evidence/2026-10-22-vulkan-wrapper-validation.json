@@ -6,9 +6,9 @@
     "fixture_source": "tools/tests/vulkan-wrapper-validation.c",
     "runner": "tools/tests/vulkan-wrapper-validation.py",
     "fixture_build": {
-      "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+      "compiler": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
       "command": [
-        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+        "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
         "-std=c11",
         "-O2",
         "-g",
@@ -16,16 +16,16 @@
         "-Wextra",
         "-Werror",
         "-D_GNU_SOURCE",
-        "/Users/cheng/vapor/tools/tests/vulkan-wrapper-validation.c",
+        "<workspace>/vapor/tools/tests/vulkan-wrapper-validation.c",
         "-ldl",
         "-Wl,-z,max-page-size=16384",
         "-Wl,-z,common-page-size=16384",
         "-o",
-        "/Users/cheng/wrapper-validation/bin/validation-probe"
+        "<workspace>/wrapper-validation/bin/validation-probe"
       ],
       "source": "tools/tests/vulkan-wrapper-validation.c",
       "source_sha256": "4545d29f113b3d8ffac25b506d6a72e402144417defbd099a7f5c4f671634a62",
-      "binary": "/Users/cheng/wrapper-validation/bin/validation-probe",
+      "binary": "<workspace>/wrapper-validation/bin/validation-probe",
       "binary_sha256": "cb4e028adc84c0fb1fc39d41115e1070b5908e4b82c12d7fd4c7dd9cf7b89ee7",
       "binary_bytes": 175344,
       "elf_max_load_align": 16384,
@@ -44,11 +44,11 @@
       "library_sha256": "db7447027e28db95584e9fde8a57cc1f28c2dd09defcbe2f2b76ee2bbc65bf09"
     },
     "wrapper_build": {
-      "path": "/Users/cheng/staging-teardown/wrapper-build-patched",
+      "path": "<workspace>/staging-teardown/wrapper-build-patched",
       "wrapper_file": "candidate-stripped.so",
       "wrapper_sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410",
       "wrapper_bytes": 10705088,
-      "aux_dir": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe",
+      "aux_dir": "<workspace>/staging-teardown/wrapper-build-patched/native-probe",
       "aux_fallback_to_pinned_build": false,
       "pinned_hash_match": false,
       "hashes_match_pinned": false,
@@ -66,97 +66,97 @@
       "ab_base_section": "below_wrapper_use_vvl",
       "staged_files": {
         "validation-probe": {
-          "source": "/Users/cheng/wrapper-validation/bin/validation-probe",
+          "source": "<workspace>/wrapper-validation/bin/validation-probe",
           "bytes": 175344,
           "sha256": "cb4e028adc84c0fb1fc39d41115e1070b5908e4b82c12d7fd4c7dd9cf7b89ee7"
         },
         "candidate-stripped.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/candidate-stripped.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/candidate-stripped.so",
           "bytes": 10705088,
           "sha256": "9818b00e141ccd35bc8882212d26d2dc6b39a5693d9d7b6ad5b4b3065e129410"
         },
         "libadrenotools.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libadrenotools.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libadrenotools.so",
           "bytes": 47760,
           "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c"
         },
         "libandroid-shmem.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libandroid-shmem.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libandroid-shmem.so",
           "bytes": 14432,
           "sha256": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731"
         },
         "libc++_shared.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libc++_shared.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libc++_shared.so",
           "bytes": 1794776,
           "sha256": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708"
         },
         "libz.so.1": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libz.so.1",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libz.so.1",
           "bytes": 72880,
           "sha256": "c47748ed4b6ca6a2ecd664bab04795f3493956ab1f5cddc4ba0efa737ef3b711"
         },
         "libzstd.so.1": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libzstd.so.1",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libzstd.so.1",
           "bytes": 820840,
           "sha256": "1677d5e828c1839f111f0261697c08f99a5e4e80434659ab88e5ff859a1374f7"
         },
         "libxcb.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb.so",
           "bytes": 136584,
           "sha256": "13d59f33b51765e4d1444cad3f7f949ccf60a9bd34e53bdbe10cfcd787fda14c"
         },
         "libX11-xcb.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libX11-xcb.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libX11-xcb.so",
           "bytes": 3976,
           "sha256": "6368a55a652527addf7af769b53d16ebd5aa5986a97deb550f212bdfa8315819"
         },
         "libxcb-dri3.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-dri3.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-dri3.so",
           "bytes": 14680,
           "sha256": "46a0bcdb74795fafcf62181439bb62d69568f0c6c0c652655002923dd02178a8"
         },
         "libxcb-present.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-present.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-present.so",
           "bytes": 9976,
           "sha256": "3914002f479e29cb9796045de542b091cd592e2347ec84272da3bbce57326c07"
         },
         "libxcb-sync.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-sync.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-sync.so",
           "bytes": 22224,
           "sha256": "3940e8236e0ead4696e2f09c4d297fa629cca0859243b73d33fcf11535e335ba"
         },
         "libxcb-randr.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-randr.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-randr.so",
           "bytes": 53896,
           "sha256": "0c2bfe3c4c8150a913bc7a24bdbeca6d379a388de9f50228bd746d0bf14c6c0e"
         },
         "libxcb-shm.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-shm.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-shm.so",
           "bytes": 9368,
           "sha256": "dbd474ea05afb27c33269aa1cf26a62edc08e7fb79a2f8459aebc4cb370cf1bb"
         },
         "libdrm.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libdrm.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libdrm.so",
           "bytes": 75792,
           "sha256": "1394274be3dd43f07429b10ca28aded82c7f2d84906ed7084827d27ca10f0dbf"
         },
         "libXau.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libXau.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libXau.so",
           "bytes": 9904,
           "sha256": "e820c412bac544d28d4288f50f7b6dee046e2f32cc7cfc82e203c642fbaa42bf"
         },
         "libXdmcp.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libXdmcp.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libXdmcp.so",
           "bytes": 18920,
           "sha256": "fca2b4d37620a90b9e97ff5ef24b4b7f438fcce6a837db152705348c95379ef8"
         },
         "libandroid-support.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libandroid-support.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libandroid-support.so",
           "bytes": 20736,
           "sha256": "739cf829511d71dafd6c67fdbb70f3f0c6048642ea2e1967790ee961fde14430"
         },
         "libVkLayer_khronos_validation.so": {
-          "source": "/Users/cheng/wrapper-validation/android-binaries-1.4.363.0/arm64-v8a/libVkLayer_khronos_validation.so",
+          "source": "<workspace>/wrapper-validation/android-binaries-1.4.363.0/arm64-v8a/libVkLayer_khronos_validation.so",
           "bytes": 27684688,
           "sha256": "db7447027e28db95584e9fde8a57cc1f28c2dd09defcbe2f2b76ee2bbc65bf09"
         }
@@ -212,7 +212,7 @@
     "boot": {
       "booted_by_this_tool_in_earlier_invocation": true,
       "boot_command": [
-        "/Users/cheng/Library/Android/sdk/emulator/emulator",
+        "<workspace>/Library/Android/sdk/emulator/emulator",
         "-avd",
         "VaporProbe36D",
         "-port",
@@ -229,7 +229,7 @@
         "-cores",
         "2"
       ],
-      "boot_log": "/Users/cheng/wrapper-validation/logs/emulator-boot.log",
+      "boot_log": "<workspace>/wrapper-validation/logs/emulator-boot.log",
       "boot_date_local": "2026-10-22",
       "first_adb_device_state_online": "approximately 06:10 Europe/Lisbon",
       "runner_boot_window_expired": "06:15:34 (300 s window at that time; later default raised to 900 s)",
@@ -255,7 +255,7 @@
       },
       "remote_staging_removed_by_runner": true,
       "remote_staging_path": "/data/local/tmp/vapor-wrapper-validation-20261022 and /data/local/tmp/VkLayer_khronos_validation.{json,so}",
-      "local_scratch_kept": "/Users/cheng/wrapper-validation (release archive/source, fixture binary, per-run logs)",
+      "local_scratch_kept": "<workspace>/wrapper-validation (release archive/source, fixture binary, per-run logs)",
       "repo_writes": [
         "tools/tests/vulkan-wrapper-validation.c",
         "tools/tests/vulkan-wrapper-validation.py",
@@ -320,7 +320,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": false,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-chained-bc1-compute.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/wrapper-chained-bc1-compute.log"
     },
     {
       "name": "wrapper-chained-bc1-view",
@@ -377,7 +377,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": false,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-chained-bc1-view.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/wrapper-chained-bc1-view.log"
     },
     {
       "name": "wrapper-chained-bc3",
@@ -434,7 +434,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": false,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-chained-bc3.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/wrapper-chained-bc3.log"
     },
     {
       "name": "wrapper-chained-cpu",
@@ -487,7 +487,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": false,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-chained-cpu.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/wrapper-chained-cpu.log"
     },
     {
       "name": "wrapper-chained-bc1-multi",
@@ -538,7 +538,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": false,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-chained-bc1-multi.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/wrapper-chained-bc1-multi.log"
     },
     {
       "name": "wrapper-chained-caps",
@@ -583,7 +583,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": false,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-chained-caps.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/wrapper-chained-caps.log"
     },
     {
       "name": "wrapper-chained-vuid",
@@ -646,7 +646,7 @@
       "expected_vuid_seen": true,
       "expect_no_messages": false,
       "positive_control": true,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-chained-vuid.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/wrapper-chained-vuid.log"
     },
     {
       "name": "wrapper-direct-bc1",
@@ -696,7 +696,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": false,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-direct-bc1.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/wrapper-direct-bc1.log"
     },
     {
       "name": "wrapper-direct-vuid",
@@ -737,7 +737,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": true,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-direct-vuid.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/wrapper-direct-vuid.log"
     },
     {
       "name": "system-chained-bc1-native",
@@ -792,7 +792,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": false,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/system-chained-bc1-native.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/system-chained-bc1-native.log"
     },
     {
       "name": "system-chained-rgba",
@@ -847,7 +847,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": false,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/system-chained-rgba.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/system-chained-rgba.log"
     },
     {
       "name": "system-chained-caps",
@@ -892,7 +892,7 @@
       "expected_vuid_seen": null,
       "expect_no_messages": false,
       "positive_control": false,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/system-chained-caps.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/system-chained-caps.log"
     },
     {
       "name": "system-chained-vuid",
@@ -955,7 +955,7 @@
       "expected_vuid_seen": true,
       "expect_no_messages": false,
       "positive_control": true,
-      "capture_path": "/Users/cheng/wrapper-validation/logs/system-chained-vuid.log"
+      "capture_path": "<workspace>/wrapper-validation/logs/system-chained-vuid.log"
     }
   ],
   "vuid_table": [
@@ -1024,8 +1024,8 @@
     }
   },
   "raw_scratch": {
-    "path": "/Users/cheng/wrapper-validation",
-    "per_run_logs": "/Users/cheng/wrapper-validation/logs",
+    "path": "<workspace>/wrapper-validation",
+    "per_run_logs": "<workspace>/wrapper-validation/logs",
     "notes": "run-chain.log (first above-wrapper attempt), run-chain2.log (above-wrapper control matrix), run-usevvl.log (unpatched below-wrapper matrix), run-ab-interim.log (interim patched A/B), run-ab-final.log (final patched A/B), emulator-boot.log, logs/ per-run captures: unpatched logs/wrapper-usevvl-*.log were overwritten by the interim patched run before prefixes were used (parsed tables preserved in receipt); interim captures logs/patched-interim-*.log; final captures logs/patched-final-*.log."
   },
   "limitations": [
@@ -1168,7 +1168,7 @@
     "wrapper": {
       "repository": "https://github.com/leegao/bionic-vulkan-wrapper",
       "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
-      "candidate_reviewed_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+      "candidate_reviewed_build": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
       "candidate_stripped_sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
       "hashes_match_pinned": true
     },
@@ -1188,9 +1188,9 @@
       "binary_sha256": "cb4e028adc84c0fb1fc39d41115e1070b5908e4b82c12d7fd4c7dd9cf7b89ee7",
       "binary_bytes": 175344,
       "elf_max_load_align": 16384,
-      "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+      "compiler": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
       "compile_command": [
-        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+        "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
         "-std=c11",
         "-O2",
         "-g",
@@ -1198,12 +1198,12 @@
         "-Wextra",
         "-Werror",
         "-D_GNU_SOURCE",
-        "/Users/cheng/vapor/tools/tests/vulkan-wrapper-validation.c",
+        "<workspace>/vapor/tools/tests/vulkan-wrapper-validation.c",
         "-ldl",
         "-Wl,-z,max-page-size=16384",
         "-Wl,-z,common-page-size=16384",
         "-o",
-        "/Users/cheng/wrapper-validation/bin/validation-probe"
+        "<workspace>/wrapper-validation/bin/validation-probe"
       ],
       "page_size_link_flags": [
         "-Wl,-z,max-page-size=16384",
@@ -1523,7 +1523,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": true,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-usevvl-nolayer.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/wrapper-usevvl-nolayer.log"
       },
       {
         "name": "wrapper-usevvl-bc1-compute",
@@ -1684,7 +1684,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-usevvl-bc1-compute.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/wrapper-usevvl-bc1-compute.log"
       },
       {
         "name": "wrapper-usevvl-bc1-view",
@@ -1832,7 +1832,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-usevvl-bc1-view.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/wrapper-usevvl-bc1-view.log"
       },
       {
         "name": "wrapper-usevvl-bc3",
@@ -1980,7 +1980,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-usevvl-bc3.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/wrapper-usevvl-bc3.log"
       },
       {
         "name": "wrapper-usevvl-cpu",
@@ -2175,7 +2175,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-usevvl-cpu.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/wrapper-usevvl-cpu.log"
       },
       {
         "name": "wrapper-usevvl-bc1-multi",
@@ -2317,7 +2317,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-usevvl-bc1-multi.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/wrapper-usevvl-bc1-multi.log"
       },
       {
         "name": "wrapper-usevvl-vuid",
@@ -2452,7 +2452,7 @@
         "expected_vuid_seen": true,
         "expect_no_messages": false,
         "positive_control": true,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-usevvl-vuid.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/wrapper-usevvl-vuid.log"
       },
       {
         "name": "wrapper-usevvl-caps",
@@ -2588,7 +2588,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/wrapper-usevvl-caps.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/wrapper-usevvl-caps.log"
       }
     ],
     "vuid_table": [
@@ -2978,102 +2978,102 @@
       "route": "wrapper's built-in USE_VVL path (wrapper_instance.c:70-72,372-399) + graphics_env_hooks.cpp:12,15-77",
       "below_layer_loaded": true,
       "wrapper_build": {
-        "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+        "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
         "candidate_stripped_sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
         "hashes_match_pinned": true,
         "staged_files": {
           "validation-probe": {
-            "source": "/Users/cheng/wrapper-validation/bin/validation-probe",
+            "source": "<workspace>/wrapper-validation/bin/validation-probe",
             "bytes": 175344,
             "sha256": "cb4e028adc84c0fb1fc39d41115e1070b5908e4b82c12d7fd4c7dd9cf7b89ee7"
           },
           "candidate-stripped.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
             "bytes": 10699464,
             "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506"
           },
           "libadrenotools.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libadrenotools.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libadrenotools.so",
             "bytes": 47760,
             "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c"
           },
           "libandroid-shmem.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libandroid-shmem.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libandroid-shmem.so",
             "bytes": 14432,
             "sha256": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731"
           },
           "libc++_shared.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libc++_shared.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libc++_shared.so",
             "bytes": 1794776,
             "sha256": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708"
           },
           "libz.so.1": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libz.so.1",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libz.so.1",
             "bytes": 72880,
             "sha256": "c47748ed4b6ca6a2ecd664bab04795f3493956ab1f5cddc4ba0efa737ef3b711"
           },
           "libzstd.so.1": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libzstd.so.1",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libzstd.so.1",
             "bytes": 820840,
             "sha256": "1677d5e828c1839f111f0261697c08f99a5e4e80434659ab88e5ff859a1374f7"
           },
           "libxcb.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb.so",
             "bytes": 136584,
             "sha256": "13d59f33b51765e4d1444cad3f7f949ccf60a9bd34e53bdbe10cfcd787fda14c"
           },
           "libX11-xcb.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libX11-xcb.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libX11-xcb.so",
             "bytes": 3976,
             "sha256": "6368a55a652527addf7af769b53d16ebd5aa5986a97deb550f212bdfa8315819"
           },
           "libxcb-dri3.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-dri3.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-dri3.so",
             "bytes": 14680,
             "sha256": "46a0bcdb74795fafcf62181439bb62d69568f0c6c0c652655002923dd02178a8"
           },
           "libxcb-present.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-present.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-present.so",
             "bytes": 9976,
             "sha256": "3914002f479e29cb9796045de542b091cd592e2347ec84272da3bbce57326c07"
           },
           "libxcb-sync.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-sync.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-sync.so",
             "bytes": 22224,
             "sha256": "3940e8236e0ead4696e2f09c4d297fa629cca0859243b73d33fcf11535e335ba"
           },
           "libxcb-randr.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-randr.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-randr.so",
             "bytes": 53896,
             "sha256": "0c2bfe3c4c8150a913bc7a24bdbeca6d379a388de9f50228bd746d0bf14c6c0e"
           },
           "libxcb-shm.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-shm.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-shm.so",
             "bytes": 9368,
             "sha256": "dbd474ea05afb27c33269aa1cf26a62edc08e7fb79a2f8459aebc4cb370cf1bb"
           },
           "libdrm.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libdrm.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libdrm.so",
             "bytes": 75792,
             "sha256": "1394274be3dd43f07429b10ca28aded82c7f2d84906ed7084827d27ca10f0dbf"
           },
           "libXau.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libXau.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libXau.so",
             "bytes": 9904,
             "sha256": "e820c412bac544d28d4288f50f7b6dee046e2f32cc7cfc82e203c642fbaa42bf"
           },
           "libXdmcp.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libXdmcp.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libXdmcp.so",
             "bytes": 18920,
             "sha256": "fca2b4d37620a90b9e97ff5ef24b4b7f438fcce6a837db152705348c95379ef8"
           },
           "libandroid-support.so": {
-            "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libandroid-support.so",
+            "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libandroid-support.so",
             "bytes": 20736,
             "sha256": "739cf829511d71dafd6c67fdbb70f3f0c6048642ea2e1967790ee961fde14430"
           },
           "libVkLayer_khronos_validation.so": {
-            "source": "/Users/cheng/wrapper-validation/android-binaries-1.4.363.0/arm64-v8a/libVkLayer_khronos_validation.so",
+            "source": "<workspace>/wrapper-validation/android-binaries-1.4.363.0/arm64-v8a/libVkLayer_khronos_validation.so",
             "bytes": 27684688,
             "sha256": "db7447027e28db95584e9fde8a57cc1f28c2dd09defcbe2f2b76ee2bbc65bf09"
           }
@@ -3188,7 +3188,7 @@
       "boot": {
         "booted_by_tool_this_run": true,
         "boot_command": [
-          "/Users/cheng/Library/Android/sdk/emulator/emulator",
+          "<workspace>/Library/Android/sdk/emulator/emulator",
           "-avd",
           "VaporProbe36D",
           "-port",
@@ -3221,8 +3221,8 @@
       "wrapper": {
         "repository": "https://github.com/leegao/bionic-vulkan-wrapper",
         "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
-        "candidate_reviewed_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
-        "build_under_test": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+        "candidate_reviewed_build": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+        "build_under_test": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
         "build_under_test_wrapper_file": null,
         "build_under_test_sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
         "candidate_stripped_sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
@@ -3246,9 +3246,9 @@
         "binary_sha256": "cb4e028adc84c0fb1fc39d41115e1070b5908e4b82c12d7fd4c7dd9cf7b89ee7",
         "binary_bytes": 175344,
         "elf_max_load_align": 16384,
-        "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+        "compiler": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
         "compile_command": [
-          "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+          "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
           "-std=c11",
           "-O2",
           "-g",
@@ -3256,12 +3256,12 @@
           "-Wextra",
           "-Werror",
           "-D_GNU_SOURCE",
-          "/Users/cheng/vapor/tools/tests/vulkan-wrapper-validation.c",
+          "<workspace>/vapor/tools/tests/vulkan-wrapper-validation.c",
           "-ldl",
           "-Wl,-z,max-page-size=16384",
           "-Wl,-z,common-page-size=16384",
           "-o",
-          "/Users/cheng/wrapper-validation/bin/validation-probe"
+          "<workspace>/wrapper-validation/bin/validation-probe"
         ],
         "page_size_link_flags": [
           "-Wl,-z,max-page-size=16384",
@@ -3275,8 +3275,8 @@
       "vvl_source_tarball_sha256": "36720627913a591ae8ffc0f24b3c04f98af65242c9b7215d1944a85ff5b70e00"
     },
     "raw_scratch": {
-      "path": "/Users/cheng/wrapper-validation",
-      "per_run_logs": "/Users/cheng/wrapper-validation/logs",
+      "path": "<workspace>/wrapper-validation",
+      "per_run_logs": "<workspace>/wrapper-validation/logs",
       "notes": "run-chain.log (first above-wrapper attempt), run-chain2.log (above-wrapper control matrix), run-usevvl.log (below-wrapper USE_VVL matrix), emulator-boot.log, logs/ per-run captures (wrapper-usevvl-*.log for the below-wrapper pass), logs/superseded-first-attempt/."
     },
     "findings": [
@@ -3623,11 +3623,11 @@
     "status": "executed",
     "section_name": "below_wrapper_use_vvl_patched",
     "wrapper_build": {
-      "path": "/Users/cheng/staging-teardown/wrapper-build-patched",
+      "path": "<workspace>/staging-teardown/wrapper-build-patched",
       "wrapper_file": "candidate-stripped.so",
       "wrapper_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
       "wrapper_bytes": 10706096,
-      "aux_dir": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe",
+      "aux_dir": "<workspace>/staging-teardown/wrapper-build-patched/native-probe",
       "aux_fallback_to_pinned_build": false,
       "pinned_hash_match": false,
       "hashes_match_pinned": false,
@@ -3645,97 +3645,97 @@
       "ab_base_section": "below_wrapper_use_vvl",
       "staged_files": {
         "validation-probe": {
-          "source": "/Users/cheng/wrapper-validation/bin/validation-probe",
+          "source": "<workspace>/wrapper-validation/bin/validation-probe",
           "bytes": 175344,
           "sha256": "cb4e028adc84c0fb1fc39d41115e1070b5908e4b82c12d7fd4c7dd9cf7b89ee7"
         },
         "candidate-stripped.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/candidate-stripped.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/candidate-stripped.so",
           "bytes": 10706096,
           "sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d"
         },
         "libadrenotools.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libadrenotools.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libadrenotools.so",
           "bytes": 47760,
           "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c"
         },
         "libandroid-shmem.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libandroid-shmem.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libandroid-shmem.so",
           "bytes": 14432,
           "sha256": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731"
         },
         "libc++_shared.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libc++_shared.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libc++_shared.so",
           "bytes": 1794776,
           "sha256": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708"
         },
         "libz.so.1": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libz.so.1",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libz.so.1",
           "bytes": 72880,
           "sha256": "c47748ed4b6ca6a2ecd664bab04795f3493956ab1f5cddc4ba0efa737ef3b711"
         },
         "libzstd.so.1": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libzstd.so.1",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libzstd.so.1",
           "bytes": 820840,
           "sha256": "1677d5e828c1839f111f0261697c08f99a5e4e80434659ab88e5ff859a1374f7"
         },
         "libxcb.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb.so",
           "bytes": 136584,
           "sha256": "13d59f33b51765e4d1444cad3f7f949ccf60a9bd34e53bdbe10cfcd787fda14c"
         },
         "libX11-xcb.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libX11-xcb.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libX11-xcb.so",
           "bytes": 3976,
           "sha256": "6368a55a652527addf7af769b53d16ebd5aa5986a97deb550f212bdfa8315819"
         },
         "libxcb-dri3.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-dri3.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-dri3.so",
           "bytes": 14680,
           "sha256": "46a0bcdb74795fafcf62181439bb62d69568f0c6c0c652655002923dd02178a8"
         },
         "libxcb-present.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-present.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-present.so",
           "bytes": 9976,
           "sha256": "3914002f479e29cb9796045de542b091cd592e2347ec84272da3bbce57326c07"
         },
         "libxcb-sync.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-sync.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-sync.so",
           "bytes": 22224,
           "sha256": "3940e8236e0ead4696e2f09c4d297fa629cca0859243b73d33fcf11535e335ba"
         },
         "libxcb-randr.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-randr.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-randr.so",
           "bytes": 53896,
           "sha256": "0c2bfe3c4c8150a913bc7a24bdbeca6d379a388de9f50228bd746d0bf14c6c0e"
         },
         "libxcb-shm.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-shm.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-shm.so",
           "bytes": 9368,
           "sha256": "dbd474ea05afb27c33269aa1cf26a62edc08e7fb79a2f8459aebc4cb370cf1bb"
         },
         "libdrm.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libdrm.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libdrm.so",
           "bytes": 75792,
           "sha256": "1394274be3dd43f07429b10ca28aded82c7f2d84906ed7084827d27ca10f0dbf"
         },
         "libXau.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libXau.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libXau.so",
           "bytes": 9904,
           "sha256": "e820c412bac544d28d4288f50f7b6dee046e2f32cc7cfc82e203c642fbaa42bf"
         },
         "libXdmcp.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libXdmcp.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libXdmcp.so",
           "bytes": 18920,
           "sha256": "fca2b4d37620a90b9e97ff5ef24b4b7f438fcce6a837db152705348c95379ef8"
         },
         "libandroid-support.so": {
-          "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libandroid-support.so",
+          "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libandroid-support.so",
           "bytes": 20736,
           "sha256": "739cf829511d71dafd6c67fdbb70f3f0c6048642ea2e1967790ee961fde14430"
         },
         "libVkLayer_khronos_validation.so": {
-          "source": "/Users/cheng/wrapper-validation/android-binaries-1.4.363.0/arm64-v8a/libVkLayer_khronos_validation.so",
+          "source": "<workspace>/wrapper-validation/android-binaries-1.4.363.0/arm64-v8a/libVkLayer_khronos_validation.so",
           "bytes": 27684688,
           "sha256": "db7447027e28db95584e9fde8a57cc1f28c2dd09defcbe2f2b76ee2bbc65bf09"
         }
@@ -3831,7 +3831,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": true,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-nolayer.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/patched-final-wrapper-usevvl-nolayer.log"
       },
       {
         "name": "patched-final-wrapper-usevvl-bc1-compute",
@@ -3990,7 +3990,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-bc1-compute.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/patched-final-wrapper-usevvl-bc1-compute.log"
       },
       {
         "name": "patched-final-wrapper-usevvl-bc1-view",
@@ -4136,7 +4136,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-bc1-view.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/patched-final-wrapper-usevvl-bc1-view.log"
       },
       {
         "name": "patched-final-wrapper-usevvl-bc3",
@@ -4282,7 +4282,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-bc3.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/patched-final-wrapper-usevvl-bc3.log"
       },
       {
         "name": "patched-final-wrapper-usevvl-cpu",
@@ -4424,7 +4424,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-cpu.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/patched-final-wrapper-usevvl-cpu.log"
       },
       {
         "name": "patched-final-wrapper-usevvl-bc1-multi",
@@ -4564,7 +4564,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-bc1-multi.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/patched-final-wrapper-usevvl-bc1-multi.log"
       },
       {
         "name": "patched-final-wrapper-usevvl-vuid",
@@ -4697,7 +4697,7 @@
         "expected_vuid_seen": true,
         "expect_no_messages": false,
         "positive_control": true,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-vuid.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/patched-final-wrapper-usevvl-vuid.log"
       },
       {
         "name": "patched-final-wrapper-usevvl-caps",
@@ -4831,7 +4831,7 @@
         "expected_vuid_seen": null,
         "expect_no_messages": false,
         "positive_control": false,
-        "capture_path": "/Users/cheng/wrapper-validation/logs/patched-final-wrapper-usevvl-caps.log"
+        "capture_path": "<workspace>/wrapper-validation/logs/patched-final-wrapper-usevvl-caps.log"
       }
     ],
     "vuid_table": [
@@ -5208,11 +5208,11 @@
       "route": "wrapper's built-in USE_VVL path (wrapper_instance.c:70-72,372-399) + graphics_env_hooks.cpp:12,15-77",
       "below_layer_loaded": true,
       "wrapper_build": {
-        "path": "/Users/cheng/staging-teardown/wrapper-build-patched",
+        "path": "<workspace>/staging-teardown/wrapper-build-patched",
         "wrapper_file": "candidate-stripped.so",
         "wrapper_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
         "wrapper_bytes": 10706096,
-        "aux_dir": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe",
+        "aux_dir": "<workspace>/staging-teardown/wrapper-build-patched/native-probe",
         "aux_fallback_to_pinned_build": false,
         "pinned_hash_match": false,
         "hashes_match_pinned": false,
@@ -5230,97 +5230,97 @@
         "ab_base_section": "below_wrapper_use_vvl",
         "staged_files": {
           "validation-probe": {
-            "source": "/Users/cheng/wrapper-validation/bin/validation-probe",
+            "source": "<workspace>/wrapper-validation/bin/validation-probe",
             "bytes": 175344,
             "sha256": "cb4e028adc84c0fb1fc39d41115e1070b5908e4b82c12d7fd4c7dd9cf7b89ee7"
           },
           "candidate-stripped.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/candidate-stripped.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/candidate-stripped.so",
             "bytes": 10706096,
             "sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d"
           },
           "libadrenotools.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libadrenotools.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libadrenotools.so",
             "bytes": 47760,
             "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c"
           },
           "libandroid-shmem.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libandroid-shmem.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libandroid-shmem.so",
             "bytes": 14432,
             "sha256": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731"
           },
           "libc++_shared.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libc++_shared.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libc++_shared.so",
             "bytes": 1794776,
             "sha256": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708"
           },
           "libz.so.1": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libz.so.1",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libz.so.1",
             "bytes": 72880,
             "sha256": "c47748ed4b6ca6a2ecd664bab04795f3493956ab1f5cddc4ba0efa737ef3b711"
           },
           "libzstd.so.1": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libzstd.so.1",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libzstd.so.1",
             "bytes": 820840,
             "sha256": "1677d5e828c1839f111f0261697c08f99a5e4e80434659ab88e5ff859a1374f7"
           },
           "libxcb.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb.so",
             "bytes": 136584,
             "sha256": "13d59f33b51765e4d1444cad3f7f949ccf60a9bd34e53bdbe10cfcd787fda14c"
           },
           "libX11-xcb.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libX11-xcb.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libX11-xcb.so",
             "bytes": 3976,
             "sha256": "6368a55a652527addf7af769b53d16ebd5aa5986a97deb550f212bdfa8315819"
           },
           "libxcb-dri3.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-dri3.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-dri3.so",
             "bytes": 14680,
             "sha256": "46a0bcdb74795fafcf62181439bb62d69568f0c6c0c652655002923dd02178a8"
           },
           "libxcb-present.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-present.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-present.so",
             "bytes": 9976,
             "sha256": "3914002f479e29cb9796045de542b091cd592e2347ec84272da3bbce57326c07"
           },
           "libxcb-sync.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-sync.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-sync.so",
             "bytes": 22224,
             "sha256": "3940e8236e0ead4696e2f09c4d297fa629cca0859243b73d33fcf11535e335ba"
           },
           "libxcb-randr.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-randr.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-randr.so",
             "bytes": 53896,
             "sha256": "0c2bfe3c4c8150a913bc7a24bdbeca6d379a388de9f50228bd746d0bf14c6c0e"
           },
           "libxcb-shm.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libxcb-shm.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libxcb-shm.so",
             "bytes": 9368,
             "sha256": "dbd474ea05afb27c33269aa1cf26a62edc08e7fb79a2f8459aebc4cb370cf1bb"
           },
           "libdrm.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libdrm.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libdrm.so",
             "bytes": 75792,
             "sha256": "1394274be3dd43f07429b10ca28aded82c7f2d84906ed7084827d27ca10f0dbf"
           },
           "libXau.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libXau.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libXau.so",
             "bytes": 9904,
             "sha256": "e820c412bac544d28d4288f50f7b6dee046e2f32cc7cfc82e203c642fbaa42bf"
           },
           "libXdmcp.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libXdmcp.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libXdmcp.so",
             "bytes": 18920,
             "sha256": "fca2b4d37620a90b9e97ff5ef24b4b7f438fcce6a837db152705348c95379ef8"
           },
           "libandroid-support.so": {
-            "source": "/Users/cheng/staging-teardown/wrapper-build-patched/native-probe/libandroid-support.so",
+            "source": "<workspace>/staging-teardown/wrapper-build-patched/native-probe/libandroid-support.so",
             "bytes": 20736,
             "sha256": "739cf829511d71dafd6c67fdbb70f3f0c6048642ea2e1967790ee961fde14430"
           },
           "libVkLayer_khronos_validation.so": {
-            "source": "/Users/cheng/wrapper-validation/android-binaries-1.4.363.0/arm64-v8a/libVkLayer_khronos_validation.so",
+            "source": "<workspace>/wrapper-validation/android-binaries-1.4.363.0/arm64-v8a/libVkLayer_khronos_validation.so",
             "bytes": 27684688,
             "sha256": "db7447027e28db95584e9fde8a57cc1f28c2dd09defcbe2f2b76ee2bbc65bf09"
           }
@@ -5591,8 +5591,8 @@
       "wrapper": {
         "repository": "https://github.com/leegao/bionic-vulkan-wrapper",
         "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
-        "candidate_reviewed_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
-        "build_under_test": "/Users/cheng/staging-teardown/wrapper-build-patched",
+        "candidate_reviewed_build": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+        "build_under_test": "<workspace>/staging-teardown/wrapper-build-patched",
         "build_under_test_wrapper_file": "candidate-stripped.so",
         "build_under_test_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
         "candidate_stripped_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
@@ -5616,9 +5616,9 @@
         "binary_sha256": "cb4e028adc84c0fb1fc39d41115e1070b5908e4b82c12d7fd4c7dd9cf7b89ee7",
         "binary_bytes": 175344,
         "elf_max_load_align": 16384,
-        "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+        "compiler": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
         "compile_command": [
-          "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+          "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
           "-std=c11",
           "-O2",
           "-g",
@@ -5626,12 +5626,12 @@
           "-Wextra",
           "-Werror",
           "-D_GNU_SOURCE",
-          "/Users/cheng/vapor/tools/tests/vulkan-wrapper-validation.c",
+          "<workspace>/vapor/tools/tests/vulkan-wrapper-validation.c",
           "-ldl",
           "-Wl,-z,max-page-size=16384",
           "-Wl,-z,common-page-size=16384",
           "-o",
-          "/Users/cheng/wrapper-validation/bin/validation-probe"
+          "<workspace>/wrapper-validation/bin/validation-probe"
         ],
         "page_size_link_flags": [
           "-Wl,-z,max-page-size=16384",
@@ -5780,8 +5780,8 @@
       }
     ],
     "raw_scratch": {
-      "path": "/Users/cheng/wrapper-validation",
-      "per_run_logs": "/Users/cheng/wrapper-validation/logs",
+      "path": "<workspace>/wrapper-validation",
+      "per_run_logs": "<workspace>/wrapper-validation/logs",
       "notes": "logs/superseded-first-attempt/ holds the first pre-control system-bc1 capture (superseded by system-chained-bc1-native); run-chain.log / run-chain2.log / run-usevvl.log hold the runner invocations; emulator-boot.log is the AVD boot log."
     },
     "ab_table": {
@@ -5964,7 +5964,7 @@
       "wrapper_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d",
       "wrapper_file": "candidate-stripped.so",
       "wrapper_bytes": 10706096,
-      "staged_json": "/Users/cheng/staging-teardown/wrapper-build-patched/STAGED.json",
+      "staged_json": "<workspace>/staging-teardown/wrapper-build-patched/STAGED.json",
       "staged_json_sha256": "7d1fb8a32b1dc60c4381114d2d3c832d55eb347cf1d914f16f8b278aed409d2c",
       "patch_stack": [
         "srgb-storage.patch",
@@ -6336,14 +6336,14 @@
         "Interim-only result: D1 partially fixed (14 -> 2 leaked VkDeviceMemory, deliberately left to the driver) and D2 fixed/absent with all workloads passing; the final restaged build rerun will replace this as the authoritative patched result, keeping this run as history."
       ],
       "capture_logs": [
-        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-nolayer.log",
-        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-compute.log",
-        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-view.log",
-        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc3.log",
-        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-cpu.log",
-        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-multi.log",
-        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-vuid.log",
-        "/Users/cheng/wrapper-validation/logs/patched-interim-wrapper-usevvl-caps.log"
+        "<workspace>/wrapper-validation/logs/patched-interim-wrapper-usevvl-nolayer.log",
+        "<workspace>/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-compute.log",
+        "<workspace>/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-view.log",
+        "<workspace>/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc3.log",
+        "<workspace>/wrapper-validation/logs/patched-interim-wrapper-usevvl-cpu.log",
+        "<workspace>/wrapper-validation/logs/patched-interim-wrapper-usevvl-bc1-multi.log",
+        "<workspace>/wrapper-validation/logs/patched-interim-wrapper-usevvl-vuid.log",
+        "<workspace>/wrapper-validation/logs/patched-interim-wrapper-usevvl-caps.log"
       ],
       "archived_reason": "superseded by the final restaged patched build (5047e7ca)",
       "superseded_by_final_sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d"

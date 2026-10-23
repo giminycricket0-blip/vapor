@@ -5,7 +5,7 @@
   "part_a_signing_determinism": {
     "purpose": "Check that the packaging steps after the reproducible native build (zipalign + APK signing) are deterministic for the demonstrated APK.",
     "input": {
-      "path": "/Users/cheng/apk-repro-ci/unsigned/buildA-unsigned.apk (derived from the demonstrated byte-identical buildA.apk, sha256 f8cc0b2f\u2026)",
+      "path": "<workspace>/apk-repro-ci/unsigned/buildA-unsigned.apk (derived from the demonstrated byte-identical buildA.apk, sha256 f8cc0b2f\u2026)",
       "sha256": "932bed171e8c90b989efb29d32cd4944ebed279e7996695d36cc4761b581e06e",
       "bytes": 676224674,
       "apksigner_verify": "DOES NOT VERIFY / missing META-INF/MANIFEST.MF (unsigned, as intended)"
@@ -30,7 +30,7 @@
       "certificate_sha256": "7e122c925e37a47696abc9b111ec747872061cb1d686eb7be9880cfafa4a93f1 (Android Debug)",
       "apksigner_verify": "OK, v2 scheme"
     },
-    "older_scratch_runs": "/Users/cheng/apk-repro-ci/out contains prior runs (zipalign pair identical 932bed\u2026, re-sign pairs identical, test-key pair identical 8cd2931d\u2026); the clean re-run above is the recorded result.",
+    "older_scratch_runs": "<workspace>/apk-repro-ci/out contains prior runs (zipalign pair identical 932bed\u2026, re-sign pairs identical, test-key pair identical 8cd2931d\u2026); the clean re-run above is the recorded result.",
     "conclusion": "For this debug key and the demonstrated reproducible APK, zipalign and APK signing (v2, RSA PKCS#1 v1.5) are byte-deterministic in repeated runs.",
     "limits": [
       "Debug signing only; release signing (different key/keystore, v3/v4 options) is not covered",
@@ -91,7 +91,7 @@
         "diagnosis": "The two independently built APKs are byte-identical in every ZIP entry (1638/1638, same order, same offsets, zero padding, zero differing CRC32). The only difference is the 4,096-byte APK signing block (sha256 source 77ba7a8f4fa859d0ed6ecea0a1b4c50eebfcd336d1f89d16948a00870ce11328 vs rebuild c01952130b8f074ebe98bbedb808e99f650f52cad26d2055620c4ab117fb41a8; 1,022 differing bytes): Android debug keystores are generated with a fresh random key on each runner, so signing differed while the build did not. tools/tests/apk-repro-diff.py (v1.1.0) was extended to detect and classify this signing-block-only case automatically.",
         "artifact_diagnosis": {
           "artifacts": "gh run download 39713433060 (apk-job-a, apk-job-b)",
-          "diff_report": "/Users/cheng/apk-repro-ci-diff3/report.json (signing block classification)"
+          "diff_report": "<workspace>/apk-repro-ci-diff3/report.json (signing block classification)"
         },
         "fix_attempted_next": "install the fixed key as ~/.android/debug.keystore (see run 2)"
       },
@@ -155,8 +155,8 @@
     "The fixed CI debug keystore is intentionally public and must never be used for releases; release-signing determinism remains untested."
   ],
   "raw_artifacts": {
-    "signing_scratch": "/Users/cheng/apk-repro-ci (unsigned APK, apksigner outputs, sigblock.py, out/ and out2/ hashes)",
-    "input_apk": "/Users/cheng/apk-repro-mitigation/out/buildA.apk and buildB.apk (sha256 f8cc0b2f\u2026, demonstrated byte-identical)"
+    "signing_scratch": "<workspace>/apk-repro-ci (unsigned APK, apksigner outputs, sigblock.py, out/ and out2/ hashes)",
+    "input_apk": "<workspace>/apk-repro-mitigation/out/buildA.apk and buildB.apk (sha256 f8cc0b2f\u2026, demonstrated byte-identical)"
   },
   "tools": {
     "apk_repro_diff": {

@@ -100,14 +100,14 @@
     "Patch is experimental and not packaged or selected by Vapor"
   ],
   "raw_artifacts": {
-    "root": "/Users/cheng/staging-srgb",
-    "patch": "/Users/cheng/staging-srgb/patches/srgb-storage.patch",
-    "build_log": "/Users/cheng/staging-srgb/build.log",
+    "root": "<workspace>/staging-srgb",
+    "patch": "<workspace>/staging-srgb/patches/srgb-storage.patch",
+    "build_log": "<workspace>/staging-srgb/build.log",
     "runs": [
-      "/Users/cheng/staging-srgb/raw/unpatched-srgb.json",
-      "/Users/cheng/staging-srgb/raw/patched-srgb.json"
+      "<workspace>/staging-srgb/raw/unpatched-srgb.json",
+      "<workspace>/staging-srgb/raw/patched-srgb.json"
     ],
-    "readbacks": "/Users/cheng/staging-srgb/raw/{unpatched,patched}-srgb/out/*.bin"
+    "readbacks": "<workspace>/staging-srgb/raw/{unpatched,patched}-srgb/out/*.bin"
   },
   "upstream_policy": "Decided by the repository owner on 2026-10-22: the patch is kept and committed in Vapor's own repository (giminycricket0-blip/vapor) only; it is not submitted upstream."
 }

@@ -23,7 +23,7 @@
         "source_sha256": "fa10fcfbacda442ece75e487ee431431574caab80690ad8def2a080e514e8455",
         "exit_code": 0,
         "output": "METRIC fds=2 allocations=1 copied_bytes=0\nMETRIC fds=8 allocations=2 copied_bytes=32\nMETRIC fds=9 allocations=3 copied_bytes=96\nMETRIC fds=32 allocations=4 copied_bytes=224\nMETRIC fds=64 allocations=5 copied_bytes=480\ncases=30 failures=0\n",
-        "sanitizer_output": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wait-any-tests/before.cpp:191:39: runtime error: division by zero\nSUMMARY: UndefinedBehaviorSanitizer: undefined-behavior /Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wait-any-tests/before.cpp:191:39 \n",
+        "sanitizer_output": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wait-any-tests/before.cpp:191:39: runtime error: division by zero\nSUMMARY: UndefinedBehaviorSanitizer: undefined-behavior <workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wait-any-tests/before.cpp:191:39 \n",
         "oom_exit_code": -6,
         "oom_output": "",
         "oom_detected_invalid_access": true
@@ -168,13 +168,13 @@
     ],
     "previous_timestamp_regression": [
       {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/kgsl-before.cc",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/kgsl-before.cc",
         "phase": "before",
         "exit_code": 1,
         "output": "FAIL zero-pending-is-poll waits=1 polls=0 forbidden_zero_waits=1\nFAIL zero-complete-is-poll waits=1 polls=0 forbidden_zero_waits=1\nFAIL timestamp-wrap-complete waits=1 polls=0 forbidden_zero_waits=1\nFAIL timestamp-wrap-pending waits=1 polls=0 forbidden_zero_waits=1\nFAIL expired-deadline-is-poll waits=1 polls=0 forbidden_zero_waits=1\nFAIL interrupted-deadline-pending waits=1 polls=0 forbidden_zero_waits=0\nFAIL retry-deadline-complete waits=1 polls=0 forbidden_zero_waits=0\nFAIL poll-error-not-success waits=1 polls=0 forbidden_zero_waits=1\ncases=14 failures=8\n"
       },
       {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/after.cc",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/after.cc",
         "phase": "after",
         "exit_code": 0,
         "output": "cases=14 failures=0\n"
@@ -432,18 +432,18 @@
       "c_link_args": [
         "-Wl,-z,max-page-size=16384",
         "-Wl,-z,common-page-size=16384",
-        "-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
-        "-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks",
-        "-Wl,-rpath-link=/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
+        "-L<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
+        "-L<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks",
+        "-Wl,-rpath-link=<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
         "-ladrenotools",
         "-landroid-shmem"
       ],
       "cpp_link_args": [
         "-Wl,-z,max-page-size=16384",
         "-Wl,-z,common-page-size=16384",
-        "-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
-        "-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks",
-        "-Wl,-rpath-link=/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
+        "-L<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
+        "-L<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks",
+        "-Wl,-rpath-link=<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib",
         "-ladrenotools",
         "-landroid-shmem",
         "-lc++_shared"
@@ -483,105 +483,105 @@
           "name": "libadrenotools.so",
           "bytes": 47760,
           "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks/libadrenotools.so"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks/libadrenotools.so"
         },
         {
           "name": "libandroid-shmem.so",
           "bytes": 14432,
           "sha256": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libandroid-shmem.so"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libandroid-shmem.so"
         },
         {
           "name": "libc++_shared.so",
           "bytes": 1794776,
           "sha256": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708",
-          "input_path": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so"
+          "input_path": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so"
         },
         {
           "name": "libz.so.1",
           "bytes": 72880,
           "sha256": "c47748ed4b6ca6a2ecd664bab04795f3493956ab1f5cddc4ba0efa737ef3b711",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libz.so.1"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libz.so.1"
         },
         {
           "name": "libzstd.so.1",
           "bytes": 820840,
           "sha256": "1677d5e828c1839f111f0261697c08f99a5e4e80434659ab88e5ff859a1374f7",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libzstd.so.1"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libzstd.so.1"
         },
         {
           "name": "libxcb.so",
           "bytes": 136584,
           "sha256": "13d59f33b51765e4d1444cad3f7f949ccf60a9bd34e53bdbe10cfcd787fda14c",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb.so"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb.so"
         },
         {
           "name": "libX11-xcb.so",
           "bytes": 3976,
           "sha256": "6368a55a652527addf7af769b53d16ebd5aa5986a97deb550f212bdfa8315819",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libX11-xcb.so"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libX11-xcb.so"
         },
         {
           "name": "libxcb-dri3.so",
           "bytes": 14680,
           "sha256": "46a0bcdb74795fafcf62181439bb62d69568f0c6c0c652655002923dd02178a8",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-dri3.so"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-dri3.so"
         },
         {
           "name": "libxcb-present.so",
           "bytes": 9976,
           "sha256": "3914002f479e29cb9796045de542b091cd592e2347ec84272da3bbce57326c07",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-present.so"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-present.so"
         },
         {
           "name": "libxcb-sync.so",
           "bytes": 22224,
           "sha256": "3940e8236e0ead4696e2f09c4d297fa629cca0859243b73d33fcf11535e335ba",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-sync.so"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-sync.so"
         },
         {
           "name": "libxcb-randr.so",
           "bytes": 53896,
           "sha256": "0c2bfe3c4c8150a913bc7a24bdbeca6d379a388de9f50228bd746d0bf14c6c0e",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-randr.so"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-randr.so"
         },
         {
           "name": "libxcb-shm.so",
           "bytes": 9368,
           "sha256": "dbd474ea05afb27c33269aa1cf26a62edc08e7fb79a2f8459aebc4cb370cf1bb",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-shm.so"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libxcb-shm.so"
         },
         {
           "name": "libdrm.so",
           "bytes": 75792,
           "sha256": "1394274be3dd43f07429b10ca28aded82c7f2d84906ed7084827d27ca10f0dbf",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libdrm.so"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/libdrm.so"
         },
         {
           "name": "SPIRV-Tools-opt",
           "bytes": 241329312,
           "sha256": "29f201bef4920013049d19cce334cce915196feb6c8e386641f02def8ec5eebd",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build/source/opt/libSPIRV-Tools-opt.a"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build/source/opt/libSPIRV-Tools-opt.a"
         },
         {
           "name": "SPIRV-Tools",
           "bytes": 64530758,
           "sha256": "f71b46d46110cf1d894a81faac47188aa4cdec4366217c2f41b7646788512dcf",
-          "input_path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build/source/libSPIRV-Tools.a"
+          "input_path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build/source/libSPIRV-Tools.a"
         }
       ]
     },
     "build_commands": {
       "configure": {
         "command": [
-          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson",
+          "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson",
           "setup",
-          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
-          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source",
+          "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
+          "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source",
           "--cross-file",
-          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/android.ini",
+          "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/android.ini",
           "--native-file",
-          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/native.ini",
+          "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/native.ini",
           "--buildtype",
           "release",
           "--prefix=/usr",
@@ -599,42 +599,42 @@
           "-Dxmlconfig=disabled"
         ],
         "environment": {
-          "PATH": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/host-tools/bin:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin:/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin:/Applications/ChatGPT.app/Contents/Resources/codex-cli/codex-path:/Users/cheng/.codex/tmp/arg0-macos/codex-arg0Dl0zlz:/Users/cheng/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/override:/Users/cheng/.grok/bin:/Users/cheng/.mavis/bin:/Users/cheng/.local/share/mise/installs/node/24.15.0/bin:/Users/cheng/.bun/bin:/Users/cheng/.opencode/bin:/Users/cheng/.local/share/mise/installs/bun/1.3.13/bin:/Users/cheng/.local/share/mise/installs/java/17/bin:/Users/cheng/.local/share/mise/installs/ruby/3.4.9/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/cheng/.local/bin:/Users/cheng/Library/pnpm:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/cheng/.local/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/opt/homebrew/bin:/Users/cheng/.grok/bin:/Users/cheng/.mavis/bin:/Users/cheng/.local/share/mise/installs/node/24.15.0/bin:/Users/cheng/.bun/bin:/Users/cheng/.opencode/bin:/Users/cheng/Library/Android/sdk/platform-tools:/Users/cheng/Library/Android/sdk/emulator:/Users/cheng/Library/Android/sdk/cmdline-tools/latest/bin:/Users/cheng/.local/share/mise/shims:/Users/cheng/.gem/ruby/3.4.0/bin:/Users/cheng/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback:/Applications/ChatGPT.app/Contents/Resources:/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS",
-          "PKG_CONFIG_LIBDIR": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/pkgconfig",
-          "PKG_CONFIG_SYSROOT_DIR": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64"
+          "PATH": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin:<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/host-tools/bin:<workspace>/Documents/Codex/2026-10-13/82379689/work/dxvk-qualification/glslang/bin:<workspace>/Library/Android/sdk/cmake/3.22.1/bin:/Applications/ChatGPT.app/Contents/Resources/codex-cli/codex-path:<workspace>/.codex/tmp/arg0-macos/codex-arg0Dl0zlz:<workspace>/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/override:<workspace>/.grok/bin:<workspace>/.mavis/bin:<workspace>/.local/share/mise/installs/node/24.15.0/bin:<workspace>/.bun/bin:<workspace>/.opencode/bin:<workspace>/.local/share/mise/installs/bun/1.3.13/bin:<workspace>/.local/share/mise/installs/java/17/bin:<workspace>/.local/share/mise/installs/ruby/3.4.9/bin:/opt/homebrew/bin:/opt/homebrew/sbin:<workspace>/.local/bin:<workspace>/Library/pnpm:/opt/homebrew/bin:/opt/homebrew/sbin:<workspace>/.local/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/opt/homebrew/bin:<workspace>/.grok/bin:<workspace>/.mavis/bin:<workspace>/.local/share/mise/installs/node/24.15.0/bin:<workspace>/.bun/bin:<workspace>/.opencode/bin:<workspace>/Library/Android/sdk/platform-tools:<workspace>/Library/Android/sdk/emulator:<workspace>/Library/Android/sdk/cmdline-tools/latest/bin:<workspace>/.local/share/mise/shims:<workspace>/.gem/ruby/3.4.0/bin:<workspace>/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback:/Applications/ChatGPT.app/Contents/Resources:/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS",
+          "PKG_CONFIG_LIBDIR": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib/pkgconfig",
+          "PKG_CONFIG_SYSROOT_DIR": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64"
         }
       },
       "defines": [
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson",
         "configure",
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
         "-Dc_args=['-D__TERMUX__', '-include', 'fcntl.h']",
         "-Dcpp_args=['-D__TERMUX__', '-include', 'fcntl.h', '-Wno-c++11-narrowing']"
       ],
       "link_libraries": [
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-queue-qualification/build-venv/bin/meson",
         "configure",
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
-        "-Dc_link_args=['-Wl,-z,max-page-size=16384', '-Wl,-z,common-page-size=16384', '-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks', '-Wl,-rpath-link=/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-ladrenotools', '-landroid-shmem']",
-        "-Dcpp_link_args=['-Wl,-z,max-page-size=16384', '-Wl,-z,common-page-size=16384', '-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-L/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks', '-Wl,-rpath-link=/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-ladrenotools', '-landroid-shmem', '-lc++_shared']"
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
+        "-Dc_link_args=['-Wl,-z,max-page-size=16384', '-Wl,-z,common-page-size=16384', '-L<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-L<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks', '-Wl,-rpath-link=<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-ladrenotools', '-landroid-shmem']",
+        "-Dcpp_link_args=['-Wl,-z,max-page-size=16384', '-Wl,-z,common-page-size=16384', '-L<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-L<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/hooks', '-Wl,-rpath-link=<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib', '-ladrenotools', '-landroid-shmem', '-lc++_shared']"
       ],
       "build": [
-        "/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+        "<workspace>/Library/Android/sdk/cmake/3.22.1/bin/ninja",
         "-C",
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/build",
         "-j4",
         "src/vulkan/wrapper/libvulkan_wrapper.so"
       ],
       "spirv_configure": [
-        "/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin/cmake",
+        "<workspace>/Library/Android/sdk/cmake/3.22.1/bin/cmake",
         "-G",
         "Ninja",
         "-S",
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-tools",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-tools",
         "-B",
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build",
-        "-DCMAKE_MAKE_PROGRAM=/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin/ninja",
-        "-DCMAKE_TOOLCHAIN_FILE=/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/build/cmake/android.toolchain.cmake",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build",
+        "-DCMAKE_MAKE_PROGRAM=<workspace>/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+        "-DCMAKE_TOOLCHAIN_FILE=<workspace>/Library/Android/sdk/ndk/27.3.13750724/build/cmake/android.toolchain.cmake",
         "-DANDROID_ABI=arm64-v8a",
         "-DANDROID_PLATFORM=android-34",
         "-DANDROID_STL=c++_static",
@@ -643,12 +643,12 @@
         "-DSPIRV_SKIP_TESTS=ON",
         "-DSPIRV_SKIP_EXECUTABLES=ON",
         "-DSPIRV_TOOLS_BUILD_STATIC=ON",
-        "-DSPIRV-Headers_SOURCE_DIR=/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-headers"
+        "-DSPIRV-Headers_SOURCE_DIR=<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-headers"
       ],
       "spirv_build": [
-        "/Users/cheng/Library/Android/sdk/cmake/3.22.1/bin/cmake",
+        "<workspace>/Library/Android/sdk/cmake/3.22.1/bin/cmake",
         "--build",
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build",
         "--target",
         "SPIRV-Tools-opt",
         "SPIRV-Tools-static",

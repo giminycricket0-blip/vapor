@@ -10,9 +10,9 @@
     "python": "3.14.4",
     "host_platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
     "fixture": {
-      "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+      "compiler": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
       "command": [
-        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+        "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
         "-std=c11",
         "-O2",
         "-g",
@@ -20,16 +20,16 @@
         "-Wextra",
         "-Werror",
         "-D_GNU_SOURCE",
-        "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.c",
+        "<workspace>/vapor/tools/tests/vulkan-wrapper-reference.c",
         "-ldl",
         "-Wl,-z,max-page-size=16384",
         "-Wl,-z,common-page-size=16384",
         "-o",
-        "/Users/cheng/ref16k-ext/bin/probe"
+        "<workspace>/ref16k-ext/bin/probe"
       ],
       "source": "tools/tests/vulkan-wrapper-reference.c",
       "source_sha256": "3f722d88da4a94a29a36e74dcb5eb7ec2e27ce68227c297d2965ab5024a1308e",
-      "binary": "/Users/cheng/ref16k-ext/bin/probe",
+      "binary": "<workspace>/ref16k-ext/bin/probe",
       "binary_sha256": "ab162a66d950dd4f8072da6c5a2ee3236e2c1d5fbea0ac00c3ffdc28bbbf3ce0",
       "binary_bytes": 227464,
       "elf_max_load_align": 16384,
@@ -618,15 +618,15 @@
     }
   },
   "wrapper_builds": {
-    "root": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+    "root": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
     "candidate": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
       "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
       "bytes": 10699464,
       "matches_recorded_pinned_hash": true
     },
     "baseline": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
       "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
       "bytes": 10698760,
       "matches_recorded_pinned_hash": true
@@ -703,272 +703,272 @@
     "remote_dir": "/data/local/tmp/vapor-wrapper-reference-2026-10-21",
     "files": {
       "probe": {
-        "source": "/Users/cheng/ref16k-ext/bin/probe",
+        "source": "<workspace>/ref16k-ext/bin/probe",
         "sha256": "ab162a66d950dd4f8072da6c5a2ee3236e2c1d5fbea0ac00c3ffdc28bbbf3ce0",
         "bytes": 227464
       },
       "baseline-stripped.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
         "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
         "bytes": 10698760
       },
       "candidate-stripped.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
         "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
         "bytes": 10699464
       },
       "libadrenotools.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libadrenotools.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libadrenotools.so",
         "sha256": "7412c757d22aaa6c9ee94e567a0637a203c852de3d095e75397e85264108858c",
         "bytes": 47760
       },
       "libandroid-shmem.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libandroid-shmem.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libandroid-shmem.so",
         "sha256": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731",
         "bytes": 14432
       },
       "libc++_shared.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libc++_shared.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libc++_shared.so",
         "sha256": "d523468d62d9b603cb3354294d70d4b2feabf2c3f1e43b0c96c9aabf32813708",
         "bytes": 1794776
       },
       "libz.so.1": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libz.so.1",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libz.so.1",
         "sha256": "c47748ed4b6ca6a2ecd664bab04795f3493956ab1f5cddc4ba0efa737ef3b711",
         "bytes": 72880
       },
       "libzstd.so.1": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libzstd.so.1",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libzstd.so.1",
         "sha256": "1677d5e828c1839f111f0261697c08f99a5e4e80434659ab88e5ff859a1374f7",
         "bytes": 820840
       },
       "libxcb.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb.so",
         "sha256": "13d59f33b51765e4d1444cad3f7f949ccf60a9bd34e53bdbe10cfcd787fda14c",
         "bytes": 136584
       },
       "libX11-xcb.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libX11-xcb.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libX11-xcb.so",
         "sha256": "6368a55a652527addf7af769b53d16ebd5aa5986a97deb550f212bdfa8315819",
         "bytes": 3976
       },
       "libxcb-dri3.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-dri3.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-dri3.so",
         "sha256": "46a0bcdb74795fafcf62181439bb62d69568f0c6c0c652655002923dd02178a8",
         "bytes": 14680
       },
       "libxcb-present.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-present.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-present.so",
         "sha256": "3914002f479e29cb9796045de542b091cd592e2347ec84272da3bbce57326c07",
         "bytes": 9976
       },
       "libxcb-sync.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-sync.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-sync.so",
         "sha256": "3940e8236e0ead4696e2f09c4d297fa629cca0859243b73d33fcf11535e335ba",
         "bytes": 22224
       },
       "libxcb-randr.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-randr.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-randr.so",
         "sha256": "0c2bfe3c4c8150a913bc7a24bdbeca6d379a388de9f50228bd746d0bf14c6c0e",
         "bytes": 53896
       },
       "libxcb-shm.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-shm.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libxcb-shm.so",
         "sha256": "dbd474ea05afb27c33269aa1cf26a62edc08e7fb79a2f8459aebc4cb370cf1bb",
         "bytes": 9368
       },
       "libdrm.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libdrm.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libdrm.so",
         "sha256": "1394274be3dd43f07429b10ca28aded82c7f2d84906ed7084827d27ca10f0dbf",
         "bytes": 75792
       },
       "libXau.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libXau.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libXau.so",
         "sha256": "e820c412bac544d28d4288f50f7b6dee046e2f32cc7cfc82e203c642fbaa42bf",
         "bytes": 9904
       },
       "libXdmcp.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libXdmcp.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libXdmcp.so",
         "sha256": "fca2b4d37620a90b9e97ff5ef24b4b7f438fcce6a837db152705348c95379ef8",
         "bytes": 18920
       },
       "libandroid-support.so": {
-        "source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libandroid-support.so",
+        "source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/libandroid-support.so",
         "sha256": "739cf829511d71dafd6c67fdbb70f3f0c6048642ea2e1967790ee961fde14430",
         "bytes": 20736
       },
       "in/bc1.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc1.bin",
+        "source": "<workspace>/ref16k-ext/in/bc1.bin",
         "sha256": "e723a21dd3a84349534c0773ac856278224a4a84c856977d7dc967ccc684a8c4",
         "bytes": 2048
       },
       "in/bc3.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc3.bin",
+        "source": "<workspace>/ref16k-ext/in/bc3.bin",
         "sha256": "0d19d9ada79a37c24dae0b0b3f74cb294c81050787552bc1d09b5ed29f10067c",
         "bytes": 4096
       },
       "in/rgba8.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/rgba8.bin",
+        "source": "<workspace>/ref16k-ext/in/rgba8.bin",
         "sha256": "400642d5763cdb9017fe723de8ebee34d1aad5f3ae9d918d92aef5a1180c7fa8",
         "bytes": 16384
       },
       "in/d16.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/d16.bin",
+        "source": "<workspace>/ref16k-ext/in/d16.bin",
         "sha256": "b27fa596a848f6e0eb9bb0e79df176e02cc730ca14a134cc60ba56ce830dc471",
         "bytes": 8192
       },
       "in/d24s8.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/d24s8.bin",
+        "source": "<workspace>/ref16k-ext/in/d24s8.bin",
         "sha256": "e377aedb71787a4e2e19dc1bd782f8a6eea7ad490cdbffd0d71bcac667d36eff",
         "bytes": 16384
       },
       "in/d32.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/d32.bin",
+        "source": "<workspace>/ref16k-ext/in/d32.bin",
         "sha256": "6f5866c57b85ed3c6dca1593d3033f92c229df059dcd7dd006bae77fab0d5d98",
         "bytes": 16384
       },
       "in/bc1-5x7.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc1-5x7.bin",
+        "source": "<workspace>/ref16k-ext/in/bc1-5x7.bin",
         "sha256": "cb7bcb222e094a59719e33b67371990b2608cb9bce8fbf75649487ab4116a6a6",
         "bytes": 32
       },
       "in/rgba8-5x7.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/rgba8-5x7.bin",
+        "source": "<workspace>/ref16k-ext/in/rgba8-5x7.bin",
         "sha256": "58e455f6ee864376bfbc6c8ea832d1ab2de33e5ece86a20169a9b8299ff92d7d",
         "bytes": 140
       },
       "in/bc1-13x17.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc1-13x17.bin",
+        "source": "<workspace>/ref16k-ext/in/bc1-13x17.bin",
         "sha256": "a2870624aadaae7631f8191880e6a5cf5a530f32faffdf361c19007651b8a83f",
         "bytes": 160
       },
       "in/rgba8-13x17.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/rgba8-13x17.bin",
+        "source": "<workspace>/ref16k-ext/in/rgba8-13x17.bin",
         "sha256": "562e027c00f83084fa467132df5f89801d8458581492ed5992f9d106f82cbe25",
         "bytes": 884
       },
       "in/bc1-1x1.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc1-1x1.bin",
+        "source": "<workspace>/ref16k-ext/in/bc1-1x1.bin",
         "sha256": "cb11f5174415084a054b67a54736ab5c070cb48a751f294bf185c0c8b0b51cb3",
         "bytes": 8
       },
       "in/rgba8-1x1.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/rgba8-1x1.bin",
+        "source": "<workspace>/ref16k-ext/in/rgba8-1x1.bin",
         "sha256": "28824ea92d47632ee6c09bb67e11a522aeef3b556e13b9f6b7058e411518b5f3",
         "bytes": 4
       },
       "in/bc1-63x65.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc1-63x65.bin",
+        "source": "<workspace>/ref16k-ext/in/bc1-63x65.bin",
         "sha256": "db0438b06352aa5ef1dbbc5fc82380ef94f38e642ed1e02d708e6924f46ed464",
         "bytes": 2176
       },
       "in/rgba8-63x65.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/rgba8-63x65.bin",
+        "source": "<workspace>/ref16k-ext/in/rgba8-63x65.bin",
         "sha256": "5a585085d9ba9d5853244ac0e62cb4cdf8de68fa3d245dc6a0d4afd3bc6406ad",
         "bytes": 16380
       },
       "in/bc3-5x7.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc3-5x7.bin",
+        "source": "<workspace>/ref16k-ext/in/bc3-5x7.bin",
         "sha256": "a14753706cb02566593466c772349e0fa8801a4d8b857c1007daff18dfcefb7b",
         "bytes": 64
       },
       "in/bc3-13x17.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc3-13x17.bin",
+        "source": "<workspace>/ref16k-ext/in/bc3-13x17.bin",
         "sha256": "75a964b7e956254570019bdc8adde10e4b8e49b9bcf7ca6dbb367a2bc9919363",
         "bytes": 320
       },
       "in/bc3-1x1.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc3-1x1.bin",
+        "source": "<workspace>/ref16k-ext/in/bc3-1x1.bin",
         "sha256": "36d1a923555212755e033b3beb326289bc20f770f2705477607ba4ca6b7b49bd",
         "bytes": 16
       },
       "in/bc3-63x65.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc3-63x65.bin",
+        "source": "<workspace>/ref16k-ext/in/bc3-63x65.bin",
         "sha256": "3c97516f5afd12a526c209043f7fdddd4f486de56a3fb291509730831d294083",
         "bytes": 4352
       },
       "in/partial-rgba8-base.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/partial-rgba8-base.bin",
+        "source": "<workspace>/ref16k-ext/in/partial-rgba8-base.bin",
         "sha256": "c517608926da53af543ed85e5336d3ab9773e7083f925cf79374a318f7ff17e0",
         "bytes": 1024
       },
       "in/partial-rgba8-patch.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/partial-rgba8-patch.bin",
+        "source": "<workspace>/ref16k-ext/in/partial-rgba8-patch.bin",
         "sha256": "8045d9a20957c50816e56b7aa6631d910fb393666d85d17070f87c30aaec5ceb",
         "bytes": 216
       },
       "in/partial-bc1-base.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/partial-bc1-base.bin",
+        "source": "<workspace>/ref16k-ext/in/partial-bc1-base.bin",
         "sha256": "0a6d16bf9e037636f61eed3726d7f2a5177b5359cae24dc004e5055b98add0bf",
         "bytes": 128
       },
       "in/partial-bc1-patch.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/partial-bc1-patch.bin",
+        "source": "<workspace>/ref16k-ext/in/partial-bc1-patch.bin",
         "sha256": "254ea068733a5b465d6c40964bd5808a4a336798c2c7ba56b51919f9d007a78d",
         "bytes": 32
       },
       "in/partial-bc3-base.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/partial-bc3-base.bin",
+        "source": "<workspace>/ref16k-ext/in/partial-bc3-base.bin",
         "sha256": "a018b5bd42c28f08fc9c1d6cc40ab47c30e2c9964f8c19e6e159945f265e9c58",
         "bytes": 256
       },
       "in/partial-bc3-patch.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/partial-bc3-patch.bin",
+        "source": "<workspace>/ref16k-ext/in/partial-bc3-patch.bin",
         "sha256": "dffd4fd8f083c68a19183d93605c67df100cb6eea519f37b6fdcc6de689ed3a8",
         "bytes": 64
       },
       "in/rgba8-levels.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/rgba8-levels.bin",
+        "source": "<workspace>/ref16k-ext/in/rgba8-levels.bin",
         "sha256": "f8239c5d929b4f19d066a53c46288ab62c3a937d038dd5c3c7417c30ea4189ac",
         "bytes": 43008
       },
       "in/bc1-levels.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc1-levels.bin",
+        "source": "<workspace>/ref16k-ext/in/bc1-levels.bin",
         "sha256": "3a002c5d4758165622bdc14530c81df016529d6845b2cc84416e7d0416b8a656",
         "bytes": 5376
       },
       "in/bc3-levels.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc3-levels.bin",
+        "source": "<workspace>/ref16k-ext/in/bc3-levels.bin",
         "sha256": "837e4832a7809a17648119a80168a07a839ecb2cf2bffc8e9d7c82f8c9f574ad",
         "bytes": 10752
       },
       "in/bc1_srgb.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc1_srgb.bin",
+        "source": "<workspace>/ref16k-ext/in/bc1_srgb.bin",
         "sha256": "e723a21dd3a84349534c0773ac856278224a4a84c856977d7dc967ccc684a8c4",
         "bytes": 2048
       },
       "in/bc3_srgb.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc3_srgb.bin",
+        "source": "<workspace>/ref16k-ext/in/bc3_srgb.bin",
         "sha256": "0d19d9ada79a37c24dae0b0b3f74cb294c81050787552bc1d09b5ed29f10067c",
         "bytes": 4096
       },
       "in/rgba8_srgb.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/rgba8_srgb.bin",
+        "source": "<workspace>/ref16k-ext/in/rgba8_srgb.bin",
         "sha256": "408efefef6272b8b71f1dafbccaa1362e65e2793936feec6e3a7400049562b68",
         "bytes": 16384
       },
       "in/bc4.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc4.bin",
+        "source": "<workspace>/ref16k-ext/in/bc4.bin",
         "sha256": "fdf7b317bf5402e97a7571d6fef1a33644f345616b28b50ce6c1b093baf04273",
         "bytes": 2048
       },
       "in/bc5.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/bc5.bin",
+        "source": "<workspace>/ref16k-ext/in/bc5.bin",
         "sha256": "0763adc8294b75bff1a286fefa1c33aae00115e8b27cfa5d125b0d32f2e4a0f4",
         "bytes": 4096
       },
       "in/depth-reduce-d32.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/depth-reduce-d32.bin",
+        "source": "<workspace>/ref16k-ext/in/depth-reduce-d32.bin",
         "sha256": "31c2f60206a88cd50a9e2e38e118c5beccdee836d39566df8ef0bf933019418c",
         "bytes": 4096
       },
       "in/depth-reduce-d24s8.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/depth-reduce-d24s8.bin",
+        "source": "<workspace>/ref16k-ext/in/depth-reduce-d24s8.bin",
         "sha256": "7389c377dfaedb890d00fb3ee139de09fce59bd4ade5bc721de89e9f26fe1deb",
         "bytes": 4096
       },
       "in/depth-attach-control.bin": {
-        "source": "/Users/cheng/ref16k-ext/in/depth-attach-control.bin",
+        "source": "<workspace>/ref16k-ext/in/depth-attach-control.bin",
         "sha256": "31c2f60206a88cd50a9e2e38e118c5beccdee836d39566df8ef0bf933019418c",
         "bytes": 4096
       }
@@ -982,7 +982,7 @@
         "duration_seconds": 0.7
       }
     ],
-    "wrapper_build": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+    "wrapper_build": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
     "wrapper_hashes_match_pinned": true
   },
   "device": {
@@ -42170,13 +42170,13 @@
     "The two suspected defects are software-emulation findings for wrapper owners; no app defect is claimed and no upstream submission was made."
   ],
   "raw_artifacts": {
-    "scratch": "/Users/cheng/ref16k-ext",
-    "inputs": "/Users/cheng/ref16k-ext/in",
-    "reference_decodes": "/Users/cheng/ref16k-ext/refs",
-    "readbacks": "/Users/cheng/ref16k-ext/out",
-    "per_run_logs": "/Users/cheng/ref16k-ext/logs",
-    "tool_log": "/Users/cheng/ref16k-ext/logs/tool.log",
-    "fixture_binary": "/Users/cheng/ref16k-ext/bin/probe",
+    "scratch": "<workspace>/ref16k-ext",
+    "inputs": "<workspace>/ref16k-ext/in",
+    "reference_decodes": "<workspace>/ref16k-ext/refs",
+    "readbacks": "<workspace>/ref16k-ext/out",
+    "per_run_logs": "<workspace>/ref16k-ext/logs",
+    "tool_log": "<workspace>/ref16k-ext/logs/tool.log",
+    "fixture_binary": "<workspace>/ref16k-ext/bin/probe",
     "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
   },
   "phone_runbook": {
@@ -42289,9 +42289,9 @@
     "tool_sha256": "da82db1ec5d058c452038fd4b719df277594aeeab91a688e11f51febb23f5a20",
     "fixture_sha256": "3f722d88da4a94a29a36e74dcb5eb7ec2e27ce68227c297d2965ab5024a1308e",
     "base_commit": "1509019339e0479dc0e6a4876d82dfa9c891b15f",
-    "command": "python3 tools/tests/vulkan-wrapper-reference.py --cases all --serial emulator-5556 --wrapper-build <pinned> --scratch /Users/cheng/ref16k-ext --out <tmp> --label emulator-16k-extended",
+    "command": "python3 tools/tests/vulkan-wrapper-reference.py --cases all --serial emulator-5556 --wrapper-build <pinned> --scratch <workspace>/ref16k-ext --out <tmp> --label emulator-16k-extended",
     "worktree_clean": true,
-    "raw_scratch": "/Users/cheng/ref16k-ext (outside repo); run log /tmp/ref16k/run.log"
+    "raw_scratch": "<workspace>/ref16k-ext (outside repo); run log /tmp/ref16k/run.log"
   },
   "related_evidence": [
     "docs/evidence/2026-10-21-vulkan-wrapper-reference.json (first pass, 4 KB)",

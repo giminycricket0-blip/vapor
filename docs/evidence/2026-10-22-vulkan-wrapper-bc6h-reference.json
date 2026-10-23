@@ -9,9 +9,9 @@
     "python": "3.14.4",
     "host_platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
     "fixture": {
-      "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+      "compiler": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
       "command": [
-        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+        "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
         "-std=c11",
         "-O2",
         "-g",
@@ -19,16 +19,16 @@
         "-Wextra",
         "-Werror",
         "-D_GNU_SOURCE",
-        "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.c",
+        "<workspace>/vapor/tools/tests/vulkan-wrapper-reference.c",
         "-ldl",
         "-Wl,-z,max-page-size=16384",
         "-Wl,-z,common-page-size=16384",
         "-o",
-        "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/bin/probe"
+        "<workspace>/wrapper-bc6h/scratch-16k-bc6h/bin/probe"
       ],
       "source": "tools/tests/vulkan-wrapper-reference.c",
       "source_sha256": "dee053e3c10e830a24509dbbeb7c618472539221c76848b23ba2dc6a37624664",
-      "binary": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/bin/probe",
+      "binary": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/bin/probe",
       "binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
       "binary_bytes": 228976,
       "elf_max_load_align": 16384,
@@ -638,15 +638,15 @@
     }
   },
   "wrapper_builds": {
-    "root": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+    "root": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
     "candidate": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
       "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
       "bytes": 10699464,
       "matches_recorded_pinned_hash": true
     },
     "baseline": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
       "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
       "bytes": 10698760,
       "matches_recorded_pinned_hash": true
@@ -723,7 +723,7 @@
     {
       "label": "api36-4k-bc6h",
       "source_payload": {
-        "path": "/Users/cheng/wrapper-bc6h/phase1-4k-bc6h-payload.json",
+        "path": "<workspace>/wrapper-bc6h/phase1-4k-bc6h-payload.json",
         "sha256": "00c180e17cfe47ada61f79840d94a83e35bdd7cd39513d6932e845565448813c"
       },
       "device": {
@@ -1835,7 +1835,7 @@
     {
       "label": "api37-16k-bc6h",
       "source_payload": {
-        "path": "/Users/cheng/wrapper-bc6h/phase2-16k-bc6h-payload.json",
+        "path": "<workspace>/wrapper-bc6h/phase2-16k-bc6h-payload.json",
         "sha256": "e73bc5e6343445e2c45d1119ffcc7d9db6fd1f0da5c1b842d7764492389494bb"
       },
       "device": {
@@ -29325,37 +29325,37 @@
       {
         "label": "api36-4k-bc6h",
         "raw_artifacts": {
-          "scratch": "/Users/cheng/wrapper-bc6h/scratch-4k-bc6h",
-          "inputs": "/Users/cheng/wrapper-bc6h/scratch-4k-bc6h/in",
-          "reference_decodes": "/Users/cheng/wrapper-bc6h/scratch-4k-bc6h/refs",
-          "readbacks": "/Users/cheng/wrapper-bc6h/scratch-4k-bc6h/out",
-          "per_run_logs": "/Users/cheng/wrapper-bc6h/scratch-4k-bc6h/logs",
-          "tool_log": "/Users/cheng/wrapper-bc6h/scratch-4k-bc6h/logs/tool.log",
-          "fixture_binary": "/Users/cheng/wrapper-bc6h/scratch-4k-bc6h/bin/probe",
+          "scratch": "<workspace>/wrapper-bc6h/scratch-4k-bc6h",
+          "inputs": "<workspace>/wrapper-bc6h/scratch-4k-bc6h/in",
+          "reference_decodes": "<workspace>/wrapper-bc6h/scratch-4k-bc6h/refs",
+          "readbacks": "<workspace>/wrapper-bc6h/scratch-4k-bc6h/out",
+          "per_run_logs": "<workspace>/wrapper-bc6h/scratch-4k-bc6h/logs",
+          "tool_log": "<workspace>/wrapper-bc6h/scratch-4k-bc6h/logs/tool.log",
+          "fixture_binary": "<workspace>/wrapper-bc6h/scratch-4k-bc6h/bin/probe",
           "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
         }
       },
       {
         "label": "api37-16k-bc6h",
         "raw_artifacts": {
-          "scratch": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h",
-          "inputs": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/in",
-          "reference_decodes": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/refs",
-          "readbacks": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/out",
-          "per_run_logs": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/logs",
-          "tool_log": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/logs/tool.log",
-          "fixture_binary": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/bin/probe",
+          "scratch": "<workspace>/wrapper-bc6h/scratch-16k-bc6h",
+          "inputs": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/in",
+          "reference_decodes": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/refs",
+          "readbacks": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/out",
+          "per_run_logs": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/logs",
+          "tool_log": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/logs/tool.log",
+          "fixture_binary": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/bin/probe",
           "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
         }
       }
     ],
     "assembled_from": [
       {
-        "path": "/Users/cheng/wrapper-bc6h/phase1-4k-bc6h-payload.json",
+        "path": "<workspace>/wrapper-bc6h/phase1-4k-bc6h-payload.json",
         "sha256": "00c180e17cfe47ada61f79840d94a83e35bdd7cd39513d6932e845565448813c"
       },
       {
-        "path": "/Users/cheng/wrapper-bc6h/phase2-16k-bc6h-payload.json",
+        "path": "<workspace>/wrapper-bc6h/phase2-16k-bc6h-payload.json",
         "sha256": "e73bc5e6343445e2c45d1119ffcc7d9db6fd1f0da5c1b842d7764492389494bb"
       }
     ]
@@ -29521,12 +29521,12 @@
     "phase_payloads": [
       {
         "label": "api36-4k-bc6h",
-        "path": "/Users/cheng/wrapper-bc6h/phase1-4k-bc6h-payload.json",
+        "path": "<workspace>/wrapper-bc6h/phase1-4k-bc6h-payload.json",
         "sha256": "00c180e17cfe47ada61f79840d94a83e35bdd7cd39513d6932e845565448813c"
       },
       {
         "label": "api37-16k-bc6h",
-        "path": "/Users/cheng/wrapper-bc6h/phase2-16k-bc6h-payload.json",
+        "path": "<workspace>/wrapper-bc6h/phase2-16k-bc6h-payload.json",
         "sha256": "e73bc5e6343445e2c45d1119ffcc7d9db6fd1f0da5c1b842d7764492389494bb"
       }
     ],
@@ -29536,14 +29536,14 @@
     "reference_decoder": "bcdec_bc6h_half from the pinned wrapper source (bcdec.h; RGB decoded as binary16, alpha set to 1.0)",
     "independence_caveat": "bcdec is also the wrapper's host-CPU fallback decoder, so that wrapper path is a self-consistency check; the wrapper compute-shader bc6 path and llvmpipe's native BC6H decoder are independent.",
     "provenance": {
-      "wrapper_source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
+      "wrapper_source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
       "bcdec.h": {
-        "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.h",
+        "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.h",
         "sha256": "8c972cdebba2c799d8d7478fc676be6d89a95294f012985a4253d80e82d0785d",
         "bytes": 79215
       },
       "bcdec.c": {
-        "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.c",
+        "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.c",
         "sha256": "9d478b26b978251ffcf5327d041d9f32dcfd207e58915fe75d322a0bd3701e52",
         "bytes": 11621
       },
@@ -29551,19 +29551,19 @@
       "licence": "bcdec is dual-licensed MIT OR The Unlicense (public domain); see the LICENSE section at the end of bcdec.h"
     },
     "host_helper": {
-      "source_path": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-host-decode.c",
+      "source_path": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-host-decode.c",
       "source_sha256": "134936c40980a330279ba73dc1896bed9eb0d42b9d6bebb8148dbed2a4c7015e",
-      "binary_path": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-host-decode",
+      "binary_path": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-host-decode",
       "binary_sha256": "e5f8bb2127259403cbf75f47f88dc529273021c2243dff5119ac8b78f95ff756",
       "compile_command": [
         "cc",
         "-O2",
         "-std=c11",
         "-I",
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
-        "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-host-decode.c",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
+        "<workspace>/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-host-decode.c",
         "-o",
-        "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-host-decode"
+        "<workspace>/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-host-decode"
       ]
     },
     "blocks": {
@@ -29592,17 +29592,17 @@
         "reserved_values": "all other 5-bit mode codes are reserved and are never emitted by the generator",
         "other_fields": "partition, endpoints, indices and the shared/per-endpoint exponent bits use their full ranges, all decodable by spec-compliant BC6H decoders"
       },
-      "path": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-reference-blocks-64x64.bin"
+      "path": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-reference-blocks-64x64.bin"
     },
     "reference_rgba16f": {
       "bc6h_uf16": {
-        "path": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-reference-bc6h_uf16-64x64.rgba16f",
+        "path": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-reference-bc6h_uf16-64x64.rgba16f",
         "pixels": 4096,
         "signed": false,
         "sha256": "13541bd48e7e68c1702b95efb8ee1e94af17be505f82ea6663c891f5c02545e3"
       },
       "bc6h_sfloat": {
-        "path": "/Users/cheng/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-reference-bc6h_sfloat-64x64.rgba16f",
+        "path": "<workspace>/wrapper-bc6h/scratch-16k-bc6h/bin/bc6h-reference-bc6h_sfloat-64x64.rgba16f",
         "pixels": 4096,
         "signed": true,
         "sha256": "d2f24126d39814301d1138b5de4609c608dcefbbc341cb743703f7e042d1bf73"

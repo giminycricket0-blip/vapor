@@ -21,7 +21,7 @@
     "cause": "520 dp editor in a landscape Activity incorrectly used the 220 dp sidebar instead of compact navigation."
   },
   "verification": {
-    "command": "JAVA_HOME=/Users/cheng/.local/share/mise/installs/java/17 ./gradlew :app:testStandardDebugUnitTest --tests '*GameSettingsLayoutTest' --tests '*SteamSocialLayoutTest' --tests '*SteamConversationTest' --tests '*SteamChatServiceTest' :app:compileStandardDebugAndroidTestKotlin --max-workers=2 --console=plain",
+    "command": "JAVA_HOME=<workspace>/.local/share/mise/installs/java/17 ./gradlew :app:testStandardDebugUnitTest --tests '*GameSettingsLayoutTest' --tests '*SteamSocialLayoutTest' --tests '*SteamConversationTest' --tests '*SteamChatServiceTest' :app:compileStandardDebugAndroidTestKotlin --max-workers=2 --console=plain",
     "result": "passed",
     "suites": [
       {

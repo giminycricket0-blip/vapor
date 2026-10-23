@@ -26,7 +26,7 @@
     "log_sha256": "241e6e10021c7f116c1d97d57e1eef4a3cf71cc3cf85fe76fd2ea21f3354f7e9"
   },
   "verification": {
-    "command": "JAVA_HOME=/Users/cheng/.local/share/mise/installs/java/17 ./gradlew :app:testStandardDebugUnitTest --tests '*GameSettingsLayoutTest' --tests '*GameSettingsNavTest' --tests '*SteamSocialLayoutTest' --tests '*SteamConversationTest' --tests '*SteamChatServiceTest' :app:compileStandardDebugAndroidTestKotlin --max-workers=2 --console=plain",
+    "command": "JAVA_HOME=<workspace>/.local/share/mise/installs/java/17 ./gradlew :app:testStandardDebugUnitTest --tests '*GameSettingsLayoutTest' --tests '*GameSettingsNavTest' --tests '*SteamSocialLayoutTest' --tests '*SteamConversationTest' --tests '*SteamChatServiceTest' :app:compileStandardDebugAndroidTestKotlin --max-workers=2 --console=plain",
     "result": "passed",
     "suites": [
       {

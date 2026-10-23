@@ -4,17 +4,17 @@
   "subject": "Final full-stack wrapper build + regression across every probe family",
   "base_commit": "fd92d8b283a3a5276e323e56e222b8901d335dc8",
   "base_branch": "Vapor",
-  "scope": "Apply the complete bionic-vulkan-wrapper patch stack (image-create, srgb-storage, odd-extent, device-teardown, host-decode-map, bc6-image-view) to a fresh pristine extraction of wrapper-build/source.tar.gz, verify apply/reverse and staging-reclaim stackability, build with the recorded Meson/NDK recipe in /Users/cheng/staging-stack, verify ELF identity against the recorded candidate, stage a wrapper-build-style directory, and run every probe family with the current tools on a 4 KB API 36 emulator (VaporProbe36A, port 5558) plus the core set on a 16 KB API 37 emulator (VaporProbe37K16A, port 5568). No commit, nothing upstream.",
+  "scope": "Apply the complete bionic-vulkan-wrapper patch stack (image-create, srgb-storage, odd-extent, device-teardown, host-decode-map, bc6-image-view) to a fresh pristine extraction of wrapper-build/source.tar.gz, verify apply/reverse and staging-reclaim stackability, build with the recorded Meson/NDK recipe in <workspace>/staging-stack, verify ELF identity against the recorded candidate, stage a wrapper-build-style directory, and run every probe family with the current tools on a 4 KB API 36 emulator (VaporProbe36A, port 5558) plus the core set on a 16 KB API 37 emulator (VaporProbe37K16A, port 5568). No commit, nothing upstream.",
   "base_tree": {
     "statement": "wrapper-build/source.tar.gz is the PRISTINE upstream 3abf48704a4d9303967a0811c0dc8ff8567d613b tree. The \"candidate\" build used by all of today's patches is pristine + image-create.patch; every patch in this receipt was applied to a fresh extraction of the pristine archive (never to the already-candidate staging tree).",
     "archive": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source.tar.gz",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source.tar.gz",
       "sha256": "fe1f7e32f0c4b151f74b252ffda3f3561d56df96e3b17863f66c89b01b698f3d",
       "bytes": 47251711
     },
     "archive_top_level": "bionic-vulkan-wrapper-3abf48704a4d9303967a0811c0dc8ff8567d613b/",
     "source_version": "24.2.5",
-    "extraction_root": "/Users/cheng/staging-stack/source (flattened extraction)"
+    "extraction_root": "<workspace>/staging-stack/source (flattened extraction)"
   },
   "patch_stack": {
     "working_order": [
@@ -111,7 +111,7 @@
           "src/vulkan/wrapper/wrapper_device.c"
         ],
         "result": "applies cleanly on top of the full 6-patch stack with patch -p1 --fuzz=0 --dry-run; it is a separate experiment and is NOT part of the regression build",
-        "log": "/Users/cheng/staging-stack/logs/staging-reclaim-dryrun.log",
+        "log": "<workspace>/staging-stack/logs/staging-reclaim-dryrun.log",
         "log_sha256": "5f7fbed3ed12a64c92690d5eb9fd021fcb00ab97b2ad371a5170f8f568ae96c2"
       }
     },
@@ -125,9 +125,9 @@
     }
   },
   "build": {
-    "scratch_root": "/Users/cheng/staging-stack",
-    "source_dir": "/Users/cheng/staging-stack/source",
-    "build_dir": "/Users/cheng/staging-stack/build",
+    "scratch_root": "<workspace>/staging-stack",
+    "source_dir": "<workspace>/staging-stack/source",
+    "build_dir": "<workspace>/staging-stack/build",
     "recipe": {
       "meson": "meson setup build source --cross-file <wrapper-build>/android.ini --native-file <codex>/native.ini --buildtype release --prefix=/usr -Dplatforms=x11 -Dplatform-sdk-version=34 -Dandroid-stub=true -Dvulkan-drivers=wrapper -Dgallium-drivers= -Dglx=disabled -Degl=disabled -Dgbm=disabled -Dllvm=disabled -Dopengl=false -Dandroid-libbacktrace=disabled -Dxmlconfig=disabled",
       "configure_defines": "-Dc_args=['-D__TERMUX__','-include','fcntl.h'] -Dcpp_args=['-D__TERMUX__','-include','fcntl.h','-Wno-c++11-narrowing']",
@@ -156,23 +156,23 @@
       "errors": 0,
       "warnings_in_touched_files": "none new (pre-existing wrapper warnings only)",
       "lib_unstripped": {
-        "path": "/Users/cheng/staging-stack/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+        "path": "<workspace>/staging-stack/build/src/vulkan/wrapper/libvulkan_wrapper.so",
         "sha256": "69dac4c99994e9fc48e868316e43b28f5a9fd11baeccfd731925debc72ab7d61",
         "bytes": 131386736
       },
       "candidate_stripped": {
-        "path": "/Users/cheng/staging-stack/wrapper-build-patched/candidate-stripped.so",
+        "path": "<workspace>/staging-stack/wrapper-build-patched/candidate-stripped.so",
         "sha256": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
         "bytes": 10704784
       }
     },
     "logs": {
-      "setup": "/Users/cheng/staging-stack/setup.log sha256 7c7e2425343440cf2e30369ac4d359735a8959ab0e736664b8f2e1d75fe655fa",
-      "build": "/Users/cheng/staging-stack/build.log sha256 87dd72b3e2eef5527229283c08b8723477e32e0eb6098b8ee5fd8408be4e1ae0"
+      "setup": "<workspace>/staging-stack/setup.log sha256 7c7e2425343440cf2e30369ac4d359735a8959ab0e736664b8f2e1d75fe655fa",
+      "build": "<workspace>/staging-stack/build.log sha256 87dd72b3e2eef5527229283c08b8723477e32e0eb6098b8ee5fd8408be4e1ae0"
     }
   },
   "elf_check": {
-    "compared_against": "recorded candidate /Users/cheng/Documents/.../turnip-refactor-qualification/wrapper-build/candidate-stripped.so sha256 574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
+    "compared_against": "recorded candidate <workspace>/Documents/.../turnip-refactor-qualification/wrapper-build/candidate-stripped.so sha256 574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
     "soname": "libvulkan_wrapper.so",
     "needed_count": 20,
     "needed_list": [
@@ -202,15 +202,15 @@
     ],
     "export_count": 4073,
     "export_set_identical_to_recorded_candidate": true,
-    "elf_log": "/Users/cheng/staging-stack/logs-elf.txt sha256 1f86d286c8d40ef44643e6c717ebe7248fbd19c8f3ed3efd0cad64f654d29ecc"
+    "elf_log": "<workspace>/staging-stack/logs-elf.txt sha256 1f86d286c8d40ef44643e6c717ebe7248fbd19c8f3ed3efd0cad64f654d29ecc"
   },
   "staged_build": {
-    "path": "/Users/cheng/staging-stack/wrapper-build-patched",
+    "path": "<workspace>/staging-stack/wrapper-build-patched",
     "layout": "candidate.so (full stack, unstripped) + candidate-stripped.so + baseline-stripped.so (recorded pinned baseline 2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c) + native-probe/ (pinned auxiliary libraries from the recorded wrapper-build tree) + STAGED.json",
     "candidate_sha256": "095c9a81e67c20155669b76ae9b39a6b79a79034f5e4109bde668cde989f1712",
     "baseline_sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
     "staged_identity": {
-      "path": "/Users/cheng/staging-stack/wrapper-build-patched/STAGED.json",
+      "path": "<workspace>/staging-stack/wrapper-build-patched/STAGED.json",
       "sha256": "a2eb17f9f8cb652efd86994dc98032fda10716cbf99e38c6e72124dfb3e633f0"
     }
   },
@@ -254,7 +254,7 @@
   },
   "families": {
     "4k_default": {
-      "artifact": "/Users/cheng/staging-stack/raw/4k-default.json",
+      "artifact": "<workspace>/staging-stack/raw/4k-default.json",
       "sha256": "83a8f23600b65e4ce2a4759c7e8a9a6d48818da8d97c70156987508249ab150c",
       "summary_line": "runs: 43 pass / 0 fail (default matrix) + 0 extended pass / 0 fail / 0 recorded",
       "case_table": {
@@ -267,7 +267,7 @@
       "fails": []
     },
     "4k_extended_encoded": {
-      "artifact": "/Users/cheng/staging-stack/raw/4k-extended.json",
+      "artifact": "<workspace>/staging-stack/raw/4k-extended.json",
       "sha256": "8c71378eb5819c4290f716ec1409fb6b4268cc0678f3294e4e12632176f69191",
       "planned_line": "[07:24:08] extended matrix: 94 planned runs across 6 cases",
       "case_table": {
@@ -332,7 +332,7 @@
       "note": "default encoded host-convention: the two candidate sRGB host-cpu failures are the expected convention split introduced by srgb-storage.patch, not regressions (see 4k_extended_linear)."
     },
     "4k_extended_linear": {
-      "artifact": "/Users/cheng/staging-stack/raw/4k-extended-linear.json",
+      "artifact": "<workspace>/staging-stack/raw/4k-extended-linear.json",
       "sha256": "0c6564462e71c76322ab1dcb3127daad4aa7d8016935ae439133c6d9bce218f3",
       "planned_line": "[07:25:16] extended matrix: 94 planned runs across 6 cases",
       "case_table": {
@@ -397,7 +397,7 @@
       "note": "--srgb-host-convention linear: the only failures are the baseline sRGB host-cpu negative controls; candidate passes every sRGB case, and candidate odd-extent host-cpu hard mismatches are 0."
     },
     "4k_bc7": {
-      "artifact": "/Users/cheng/staging-stack/raw/4k-bc7.json",
+      "artifact": "<workspace>/staging-stack/raw/4k-bc7.json",
       "sha256": "d98365acd851d1da72766d2303b9fa64ddfd763d0d3df3431d975fe20dd8671e",
       "planned_line": "[07:24:23] extended matrix: 16 planned runs across 1 cases",
       "case_table": {
@@ -427,7 +427,7 @@
       ]
     },
     "4k_bc6h": {
-      "artifact": "/Users/cheng/staging-stack/raw/4k-bc6h.json",
+      "artifact": "<workspace>/staging-stack/raw/4k-bc6h.json",
       "sha256": "ad3b2fee64ea9ee3147e3c705eb02de22afb5e1528dc8a60a5870da7a3787b8d",
       "planned_line": "[07:24:28] extended matrix: 16 planned runs across 1 cases",
       "case_table": {
@@ -468,7 +468,7 @@
       "note": "candidate compute-view is bit-exact for both bc6h_uf16 and bc6h_sfloat (4096/4096, max delta 0); the two baseline compute-view failures are the documented negative control from the bc6-image-view patch."
     },
     "4k_srgb_linear": {
-      "artifact": "/Users/cheng/staging-stack/raw/4k-srgb-linear.json",
+      "artifact": "<workspace>/staging-stack/raw/4k-srgb-linear.json",
       "sha256": "d1011252819364ec9df4f63e4ce9b80030ab52340cd58e991e1c73d6f4a0c19f",
       "planned_line": "[07:24:34] extended matrix: 33 planned runs across 2 cases",
       "case_table": {
@@ -525,7 +525,7 @@
       "note": "sRGB family + BC7_SRGB with --srgb-host-convention linear: candidate passes all 7 sRGB + 7 bc7 cases; baseline fails the three host-cpu sRGB cases exactly as the negative control requires."
     },
     "4k_render": {
-      "artifact": "/Users/cheng/staging-stack/raw/4k-render.json",
+      "artifact": "<workspace>/staging-stack/raw/4k-render.json",
       "sha256": "ec238641cd37b835757b6c1a26c536530fcf16d9883aec12de759c2a8aba8ddb",
       "summary": {
         "unique_cases": 31,
@@ -540,12 +540,12 @@
       "stdout_tail": [
         "  byte-exact cases: 15/31",
         "== one-command run complete in 5.9s: 31 pass / 0 fail / 0 skipped, 31 unique cases, 0 aliases, 15 byte-exact",
-        "== receipt: /Users/cheng/staging-stack/raw/4k-render.json"
+        "== receipt: <workspace>/staging-stack/raw/4k-render.json"
       ],
       "note": "render --run accepted --wrapper-build and passed 31/31 unique cases (15 byte-exact)."
     },
     "16k_default": {
-      "artifact": "/Users/cheng/staging-stack/raw/16k-default.json",
+      "artifact": "<workspace>/staging-stack/raw/16k-default.json",
       "sha256": "fe2354b03f5a202ff0a72195bce871f831aae8f850e4fa88114f658e76463678",
       "summary_line": "runs: 43 pass / 0 fail (default matrix) + 0 extended pass / 0 fail / 0 recorded",
       "case_table": {
@@ -558,7 +558,7 @@
       "fails": []
     },
     "16k_render": {
-      "artifact": "/Users/cheng/staging-stack/raw/16k-render.json",
+      "artifact": "<workspace>/staging-stack/raw/16k-render.json",
       "sha256": "89f4612d0ac5641706aa4e2249830964a377979515fc0f614ab32b6363d05f80",
       "summary": {
         "unique_cases": 31,
@@ -573,7 +573,7 @@
       "stdout_tail": [
         "  byte-exact cases: 15/31",
         "== one-command run complete in 9.4s: 31 pass / 0 fail / 0 skipped, 31 unique cases, 0 aliases, 15 byte-exact",
-        "== receipt: /Users/cheng/staging-stack/raw/16k-render.json"
+        "== receipt: <workspace>/staging-stack/raw/16k-render.json"
       ]
     }
   },
@@ -689,10 +689,10 @@
     "The extended matrix run uses 94 planned runs as the tool reports; the JSON includes the 3 caps runs on top of that (97 records)."
   ],
   "raw_artifacts": {
-    "root": "/Users/cheng/staging-stack",
-    "source": "/Users/cheng/staging-stack/source",
-    "build": "/Users/cheng/staging-stack/build",
-    "staged": "/Users/cheng/staging-stack/wrapper-build-patched",
+    "root": "<workspace>/staging-stack",
+    "source": "<workspace>/staging-stack/source",
+    "build": "<workspace>/staging-stack/build",
+    "staged": "<workspace>/staging-stack/wrapper-build-patched",
     "logs": {
       "setup": "setup.log",
       "configure_defines": "configure-defines.log",

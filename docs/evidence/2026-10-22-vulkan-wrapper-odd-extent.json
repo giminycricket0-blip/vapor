@@ -10,11 +10,11 @@
     "source_repository": "https://github.com/leegao/bionic-vulkan-wrapper",
     "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
     "pristine_archive": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source.tar.gz",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source.tar.gz",
       "sha256": "fe1f7e32f0c4b151f74b252ffda3f3561d56df96e3b17863f66c89b01b698f3d"
     },
-    "candidate_source_readonly": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source",
-    "scratch_source": "/Users/cheng/staging-oddextent/source (copy of the sRGB-patch scratch source, which is the pinned candidate source + image-create + trace-gate + srgb-storage, plus this patch)",
+    "candidate_source_readonly": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source",
+    "scratch_source": "<workspace>/staging-oddextent/source (copy of the sRGB-patch scratch source, which is the pinned candidate source + image-create + trace-gate + srgb-storage, plus this patch)",
     "prior_defect_receipts": [
       "docs/evidence/2026-10-21-vulkan-wrapper-reference-extended.json",
       "docs/evidence/2026-10-21-vulkan-wrapper-reference-16k-extended.json"
@@ -151,41 +151,41 @@
       "on_top_of_srgb_storage_patch": "applies cleanly with --fuzz=0 (srgb-storage.patch first, then odd-extent.patch) - this is the repo's stacking order",
       "reverse_order_stacking": "NOT clean: applying odd-extent.patch before srgb-storage.patch makes srgb hunk 2/2 fail because both add code at the same per-block loop tail; the repo applies srgb-storage.patch first, so this does not affect the repo stack. Reported honestly rather than working around it.",
       "srgb_storage_patch_sha256": "042dd50b05e24d658cc782218a0931926a068c21da02c7dabf276908c2782128",
-      "log": "/Users/cheng/staging-oddextent/logs/apply-stack.log (sha256 bcf26f363d2c2cda88b9de87c5001e47a36feec333be4a55cd4521dce4a35980)"
+      "log": "<workspace>/staging-oddextent/logs/apply-stack.log (sha256 bcf26f363d2c2cda88b9de87c5001e47a36feec333be4a55cd4521dce4a35980)"
     },
     "pristine_bcdec_sha256": "9d478b26b978251ffcf5327d041d9f32dcfd207e58915fe75d322a0bd3701e52",
     "combined_source_bcdec_sha256": "d0ae85e2c9edb19d017f6f6d1cc4acbfc91e9d8507a69ba34856ff4b96f27d01"
   },
   "build": {
-    "scratch_root": "/Users/cheng/staging-oddextent",
-    "source_tree": "/Users/cheng/staging-oddextent/source (copied from /Users/cheng/staging-srgb/source, itself the pinned candidate source plus srgb-storage.patch; this patch applied with patch -p1 --fuzz=0)",
-    "build_script": "/Users/cheng/staging-oddextent/build.sh",
+    "scratch_root": "<workspace>/staging-oddextent",
+    "source_tree": "<workspace>/staging-oddextent/source (copied from <workspace>/staging-srgb/source, itself the pinned candidate source plus srgb-storage.patch; this patch applied with patch -p1 --fuzz=0)",
+    "build_script": "<workspace>/staging-oddextent/build.sh",
     "recipe": "meson 1.9.1 setup with the recorded cross file (NDK r27.3.13750724 clang 18.0.4, aarch64-linux-android34) and native file; recorded c_args/cpp_args and 16 KB max-page-size link args; ninja -C build -j4 src/vulkan/wrapper/libvulkan_wrapper.so",
     "result": "SUCCESS: 471/471 targets, no errors, no warnings in bcdec.c (only pre-existing artifacts.cpp/vk_printers warnings)",
     "lib_unstripped": {
-      "path": "/Users/cheng/staging-oddextent/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+      "path": "<workspace>/staging-oddextent/build/src/vulkan/wrapper/libvulkan_wrapper.so",
       "bytes": 131381952,
       "sha256": "02c2a65d7f44e11f66efee51b6859eaca6ee0215486ea1cb902526547fe1f8ab"
     },
     "lib_used_on_device": {
-      "path": "/Users/cheng/staging-oddextent/wrapper-build-patched/candidate-stripped.so",
+      "path": "<workspace>/staging-oddextent/wrapper-build-patched/candidate-stripped.so",
       "bytes": 10700416,
       "sha256": "ce42e9281ae5bb96a2eb8b97d8209e6b4e5ec9687e4262a22010d698b8f89e5b"
     },
     "unpatched_candidate": {
-      "path": "/Users/cheng/staging-oddextent/wrapper-build-unpatched/candidate-stripped.so",
+      "path": "<workspace>/staging-oddextent/wrapper-build-unpatched/candidate-stripped.so",
       "bytes": 10699464,
       "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
       "matches_recorded_pinned_hash": true
     },
     "baseline": {
-      "path": "/Users/cheng/staging-oddextent/wrapper-build-unpatched/baseline-stripped.so",
+      "path": "<workspace>/staging-oddextent/wrapper-build-unpatched/baseline-stripped.so",
       "bytes": 10698760,
       "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c"
     },
     "logs": {
-      "build": "/Users/cheng/staging-oddextent/build.log (sha256 5ffa704b4f1a928ff566a9bea43740a3ba5134bf2bc6531a75a0e4dd3ad16902)",
-      "setup": "/Users/cheng/staging-oddextent/setup.log (sha256 b4fc11b4ec54406e9d93587afbef05bf3f31acc11050d6885d9a676ec5dac8ae)"
+      "build": "<workspace>/staging-oddextent/build.log (sha256 5ffa704b4f1a928ff566a9bea43740a3ba5134bf2bc6531a75a0e4dd3ad16902)",
+      "setup": "<workspace>/staging-oddextent/setup.log (sha256 b4fc11b4ec54406e9d93587afbef05bf3f31acc11050d6885d9a676ec5dac8ae)"
     }
   },
   "elf_check": {
@@ -196,12 +196,12 @@
     "same_load_alignment": "0x4000 (all four LOAD segments, 16 KB max-page-size link flags)",
     "export_count": 4073,
     "export_sets_identical": true,
-    "log": "/Users/cheng/staging-oddextent/logs/elf-compare.log (sha256 6d3b56d55efa3cfa301ecd89363bdb6430faca6c2daf737da3616965c1004d1a)"
+    "log": "<workspace>/staging-oddextent/logs/elf-compare.log (sha256 6d3b56d55efa3cfa301ecd89363bdb6430faca6c2daf737da3616965c1004d1a)"
   },
   "runtime_ab": {
     "tool": {
       "repo_path": "tools/tests/vulkan-wrapper-reference.py",
-      "evaluator_used": "/Users/cheng/staging-oddextent/tools/tests/vulkan-wrapper-reference.py",
+      "evaluator_used": "<workspace>/staging-oddextent/tools/tests/vulkan-wrapper-reference.py",
       "evaluator_sha256": "9b1ae40949606230dee743ab0df41f38cf9c62e24787914ff5e771425ed71414",
       "evaluator_fixture_sha256": "fae3e79af22e5b4dabb966f75e24b38e7f9d14af6a31f825ead6ded351e134cf",
       "evaluator_note": "The repo reference tool was being edited concurrently by other work. A scratch copy was used identically for all four phases; it carries one initialisation fix (self.bc6h_reference = None) because the payload builder reads that attribute unconditionally and crashes when only odd-extents/partial-region families are selected (AttributeError observed with the unmodified copy). The fix only prevents the post-run JSON crash; probe runs, expected values and metrics are unchanged.",
@@ -1903,7 +1903,7 @@
       "avd": "VaporProbe36A",
       "serial": "emulator-5558",
       "port": 5558,
-      "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd VaporProbe36A -port 5558 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 2",
+      "boot_command": "<workspace>/Library/Android/sdk/emulator/emulator -avd VaporProbe36A -port 5558 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 2",
       "page_size_observed": "4096 (getconf and probe sysconf)",
       "guest": {
         "serial": "emulator-5558",
@@ -1941,7 +1941,7 @@
       },
       "fingerprint_observed": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
       "emulator_log": {
-        "path": "/Users/cheng/staging-oddextent/emulator-4k.log",
+        "path": "<workspace>/staging-oddextent/emulator-4k.log",
         "sha256": "f280c2df0a7f51c9fe8ed6cb8bbb8abaca41de65a7cde81156a94879e26c817e"
       }
     },
@@ -1949,7 +1949,7 @@
       "avd": "VaporProbe37K16A",
       "serial": "emulator-5568",
       "port": 5568,
-      "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd VaporProbe37K16A -port 5568 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 2",
+      "boot_command": "<workspace>/Library/Android/sdk/emulator/emulator -avd VaporProbe37K16A -port 5568 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 2",
       "page_size_observed": "16384 (getconf and probe sysconf)",
       "guest": {
         "serial": "emulator-5568",
@@ -1988,7 +1988,7 @@
       "fingerprint_observed": "google/sdk_gphone16k_arm64/emu64a16k:17/CE2A.260420.051.A3/16571990:userdebug/dev-keys",
       "image_revision_note": "Newer than the old receipts' CE2A.260420.050; the AVD was recreated by the Lead on 2026-10-22 and the observed fingerprint above is the one used.",
       "emulator_log": {
-        "path": "/Users/cheng/staging-oddextent/emulator-16k.log",
+        "path": "<workspace>/staging-oddextent/emulator-16k.log",
         "sha256": "6948e777aa73b194dba7115ba2f95b3a6870ae95c066749d4816624610122cfb"
       }
     }
@@ -2021,57 +2021,57 @@
       "tools/vulkan-wrapper/odd-extent.patch",
       "docs/evidence/2026-10-22-vulkan-wrapper-odd-extent.json"
     ],
-    "scratch_root": "/Users/cheng/staging-oddextent",
+    "scratch_root": "<workspace>/staging-oddextent",
     "raw_phase_jsons": [
       {
-        "path": "/Users/cheng/staging-oddextent/raw/4k-unpatched.json",
+        "path": "<workspace>/staging-oddextent/raw/4k-unpatched.json",
         "sha256": "f016014ef12e37e696a0eef1e5f8658819eec643d1cb53caa4aba26bd7b3f9f2",
         "bytes": 279227
       },
       {
-        "path": "/Users/cheng/staging-oddextent/raw/4k-patched.json",
+        "path": "<workspace>/staging-oddextent/raw/4k-patched.json",
         "sha256": "2d7b8c2d20801c2994ac12187c737febc9fb5078915f4fc3337f6012edcadcbd",
         "bytes": 271615
       },
       {
-        "path": "/Users/cheng/staging-oddextent/raw/16k-unpatched.json",
+        "path": "<workspace>/staging-oddextent/raw/16k-unpatched.json",
         "sha256": "9b9ebc1aef9d816efdefe4bc9aa0d8c2a7aef756503a47de4162209ba6f06b74",
         "bytes": 279997
       },
       {
-        "path": "/Users/cheng/staging-oddextent/raw/16k-patched.json",
+        "path": "<workspace>/staging-oddextent/raw/16k-patched.json",
         "sha256": "433ac8bb07e6ee1c5886fb72b5b0772d242f0e84b1038c877f64b92fa14c6300",
         "bytes": 272394
       }
     ],
     "stdout_logs": [
       {
-        "path": "/Users/cheng/staging-oddextent/logs/4k-unpatched.stdout",
+        "path": "<workspace>/staging-oddextent/logs/4k-unpatched.stdout",
         "sha256": "cc9555a890135bae766ee497476170d2c84994b2e227a86d776150a85da7b8b9"
       },
       {
-        "path": "/Users/cheng/staging-oddextent/logs/4k-patched.stdout",
+        "path": "<workspace>/staging-oddextent/logs/4k-patched.stdout",
         "sha256": "645c6c3db870c394c3b74341d80261031dc63f4c9e936150d7dc574550e78592"
       },
       {
-        "path": "/Users/cheng/staging-oddextent/logs/16k-unpatched.stdout",
+        "path": "<workspace>/staging-oddextent/logs/16k-unpatched.stdout",
         "sha256": "b20dfd5b1bf26d85fcce9357c6b4ead619a3b28fcb00aaf91e0314b2b7c0c6a9"
       },
       {
-        "path": "/Users/cheng/staging-oddextent/logs/16k-patched.stdout",
+        "path": "<workspace>/staging-oddextent/logs/16k-patched.stdout",
         "sha256": "eeb5d738e69cfbe35335386e16398c14b7337eecb58804be507bf13d22779fbc"
       }
     ],
     "ab_summary": {
-      "path": "/Users/cheng/staging-oddextent/ab-summary.json",
+      "path": "<workspace>/staging-oddextent/ab-summary.json",
       "sha256": "c74a719188bb722519e8a4a9082589673d5812d69b8b9bc01e59bf5fd201d11c"
     },
     "patch_verification": {
-      "path": "/Users/cheng/staging-oddextent/logs/apply-stack.log",
+      "path": "<workspace>/staging-oddextent/logs/apply-stack.log",
       "sha256": "bcf26f363d2c2cda88b9de87c5001e47a36feec333be4a55cd4521dce4a35980"
     },
     "elf_verification": {
-      "path": "/Users/cheng/staging-oddextent/logs/elf-compare.log",
+      "path": "<workspace>/staging-oddextent/logs/elf-compare.log",
       "sha256": "6d3b56d55efa3cfa301ecd89363bdb6430faca6c2daf737da3616965c1004d1a"
     }
   }

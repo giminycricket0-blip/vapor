@@ -23,8 +23,8 @@ Quick start (paths of the two APKs are the only required arguments)::
     python3 tools/tests/apk-repro-diff.py \\
         --source /tmp/apk-repro/source/standard.apk \\
         --rebuild /tmp/apk-repro/rebuild1.apk \\
-        --workdir /Users/cheng/apk-repro-rootcause \\
-        --json-out /Users/cheng/apk-repro-rootcause/out/apk-repro-diff.json
+        --workdir ~/apk-repro-rootcause \\
+        --json-out ~/apk-repro-rootcause/out/apk-repro-diff.json
 
 The default output directory is the current directory; extracted artifacts and
 optional dump logs are written under ``<workdir>/apk-repro-diff`` so the run is

@@ -219,7 +219,7 @@
     },
     {
       "purpose": "boot AVD for instrumentation",
-      "command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 3072 -cores 4",
+      "command": "<workspace>/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 3072 -cores 4",
       "result": "booted; adb serial emulator-5556, Android 16 / SDK 36, 4096-byte page; emulator killed with adb emu kill after the runs"
     },
     {

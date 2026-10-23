@@ -7,7 +7,7 @@
     "sha256": "03909d3d077cd49bf35bef0d31288196b8fd26d82a1bc470b63d23041a54a0f7"
   },
   "probe_binary": {
-    "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/probe",
+    "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/probe",
     "sha256": "5eae550c7581bbf67eb8bf00347ec991166ad3f77df8d60cdc906778a764f0d9",
     "bytes": 162600
   },
@@ -691,7 +691,7 @@
     "The 16 KB AVD/API 37 results are separate (docs/evidence/2026-10-21-vulkan-wrapper-native-16k.json); this 4 KB pass was not repeated during the 16 KB session, and the two AVDs differ in API level and GPU backend, so no matched differential is claimed.",
     "Raw logs and per-run artifacts for this 4 KB pass live outside the checkout at wrapper-build/native-probe under the Codex work directory recorded in docs/evidence/2026-10-21-graphics-source.json."
   ],
-  "raw_evidence_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
+  "raw_evidence_directory": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
   "related_evidence": [
     "docs/evidence/2026-10-21-graphics-source.json",
     "docs/evidence/2026-10-21-vulkan-wrapper-native-16k.json",

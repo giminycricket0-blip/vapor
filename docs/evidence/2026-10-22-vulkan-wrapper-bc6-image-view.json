@@ -39,8 +39,8 @@
     ]
   },
   "build": {
-    "staging_tree": "/Users/cheng/staging-bc6iv",
-    "provenance": "copy of /Users/cheng/staging-oddextent (pinned 3abf4870 source + srgb-storage.patch + odd-extent.patch) with bc6-image-view.patch applied; build.sh adapted to ROOT=/Users/cheng/staging-bc6iv",
+    "staging_tree": "<workspace>/staging-bc6iv",
+    "provenance": "copy of <workspace>/staging-oddextent (pinned 3abf4870 source + srgb-storage.patch + odd-extent.patch) with bc6-image-view.patch applied; build.sh adapted to ROOT=<workspace>/staging-bc6iv",
     "recipe": "Meson cross build from staging-oddextent/build.sh (Android NDK 27.3.13750724, --buildtype release, -Dplatforms=x11, -Dandroid-stub=true, -Dvulkan-drivers=wrapper; ninja target src/vulkan/wrapper/libvulkan_wrapper.so)",
     "source_files": {
       "wrapper_device.c": "7080edd558b64571e992b55b2ded22af85062ad75d4f98c5608c854c0569b508",
@@ -48,7 +48,7 @@
     },
     "elf": {
       "candidate": {
-        "path": "/Users/cheng/staging-bc6iv/wrapper-build/candidate-stripped.so",
+        "path": "<workspace>/staging-bc6iv/wrapper-build/candidate-stripped.so",
         "sha256": "eb92268a770b1aa832d9760b86085f9420e3a7c9501dc5b143b18ba1cade2238",
         "bytes": 10700792,
         "soname": "libvulkan_wrapper.so",
@@ -57,23 +57,23 @@
         "exported_global_func_symbols": 2124,
         "export_set_matches_recorded_staging_candidate": true,
         "recorded_staging_candidate": {
-          "path": "/Users/cheng/staging-oddextent/wrapper-build-patched/candidate-stripped.so",
+          "path": "<workspace>/staging-oddextent/wrapper-build-patched/candidate-stripped.so",
           "sha256": "ce42e9281ae5bb96a2eb8b97d8209e6b4e5ec9687e4262a22010d698b8f89e5b"
         }
       },
       "baseline": {
-        "path": "/Users/cheng/staging-bc6iv/wrapper-build/baseline-stripped.so",
+        "path": "<workspace>/staging-bc6iv/wrapper-build/baseline-stripped.so",
         "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
         "bytes": 10698760,
         "note": "pinned unpatched baseline (negative control)"
       },
       "unstripped_build": {
-        "path": "/Users/cheng/staging-bc6iv/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+        "path": "<workspace>/staging-bc6iv/build/src/vulkan/wrapper/libvulkan_wrapper.so",
         "bytes": 131381760
       }
     },
-    "wrapper_build_dir": "/Users/cheng/staging-bc6iv/wrapper-build",
-    "native_probe_copied_from": "/Users/cheng/staging-oddextent/wrapper-build-patched/native-probe"
+    "wrapper_build_dir": "<workspace>/staging-bc6iv/wrapper-build",
+    "native_probe_copied_from": "<workspace>/staging-oddextent/wrapper-build-patched/native-probe"
   },
   "verification": {
     "emulators": [
@@ -95,10 +95,10 @@
       }
     ],
     "commands": [
-      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5556 --cases bc6h --wrapper-build /Users/cheng/staging-bc6iv/wrapper-build --label bc6iv-4k-bc6h --out /Users/cheng/staging-bc6iv/bc6iv-phase1-4k-bc6h.json --scratch /Users/cheng/staging-bc6iv/scratch-4k-bc6h",
-      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5566 --cases bc6h --wrapper-build /Users/cheng/staging-bc6iv/wrapper-build --label bc6iv-16k-bc6h --out /Users/cheng/staging-bc6iv/bc6iv-phase2-16k-bc6h.json --scratch /Users/cheng/staging-bc6iv/scratch-16k-bc6h",
-      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5556 --cases default --wrapper-build /Users/cheng/staging-bc6iv/wrapper-build --label bc6iv-4k-default --out /Users/cheng/staging-bc6iv/bc6iv-4k-default.json --scratch /Users/cheng/staging-bc6iv/scratch-4k-default",
-      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5556 --cases bc7 --srgb-host-convention linear --wrapper-build /Users/cheng/staging-bc6iv/wrapper-build --label bc6iv-4k-bc7-linear --out /Users/cheng/staging-bc6iv/bc6iv-4k-bc7-linear.json --scratch /Users/cheng/staging-bc6iv/scratch-4k-bc7-linear"
+      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5556 --cases bc6h --wrapper-build <workspace>/staging-bc6iv/wrapper-build --label bc6iv-4k-bc6h --out <workspace>/staging-bc6iv/bc6iv-phase1-4k-bc6h.json --scratch <workspace>/staging-bc6iv/scratch-4k-bc6h",
+      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5566 --cases bc6h --wrapper-build <workspace>/staging-bc6iv/wrapper-build --label bc6iv-16k-bc6h --out <workspace>/staging-bc6iv/bc6iv-phase2-16k-bc6h.json --scratch <workspace>/staging-bc6iv/scratch-16k-bc6h",
+      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5556 --cases default --wrapper-build <workspace>/staging-bc6iv/wrapper-build --label bc6iv-4k-default --out <workspace>/staging-bc6iv/bc6iv-4k-default.json --scratch <workspace>/staging-bc6iv/scratch-4k-default",
+      "python3 tools/tests/vulkan-wrapper-reference.py --serial emulator-5556 --cases bc7 --srgb-host-convention linear --wrapper-build <workspace>/staging-bc6iv/wrapper-build --label bc6iv-4k-bc7-linear --out <workspace>/staging-bc6iv/bc6iv-4k-bc7-linear.json --scratch <workspace>/staging-bc6iv/scratch-4k-bc7-linear"
     ],
     "ab_4k": [
       {
@@ -660,26 +660,26 @@
     "The emulated image-view path is still marked experimental by the wrapper (USE_IMAGE_VIEW opt-in); this fix does not change that status."
   ],
   "raw_artifacts": {
-    "staging_root": "/Users/cheng/staging-bc6iv",
+    "staging_root": "<workspace>/staging-bc6iv",
     "payloads": [
-      "/Users/cheng/staging-bc6iv/bc6iv-phase1-4k-bc6h.json",
-      "/Users/cheng/staging-bc6iv/bc6iv-phase2-16k-bc6h.json",
-      "/Users/cheng/staging-bc6iv/bc6iv-4k-default.json",
-      "/Users/cheng/staging-bc6iv/bc6iv-4k-bc7-linear.json"
+      "<workspace>/staging-bc6iv/bc6iv-phase1-4k-bc6h.json",
+      "<workspace>/staging-bc6iv/bc6iv-phase2-16k-bc6h.json",
+      "<workspace>/staging-bc6iv/bc6iv-4k-default.json",
+      "<workspace>/staging-bc6iv/bc6iv-4k-bc7-linear.json"
     ],
     "logs": [
-      "/Users/cheng/staging-bc6iv/logs/bc6iv-4k-bc6h.log",
-      "/Users/cheng/staging-bc6iv/logs/bc6iv-16k-bc6h.log",
-      "/Users/cheng/staging-bc6iv/logs/bc6iv-4k-default.log",
-      "/Users/cheng/staging-bc6iv/logs/bc6iv-4k-bc7-linear.log",
-      "/Users/cheng/staging-bc6iv/build-run.log"
+      "<workspace>/staging-bc6iv/logs/bc6iv-4k-bc6h.log",
+      "<workspace>/staging-bc6iv/logs/bc6iv-16k-bc6h.log",
+      "<workspace>/staging-bc6iv/logs/bc6iv-4k-default.log",
+      "<workspace>/staging-bc6iv/logs/bc6iv-4k-bc7-linear.log",
+      "<workspace>/staging-bc6iv/build-run.log"
     ],
-    "source_tree": "/Users/cheng/staging-bc6iv/source",
-    "build_tree": "/Users/cheng/staging-bc6iv/build",
-    "wrapper_build": "/Users/cheng/staging-bc6iv/wrapper-build",
+    "source_tree": "<workspace>/staging-bc6iv/source",
+    "build_tree": "<workspace>/staging-bc6iv/build",
+    "wrapper_build": "<workspace>/staging-bc6iv/wrapper-build",
     "emulator_logs": [
-      "/Users/cheng/staging-bc6iv/logs/emulator-4k.log",
-      "/Users/cheng/staging-bc6iv/logs/emulator-16k.log"
+      "<workspace>/staging-bc6iv/logs/emulator-4k.log",
+      "<workspace>/staging-bc6iv/logs/emulator-16k.log"
     ],
     "diagnostic_logcat_quotes_recorded_in_root_cause": "BC6H diagnostic: original=143 image=97 view=95; Patching ImageView format for tracked image from 95 to 97 (original img format: 143); after bypass: readback sha256 == bcdec reference sha256 13541bd48e7e68c1..."
   },

@@ -15,43 +15,43 @@
     "previous_receipt_first_ab_pass": "7 runs on emulator-5556/AVD Vapor_UI_API36: release points inside vkFreeCommandBuffers, vkWaitForFences and vkDeviceWaitIdle"
   },
   "binary_identity": {
-    "scratch_build_tree": "/Users/cheng/wrapper-staging-reclaim/work/build",
+    "scratch_build_tree": "<workspace>/wrapper-staging-reclaim/work/build",
     "unpatched_build_library": {
-      "path": "/Users/cheng/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+      "path": "<workspace>/wrapper-staging-reclaim/work/build/src/vulkan/wrapper/libvulkan_wrapper.so",
       "bytes": 131385216,
       "sha256": "e8eae86bd4174b0035c04db875a0080cfaef2d1fe294b0f4bc2d0c494e62079e"
     },
     "patched_library_used_on_device": {
-      "path": "/Users/cheng/staging-deep/runtime/patched-stripped.so",
+      "path": "<workspace>/staging-deep/runtime/patched-stripped.so",
       "bytes": 10703312,
       "sha256": "08ef8247e34c0e083cede47d61112784f472fc57a503fc0402d85d0d1b9dbca6"
     },
     "control_candidate_library_used_on_device": {
-      "path": "/Users/cheng/staging-deep/runtime/candidate.so",
+      "path": "<workspace>/staging-deep/runtime/candidate.so",
       "bytes": 10699464,
       "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506"
     },
     "base_probe_binary": {
-      "path": "/Users/cheng/staging-deep/runtime/probe",
+      "path": "<workspace>/staging-deep/runtime/probe",
       "bytes": 162504,
       "sha256": "eaabe9afc3c443ffa2de65e741f114f2a1de4b7fd23625c76983f06724af79da",
-      "note": "prior native probe from /Users/cheng/wrapper-probe-16k/run, LOAD 0x4000, used for identity cross-check only; all new cases used probe-deep"
+      "note": "prior native probe from <workspace>/wrapper-probe-16k/run, LOAD 0x4000, used for identity cross-check only; all new cases used probe-deep"
     },
     "extended_probe_source": {
-      "path": "/Users/cheng/staging-deep/probes/probe-deep.c",
+      "path": "<workspace>/staging-deep/probes/probe-deep.c",
       "bytes": 29365,
       "sha256": "2b7907089ecd91c508514df3c7d4e0e2c842656815bec628d7527a573798ea7a",
       "note": "derived from tools/tests/vulkan-wrapper-native.c (source sha256 03909d3d077cd49bf35bef0d31288196b8fd26d82a1bc470b63d23041a54a0f7) with MARKER/RSS prints and env-independent extra modes; scratch-only, never added to the repo"
     },
     "extended_probe_4kb_binary": {
-      "path": "/Users/cheng/staging-deep/probes/probe-deep",
+      "path": "<workspace>/staging-deep/probes/probe-deep",
       "bytes": 34688,
       "sha256": "964423f6002912d279af257d433871ab679467f9c47e90af55c64302c6a48e28",
       "load_alignment": "0x1000",
       "used": "Phase 1 (4 KB guest)"
     },
     "extended_probe_16kb_binary": {
-      "path": "/Users/cheng/staging-deep/probes/probe-deep-16k",
+      "path": "<workspace>/staging-deep/probes/probe-deep-16k",
       "bytes": 34688,
       "sha256": "85ec5b54394b9b02d2d6abeb5c237381676797e3369a674ecdb715c753440fb7",
       "load_alignment": "0x4000",
@@ -63,22 +63,22 @@
     "ownership": "Exclusive port 5556. Ports 5558/5560/5562 were never touched. `adb emu kill` was issued at the end of each phase; no qemu is left on 5556.",
     "phase1": {
       "avd": "Vapor_UI_API36",
-      "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 4",
+      "boot_command": "<workspace>/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 4",
       "guest_abi": "arm64-v8a",
       "guest_sdk": 36,
       "page_size": 4096,
       "vulkan_device_reported_by_probe": "llvmpipe (LLVM 21.1.4, 128 bits) vendor=10005 device=0 api=1.3.0 page_size=4096",
       "boot_log": {
-        "path": "/Users/cheng/staging-deep/emulator-phase1.log",
+        "path": "<workspace>/staging-deep/emulator-phase1.log",
         "sha256": "9ba76e989e6a59da0b315c167173fdd2d354f6fa29ce3075ac136de31ad44067"
       },
       "notes": "boot_completed=1 verified before any run; device directory /data/local/tmp/vapor-staging-deep"
     },
     "phase2": {
       "avd": "Vapor_API_37_16KB",
-      "avd_ini": "/Users/cheng/.android/avd/Vapor_API_37_16KB.ini",
-      "avd_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/emulator/Vapor_API_37_16KB.avd",
-      "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_API_37_16KB -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 4",
+      "avd_ini": "<workspace>/.android/avd/Vapor_API_37_16KB.ini",
+      "avd_directory": "<workspace>/Documents/Codex/2026-10-13/82379689/work/emulator/Vapor_API_37_16KB.avd",
+      "boot_command": "<workspace>/Library/Android/sdk/emulator/emulator -avd Vapor_API_37_16KB -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 2048 -cores 4",
       "guest_model": "sdk_gphone16k_arm64",
       "guest_fingerprint": "google/sdk_gphone16k_arm64/emu64a16k:17/CE2A.260420.050/16231978:userdebug/dev-keys",
       "guest_sdk": 37,
@@ -86,16 +86,16 @@
       "debuggable": 1,
       "vulkan_device_reported_by_probe": "Goldfish GFXStream (llvmpipe (LLVM 21.1.4, 128 bits)) vendor=10005 device=0 api=1.3.0 page_size=16384",
       "boot_log": {
-        "path": "/Users/cheng/staging-deep/emulator-phase2b.log",
+        "path": "<workspace>/staging-deep/emulator-phase2b.log",
         "sha256": "c16dc0f566d1b43bf6ee223f1acf27ef2839c2c663f1e54db08465cbfd6cde91"
       },
-      "coordination_note": "First Phase 2 boot attempt failed with `FATAL | Running multiple emulators with the same AVD is an experimental feature` because another teammate held AVD Vapor_API_37_16KB on port 5558 (log: /Users/cheng/staging-deep/emulator-phase2.log sha256 a65d2502cb15c4b7508117b62a6c14d3e169c8d1076a82b1c14b767b7380515d). After the Lead confirmed release and `adb devices`/`ps` showed the 5558 instance gone, the AVD booted on 5556 successfully. No clone was needed.",
-      "fixture_note": "The first Phase 2 run batch crashed with `Segmentation fault` (exit 139) for all 5 runs because the probe-deep binary then in use was linked with 4 KB LOAD alignment (0x1000) and cannot run on the 16 KB-page guest. The probe was rebuilt with -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 (LOAD 0x4000) and the same 5 runs were repeated successfully once. The failed-attempt exit codes remain in /Users/cheng/staging-deep/runs.tsv; that was a fixture error, not a wrapper defect."
+      "coordination_note": "First Phase 2 boot attempt failed with `FATAL | Running multiple emulators with the same AVD is an experimental feature` because another teammate held AVD Vapor_API_37_16KB on port 5558 (log: <workspace>/staging-deep/emulator-phase2.log sha256 a65d2502cb15c4b7508117b62a6c14d3e169c8d1076a82b1c14b767b7380515d). After the Lead confirmed release and `adb devices`/`ps` showed the 5558 instance gone, the AVD booted on 5556 successfully. No clone was needed.",
+      "fixture_note": "The first Phase 2 run batch crashed with `Segmentation fault` (exit 139) for all 5 runs because the probe-deep binary then in use was linked with 4 KB LOAD alignment (0x1000) and cannot run on the 16 KB-page guest. The probe was rebuilt with -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 (LOAD 0x4000) and the same 5 runs were repeated successfully once. The failed-attempt exit codes remain in <workspace>/staging-deep/runs.tsv; that was a fixture error, not a wrapper defect."
     }
   },
   "protocol": {
     "command_template": "adb -s emulator-5556 shell \"cd /data/local/tmp/vapor-staging-deep && LD_LIBRARY_PATH=. PREFIX=. WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=<0|1> ./probe-deep ./<patched-stripped.so|candidate.so> <MODE> <PARAM> 16\"",
-    "host_runner": "/Users/cheng/staging-deep/run-case.sh (writes /Users/cheng/staging-deep/runs.tsv and logs/<tag>.log)",
+    "host_runner": "<workspace>/staging-deep/run-case.sh (writes <workspace>/staging-deep/runs.tsv and logs/<tag>.log)",
     "probe_modes": {
       "staging": "base probe behaviour: non-one-time command buffer per cycle, fence submit/wait, free per cycle (4 KB anchor)",
       "oneshot": "ONE_TIME_SUBMIT command buffer + classic vkQueueSubmit with fence, wait, free",
@@ -108,7 +108,7 @@
       "stress-images": "32 images x 8 CmdCopyBufferToImage copies, one submitted command buffer per image, RSS sampled",
       "stress-long": "one long-lived image x 256 copies, one command buffer per copy, RSS sampled"
     },
-    "log_analysis": "/Users/cheng/staging-deep/summary-runs.json (sha256 eb82be981754714e3a7b91504418e7c12ccaaf65428d5c75c2a1c89f7fa82e66) computes tracking, release calls/totals, peak tracked resources, marker intervals and tracked==released from the raw debug logs."
+    "log_analysis": "<workspace>/staging-deep/summary-runs.json (sha256 eb82be981754714e3a7b91504418e7c12ccaaf65428d5c75c2a1c89f7fa82e66) computes tracking, release calls/totals, peak tracked resources, marker intervals and tracked==released from the raw debug logs."
   },
   "results": {
     "summary": "23 successful runs: 18 in Phase 1 (4 KB) and 5 in Phase 2 (16 KB), all exit code 0, 'PASS clean-exit', no FAIL lines, no wrapper staging-path errors, no probe crashes/tombstones. tracking==released and peak-tracked accounting hold in every patched and control run. 5 additional Phase 2 attempts exited 139 because of the 4 KB-aligned probe binary and were repeated after rebuilding the probe (fixture error, see emulator.phase2.fixture_note).",
@@ -858,7 +858,7 @@
     "case6_validation_layer": {
       "verdict": "NOT RUN / NOT FEASIBLE with this probe architecture; no VUID claim is made.",
       "attempts": [
-        "Downloaded the official Khronos asset android-binaries-1.4.363.0.tar.gz (libVkLayer_khronos_validation.so for arm64-v8a present); scratch file /Users/cheng/staging-deep/vvl-android.tar.gz sha256 b2727789f4c4d83b7149e904768bbaf54e8236ec912691730a70e22aebcba419. It was not installed because the probe never goes through the Vulkan loader.",
+        "Downloaded the official Khronos asset android-binaries-1.4.363.0.tar.gz (libVkLayer_khronos_validation.so for arm64-v8a present); scratch file <workspace>/staging-deep/vvl-android.tar.gz sha256 b2727789f4c4d83b7149e904768bbaf54e8236ec912691730a70e22aebcba419. It was not installed because the probe never goes through the Vulkan loader.",
         "The extended probe (like the repo probe) dlopens the wrapper directly as an ICD and uses vk_icdGetInstanceProcAddr, bypassing the Vulkan loader; Khronos validation layers are loader layers and cannot be attached to this path.",
         "Loader-path attempt 1: dlopen /system/lib64/libvulkan.so with VK_ICD_FILENAMES=<patched.so> -> the device enumerated and ran but produced no wrapper debug output and the BC1 pixel check failed (rgba 0,248,0,0), i.e. the native ranchu/lavapipe ICD was used instead of the wrapper. Logs: p1-loader-smoke.log.",
         "Loader-path attempt 2: VK_LOADER_DEBUG=error,warn,info plus a valid wrapper ICD manifest JSON -> VK_LOADER_DEBUG and the ICD selection still had no effect (no loader/layer diagnostics in the guest output; same uncompressed-BC1 pixel failure). Logs: p1-loader-debug.log, p1-loader-json.log.",
@@ -897,173 +897,173 @@
   ],
   "artifacts": {
     "repo_file_created": "docs/evidence/2026-10-21-wrapper-staging-reclaim-extended.json",
-    "scratch_root": "/Users/cheng/staging-deep",
+    "scratch_root": "<workspace>/staging-deep",
     "run_manifest": {
-      "path": "/Users/cheng/staging-deep/runs.tsv",
+      "path": "<workspace>/staging-deep/runs.tsv",
       "sha256": "1d383cea9284b4841871e260ebdb2f1ea131fe9045399ca4db88fe09cffbc972"
     },
     "analysis": {
-      "path": "/Users/cheng/staging-deep/summary-runs.json",
+      "path": "<workspace>/staging-deep/summary-runs.json",
       "sha256": "eb82be981754714e3a7b91504418e7c12ccaaf65428d5c75c2a1c89f7fa82e66"
     },
     "raw_logs": [
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-anchor-control-32v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-anchor-control-32v0.log",
         "sha256": "1ea081e31cb92c551cbb5cdc5d3c59f99ea28dcb9177aadce7adbe5aa6dbe809",
         "bytes": 119815
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-anchor-patched-32v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-anchor-patched-32v0.log",
         "sha256": "78a9152e0c6395e2c8e92bb8ecb63b27bd513fe2bb19637849c5be74e31ecb26",
         "bytes": 123162
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case1-nofence-control-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case1-nofence-control-8v0.log",
         "sha256": "9324d12f21f011e36db7f86781f39160a0aff1b40c703b688a41d52edd2754f1",
         "bytes": 74592
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case1-nofence-patched-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case1-nofence-patched-8v0.log",
         "sha256": "f4bf53b49ccdee5ec10c2c8ca00da5dca67e955bf32391d50dafde6be1678010",
         "bytes": 75347
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case2-freenorebegin-control-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case2-freenorebegin-control-8v0.log",
         "sha256": "5e66e1039a747f22f87d1d5e6a0cdb24773d23a50417127814309beb271b03f8",
         "bytes": 74487
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case2-freenorebegin-patched-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case2-freenorebegin-patched-8v0.log",
         "sha256": "022ae131afce4795fecb768e2c95fe883e5c4e4c4496803e2acda06718eed59a",
         "bytes": 75242
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case2-resetcb-control-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case2-resetcb-control-8v0.log",
         "sha256": "f052979ad52a82d27d03db96c42708d627b7cc9b15278a986ade774ae588c926",
         "bytes": 74598
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case2-resetcb-patched-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case2-resetcb-patched-8v0.log",
         "sha256": "171e6ec0d1e36d6a4267493f9d4626e656bf0cf38b47d524f81d618a9232ef25",
         "bytes": 75353
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case2-resetpoolbegin-control-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case2-resetpoolbegin-control-8v0.log",
         "sha256": "4f64c41ff3da5fc7cffc55bb26a7d662668a98283d4637e340c375cba5565f42",
         "bytes": 75078
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case2-resetpoolbegin-patched-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case2-resetpoolbegin-patched-8v0.log",
         "sha256": "809c2bab8cc224f4244cc5ebeed76b4965d365f09d20c3e033f8d1c17cebe9c4",
         "bytes": 75833
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case3-semaphore-control-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case3-semaphore-control-8v0.log",
         "sha256": "d01cde475a1e27d46b115d2b3ccdde7e8fd9fc86ff98ec96f292d32cf0fc4e6e",
         "bytes": 74482
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case3-semaphore-patched-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case3-semaphore-patched-8v0.log",
         "sha256": "d92b64666d07673c6be79d0938f3a42d25b8b1b6a5f5c5925a6238ec70006b1c",
         "bytes": 75237
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case3-submit2-control-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case3-submit2-control-8v0.log",
         "sha256": "d484a7c857df7a96061064b64d614012c5a8d02f92c375ae42540c6a19821e1b",
         "bytes": 74480
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case3-submit2-patched-8v0.log",
+        "path": "<workspace>/staging-deep/logs/p1-case3-submit2-patched-8v0.log",
         "sha256": "b4967cd608aa2ecc67b4d9c3c821b07849d4cb1625f737f80c99ed2c90438548",
         "bytes": 75235
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case4-stressimages-control.log",
+        "path": "<workspace>/staging-deep/logs/p1-case4-stressimages-control.log",
         "sha256": "46a24c74e8ad1078d18a94b56b0819c1b6792159b710fb30116015ba20e73b9e",
         "bytes": 517488
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case4-stressimages-patched.log",
+        "path": "<workspace>/staging-deep/logs/p1-case4-stressimages-patched.log",
         "sha256": "d3d0248dace76135e10ce39b0ae8c16cd5e36da45d322ed07a4108b163df8a79",
         "bytes": 517488
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case4-stresslong-control.log",
+        "path": "<workspace>/staging-deep/logs/p1-case4-stresslong-control.log",
         "sha256": "734acef7c42ed50429236eafa0e31f30fce98c5c9df38252e37a02b08bce7465",
         "bytes": 523100
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-case4-stresslong-patched.log",
+        "path": "<workspace>/staging-deep/logs/p1-case4-stresslong-patched.log",
         "sha256": "14aac30145827daf110ba75f9d8026deee0128d4458641cbaf20998598d2b614",
         "bytes": 550638
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p2-anchor-control-32v0.log",
+        "path": "<workspace>/staging-deep/logs/p2-anchor-control-32v0.log",
         "sha256": "cf8e5a9a11e60054cbe6851efcb7dad43f9103cc705fb68efddb92cab54a4066",
         "bytes": 124291
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p2-anchor-patched-32v0.log",
+        "path": "<workspace>/staging-deep/logs/p2-anchor-patched-32v0.log",
         "sha256": "7361c778ad13a31c22e33f30aee457383f05332bd2fe53eadbeab16a2c45eb17",
         "bytes": 127638
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p2-oneshot-control-32v0.log",
+        "path": "<workspace>/staging-deep/logs/p2-oneshot-control-32v0.log",
         "sha256": "6383b9c19c158ddc00a23509dddbdf7c8b5e3d5fc43ab79bf003aea6370479ff",
         "bytes": 124291
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p2-oneshot-patched-32v0.log",
+        "path": "<workspace>/staging-deep/logs/p2-oneshot-patched-32v0.log",
         "sha256": "ebe5bdf79129f151cdd2a4bc458960ef75301368f81e4ed0af6a7b4891b13a37",
         "bytes": 127638
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p2-oneshot-view1-patched-8v1.log",
+        "path": "<workspace>/staging-deep/logs/p2-oneshot-view1-patched-8v1.log",
         "sha256": "1b4c1935d158d383879d493bbebffc74e638f8440fb659839e8d43f598a01034",
         "bytes": 80854
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-loader-smoke.log",
+        "path": "<workspace>/staging-deep/logs/p1-loader-smoke.log",
         "sha256": "aa761a4943d05cc78bb82c481a14c45225ecdd7b234f5afd537251eeb9658e91"
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-loader-debug.log",
+        "path": "<workspace>/staging-deep/logs/p1-loader-debug.log",
         "sha256": "7099fb2472bd851777063f33babbffe1e4297dda81d4d6990e2806b38ee73ed5"
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/p1-loader-json.log",
+        "path": "<workspace>/staging-deep/logs/p1-loader-json.log",
         "sha256": "fcb7d343b7b6726c6783fe6e1611a4870af11e497e88aec7a97070cc97de17a6"
       },
       {
-        "path": "/Users/cheng/staging-deep/logs/smoke-deep.log",
+        "path": "<workspace>/staging-deep/logs/smoke-deep.log",
         "sha256": "c9b8979a72889e147d80f829009191d4e6bcfbc588b6608534e5e48209b69dfe"
       }
     ],
     "probe": {
-      "source": "/Users/cheng/staging-deep/probes/probe-deep.c",
+      "source": "<workspace>/staging-deep/probes/probe-deep.c",
       "source_sha256": "2b7907089ecd91c508514df3c7d4e0e2c842656815bec628d7527a573798ea7a",
       "build_commands": [
-        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang -O2 -Wall -Wextra -o probe-deep probe-deep.c -ldl (4 KB guest; LOAD 0x1000)",
-        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang -O2 -Wall -Wextra -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 -o probe-deep-16k probe-deep.c -ldl (16 KB guest; LOAD 0x4000)"
+        "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang -O2 -Wall -Wextra -o probe-deep probe-deep.c -ldl (4 KB guest; LOAD 0x1000)",
+        "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang -O2 -Wall -Wextra -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 -o probe-deep-16k probe-deep.c -ldl (16 KB guest; LOAD 0x4000)"
       ]
     },
     "emulator_logs": [
       {
-        "path": "/Users/cheng/staging-deep/emulator-phase1.log",
+        "path": "<workspace>/staging-deep/emulator-phase1.log",
         "sha256": "9ba76e989e6a59da0b315c167173fdd2d354f6fa29ce3075ac136de31ad44067"
       },
       {
-        "path": "/Users/cheng/staging-deep/emulator-phase2.log",
+        "path": "<workspace>/staging-deep/emulator-phase2.log",
         "sha256": "a65d2502cb15c4b7508117b62a6c14d3e169c8d1076a82b1c14b767b7380515d",
         "note": "failed first Phase 2 boot: AVD held by port 5558"
       },
       {
-        "path": "/Users/cheng/staging-deep/emulator-phase2b.log",
+        "path": "<workspace>/staging-deep/emulator-phase2b.log",
         "sha256": "c16dc0f566d1b43bf6ee223f1acf27ef2839c2c663f1e54db08465cbfd6cde91"
       }
     ],
     "downloaded_validation_layer_artifact": {
-      "path": "/Users/cheng/staging-deep/vvl-android.tar.gz",
+      "path": "<workspace>/staging-deep/vvl-android.tar.gz",
       "sha256": "b2727789f4c4d83b7149e904768bbaf54e8236ec912691730a70e22aebcba419",
       "note": "khronos Vulkan-ValidationLayers android-binaries-1.4.363.0 (arm64-v8a lib present); unused because the probe bypasses the Vulkan loader"
     }

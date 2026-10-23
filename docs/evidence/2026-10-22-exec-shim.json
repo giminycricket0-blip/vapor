@@ -50,7 +50,7 @@
     },
     "WINEDATADIR": "does not affect wineserver NLS lookup (tested)",
     "compiled_nls_fallbacks": [
-      "/home/max/termuxfs/.../opt/wine/share/wine/nls",
+      "<workspace>/termuxfs/.../opt/wine/share/wine/nls",
       "/usr/share/wine/nls",
       "/usr/local/share/wine/nls"
     ]

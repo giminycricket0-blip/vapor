@@ -35,18 +35,18 @@
     "script_language": "Python 3.14.4, stdlib only",
     "repeatability": "The script was run twice on the same two APKs; the two JSON reports are identical after removing the generated_at_utc field (report sha256 e408cc1e531f1a017736402e7612e5605cbb98ab20de87b6fcc5f29aa7fb2117 for the recorded run).",
     "external_tools": {
-      "llvm_objdump": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-objdump (LLVM 18.0.4)",
+      "llvm_objdump": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-objdump (LLVM 18.0.4)",
       "llvm_strip": "same NDK bin dir, llvm-strip (used only to prove the APK-entry provenance chain)",
-      "dexdump": "/Users/cheng/Library/Android/sdk/build-tools/36.0.0/dexdump"
+      "dexdump": "<workspace>/Library/Android/sdk/build-tools/36.0.0/dexdump"
     },
     "commands": [
-      "python3 tools/tests/apk-repro-diff.py --source /tmp/apk-repro/source/standard.apk --rebuild /tmp/apk-repro/rebuild1.apk --workdir /Users/cheng/apk-repro-rootcause --json-out /Users/cheng/apk-repro-rootcause/out/apk-repro-diff.json --llvm-bin /Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin --dexdump /Users/cheng/Library/Android/sdk/build-tools/36.0.0/dexdump",
-      "python3 tools/tests/apk-repro-diff.py (same arguments) --json-out /Users/cheng/apk-repro-rootcause/out/apk-repro-diff-run2.json",
+      "python3 tools/tests/apk-repro-diff.py --source /tmp/apk-repro/source/standard.apk --rebuild /tmp/apk-repro/rebuild1.apk --workdir <workspace>/apk-repro-rootcause --json-out <workspace>/apk-repro-rootcause/out/apk-repro-diff.json --llvm-bin <workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin --dexdump <workspace>/Library/Android/sdk/build-tools/36.0.0/dexdump",
+      "python3 tools/tests/apk-repro-diff.py (same arguments) --json-out <workspace>/apk-repro-rootcause/out/apk-repro-diff-run2.json",
       "llvm-strip --strip-unneeded -o /tmp/lc-strip-check.so app/.cxx/Debug/3j72j675/arm64-v8a/native-network/install/lib/libcrypto.so",
       "llvm-objdump -d --no-show-raw-insn libcrypto.source.so > out/libcrypto.source.dis.txt (and the rebuild equivalent)",
       "dexdump -d classes16|23|30.{source,rebuild}.dex (and dexdump -f for header/class order)"
     ],
-    "scratch_directory": "/Users/cheng/apk-repro-rootcause (extracted entries, disassembly/dexdump logs, experiment, reports; all outside the repository)",
+    "scratch_directory": "<workspace>/apk-repro-rootcause (extracted entries, disassembly/dexdump logs, experiment, reports; all outside the repository)",
     "tool_autodiscovery_smoke_test": "python3 tools/tests/apk-repro-diff.py --source ... --rebuild ... --workdir /tmp/apkdiff-smoke --json-out /tmp/apkdiff-smoke/report.json --quiet -> exit 0 in 27.6s; auto-selected NDK 27.3 llvm and build-tools 37.0.0 dexdump; same four differing entries and same verdict classes."
   },
   "apk_layout": {
@@ -346,7 +346,7 @@
   },
   "lld_merged_string_experiment": {
     "purpose": "Independently test whether the merged .rodata layout difference is a consequence of changing a single same-length string (libcrypto has exactly one string-content difference), rather than nondeterministic linking.",
-    "location": "/Users/cheng/apk-repro-rootcause/lld-experiment",
+    "location": "<workspace>/apk-repro-rootcause/lld-experiment",
     "setup": "three translation units with 300 distinct string literals plus the OpenSSL-style 'built on: ... UTC' string; compiled with NDK 27.3 aarch64-linux-android29-clang -O2 -fPIC and linked as a shared library with -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 (the same toolchain/flags family as the OpenSSL build). Three variants: base and same use byte-identical inputs and are built in two separate directories; var changes only the timestamp digits (same string length).",
     "results": {
       "base_vs_same": {
@@ -774,7 +774,7 @@
     "Byte-for-byte reproducibility for the whole apksigner/APK Signing Block output under a real release key is out of scope."
   ],
   "raw_artifacts": {
-    "scratch_directory": "/Users/cheng/apk-repro-rootcause",
+    "scratch_directory": "<workspace>/apk-repro-rootcause",
     "files": [
       "out/apk-repro-diff.json (full machine-readable report, sha256 e408cc1e531f1a017736402e7612e5605cbb98ab20de87b6fcc5f29aa7fb2117)",
       "out/apk-repro-diff-run2.json (second deterministic run; identical except generated_at_utc)",

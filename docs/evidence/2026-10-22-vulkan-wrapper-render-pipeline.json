@@ -132,7 +132,7 @@
     "No performance claims"
   ],
   "raw_artifacts": {
-    "evidence_directory": "/Users/cheng/wrapper-render (input/, output/, logs/, shaders/, run/; outside the repository)",
-    "logs": "/Users/cheng/wrapper-render/logs/emulator-smoke.log and run-*.smoke.log (all 32 smoke runs RESULT=ok)"
+    "evidence_directory": "<workspace>/wrapper-render (input/, output/, logs/, shaders/, run/; outside the repository)",
+    "logs": "<workspace>/wrapper-render/logs/emulator-smoke.log and run-*.smoke.log (all 32 smoke runs RESULT=ok)"
   }
 }

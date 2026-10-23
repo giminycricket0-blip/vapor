@@ -1668,7 +1668,7 @@ actions. No destructive save command is provided.
 
 ```sh
 VAPOR_ADB="$HOME/Library/Android/sdk/platform-tools/adb"
-VAPOR_APK="/Users/cheng/Documents/Codex/2026-10-13/82379689/outputs/Vapor-0.1.0-cloud-exit-reliability-dev.apk"
+VAPOR_APK="<workspace>/Documents/Codex/2026-10-13/82379689/outputs/Vapor-0.1.0-cloud-exit-reliability-dev.apk"
 "$VAPOR_ADB" devices -l
 shasum -a 256 "$VAPOR_APK"
 # Expected: 894a58c6f16afffbf12d7dbdb48268fcc9eda23ba22b26ceeceed9efa963aa04
@@ -2876,7 +2876,7 @@ Checks for this change:
 
 - Standard debug app/test APK builds pass. A final rebuild initially failed because duplicate
   generated ` 2.class` files declared the same classes. Generated app build outputs were moved
-  to `/Users/cheng/Library/Caches/Vapor/steam-focus-app-build-20261015` with an ignored
+  to `<workspace>/Library/Caches/Vapor/steam-focus-app-build-20261015` with an ignored
   `app/build` symlink; duplicate generated files were quarantined outside the source tree. The
   subsequent build passed in 33 seconds. This changes the local generated-output location, not
   Gradle source configuration or runtime components.

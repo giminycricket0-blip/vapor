@@ -38,7 +38,7 @@ Usage:
 The evidence JSON is written to
 docs/evidence/2026-10-22-vulkan-wrapper-validation.json (override with
 --evidence); raw logs and per-run captures go to --scratch
-(default /Users/cheng/wrapper-validation).
+(default ~/wrapper-validation).
 """
 import argparse
 import hashlib
@@ -55,12 +55,12 @@ DATE = "2026-10-22"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_SOURCE = Path(__file__).resolve().with_suffix(".c")
 DEFAULT_EVIDENCE = REPO_ROOT / "docs" / "evidence" / f"{DATE}-vulkan-wrapper-validation.json"
-DEFAULT_SCRATCH = Path("/Users/cheng/wrapper-validation")
+DEFAULT_SCRATCH = Path.home() / "wrapper-validation"
 DEFAULT_WRAPPER_BUILD = Path(
-    "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build")
-DEFAULT_NDK = Path("/Users/cheng/Library/Android/sdk/ndk/27.3.13750724")
-DEFAULT_EMULATOR = Path("/Users/cheng/Library/Android/sdk/emulator/emulator")
-DEFAULT_ADB = Path("/Users/cheng/Library/Android/sdk/platform-tools/adb")
+    os.environ.get("VAPOR_WRAPPER_SOURCE", ""))
+DEFAULT_NDK = _sdk_root() / "ndk" / "27.3.13750724"
+DEFAULT_EMULATOR = Path(str(_sdk_root() / "emulator" / "emulator"))
+DEFAULT_ADB = Path(str(_sdk_root() / "platform-tools" / "adb"))
 DEFAULT_AVD = "VaporProbe36D"
 DEFAULT_PORT = 5562
 DEFAULT_SERIAL = f"emulator-{DEFAULT_PORT}"
@@ -99,6 +99,15 @@ LOGCAT_LINE = re.compile(r"^\d\d-\d\d \d\d:\d\d:\d\d\.\d+ ")
 PHASE_LINE = re.compile(r"^(PROBE|DRIVER_INTERFACE|LAYER_INTERFACE|LAYER_PROPERTIES|LAYER |INSTANCE|"
                         r"INSTANCE_EXTENSIONS|INSTANCE_EXTENSION|PHYSICAL_DEVICE|FEATURES|DEVICE|QUEUE|"
                         r"WORKLOAD|PASS|FAIL|RESULT|SUMMARY)\b")
+
+
+def _sdk_root() -> Path:
+    """Android SDK root, from the environment rather than a hard-coded developer path."""
+    for name in ("ANDROID_SDK_ROOT", "ANDROID_HOME"):
+        value = os.environ.get(name)
+        if value:
+            return Path(value)
+    return Path.home() / "Library" / "Android" / "sdk"
 
 
 def sha256_file(path):

@@ -229,7 +229,7 @@
       "compiler": "Apple clang 21.0.0 (clang-2100.3.34.2)",
       "cmake": "4.4.4",
       "python": "3.14.4",
-      "scratch": "/Users/cheng/loader-path-scratch"
+      "scratch": "<workspace>/loader-path-scratch"
     },
     "note": "macOS cannot run lavapipe, so Lane A is CI-only. The mock-ICD lane was exercised end to end locally with the pinned artefacts.",
     "builds": [
@@ -301,19 +301,19 @@
     ],
     "evidence_logs": [
       {
-        "path": "/Users/cheng/loader-path-scratch/final-logs/final-laneB.log",
+        "path": "<workspace>/loader-path-scratch/final-logs/final-laneB.log",
         "sha256": "e7f817d1e23f8301ec6ddffad88d4468632f91a6677a965c5d7b508e3893ecd9"
       },
       {
-        "path": "/Users/cheng/loader-path-scratch/final-logs/final-skip.log",
+        "path": "<workspace>/loader-path-scratch/final-logs/final-skip.log",
         "sha256": "0f3a3b8016bfa39d48818259d53dcdcb151db7245aea0f7dcf68c9c8f1f61aae"
       },
       {
-        "path": "/Users/cheng/loader-path-scratch/final-logs/mock-icd-supported-validated-20261021-230632.log",
+        "path": "<workspace>/loader-path-scratch/final-logs/mock-icd-supported-validated-20261021-230632.log",
         "sha256": "b8900861e77443c08c7e757c6af016976de4296772c50bf20fdbb1f400be1ba2"
       },
       {
-        "path": "/Users/cheng/loader-path-scratch/final-logs/mock-unpatched-skip-validated-20261021-230632.log",
+        "path": "<workspace>/loader-path-scratch/final-logs/mock-unpatched-skip-validated-20261021-230632.log",
         "sha256": "c16367067fb36a769eda76df01d1a614e630e763c5d38ee0aede796cba8c26f1"
       }
     ]
@@ -383,12 +383,12 @@
     "raw_log_note": "CI logs fetched with gh run view 39686064374 --log; the lane log files are also uploaded as the vulkan-loader-path-logs artifact when available."
   },
   "raw_artifacts": {
-    "scratch": "/Users/cheng/loader-path-scratch",
-    "local_logs": "/Users/cheng/loader-path-scratch/final-logs",
-    "built_harness": "/Users/cheng/loader-path-scratch/bin/vulkan-loader-path-gcc",
-    "patched_mock_icd": "/Users/cheng/loader-path-scratch/build/tools313/icd/VkICD_mock_icd.json",
-    "local_validation_layer": "/Users/cheng/loader-path-scratch/build/vvl/layers",
-    "local_pinned_loader": "/Users/cheng/loader-path-scratch/prefix/lib/libvulkan.1.dylib"
+    "scratch": "<workspace>/loader-path-scratch",
+    "local_logs": "<workspace>/loader-path-scratch/final-logs",
+    "built_harness": "<workspace>/loader-path-scratch/bin/vulkan-loader-path-gcc",
+    "patched_mock_icd": "<workspace>/loader-path-scratch/build/tools313/icd/VkICD_mock_icd.json",
+    "local_validation_layer": "<workspace>/loader-path-scratch/build/vvl/layers",
+    "local_pinned_loader": "<workspace>/loader-path-scratch/prefix/lib/libvulkan.1.dylib"
   },
   "specification": {
     "extension": "VK_EXT_map_memory_placed",

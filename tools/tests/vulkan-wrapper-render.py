@@ -67,6 +67,15 @@ TARGETS = ("system", "candidate", "baseline")
 FORMATS = ("bc1", "bc3", "bc1_srgb", "bc3_srgb", "rgba8")
 
 
+def _sdk_root() -> Path:
+    """Android SDK root, from the environment rather than a hard-coded developer path."""
+    for name in ("ANDROID_SDK_ROOT", "ANDROID_HOME"):
+        value = os.environ.get(name)
+        if value:
+            return Path(value)
+    return Path.home() / "Library" / "Android" / "sdk"
+
+
 def read(path):
     with open(path, "rb") as handle:
         return handle.read()
@@ -327,17 +336,20 @@ def check(evidence_dir, verbose=False, collect=False, srgb_host_convention="enco
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DEFAULT_WRAPPER_BUILD = ("/Users/cheng/Documents/Codex/2026-10-13/82379689/work/"
-                         "turnip-refactor-qualification/wrapper-build")
-DEFAULT_ADB = "/Users/cheng/Library/Android/sdk/platform-tools/adb"
-DEFAULT_EMULATOR = "/Users/cheng/Library/Android/sdk/emulator/emulator"
-DEFAULT_NDK = "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724"
-DEFAULT_VULKAN_INCLUDE = os.path.join(DEFAULT_WRAPPER_BUILD, "source", "include")
-DEFAULT_BCDEC = os.path.join(DEFAULT_WRAPPER_BUILD, "source", "src", "vulkan", "wrapper", "bcdec.h")
-DEFAULT_GLSLANG = ("/Users/cheng/Documents/Codex/2026-10-13/82379689/work/"
-                   "dxvk-qualification/glslang/bin/glslangValidator")
+# The wrapper source tree and glslang are developer inputs, not shipped: point at them
+# with VAPOR_WRAPPER_SOURCE / VAPOR_GLSLANG rather than a hard-coded machine path.
+DEFAULT_WRAPPER_BUILD = os.environ.get("VAPOR_WRAPPER_SOURCE", "")
+DEFAULT_ADB = str(_sdk_root() / "platform-tools" / "adb")
+DEFAULT_EMULATOR = str(_sdk_root() / "emulator" / "emulator")
+DEFAULT_NDK = str(_sdk_root() / "ndk" / "27.3.13750724")
+DEFAULT_VULKAN_INCLUDE = (
+    os.path.join(DEFAULT_WRAPPER_BUILD, "source", "include") if DEFAULT_WRAPPER_BUILD else "")
+DEFAULT_BCDEC = (
+    os.path.join(DEFAULT_WRAPPER_BUILD, "source", "src", "vulkan", "wrapper", "bcdec.h")
+    if DEFAULT_WRAPPER_BUILD else "")
+DEFAULT_GLSLANG = os.environ.get("VAPOR_GLSLANG", "")
 DEFAULT_REFERENCE_TOOL = os.path.join(REPO_ROOT, "tools", "tests", "vulkan-wrapper-reference.py")
-DEFAULT_WORK = "/Users/cheng/wrapper-render-run"
+DEFAULT_WORK = os.path.join(os.path.expanduser("~"), "wrapper-render-run")
 DEFAULT_AVD = "VaporProbe36C"
 DEFAULT_PORT = 5560
 DEFAULT_EVIDENCE = os.path.join(

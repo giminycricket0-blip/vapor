@@ -25,7 +25,7 @@
       "role": "packaged GameNative wrapper archive"
     },
     {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/runtime-research-20261016/leegao--bionic-vulkan-wrapper/{tree.json,releases.json,identity.json}",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/runtime-research-20261016/leegao--bionic-vulkan-wrapper/{tree.json,releases.json,identity.json}",
       "role": "retained read-only GitHub metadata for leegao/bionic-vulkan-wrapper",
       "notes": {
         "tree.json": {
@@ -43,18 +43,18 @@
       }
     },
     {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/{baseline.so,baseline-stripped.so,candidate.so,candidate-stripped.so,binary-checks.json,final-configuration.json,source.tar.gz,spirv-build/}",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/{baseline.so,baseline-stripped.so,candidate.so,candidate-stripped.so,binary-checks.json,final-configuration.json,source.tar.gz,spirv-build/}",
       "role": "previous complete local Android builds of leegao/bionic-vulkan-wrapper 3abf48704a4d9303967a0811c0dc8ff8567d613b with the recorded recipe; read-only"
     },
     {
-      "path": "/Users/cheng/wrapper-release-repro/tag-source/c8baafbd.tar.gz",
+      "path": "<workspace>/wrapper-release-repro/tag-source/c8baafbd.tar.gz",
       "bytes": 47247579,
       "sha256": "d29d0a21f8e0923abd4650522759a08bd51d17327c2f09a9343c5de15d245dde",
       "url": "https://codeload.github.com/leegao/bionic-vulkan-wrapper/tar.gz/c8baafbd4f4835ca103acb55ec3ac13642b6b7e3",
       "role": "fresh download of the release tag source; archive verified against retained tree.json"
     },
     {
-      "path": "/Users/cheng/wrapper-release-repro/termux-recipe/vulkan_wrapper_termux-packages-c5c45d88.tar.gz",
+      "path": "<workspace>/wrapper-release-repro/termux-recipe/vulkan_wrapper_termux-packages-c5c45d88.tar.gz",
       "bytes": 64546682,
       "sha256": "846eee8e83d975d5f5c62caa417c8d9791dbc8609c450d6a7ec64be7238802f0",
       "url": "https://codeload.github.com/leegao/vulkan_wrapper_termux-packages/tar.gz/c5c45d88a5f5c403bbe9f4c436139433628210de",
@@ -691,7 +691,7 @@
         "libc.so"
       ],
       "runpath": [
-        "$ORIGIN/../../android_stub:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
+        "$ORIGIN/../../android_stub:<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
       ],
       "load_alignments": [
         "0x4000",
@@ -790,7 +790,7 @@
         "libc.so"
       ],
       "runpath": [
-        "$ORIGIN/../../android_stub:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
+        "$ORIGIN/../../android_stub:<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
       ],
       "load_alignments": [
         "0x4000",
@@ -859,8 +859,8 @@
           "r27d"
         ],
         "build_dirs": [
-          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
-          "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build"
+          "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+          "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/spirv-build"
         ],
         "graphicsenv_strings": [
           "libgraphicsenv.so",
@@ -899,7 +899,7 @@
         "libc.so"
       ],
       "runpath": [
-        "$ORIGIN/../../android_stub:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
+        "$ORIGIN/../../android_stub:<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
       ],
       "load_alignments": [
         "0x4000",
@@ -990,7 +990,7 @@
         "libc.so"
       ],
       "runpath": [
-        "$ORIGIN/../../android_stub:/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
+        "$ORIGIN/../../android_stub:<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64/data/data/com.termux/files/usr/lib"
       ],
       "load_alignments": [
         "0x1000",
@@ -1189,7 +1189,7 @@
         ]
       },
       "section_content_hashes": {
-        "all_normalized_section_hashes_retained_at": "/Users/cheng/wrapper-release-repro/analysis/section-hashes.json",
+        "all_normalized_section_hashes_retained_at": "<workspace>/wrapper-release-repro/analysis/section-hashes.json",
         "default_vs_gamenative": "only .comment and .note.android.ident are identical; .text/.rodata differ, so they are not the same binary with/without debug info",
         "leegao_vs_default": "no shared section content",
         "leegao_vs_etc2_5_25_26_dev_asset": "only 8 metadata sections identical; .text/.rodata differ"
@@ -1231,16 +1231,16 @@
       "cmake": "3.22.1",
       "glslang": "16.6.0",
       "bison": "host-tools/bin/bison",
-      "termux_sysroot": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64 (retained Wine-experiment Termux sysroot)",
+      "termux_sysroot": "<workspace>/Documents/Codex/2026-10-13/82379689/work/automatic-graphics-qualification/wine-source-review/termuxfs-aarch64 (retained Wine-experiment Termux sysroot)",
       "spirv_archives": "libSPIRV-Tools.a 64,530,758 B sha256 f71b46d4..., libSPIRV-Tools-opt.a 241,329,312 B sha256 29f201be..., built with the same NDK from leegao/SPIRV-Tools 56db26cf58f2f1b1f70ce92fc733ae91e136094d",
-      "scratch_source": "/Users/cheng/wrapper-release-repro/build/tag-src"
+      "scratch_source": "<workspace>/wrapper-release-repro/build/tag-src"
     },
     "attempts": [
       {
         "id": "A",
         "description": "tag source + recorded local recipe (NDK r27d, API 34, 16 KB page-size link flags, local Termux Wine-experiment sysroot, pinned SPIRV-Tools archives)",
         "configure_command": [
-          "meson setup /Users/cheng/wrapper-release-repro/build/tag-build /Users/cheng/wrapper-release-repro/build/tag-src",
+          "meson setup <workspace>/wrapper-release-repro/build/tag-build <workspace>/wrapper-release-repro/build/tag-src",
           "--cross-file android-scratch.ini --native-file <retained>/native.ini --buildtype release --prefix=/usr",
           "-Dplatforms=x11 -Dplatform-sdk-version=34 -Dandroid-stub=true -Dvulkan-drivers=wrapper -Dgallium-drivers=",
           "-Dglx=disabled -Degl=disabled -Dgbm=disabled -Dllvm=disabled -Dopengl=false",
@@ -1252,12 +1252,12 @@
         "result": "SUCCESS",
         "outputs": {
           "unstripped": {
-            "path": "/Users/cheng/wrapper-release-repro/build/tag-build-recipe16k.so",
+            "path": "<workspace>/wrapper-release-repro/build/tag-build-recipe16k.so",
             "bytes": 131377496,
             "sha256": "a20dc398ebecea4ea49d36ccf472ca5932c0970d0aa6c18a3070d203087ed127"
           },
           "stripped_with_llvm_strip_strip_all": {
-            "path": "/Users/cheng/wrapper-release-repro/build/tag-build-recipe16k-stripped.so",
+            "path": "<workspace>/wrapper-release-repro/build/tag-build-recipe16k-stripped.so",
             "bytes": 10696016,
             "sha256": "0122e36726db9e9ed5174365a1b6116dd0aa4ac95b216b2e5fd193acfb02a0ba"
           }
@@ -1294,7 +1294,7 @@
         ],
         "result": "SUCCESS (relink only)",
         "output": {
-          "path": "/Users/cheng/wrapper-release-repro/build/tag-build-termuxlike-stripped.so",
+          "path": "<workspace>/wrapper-release-repro/build/tag-build-termuxlike-stripped.so",
           "bytes": 10696016,
           "sha256": "edf35ccd9eefda209d235eba70c77ca4f8ec437ef22c414d0a6beecbb573758c"
         },
@@ -1368,7 +1368,7 @@
     "GitHub metadata was sampled read-only on 2026-10-21; upstream branches/releases may change later.",
     "The .orig/.pb upstream development artifacts in the retained recipe repo are truncated ELF files and could only be fingerprinted through strings and loadable segments, not fully parsed."
   ],
-  "raw_scratch_directory": "/Users/cheng/wrapper-release-repro",
+  "raw_scratch_directory": "<workspace>/wrapper-release-repro",
   "retained_scratch_artifacts": [
     "payloads/{wrapper-leegao,wrapper,wrapper-gamenative}/ - extracted archives",
     "tag-source/c8baafbd.tar.gz and extracted tag tree",

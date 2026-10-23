@@ -12,7 +12,7 @@
   "bytes": 162504,
   "matches_4k_probe_identity_binary_sha256": false,
   "rebuild_command": [
-   "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+   "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
    "-std=c11",
    "-O2",
    "-g",
@@ -20,16 +20,16 @@
    "-Wextra",
    "-Werror",
    "-D_GNU_SOURCE",
-   "-I/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/include",
-   "/Users/cheng/vapor/tools/tests/vulkan-wrapper-native.c",
+   "-I<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/include",
+   "<workspace>/vapor/tools/tests/vulkan-wrapper-native.c",
    "-ldl",
    "-Wl,-z,max-page-size=16384",
    "-Wl,-z,common-page-size=16384",
    "-o",
-   "/Users/cheng/wrapper-probe-16k/run/probe"
+   "<workspace>/wrapper-probe-16k/run/probe"
   ],
   "rebuild_reproducible": "Two independent executions of the rebuild command from the same source path produced the identical binary sha256 eaabe9afc3c443ffa2de65e741f114f2a1de4b7fd23625c76983f06724af79da.",
-  "why_binary_differs_from_4k": "The 4 KB pass compiled from /Users/cheng/Documents/Codex/2026-10-13/82379689/work/vapor/tools/tests/vulkan-wrapper-native.c, a tree that no longer exists. That path was embedded in DWARF debug info. Copies of both binaries with debug sections removed are byte-identical (sha256 51d127211e12e054e4a2d443446abdad76aa2bfdf9dc8ca5dba9de5a3c896d0d), so the only difference is the recorded source path.",
+  "why_binary_differs_from_4k": "The 4 KB pass compiled from <workspace>/Documents/Codex/2026-10-13/82379689/work/vapor/tools/tests/vulkan-wrapper-native.c, a tree that no longer exists. That path was embedded in DWARF debug info. Copies of both binaries with debug sections removed are byte-identical (sha256 51d127211e12e054e4a2d443446abdad76aa2bfdf9dc8ca5dba9de5a3c896d0d), so the only difference is the recorded source path.",
   "stripped_debug_sha256_identical_to_4k_probe": "51d127211e12e054e4a2d443446abdad76aa2bfdf9dc8ca5dba9de5a3c896d0d",
   "load_alignments": [
    "0x4000",
@@ -40,8 +40,8 @@
  },
  "wrapper_builds": {
   "baseline": {
-   "staged_path": "/Users/cheng/wrapper-probe-16k/run/baseline.so",
-   "origin": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so (stripped Android ARM64 output of the same pinned wrapper build tree used by the 4 KB pass)",
+   "staged_path": "<workspace>/wrapper-probe-16k/run/baseline.so",
+   "origin": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so (stripped Android ARM64 output of the same pinned wrapper build tree used by the 4 KB pass)",
    "bytes": 10698760,
    "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
    "matches_4k_native_probe_staging": true,
@@ -76,8 +76,8 @@
    ]
   },
   "candidate": {
-   "staged_path": "/Users/cheng/wrapper-probe-16k/run/candidate.so",
-   "origin": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so (stripped Android ARM64 output of the same pinned wrapper build tree used by the 4 KB pass)",
+   "staged_path": "<workspace>/wrapper-probe-16k/run/candidate.so",
+   "origin": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so (stripped Android ARM64 output of the same pinned wrapper build tree used by the 4 KB pass)",
    "bytes": 10699464,
    "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
    "matches_4k_native_probe_staging": true,
@@ -301,8 +301,8 @@
  ],
  "avd": {
   "name": "Vapor_API_37_16KB",
-  "ini": "/Users/cheng/.android/avd/Vapor_API_37_16KB.ini",
-  "avd_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/emulator/Vapor_API_37_16KB.avd",
+  "ini": "<workspace>/.android/avd/Vapor_API_37_16KB.ini",
+  "avd_directory": "<workspace>/Documents/Codex/2026-10-13/82379689/work/emulator/Vapor_API_37_16KB.avd",
   "image_sysdir": "system-images/android-37.0/google_apis_ps16k/arm64-v8a",
   "image_tag_ids": [
    "google_apis",
@@ -334,7 +334,7 @@
    "tag.displaynames": "Google APIs,16 KB Page Size"
   },
   "launch_command": [
-   "/Users/cheng/Library/Android/sdk/emulator/emulator",
+   "<workspace>/Library/Android/sdk/emulator/emulator",
    "-avd",
    "Vapor_API_37_16KB",
    "-port",
@@ -367,13 +367,13 @@
    "-no-audio"
   ],
   "launch_note": "This pass replaced the previously recorded swiftshader_indirect GPU backend with lavapipe, matching the 4 KB pass launch parameters, so a Vulkan device is present. adb devices was empty before launch and port 5556 was free.",
-  "emulator_binary": "/Users/cheng/Library/Android/sdk/emulator/emulator",
+  "emulator_binary": "<workspace>/Library/Android/sdk/emulator/emulator",
   "emulator_version": "Android emulator version 37.2.12.0 (build_id 16428233) (CL:N/A)",
   "boot_completed_ms": 63804,
   "emulator_log_facts": [
    "INFO         | Vulkan 1.4 is not supported for the guest and won't be enabled",
    "INFO         | initIcdPaths: ICD set to 'lavapipe', using Lavapipe ICD",
-   "INFO         | Added library: /Users/cheng/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/libvulkan.dylib",
+   "INFO         | Added library: <workspace>/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/libvulkan.dylib",
    "INFO         | Boot completed in 63804 ms"
   ],
   "host": {
@@ -401,29 +401,29 @@
   "page_size_note": "getconf PAGE_SIZE and the probe's sysconf(_SC_PAGESIZE) both report 16384 inside the guest; no result is relabeled from a 4 KB boot."
  },
  "staging": {
-  "host_directory": "/Users/cheng/wrapper-probe-16k/run",
+  "host_directory": "<workspace>/wrapper-probe-16k/run",
   "device_directory": "/data/local/tmp/vapor-wrapper-native-16k-20261021",
   "file_count": 19,
   "transfer": "adb push of every staged file to /data/local/tmp/vapor-wrapper-native-16k-20261021; chmod 755 probe",
   "adb_push_commands": [
    [
-    "/Users/cheng/Library/Android/sdk/platform-tools/adb",
+    "<workspace>/Library/Android/sdk/platform-tools/adb",
     "shell",
     "rm -rf /data/local/tmp/vapor-wrapper-native-16k-20261021"
    ],
    [
-    "/Users/cheng/Library/Android/sdk/platform-tools/adb",
+    "<workspace>/Library/Android/sdk/platform-tools/adb",
     "shell",
     "mkdir -p /data/local/tmp/vapor-wrapper-native-16k-20261021"
    ],
    [
-    "/Users/cheng/Library/Android/sdk/platform-tools/adb",
+    "<workspace>/Library/Android/sdk/platform-tools/adb",
     "push",
-    "/Users/cheng/wrapper-probe-16k/run/.",
+    "<workspace>/wrapper-probe-16k/run/.",
     "/data/local/tmp/vapor-wrapper-native-16k-20261021/"
    ],
    [
-    "/Users/cheng/Library/Android/sdk/platform-tools/adb",
+    "<workspace>/Library/Android/sdk/platform-tools/adb",
     "shell",
     "chmod 755 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe"
    ]
@@ -431,7 +431,7 @@
   "device_sha256_matches_host": true,
   "device_sha256_check": "19 device files compared with the host staging hashes; 0 mismatches.",
   "device_sha256_command": "adb shell 'cd /data/local/tmp/vapor-wrapper-native-16k-20261021 && sha256sum *'",
-  "device_sha256_capture": "/Users/cheng/wrapper-probe-16k/logs/guest-facts.txt",
+  "device_sha256_capture": "<workspace>/wrapper-probe-16k/logs/guest-facts.txt",
   "files": [
    {
     "name": "baseline.so",
@@ -544,7 +544,7 @@
    "task_env": "the task-specified minimal environment only (no FORCE_BCN_EMULATION, no USE_IMAGE_VIEW); 3 targets x 4 modes at cycles 8 edge 4 as an environment control."
   },
   "matrix": "3 targets (system /system/lib64/libvulkan.so, baseline.so, candidate.so) x 4 modes (rgba, bc1, bc3, readonly) x 3 cycles (1, 8, 32) x 3 edges (4, 5, 16) = 108 protocol runs, plus 12 USE_IMAGE_VIEW=1 runs and 12 task_env control runs: 132 captured runs total.",
-  "launch_environment_note": "Every command was executed as 'cd <device dir> && <command>' through /Users/cheng/Library/Android/sdk/platform-tools/adb shell; exit_code is the value adb returned for the remote process."
+  "launch_environment_note": "Every command was executed as 'cd <device dir> && <command>' through <workspace>/Library/Android/sdk/platform-tools/adb shell; exit_code is the value adb returned for the remote process."
  },
  "predeclared_expected_controls": [
   {
@@ -2318,8 +2318,8 @@
     "[000.03] bc1 support: \t (enumerate_physical_device:260)",
     "[000.03] bc4 support: \t (enumerate_physical_device:263)"
    ],
-   "full_capture": "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.stdout",
-   "logcat_capture": "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.logcat"
+   "full_capture": "<workspace>/wrapper-probe-16k/logs/bc1-noforce-debug.stdout",
+   "logcat_capture": "<workspace>/wrapper-probe-16k/logs/bc1-noforce-debug.logcat"
   },
   {
    "command": "LD_LIBRARY_PATH=/data/local/tmp/vapor-wrapper-native-16k-20261021 PREFIX=/data/local/tmp/vapor-wrapper-native-16k-20261021 WRAPPER_LOG_LEVEL=debug WRAPPER_CMD_LOG_LEVEL=none FORCE_BCN_EMULATION=1 USE_IMAGE_VIEW=0 /data/local/tmp/vapor-wrapper-native-16k-20261021/probe /data/local/tmp/vapor-wrapper-native-16k-20261021/baseline.so bc1 1 4",
@@ -2338,8 +2338,8 @@
    "selected_wrapper_log_lines": [
     "[000.04] Forcing BCn emulation (disable by setting FORCE_BCN_EMULATION=0) \t (enumerate_physical_device:271)"
    ],
-   "full_capture": "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.stdout",
-   "logcat_capture": "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.logcat"
+   "full_capture": "<workspace>/wrapper-probe-16k/logs/bc1-force-debug.stdout",
+   "logcat_capture": "<workspace>/wrapper-probe-16k/logs/bc1-force-debug.logcat"
   }
  ],
  "page_size_observed": {
@@ -2403,14 +2403,14 @@
   "observed": "Without FORCE_BCN_EMULATION the wrapper logs 'bc1 support:' / 'bc4 support:' but neither 'Forcing BCn emulation' nor 'Faking feature support for textureCompressionBC'; the image is left in its native format and the probe pixel check fails with rgba=0,248,0,0, i.e. the raw first BC block bytes rather than decoded red. With FORCE_BCN_EMULATION=1 the wrapper logs 'Forcing BCn emulation (disable by setting FORCE_BCN_EMULATION=0)' and 'Faking feature support for textureCompressionBC', and the pixel check passes. 'Forcing BCn emulation' is only logged when the underlying device reports textureCompressionBC, so this guest reports BCn support but its native BC buffer-image copy does not decode.",
   "system_target_control": "The same native-path failure occurs against /system/lib64/libvulkan.so with no wrapper loaded (9/9 system bc1/bc3 protocol runs and 3 task_env runs exit 1 on the pixel check while image creation passes), so it is a property of the emulator's Vulkan device, not of either wrapper build.",
   "logcat_captures": [
-   "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.logcat",
-   "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.logcat"
+   "<workspace>/wrapper-probe-16k/logs/bc1-noforce-debug.logcat",
+   "<workspace>/wrapper-probe-16k/logs/bc1-force-debug.logcat"
   ]
  },
  "reference_4k": {
   "reference_evidence_file": "docs/evidence/2026-10-21-graphics-source.json",
-  "reference_raw_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/",
-  "reference_native_probe_directory": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
+  "reference_raw_directory": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/",
+  "reference_native_probe_directory": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
   "rerun_in_this_pass": false,
   "reference_4k_launch_params": [
    "-avd",
@@ -2471,33 +2471,33 @@
   "commit_or_push": false
  },
  "raw_evidence": {
-  "host_scratch_root": "/Users/cheng/wrapper-probe-16k",
-  "per_run_logs": "/Users/cheng/wrapper-probe-16k/logs/runs/",
-  "canonical_run_dataset": "/Users/cheng/wrapper-probe-16k/logs/matrix-runs.json",
+  "host_scratch_root": "<workspace>/wrapper-probe-16k",
+  "per_run_logs": "<workspace>/wrapper-probe-16k/logs/runs/",
+  "canonical_run_dataset": "<workspace>/wrapper-probe-16k/logs/matrix-runs.json",
   "note": "Each run object's raw_log field points at the exact captured stdout/stderr file for that run."
  },
  "files_created": {
   "repo_file": "docs/evidence/2026-10-21-vulkan-wrapper-native-16k.json",
   "scratch_directories": [
-   "/Users/cheng/wrapper-probe-16k",
-   "/Users/cheng/wrapper-probe-16k/run",
-   "/Users/cheng/wrapper-probe-16k/logs",
-   "/Users/cheng/wrapper-probe-16k/logs/runs (132 per-run stdout/stderr logs)"
+   "<workspace>/wrapper-probe-16k",
+   "<workspace>/wrapper-probe-16k/run",
+   "<workspace>/wrapper-probe-16k/logs",
+   "<workspace>/wrapper-probe-16k/logs/runs (132 per-run stdout/stderr logs)"
   ],
   "scratch_files": [
-   "/Users/cheng/wrapper-probe-16k/run-matrix.py (matrix harness; note: it rewrote its own JSON between suites, so the canonical dataset was reconstructed from logs/runs/*.log)",
-   "/Users/cheng/wrapper-probe-16k/logs/matrix-runs.json",
-   "/Users/cheng/wrapper-probe-16k/logs/staged-sha256.txt",
-   "/Users/cheng/wrapper-probe-16k/logs/guest-facts.txt",
-   "/Users/cheng/wrapper-probe-16k/logs/emulator-stdout.log",
-   "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.stdout",
-   "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.stderr",
-   "/Users/cheng/wrapper-probe-16k/logs/bc1-noforce-debug.logcat",
-   "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.stdout",
-   "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.stderr",
-   "/Users/cheng/wrapper-probe-16k/logs/bc1-force-debug.logcat",
-   "/Users/cheng/wrapper-probe-16k/logs/probe-4k-stripped-debug.dbgcopy",
-   "/Users/cheng/wrapper-probe-16k/logs/probe-16k-stripped-debug.dbgcopy"
+   "<workspace>/wrapper-probe-16k/run-matrix.py (matrix harness; note: it rewrote its own JSON between suites, so the canonical dataset was reconstructed from logs/runs/*.log)",
+   "<workspace>/wrapper-probe-16k/logs/matrix-runs.json",
+   "<workspace>/wrapper-probe-16k/logs/staged-sha256.txt",
+   "<workspace>/wrapper-probe-16k/logs/guest-facts.txt",
+   "<workspace>/wrapper-probe-16k/logs/emulator-stdout.log",
+   "<workspace>/wrapper-probe-16k/logs/bc1-noforce-debug.stdout",
+   "<workspace>/wrapper-probe-16k/logs/bc1-noforce-debug.stderr",
+   "<workspace>/wrapper-probe-16k/logs/bc1-noforce-debug.logcat",
+   "<workspace>/wrapper-probe-16k/logs/bc1-force-debug.stdout",
+   "<workspace>/wrapper-probe-16k/logs/bc1-force-debug.stderr",
+   "<workspace>/wrapper-probe-16k/logs/bc1-force-debug.logcat",
+   "<workspace>/wrapper-probe-16k/logs/probe-4k-stripped-debug.dbgcopy",
+   "<workspace>/wrapper-probe-16k/logs/probe-16k-stripped-debug.dbgcopy"
   ],
   "device_directory": "/data/local/tmp/vapor-wrapper-native-16k-20261021"
  }

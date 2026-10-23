@@ -11,7 +11,7 @@ Reviewed against WinNative `feature/wayland-gamescope` at `fd74ab12` and WinNati
 
 GameScope uses both sides: Linux renders through its glibc driver; the host compositor remains an Android process with its own Android driver. An Android ZIP cannot replace the Linux ICD library. Both can be called `libvulkan_freedreno.so`; filename alone does not identify their ABI.
 
-The earlier Bannerlator/Banners-Turnip Wayland work is another bionic build with Wayland WSI. Its source notes remain in the prior workspace at `/home/max/Build/Claude/Wayland/proton-wine/android/wayland-deps/TURNIP.md`. Those eight bionic variants are not the glibc driver shipped by this GameScope branch.
+The earlier Bannerlator/Banners-Turnip Wayland work is another bionic build with Wayland WSI. Its source notes remain in the prior workspace at `<workspace>/Build/Claude/Wayland/proton-wine/android/wayland-deps/TURNIP.md`. Those eight bionic variants are not the glibc driver shipped by this GameScope branch.
 
 ## Linux source and original build
 
@@ -24,9 +24,9 @@ The build uses `aarch64-linux-gnu-gcc/g++`, Meson and Ninja, against the Arch Li
 
 Original local inputs and intermediate outputs still exist:
 
-* `/home/max/Build/Claude/Wayland/turnip/mesa-26.2.2`, `cross-aarch64.ini`, `setup.log`, `build/`.
-* `/home/max/Build/Claude/Wayland/linuxfs/work/turnip/mesa-26.2.2`, `cross.ini`, `build/`, `libvulkan_freedreno.so`.
-* `/home/max/Build/Claude/Wayland/linuxfs/work/rootfs` supplies the original sysroot. Its Meson records confirm the options above.
+* `<workspace>/Build/Claude/Wayland/turnip/mesa-26.2.2`, `cross-aarch64.ini`, `setup.log`, `build/`.
+* `<workspace>/Build/Claude/Wayland/linuxfs/work/turnip/mesa-26.2.2`, `cross.ini`, `build/`, `libvulkan_freedreno.so`.
+* `<workspace>/Build/Claude/Wayland/linuxfs/work/rootfs` supplies the original sysroot. Its Meson records confirm the options above.
 
 Commit `8b0cd7d2` introduced the app-bundled library at `app/src/main/assets/linuxfs/usr/lib/libvulkan_freedreno.so`. It identifies itself as Mesa 26.2.2, has build ID `b60cd6d31c6bf4f951a78e1279f30e9653a8316e`, and SHA-256 `7a390576bacb603ab7c17c0924a0b63e8f1307ed3413dd20cbbbdb70dc8f53f1`. The prior WinNative workspace holds identical bytes. The leftover `linuxfs/work/turnip/libvulkan_freedreno.so` differs (`0fa4747c91df906570e5ab0a23be67c6d17e0b03501e6c9cad06ce0312a794bb`), so it is not evidence of an exact reproducible rebuild of the bundled binary.
 

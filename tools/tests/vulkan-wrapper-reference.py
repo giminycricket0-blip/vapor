@@ -88,10 +88,11 @@ DATE = "2026-10-21"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_SOURCE = Path(__file__).resolve().with_suffix(".c")
 DEFAULT_EVIDENCE = REPO_ROOT / "docs" / "evidence" / f"{DATE}-vulkan-wrapper-reference.json"
-DEFAULT_WRAPPER_BUILD = Path(
-    "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build")
-DEFAULT_SCRATCH = Path("/Users/cheng/wrapper-reference")
-DEFAULT_NDK = Path("/Users/cheng/Library/Android/sdk/ndk/27.3.13750724")
+# Developer input, not shipped: set VAPOR_WRAPPER_SOURCE to the wrapper source tree.
+_wrapper_source = os.environ.get("VAPOR_WRAPPER_SOURCE")
+DEFAULT_WRAPPER_BUILD = Path(_wrapper_source) if _wrapper_source else None
+DEFAULT_SCRATCH = Path.home() / "wrapper-reference"
+DEFAULT_NDK = _sdk_root() / "ndk" / "27.3.13750724"
 DEFAULT_SYSTEM_LIBVULKAN = "/system/lib64/libvulkan.so"
 
 WRAPPER_TARGETS = {
@@ -109,12 +110,22 @@ def resolve_bcdec_source(wrapper_build, explicit=None):
     if explicit:
         candidates.append(Path(explicit))
     candidates.append(Path(wrapper_build) / "source/src/vulkan/wrapper")
-    candidates.append(DEFAULT_WRAPPER_BUILD / "source/src/vulkan/wrapper")
+    if DEFAULT_WRAPPER_BUILD is not None:
+        candidates.append(DEFAULT_WRAPPER_BUILD / "source/src/vulkan/wrapper")
     for candidate in candidates:
         if (candidate / "bcdec.h").is_file():
             return candidate
     raise SystemExit("error: pinned bcdec.h not found (tried %s)"
                      % ", ".join(str(candidate) for candidate in candidates))
+
+
+def _sdk_root() -> Path:
+    """Android SDK root, from the environment rather than a hard-coded developer path."""
+    for name in ("ANDROID_SDK_ROOT", "ANDROID_HOME"):
+        value = os.environ.get(name)
+        if value:
+            return Path(value)
+    return Path.home() / "Library" / "Android" / "sdk"
 
 
 PINNED_WRAPPER_HASHES = {
@@ -4458,7 +4469,7 @@ def parse_args(argv=None):
         description="Reference-image BC1/BC3 and depth probe for the Vapor Vulkan wrapper.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__)
-    parser.add_argument("--wrapper-build", default=str(DEFAULT_WRAPPER_BUILD),
+    parser.add_argument("--wrapper-build", default=str(DEFAULT_WRAPPER_BUILD or ""),
                         help="pinned wrapper build directory (read-only)")
     parser.add_argument("--bcdec-source", default=None,
                         help="optional directory containing the pinned bcdec.h/c for the "
@@ -4472,7 +4483,7 @@ def parse_args(argv=None):
     parser.add_argument("--clang", default=None, help="explicit aarch64 clang path (overrides --ndk)")
     parser.add_argument("--adb", default=os.environ.get("ADB", "adb"), help="adb binary")
     parser.add_argument("--serial", default=None, help="device serial (default: single online device)")
-    parser.add_argument("--emulator", default="/Users/cheng/Library/Android/sdk/emulator/emulator",
+    parser.add_argument("--emulator", default=str(_sdk_root() / "emulator" / "emulator"),
                         help="emulator binary used only to record its version")
     parser.add_argument("--remote-dir", default=None,
                         help="remote staging dir (default /data/local/tmp/vapor-wrapper-reference-<DATE>)")

@@ -143,8 +143,8 @@
     "Raw hunt artifacts are kept outside the repository."
   ],
   "raw_artifacts": {
-    "hunt_root": "/Users/cheng/wrapper-release-repro/hunt (candidate sources, payload DWARF/subprogram extracts, tree listings)",
-    "payloads": "/Users/cheng/wrapper-release-repro/payloads (default, leegao, gamenative wrapper payloads)",
-    "artifacts": "/Users/cheng/wrapper-release-repro/hunt/artifacts (wrapper-gamenative-20260719 and 20260722 tzst extractions)"
+    "hunt_root": "<workspace>/wrapper-release-repro/hunt (candidate sources, payload DWARF/subprogram extracts, tree listings)",
+    "payloads": "<workspace>/wrapper-release-repro/payloads (default, leegao, gamenative wrapper payloads)",
+    "artifacts": "<workspace>/wrapper-release-repro/hunt/artifacts (wrapper-gamenative-20260719 and 20260722 tzst extractions)"
   }
 }

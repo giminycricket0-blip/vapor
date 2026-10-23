@@ -6,15 +6,15 @@
     "name": "vulkan-wrapper staging resources (bionic-vulkan-wrapper)",
     "source_repository": "https://github.com/leegao/bionic-vulkan-wrapper",
     "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
-    "candidate_tree": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
-    "baseline_reference": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/head/src__vulkan__wrapper__wrapper_image.c (upstream source copy used for patch replay)",
-    "build_artifacts": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build (baseline.so, candidate.so, build logs, patch logs)",
-    "runtime_artifacts": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
-    "probe_source": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-native.c"
+    "candidate_tree": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
+    "baseline_reference": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/head/src__vulkan__wrapper__wrapper_image.c (upstream source copy used for patch replay)",
+    "build_artifacts": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build (baseline.so, candidate.so, build logs, patch logs)",
+    "runtime_artifacts": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe",
+    "probe_source": "<workspace>/vapor/tools/tests/vulkan-wrapper-native.c"
   },
   "reference_roots": {
     "candidate_source": {
-      "root": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/",
+      "root": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/",
       "files": [
         "wrapper_objects.h",
         "wrapper_objects.c",
@@ -31,9 +31,9 @@
         "meson.build"
       ]
     },
-    "baseline_source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/head/",
-    "runtime_artifacts": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/",
-    "probe_source": "/Users/cheng/vapor/tools/tests/vulkan-wrapper-native.c",
+    "baseline_source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/head/",
+    "runtime_artifacts": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/native-probe/",
+    "probe_source": "<workspace>/vapor/tools/tests/vulkan-wrapper-native.c",
     "note": "All file:line references below are relative to these roots; line numbers are from the reviewed candidate tree (source commit 3abf4870 plus replayable patches) and from the read-only probe source in the Vapor checkout."
   },
   "source": {

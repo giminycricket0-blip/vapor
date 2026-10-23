@@ -15,7 +15,7 @@
     "cmake": "3.22.1-g37088a8 (SDK cmake; ninja 1.10.2)",
     "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
     "rustc": "rustc 1.99.0 (b940084d7 2026-09-28); host aarch64-apple-darwin; LLVM 23.1.1",
-    "cargo_binary": "/Users/cheng/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin/cargo",
+    "cargo_binary": "<workspace>/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin/cargo",
     "installed_rust_targets": [
       "aarch64-apple-darwin",
       "aarch64-linux-android"
@@ -52,7 +52,7 @@
       }
     ],
     "full_build": {
-      "command": "PATH=/Users/cheng/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin:$PATH ./gradlew :app:assembleStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+      "command": "PATH=<workspace>/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin:$PATH ./gradlew :app:assembleStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
       "excluded_native_tasks": "none",
       "started_local": "2026-10-21T19:09:36+01:00",
       "finished_local": "2026-10-21T19:12:44+01:00",
@@ -69,7 +69,7 @@
       "cmake_configure": {
         "configure_dir": "app/.cxx/Debug/3j72j675/arm64-v8a (regenerated 19:09)",
         "cargo_found": true,
-        "cmake_cache_entry": "CARGO_EXECUTABLE:FILEPATH=/Users/cheng/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin/cargo",
+        "cmake_cache_entry": "CARGO_EXECUTABLE:FILEPATH=<workspace>/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin/cargo",
         "fetchcontent_refetched": {
           "zstd": "v1.5.6 (shallow HEAD 794ea1b), re-fetched into _deps at 19:09",
           "xz": "v5.4.6 (shallow HEAD 6e8732c), re-fetched into _deps at 19:09"
@@ -181,7 +181,7 @@
   "verification_commands": [
     {
       "purpose": "full native debug APK build (includes CMake configure/build and Rust cargo build)",
-      "command": "PATH=/Users/cheng/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin:$PATH ./gradlew :app:assembleStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
+      "command": "PATH=<workspace>/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin:$PATH ./gradlew :app:assembleStandardDebug --max-workers=4 --console=plain --no-configuration-cache",
       "result": "BUILD SUCCESSFUL in 3m 7s; no excluded tasks"
     },
     {
@@ -208,7 +208,7 @@
   "android": {
     "emulator": {
       "avd": "Vapor_UI_API36",
-      "boot_command": "/Users/cheng/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 3072 -cores 4",
+      "boot_command": "<workspace>/Library/Android/sdk/emulator/emulator -avd Vapor_UI_API36 -port 5556 -no-window -no-audio -no-snapshot-load -no-snapshot-save -gpu lavapipe -no-boot-anim -memory 3072 -cores 4",
       "serial": "emulator-5556",
       "android": "16",
       "sdk": 36,

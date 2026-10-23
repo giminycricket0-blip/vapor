@@ -9,9 +9,9 @@
     "python": "3.14.4",
     "host_platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
     "fixture": {
-      "compiler": "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+      "compiler": "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
       "command": [
-        "/Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
+        "<workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android34-clang",
         "-std=c11",
         "-O2",
         "-g",
@@ -19,16 +19,16 @@
         "-Wextra",
         "-Werror",
         "-D_GNU_SOURCE",
-        "/Users/cheng/vapor/tools/tests/vulkan-wrapper-reference.c",
+        "<workspace>/vapor/tools/tests/vulkan-wrapper-reference.c",
         "-ldl",
         "-Wl,-z,max-page-size=16384",
         "-Wl,-z,common-page-size=16384",
         "-o",
-        "/Users/cheng/wrapper-bc7/scratch-16k/bin/probe"
+        "<workspace>/wrapper-bc7/scratch-16k/bin/probe"
       ],
       "source": "tools/tests/vulkan-wrapper-reference.c",
       "source_sha256": "f8005081b746535b013f21a2870e3d2c9e6befe8f1ed24d1e0998cd36eb6d4e8",
-      "binary": "/Users/cheng/wrapper-bc7/scratch-16k/bin/probe",
+      "binary": "<workspace>/wrapper-bc7/scratch-16k/bin/probe",
       "binary_sha256": "607c65a63e793db814f2a1dd797e1bdd59ad55bdb46e5c561049f12ae30cee89",
       "binary_bytes": 227904,
       "elf_max_load_align": 16384,
@@ -638,15 +638,15 @@
     }
   },
   "wrapper_builds": {
-    "root": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
+    "root": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build",
     "candidate": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/candidate-stripped.so",
       "sha256": "574cfb4d04bc036fe815357366a3c2e430d7da0a3e32da3d372c5c67fd835506",
       "bytes": 10699464,
       "matches_recorded_pinned_hash": true
     },
     "baseline": {
-      "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
+      "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/baseline-stripped.so",
       "sha256": "2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c",
       "bytes": 10698760,
       "matches_recorded_pinned_hash": true
@@ -723,7 +723,7 @@
     {
       "label": "api36-4k-bc7",
       "source_payload": {
-        "path": "/Users/cheng/wrapper-bc7/phase1-4k-bc7-payload.json",
+        "path": "<workspace>/wrapper-bc7/phase1-4k-bc7-payload.json",
         "sha256": "a3e81440a24b60f091fa491c268040346901c9fe1a62016f0a363f2e308e297d"
       },
       "device": {
@@ -1834,7 +1834,7 @@
     {
       "label": "api37-16k-bc7",
       "source_payload": {
-        "path": "/Users/cheng/wrapper-bc7/phase2-16k-bc7-payload.json",
+        "path": "<workspace>/wrapper-bc7/phase2-16k-bc7-payload.json",
         "sha256": "340537e14721efc1ff24047fcfb876632511ed2e204cc844b4e8160f1ab9d0bb"
       },
       "device": {
@@ -10025,37 +10025,37 @@
       {
         "label": "api36-4k-bc7",
         "raw_artifacts": {
-          "scratch": "/Users/cheng/wrapper-bc7/scratch-4k",
-          "inputs": "/Users/cheng/wrapper-bc7/scratch-4k/in",
-          "reference_decodes": "/Users/cheng/wrapper-bc7/scratch-4k/refs",
-          "readbacks": "/Users/cheng/wrapper-bc7/scratch-4k/out",
-          "per_run_logs": "/Users/cheng/wrapper-bc7/scratch-4k/logs",
-          "tool_log": "/Users/cheng/wrapper-bc7/scratch-4k/logs/tool.log",
-          "fixture_binary": "/Users/cheng/wrapper-bc7/scratch-4k/bin/probe",
+          "scratch": "<workspace>/wrapper-bc7/scratch-4k",
+          "inputs": "<workspace>/wrapper-bc7/scratch-4k/in",
+          "reference_decodes": "<workspace>/wrapper-bc7/scratch-4k/refs",
+          "readbacks": "<workspace>/wrapper-bc7/scratch-4k/out",
+          "per_run_logs": "<workspace>/wrapper-bc7/scratch-4k/logs",
+          "tool_log": "<workspace>/wrapper-bc7/scratch-4k/logs/tool.log",
+          "fixture_binary": "<workspace>/wrapper-bc7/scratch-4k/bin/probe",
           "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
         }
       },
       {
         "label": "api37-16k-bc7",
         "raw_artifacts": {
-          "scratch": "/Users/cheng/wrapper-bc7/scratch-16k",
-          "inputs": "/Users/cheng/wrapper-bc7/scratch-16k/in",
-          "reference_decodes": "/Users/cheng/wrapper-bc7/scratch-16k/refs",
-          "readbacks": "/Users/cheng/wrapper-bc7/scratch-16k/out",
-          "per_run_logs": "/Users/cheng/wrapper-bc7/scratch-16k/logs",
-          "tool_log": "/Users/cheng/wrapper-bc7/scratch-16k/logs/tool.log",
-          "fixture_binary": "/Users/cheng/wrapper-bc7/scratch-16k/bin/probe",
+          "scratch": "<workspace>/wrapper-bc7/scratch-16k",
+          "inputs": "<workspace>/wrapper-bc7/scratch-16k/in",
+          "reference_decodes": "<workspace>/wrapper-bc7/scratch-16k/refs",
+          "readbacks": "<workspace>/wrapper-bc7/scratch-16k/out",
+          "per_run_logs": "<workspace>/wrapper-bc7/scratch-16k/logs",
+          "tool_log": "<workspace>/wrapper-bc7/scratch-16k/logs/tool.log",
+          "fixture_binary": "<workspace>/wrapper-bc7/scratch-16k/bin/probe",
           "remote_staging": "/data/local/tmp/vapor-wrapper-reference-2026-10-21"
         }
       }
     ],
     "assembled_from": [
       {
-        "path": "/Users/cheng/wrapper-bc7/phase1-4k-bc7-payload.json",
+        "path": "<workspace>/wrapper-bc7/phase1-4k-bc7-payload.json",
         "sha256": "a3e81440a24b60f091fa491c268040346901c9fe1a62016f0a363f2e308e297d"
       },
       {
-        "path": "/Users/cheng/wrapper-bc7/phase2-16k-bc7-payload.json",
+        "path": "<workspace>/wrapper-bc7/phase2-16k-bc7-payload.json",
         "sha256": "340537e14721efc1ff24047fcfb876632511ed2e204cc844b4e8160f1ab9d0bb"
       }
     ]
@@ -10201,12 +10201,12 @@
     "phase_payloads": [
       {
         "label": "api36-4k-bc7",
-        "path": "/Users/cheng/wrapper-bc7/phase1-4k-bc7-payload.json",
+        "path": "<workspace>/wrapper-bc7/phase1-4k-bc7-payload.json",
         "sha256": "a3e81440a24b60f091fa491c268040346901c9fe1a62016f0a363f2e308e297d"
       },
       {
         "label": "api37-16k-bc7",
-        "path": "/Users/cheng/wrapper-bc7/phase2-16k-bc7-payload.json",
+        "path": "<workspace>/wrapper-bc7/phase2-16k-bc7-payload.json",
         "sha256": "340537e14721efc1ff24047fcfb876632511ed2e204cc844b4e8160f1ab9d0bb"
       }
     ],
@@ -10216,14 +10216,14 @@
     "reference_decoder": "bcdec_bc7 from the pinned wrapper source (header-only implementation in bcdec.h)",
     "independence_caveat": "bcdec is also the wrapper's host-CPU fallback decoder, so that wrapper path is a self-consistency check; the wrapper compute-shader bc7.comp and llvmpipe's native BC7 decoder are independent implementations and are the meaningful comparisons.",
     "provenance": {
-      "wrapper_source": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
+      "wrapper_source": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
       "bcdec.h": {
-        "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.h",
+        "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.h",
         "sha256": "8c972cdebba2c799d8d7478fc676be6d89a95294f012985a4253d80e82d0785d",
         "bytes": 79215
       },
       "bcdec.c": {
-        "path": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.c",
+        "path": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper/bcdec.c",
         "sha256": "9d478b26b978251ffcf5327d041d9f32dcfd207e58915fe75d322a0bd3701e52",
         "bytes": 11621
       },
@@ -10231,24 +10231,24 @@
       "licence": "bcdec is dual-licensed MIT OR The Unlicense (public domain); see the LICENSE section at the end of bcdec.h"
     },
     "host_helper": {
-      "source_path": "/Users/cheng/wrapper-bc7/scratch-16k/bin/bc7-host-decode.c",
+      "source_path": "<workspace>/wrapper-bc7/scratch-16k/bin/bc7-host-decode.c",
       "source_sha256": "a0e5f600f3b04c4828ef0d560c4e4bd1b8a3814c3973e38e658c4afb358c8519",
-      "binary_path": "/Users/cheng/wrapper-bc7/scratch-16k/bin/bc7-host-decode",
+      "binary_path": "<workspace>/wrapper-bc7/scratch-16k/bin/bc7-host-decode",
       "binary_sha256": "3b6c32062f57b400b75c2c32236748c3fa3d11a780990804bf1b54da56ef6a4b",
       "compile_command": [
         "cc",
         "-O2",
         "-std=c11",
         "-I",
-        "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
-        "/Users/cheng/wrapper-bc7/scratch-16k/bin/bc7-host-decode.c",
+        "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
+        "<workspace>/wrapper-bc7/scratch-16k/bin/bc7-host-decode.c",
         "-o",
-        "/Users/cheng/wrapper-bc7/scratch-16k/bin/bc7-host-decode"
+        "<workspace>/wrapper-bc7/scratch-16k/bin/bc7-host-decode"
       ],
       "run_command": [
-        "/Users/cheng/wrapper-bc7/scratch-16k/bin/bc7-host-decode",
-        "/Users/cheng/wrapper-bc7/scratch-16k/bin/bc7-reference-blocks-64x64.bin",
-        "/Users/cheng/wrapper-bc7/scratch-16k/bin/bc7-reference-rgba-64x64.bin",
+        "<workspace>/wrapper-bc7/scratch-16k/bin/bc7-host-decode",
+        "<workspace>/wrapper-bc7/scratch-16k/bin/bc7-reference-blocks-64x64.bin",
+        "<workspace>/wrapper-bc7/scratch-16k/bin/bc7-reference-rgba-64x64.bin",
         "64",
         "64"
       ]
@@ -10264,10 +10264,10 @@
         "other_fields": "partitions, rotation, index-selection bit, endpoints, P-bits and indices use their full bit-field ranges, all of which are decodable by spec-compliant BC7 decoders.",
         "coverage_per_block": "32 blocks per mode (modes 0-7), spread over random/zero/one payload patterns"
       },
-      "path": "/Users/cheng/wrapper-bc7/scratch-16k/bin/bc7-reference-blocks-64x64.bin"
+      "path": "<workspace>/wrapper-bc7/scratch-16k/bin/bc7-reference-blocks-64x64.bin"
     },
     "reference_rgba": {
-      "path": "/Users/cheng/wrapper-bc7/scratch-16k/bin/bc7-reference-rgba-64x64.bin",
+      "path": "<workspace>/wrapper-bc7/scratch-16k/bin/bc7-reference-rgba-64x64.bin",
       "pixels": 4096,
       "sha256": "76d4b652e3f7eb5dd781e1c4c8c606ccb5278f14c34678ded63d8f45fdd60352"
     },

@@ -74,7 +74,7 @@
       "bytes": 11503,
       "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
       "time_total_s": 2.818828,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_220.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/batch_220.json",
       "observed_shape": {
         "envelope": [
           "result",
@@ -132,7 +132,7 @@
       "bytes": 8259,
       "sha256": "fb4043064db41a50efc58c884a1783b65a09f84e9af4c1092cd95891e80afa4a",
       "time_total_s": 0.590264,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_400.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/batch_400.json",
       "observed_shape": {
         "success_type": "boolean true",
         "totalFound": 1,
@@ -185,7 +185,7 @@
       "bytes": 170,
       "sha256": "b41abd2434541db9c6246f51d4698c61c8f587c4fc4a9aabc1bab919cf764a47",
       "time_total_s": 0.874047,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_440.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/batch_440.json",
       "observed_shape": {
         "success_type": "boolean true",
         "totalFound": 0,
@@ -233,7 +233,7 @@
       "bytes": 170,
       "sha256": "2f46564a7daf9282636e1059a0cb9bd37b3171dc3ca5555c72df2bf7f1b68362",
       "time_total_s": 0.597264,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_380.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/batch_380.json",
       "observed_shape": {
         "success_type": "boolean true",
         "totalFound": 0,
@@ -281,7 +281,7 @@
       "bytes": 174,
       "sha256": "2b0c7a5390dec370adffdf342187275b420270d0d900af30e94920c74ece128b",
       "time_total_s": 0.615526,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_1245620.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/batch_1245620.json",
       "observed_shape": {
         "success_type": "boolean true",
         "totalFound": 0,
@@ -329,7 +329,7 @@
       "bytes": 11746,
       "sha256": "8f2ef96c778ed1627bc6b3de77e75d3e5792be4c3ab9e7cc82ce062968e7fd07",
       "time_total_s": 0.606075,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_620.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/batch_620.json",
       "observed_shape": {
         "success_type": "boolean true",
         "totalFound": 1,
@@ -383,7 +383,7 @@
       "bytes": 11592,
       "sha256": "ea2ace4bd6968798fcea093974acd30ab7ccffe0d193964032773970a5daacd8",
       "time_total_s": 0.670462,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_1091500.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/batch_1091500.json",
       "observed_shape": {
         "success_type": "boolean true",
         "totalFound": 1,
@@ -442,7 +442,7 @@
       "bytes": 25119,
       "sha256": "2978c36cade3e1357e817a50a19a9c0cfdf10c7ba55a15fb65074e5ef3322efe",
       "time_total_s": 0.628954,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/batch_multi.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/batch_multi.json",
       "observed_shape": {
         "success_type": "boolean true",
         "totalRequested": 5,
@@ -527,7 +527,7 @@
       "bytes": 11503,
       "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
       "time_total_s": null,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/probe_default_ua.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/probe_default_ua.json",
       "observed_shape": {
         "payload": "byte-identical to batch_220 (same sha256)"
       },
@@ -565,7 +565,7 @@
       "bytes": 6030,
       "sha256": "96c6d71961daf7ba4b5d436204288b1b83f647d53b6cf9902e9b7f7434b4278e",
       "time_total_s": 3.728111,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_portal.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/search_portal.json",
       "observed_shape": {
         "json_keys": [
           "games",
@@ -665,7 +665,7 @@
       "bytes": 730,
       "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
       "time_total_s": 0.690342,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_hl2.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/search_hl2.json",
       "observed_shape": {
         "pagination": {
           "total": 1,
@@ -715,7 +715,7 @@
       "bytes": 151,
       "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
       "time_total_s": 0.537347,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_hl2ep1.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/search_hl2ep1.json",
       "observed_shape": {
         "pagination": {
           "total": 0,
@@ -756,7 +756,7 @@
       "bytes": 151,
       "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
       "time_total_s": 0.704912,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_tf2.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/search_tf2.json",
       "observed_shape": {
         "pagination": {
           "total": 0,
@@ -797,7 +797,7 @@
       "bytes": 151,
       "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
       "time_total_s": 0.449729,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_ghostrunner.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/search_ghostrunner.json",
       "observed_shape": {
         "pagination": {
           "total": 0,
@@ -838,7 +838,7 @@
       "bytes": 1548,
       "sha256": "37d752a7a9491cb72facb45bab826faf154373a3da25390a9a96bdbcdb390e8a",
       "time_total_s": 0.345291,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_ghostrunner_broad.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/search_ghostrunner_broad.json",
       "observed_shape": {
         "pagination": {
           "total": 2,
@@ -892,7 +892,7 @@
       "bytes": 151,
       "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
       "time_total_s": 0.767817,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_episode_one.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/search_episode_one.json",
       "observed_shape": {
         "pagination": {
           "total": 0
@@ -933,7 +933,7 @@
       "bytes": 151,
       "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
       "time_total_s": 0.437516,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_hl2ep1_nopunct.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/search_hl2ep1_nopunct.json",
       "observed_shape": {
         "pagination": {
           "total": 0
@@ -974,7 +974,7 @@
       "bytes": 14562,
       "sha256": "6461862be4c3d895bafff7c3092e96013b8dc8d128417e8db283b738059f275a",
       "time_total_s": 0.568518,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_gtav.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/search_gtav.json",
       "observed_shape": {
         "pagination": {
           "total": 24,
@@ -1027,7 +1027,7 @@
       "bytes": 14214,
       "sha256": "f0e5f7ce6ed3b48c6e281637b40c1bb2f22e1070eab54c5aeeed89e43e4f636a",
       "time_total_s": null,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/search_the.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/search_the.json",
       "observed_shape": {
         "pagination": {
           "total": 1036,
@@ -1088,7 +1088,7 @@
       "bytes": 23683,
       "sha256": "665a9f8fd2c835e1daa8f5e8516ac642b79885e1955abdb0a3e7a9be5f7d176e",
       "time_total_s": 0.392425,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/listings_hl2.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/listings_hl2.json",
       "observed_shape": {
         "json_keys": [
           "listings",
@@ -1175,7 +1175,7 @@
       "bytes": 33797,
       "sha256": "6e584bd7389719251d45509e178b31007e28bfeba4c424b1dd3b9901c948966f",
       "time_total_s": 0.412961,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/listings_portal.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/listings_portal.json",
       "observed_shape": {
         "pagination": {
           "total": 11,
@@ -1219,7 +1219,7 @@
       "bytes": 58259,
       "sha256": "9544694a53628340b6e2696965fbdf01b8100dd3e2ccce949e7ba357db1657fc",
       "time_total_s": 0.3818,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/listings_gtav.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/listings_gtav.json",
       "observed_shape": {
         "pagination": {
           "total": 230,
@@ -1264,7 +1264,7 @@
       "bytes": 49001,
       "sha256": "5dab92d91f49f3db4a2960d24830e70c09805488426e221b05a59962366e34cf",
       "time_total_s": 0.672422,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/listingbyid_hl2.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/listingbyid_hl2.json",
       "observed_shape": {
         "envelope_json_is": "single listing object",
         "id": "d925bc70-248b-4638-b7f3-8abc876f8572 (UUID)",
@@ -1343,7 +1343,7 @@
       "bytes": 49001,
       "sha256": "c3559621f3ca70b040a0031bbec6cc9b8cb68e6bba56bad00d881db474b22b01",
       "time_total_s": 0.59132,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/listingbyid_gtav.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/listingbyid_gtav.json",
       "observed_shape": {
         "id": "894e3a2c-6e00-45d1-8f11-74d94f68bc54 (UUID)",
         "gameId": "6e06c087-b5ee-4ce2-bc2f-23f2f9487546",
@@ -1392,7 +1392,7 @@
       "bytes": 42,
       "sha256": "0c9b3f383de9363f8708cb5c780198e3b73fdb89f5031e3050b8488c10659f7e",
       "time_total_s": null,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/probe_path_api_trpc_games.get.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/probe_path_api_trpc_games.get.json",
       "observed_shape": {
         "body": {
           "error": "Access denied. Invalid origin."
@@ -1434,7 +1434,7 @@
       "bytes": 730,
       "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
       "time_total_s": null,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/probe_path_api_mobile_trpc_games.get.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/probe_path_api_mobile_trpc_games.get.json",
       "observed_shape": {
         "body": "byte-identical to search_hl2.json (same sha256)"
       },
@@ -1472,7 +1472,7 @@
       "bytes": 730,
       "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
       "time_total_s": null,
-      "raw_payload_path": "/Users/cheng/emuready-live-recheck/probe_no_ua.json",
+      "raw_payload_path": "<workspace>/emuready-live-recheck/probe_no_ua.json",
       "observed_shape": {
         "body": "byte-identical to search_hl2.json (same sha256)"
       },
@@ -1699,11 +1699,11 @@
   "simulated_reader_runs": {
     "method": "The committed reader logic (envelope, text/number accessors, selectGame, parseReport, parseDetails, reports and settings control flow) was re-implemented in python3 in the scratch directory and run over the unmodified curl payloads. This is a behavioural simulation of the committed code, not an app execution; its purpose is to check the parser accepts the live shapes end to end.",
     "script": {
-      "path": "/Users/cheng/emuready-live-recheck/parser_sim.py",
+      "path": "<workspace>/emuready-live-recheck/parser_sim.py",
       "sha256": "cb7772db84151ea139b0b6d7194d54c8066fe0d91970aaf5d6f8d4b8cf415dc7"
     },
     "output": {
-      "path": "/Users/cheng/emuready-live-recheck/parser_sim_output.json",
+      "path": "<workspace>/emuready-live-recheck/parser_sim_output.json",
       "sha256": "8491ab77def838e7f914dd7d6bfb97b59415e7802fa6c4fff31cbc64901b6901"
     },
     "scenarios": [
@@ -1849,7 +1849,7 @@
   ],
   "raw_payloads": [
     {
-      "path": "/Users/cheng/emuready-live-recheck/batch_1091500.json",
+      "path": "<workspace>/emuready-live-recheck/batch_1091500.json",
       "sha256": "ea2ace4bd6968798fcea093974acd30ab7ccffe0d193964032773970a5daacd8",
       "bytes": 11592,
       "procedure": "games.batchBySteamAppIds",
@@ -1865,7 +1865,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/batch_1245620.json",
+      "path": "<workspace>/emuready-live-recheck/batch_1245620.json",
       "sha256": "2b0c7a5390dec370adffdf342187275b420270d0d900af30e94920c74ece128b",
       "bytes": 174,
       "procedure": "games.batchBySteamAppIds",
@@ -1881,7 +1881,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/batch_220.json",
+      "path": "<workspace>/emuready-live-recheck/batch_220.json",
       "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
       "bytes": 11503,
       "procedure": "games.batchBySteamAppIds",
@@ -1897,7 +1897,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/batch_380.json",
+      "path": "<workspace>/emuready-live-recheck/batch_380.json",
       "sha256": "2f46564a7daf9282636e1059a0cb9bd37b3171dc3ca5555c72df2bf7f1b68362",
       "bytes": 170,
       "procedure": "games.batchBySteamAppIds",
@@ -1913,7 +1913,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/batch_400.json",
+      "path": "<workspace>/emuready-live-recheck/batch_400.json",
       "sha256": "fb4043064db41a50efc58c884a1783b65a09f84e9af4c1092cd95891e80afa4a",
       "bytes": 8259,
       "procedure": "games.batchBySteamAppIds",
@@ -1929,7 +1929,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/batch_440.json",
+      "path": "<workspace>/emuready-live-recheck/batch_440.json",
       "sha256": "b41abd2434541db9c6246f51d4698c61c8f587c4fc4a9aabc1bab919cf764a47",
       "bytes": 170,
       "procedure": "games.batchBySteamAppIds",
@@ -1945,7 +1945,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/batch_620.json",
+      "path": "<workspace>/emuready-live-recheck/batch_620.json",
       "sha256": "8f2ef96c778ed1627bc6b3de77e75d3e5792be4c3ab9e7cc82ce062968e7fd07",
       "bytes": 11746,
       "procedure": "games.batchBySteamAppIds",
@@ -1961,7 +1961,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/batch_multi.json",
+      "path": "<workspace>/emuready-live-recheck/batch_multi.json",
       "sha256": "2978c36cade3e1357e817a50a19a9c0cfdf10c7ba55a15fb65074e5ef3322efe",
       "bytes": 25119,
       "procedure": "games.batchBySteamAppIds",
@@ -1981,7 +1981,7 @@
       "role": "supplementary probe (not an app-shaped call: the app sends one AppID per request)"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/link_listings_d925bc70-248b-4638-b7f3-8abc876f8572.html",
+      "path": "<workspace>/emuready-live-recheck/link_listings_d925bc70-248b-4638-b7f3-8abc876f8572.html",
       "sha256": "b6c3d23b4c5a45fbdfc1da1c7afe3771b0dbc72343a861490a71c6e4b32553dd",
       "bytes": 78086,
       "procedure": null,
@@ -1991,7 +1991,7 @@
       "role": "source URL page"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/link_listings_search_Grand_20Theft_20Auto_20V.html",
+      "path": "<workspace>/emuready-live-recheck/link_listings_search_Grand_20Theft_20Auto_20V.html",
       "sha256": "af05e1d01bd5c6e529895a2d68c406d772f950476f63796a76addc6d34b3d818",
       "bytes": 52821,
       "procedure": null,
@@ -2001,7 +2001,7 @@
       "role": "browse URL page"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/listingbyid_gtav.json",
+      "path": "<workspace>/emuready-live-recheck/listingbyid_gtav.json",
       "sha256": "c3559621f3ca70b040a0031bbec6cc9b8cb68e6bba56bad00d881db474b22b01",
       "bytes": 49001,
       "procedure": "listings.byId",
@@ -2013,7 +2013,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/listingbyid_hl2.json",
+      "path": "<workspace>/emuready-live-recheck/listingbyid_hl2.json",
       "sha256": "5dab92d91f49f3db4a2960d24830e70c09805488426e221b05a59962366e34cf",
       "bytes": 49001,
       "procedure": "listings.byId",
@@ -2025,7 +2025,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/listings_gtav.json",
+      "path": "<workspace>/emuready-live-recheck/listings_gtav.json",
       "sha256": "9544694a53628340b6e2696965fbdf01b8100dd3e2ccce949e7ba357db1657fc",
       "bytes": 58259,
       "procedure": "listings.get",
@@ -2041,7 +2041,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/listings_hl2.json",
+      "path": "<workspace>/emuready-live-recheck/listings_hl2.json",
       "sha256": "665a9f8fd2c835e1daa8f5e8516ac642b79885e1955abdb0a3e7a9be5f7d176e",
       "bytes": 23683,
       "procedure": "listings.get",
@@ -2057,7 +2057,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/listings_portal.json",
+      "path": "<workspace>/emuready-live-recheck/listings_portal.json",
       "sha256": "6e584bd7389719251d45509e178b31007e28bfeba4c424b1dd3b9901c948966f",
       "bytes": 33797,
       "procedure": "listings.get",
@@ -2073,7 +2073,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/probe_default_ua.json",
+      "path": "<workspace>/emuready-live-recheck/probe_default_ua.json",
       "sha256": "742b6382ceb1e4edc50ecb9f6bcefa2e9f0198cac036c9eb2d80b8ea1bb26e0d",
       "bytes": 11503,
       "procedure": "games.batchBySteamAppIds",
@@ -2089,7 +2089,7 @@
       "role": "root-cause probe: identical request with curl's default User-Agent, no browser UA"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/probe_no_ua.json",
+      "path": "<workspace>/emuready-live-recheck/probe_no_ua.json",
       "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
       "bytes": 730,
       "procedure": "games.get (app's mobile path, empty User-Agent)",
@@ -2103,7 +2103,7 @@
       "role": "root-cause probe: no User-Agent header at all"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/probe_path_api_mobile_trpc_games.get.json",
+      "path": "<workspace>/emuready-live-recheck/probe_path_api_mobile_trpc_games.get.json",
       "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
       "bytes": 730,
       "procedure": "games.get (app's mobile path)",
@@ -2117,7 +2117,7 @@
       "role": "root-cause probe control: identical request on the app's path"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/probe_path_api_trpc_games.get.json",
+      "path": "<workspace>/emuready-live-recheck/probe_path_api_trpc_games.get.json",
       "sha256": "0c9b3f383de9363f8708cb5c780198e3b73fdb89f5031e3050b8488c10659f7e",
       "bytes": 42,
       "procedure": "games.get (desktop web path /api/trpc/...)",
@@ -2131,7 +2131,7 @@
       "role": "root-cause probe: same procedure on the non-mobile web path"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/search_episode_one.json",
+      "path": "<workspace>/emuready-live-recheck/search_episode_one.json",
       "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
       "bytes": 151,
       "procedure": "games.get",
@@ -2145,7 +2145,7 @@
       "role": "supplementary probe (is the subtitle absent or is search punctuation-sensitive?)"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/search_ghostrunner.json",
+      "path": "<workspace>/emuready-live-recheck/search_ghostrunner.json",
       "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
       "bytes": 151,
       "procedure": "games.get",
@@ -2159,7 +2159,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/search_ghostrunner_broad.json",
+      "path": "<workspace>/emuready-live-recheck/search_ghostrunner_broad.json",
       "sha256": "37d752a7a9491cb72facb45bab826faf154373a3da25390a9a96bdbcdb390e8a",
       "bytes": 1548,
       "procedure": "games.get",
@@ -2173,7 +2173,7 @@
       "role": "supplementary probe (broad title, to characterise the demo-title case)"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/search_gtav.json",
+      "path": "<workspace>/emuready-live-recheck/search_gtav.json",
       "sha256": "6461862be4c3d895bafff7c3092e96013b8dc8d128417e8db283b738059f275a",
       "bytes": 14562,
       "procedure": "games.get",
@@ -2187,7 +2187,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/search_hl2.json",
+      "path": "<workspace>/emuready-live-recheck/search_hl2.json",
       "sha256": "cee9ba2d2b89d48aa96531aa225c188be5d610e943c1d4474c1293715813bbc3",
       "bytes": 730,
       "procedure": "games.get",
@@ -2201,7 +2201,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/search_hl2ep1.json",
+      "path": "<workspace>/emuready-live-recheck/search_hl2ep1.json",
       "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
       "bytes": 151,
       "procedure": "games.get",
@@ -2215,7 +2215,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/search_hl2ep1_nopunct.json",
+      "path": "<workspace>/emuready-live-recheck/search_hl2ep1_nopunct.json",
       "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
       "bytes": 151,
       "procedure": "games.get",
@@ -2229,7 +2229,7 @@
       "role": "supplementary probe (punctuation-free variant)"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/search_portal.json",
+      "path": "<workspace>/emuready-live-recheck/search_portal.json",
       "sha256": "96c6d71961daf7ba4b5d436204288b1b83f647d53b6cf9902e9b7f7434b4278e",
       "bytes": 6030,
       "procedure": "games.get",
@@ -2243,7 +2243,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/search_tf2.json",
+      "path": "<workspace>/emuready-live-recheck/search_tf2.json",
       "sha256": "3e5cc5c66412afc9595c857affd9a06ed07c6bc59f3d9978c6d258f54992e6a0",
       "bytes": 151,
       "procedure": "games.get",
@@ -2257,7 +2257,7 @@
       "role": "app-shaped request"
     },
     {
-      "path": "/Users/cheng/emuready-live-recheck/search_the.json",
+      "path": "<workspace>/emuready-live-recheck/search_the.json",
       "sha256": "f0e5f7ce6ed3b48c6e281637b40c1bb2f22e1070eab54c5aeeed89e43e4f636a",
       "bytes": 14214,
       "procedure": "games.get",
@@ -2272,7 +2272,7 @@
     }
   ],
   "scratch_artifacts": {
-    "directory": "/Users/cheng/emuready-live-recheck",
+    "directory": "<workspace>/emuready-live-recheck",
     "outside_repo": true,
     "kept_at_observation_time": true,
     "note": "Payloads are unmodified curl response bodies; each request also has a .url file with the exact URL and (where captured) a .headers file. Parser simulation script and output are in the same directory."

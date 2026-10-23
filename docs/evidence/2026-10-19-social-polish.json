@@ -22,7 +22,7 @@
     ]
   },
   "verification": {
-    "command": "JAVA_HOME=/Users/cheng/.local/share/mise/installs/java/17 ./gradlew :app:testStandardDebugUnitTest --tests '*SteamSocialLayoutTest' --tests '*SteamConversationTest' --tests '*SteamChatServiceTest' :app:compileStandardDebugAndroidTestKotlin --max-workers=2 --console=plain",
+    "command": "JAVA_HOME=<workspace>/.local/share/mise/installs/java/17 ./gradlew :app:testStandardDebugUnitTest --tests '*SteamSocialLayoutTest' --tests '*SteamConversationTest' --tests '*SteamChatServiceTest' :app:compileStandardDebugAndroidTestKotlin --max-workers=2 --console=plain",
     "result": "passed",
     "suites": [
       {

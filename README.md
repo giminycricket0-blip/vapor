@@ -17,7 +17,7 @@
   </p>
 </div>
 
-![Vapor Home: a cover shelf with Steam artwork, the selected game highlighted, and an Open game action](docs/images/ui-2026-10-22-home-landscape.png)
+![Vapor Home: a cover shelf with Steam artwork, the selected game highlighted, and an Open game action](docs/images/ui-2026-10-23-home-landscape.png)
 
 <p align="center"><sub>Native Android interface · Home with public Steam artwork and sample installs, no account connected</sub></p>
 
@@ -28,30 +28,32 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 ## The experience
 
 - **Steam at the centre.** Home, Library, Store, and Downloads form the main navigation. Search the Steam catalog, browse categories, and manage owned games. Additional stores remain in **Settings → More stores**.
-- **A native game library.** Cover shelves, controller focus, portrait and landscape layouts, and a game page that keeps Play, Settings, Cloud Saves, and supported Achievements close at hand. Maintenance tools live in Manage.
-- **Community compatibility reports.** Steam game pages can read EmuReady reports in a native modal, with device, emulator and reported settings. Console ports are filtered out, title-only matches are labeled, known non-Windows entries hide the action, and external responses are never treated as compatibility verdicts. Reports are informational; applying settings automatically is not implemented. [Integration and evidence](docs/QUALIFICATION.md#emuready-community-reports--21-october-2026).
+- **A native game library.** Cover shelves and a grid, controller focus, portrait and landscape layouts, and a game page whose main action is Play, alongside Cloud Saves, supported Achievements and the lifecycle menu in Manage. Each game's artwork tints the screen it is shown on.
+- **Community compatibility reports.** Steam game pages can read EmuReady reports in a native modal, with device, emulator and reported settings. Console ports are filtered out, title-only matches are labeled, known non-Windows entries hide the action, and external responses are never treated as compatibility verdicts. The reader also keeps the stable field names, so a report's `dx_wrapper`, `dxvk_version`, driver, frame rate and resolution are shown as one line rather than only as raw labels. A report can then order the automatic retries - described under graphics below. Reports never decide anything on their own. [Integration and evidence](docs/QUALIFICATION.md#emuready-community-reports--21-october-2026).
 - **Direct downloads.** The connected Steam account supplies licenses, manifests, and game depots. Owned paid games, free/demo acquisition, and checkout are separate actions; public catalog information never grants ownership.
-- **Graphics that pick themselves.** Guided Steam launches probe your real Vulkan driver and choose an eligible driver/translator combination. They retry a few known start-up errors (visibly, at most four times) and remember what worked for each game. Your explicit per-game settings always win. [How it works](#drivers-runtimes-and-automatic-graphics).
+- **Graphics that pick themselves.** Guided Steam launches probe your real Vulkan driver and choose an eligible driver/translator combination. They retry a few known start-up errors (visibly, at most four times) and remember what worked for each game. When a community report for that game names a DXVK generation, the matching eligible combination is tried first - it can only reorder candidates this device was already found able to run. Your explicit per-game settings always win. [How it works](#drivers-runtimes-and-automatic-graphics).
+- **Install, then play.** Drivers, containers, components and presets are automatic, and those screens are hidden behind a single **Advanced settings** switch that only needs opening when a game will not start. Per-game settings are reachable the same way, so the normal path is sign in, install, Play.
+- **The pad explains itself.** When a controller is connected, a small legend names the buttons that do something on the current screen - opened, back and navigate everywhere, plus section switching in Settings and the secondary action in Downloads.
 - **Your drivers, your runtime.** Use system Vulkan, one of three bundled Vulkan wrappers (plus an opt-in experimental build with Vapor's own fixes), or custom Turnip drivers (downloaded in **Settings → Drivers** or imported, then validated before launch). The runtime is the bundled Proton ARM64EC with FEX or Box64, plus DXVK, VKD3D-Proton or WineD3D. A Linux runtime can add official GE-Proton and Proton-CachyOS ARM64 builds.
 - **Your controls.** Touch gamepad, RTS and FPS layouts, keyboard/mouse bindings, and an in-game Vapor menu. New supported-store shortcuts start with a **60 FPS limit**; existing choices are preserved.
 - **Official Steam pages when needed.** Checkout, Wishlist, Community, guides, and Workshop browsing open in a dedicated modal web panel. Web install links return to the native game page. Shared web sign-in is implemented; live authentication and payment flows still need qualification.
 
-![Vapor game page with a gradient Play button, Manage, Settings, Cloud Saves and Achievements over Helltaker artwork](docs/images/ui-2026-10-22-game-page-landscape.png)
+![Vapor game page with a gradient Play button, Manage, Settings, Cloud Saves and Achievements over Helltaker artwork](docs/images/ui-2026-10-23-game-page-landscape.png)
 
 <p align="center"><sub>Game page · Sample Helltaker play history, not a live account result</sub></p>
 
 <table>
   <tr>
-    <td align="center" width="50%"><img src="docs/images/ui-2026-10-22-library-landscape.png" alt="Library grid with Steam cover art, rounded cards, install-status chips and a focused card halo"></td>
-    <td align="center" width="50%"><img src="docs/images/ui-2026-10-22-downloads-landscape.png" alt="Downloads queue with a game header image, a rounded progress bar and tonal Pause and Cancel buttons"></td>
+    <td align="center" width="50%"><img src="docs/images/ui-2026-10-23-library-landscape.png" alt="Library grid with Steam cover art, rounded cards, install-status chips and a focused card halo"></td>
+    <td align="center" width="50%"><img src="docs/images/ui-2026-10-23-downloads-landscape.png" alt="Downloads queue with a game header image, a rounded progress bar and tonal Pause and Cancel buttons"></td>
   </tr>
   <tr>
     <td align="center"><sub>Library · install status at a glance, controller focus halo</sub></td>
     <td align="center"><sub>Downloads · sample progress, no transfer running</sub></td>
   </tr>
   <tr>
-    <td align="center" width="50%"><img src="docs/images/ui-2026-10-22-store-landscape.png" alt="Steam Store with search, Hot games and category filters, and a large Hades spotlight card"></td>
-    <td align="center" width="50%"><img src="docs/images/ui-2026-10-22-settings-landscape.png" alt="Settings with the sidebar and the Drivers page listing the system driver and two Turnip builds"></td>
+    <td align="center" width="50%"><img src="docs/images/ui-2026-10-23-store-landscape.png" alt="Steam Store with search, Hot games and category filters, and a large Hades spotlight card"></td>
+    <td align="center" width="50%"><img src="docs/images/ui-2026-10-23-settings-landscape.png" alt="Settings with the sidebar and the Drivers page listing the system driver and two Turnip builds"></td>
   </tr>
   <tr>
     <td align="center"><sub>Store · public Steam artwork, sample prices</sub></td>
@@ -66,10 +68,10 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 
 <table>
   <tr>
-    <td align="center" width="25%"><img src="docs/images/ui-2026-10-22-home-portrait.png" alt="Home in portrait with a large focused cover and full-width Open game button" width="200"></td>
-    <td align="center" width="25%"><img src="docs/images/ui-2026-10-22-library-portrait.png" alt="Library in portrait with a two-column cover grid" width="200"></td>
-    <td align="center" width="25%"><img src="docs/images/ui-2026-10-22-game-page-portrait.png" alt="Game page in portrait with play stats and actions at the bottom" width="200"></td>
-    <td align="center" width="25%"><img src="docs/images/ui-2026-10-22-downloads-portrait.png" alt="Downloads queue in portrait with downloading, paused and completed games" width="200"></td>
+    <td align="center" width="25%"><img src="docs/images/ui-2026-10-23-home-portrait.png" alt="Home in portrait with a large focused cover and full-width Open game button" width="200"></td>
+    <td align="center" width="25%"><img src="docs/images/ui-2026-10-23-library-portrait.png" alt="Library in portrait with a two-column cover grid" width="200"></td>
+    <td align="center" width="25%"><img src="docs/images/ui-2026-10-23-game-page-portrait.png" alt="Game page in portrait with play stats and actions at the bottom" width="200"></td>
+    <td align="center" width="25%"><img src="docs/images/ui-2026-10-23-downloads-portrait.png" alt="Downloads queue in portrait with downloading, paused and completed games" width="200"></td>
   </tr>
   <tr>
     <td align="center"><sub>Home</sub></td>
@@ -78,8 +80,8 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
     <td align="center"><sub>Downloads</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/images/ui-2026-10-22-store-portrait.png" alt="Store in portrait with search, filters, a spotlight and a two-column game grid" width="200"></td>
-    <td align="center"><img src="docs/images/ui-2026-10-22-settings-portrait.png" alt="Settings Drivers page in portrait" width="200"></td>
+    <td align="center"><img src="docs/images/ui-2026-10-23-store-portrait.png" alt="Store in portrait with search, filters, a spotlight and a two-column game grid" width="200"></td>
+    <td align="center"><img src="docs/images/ui-2026-10-23-settings-portrait.png" alt="Settings Drivers page in portrait" width="200"></td>
     <td></td><td></td>
   </tr>
   <tr>
@@ -98,6 +100,28 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 </details>
 
 ## Latest development work
+
+**23 October: install, then play.** The product brief narrowed to what it always was -
+a SteamOS-like session without the tinkering - so the tinkering moved out of the way. The
+settings sidebar now hides Containers, Presets, Components, Drivers, Retro and Debug behind
+a single **Advanced settings** switch (remembered, and opened automatically if something
+navigates into a hidden screen). The game page's Settings tile and the per-game settings
+long-press are gated the same way, so Play is the only thing on the path. A community
+report's configuration is now read from EmuReady's structured fields rather than its prose,
+and can order the automatic graphics retries - reordering only candidates this device was
+already found able to run.
+
+Visually, each screen now takes its colour from the focused game's artwork: a wash sampled
+from the cover over a blurred copy of it, under a legibility scrim. The selected cover grows
+and the rest step back, a controller legend names the working buttons on every screen, and a
+portrait Home layout that left roughly a third of the display empty is fixed. The screenshots
+above are regenerated from the emulator with real Steam artwork.
+
+Two release blockers were also cleared in code: the APK can now build in a release variant at
+all (the proot loader's marker symbol was being garbage-collected, and R8 rejected snakeyaml's
+`java.beans` references), and the Goldberg steam emulator, the Steamless DRM stripper and an
+untraceable downloader are gone from the APK. 543 JVM tests pass.
+[UI notes](docs/UI-UX.md) · [provenance](docs/PROVENANCE.md#packaged-dxvk--vkd3d-builds--23-october-2026).
 
 **22 October: a more modern look.** Rounded cover cards with a soft controller-focus
 halo, tinted per-game placeholders when artwork is missing, install-status chips, a

@@ -1,6 +1,7 @@
 # Vapor: UI and app work first
 
-Updated 22 October 2026 with a [modern visual refresh](#modern-visual-refresh--22-october-2026).
+Updated 23 October 2026 with an [install-then-play pass](#install-then-play-pass--23-october-2026) over the
+[modern visual refresh](#modern-visual-refresh--22-october-2026).
 Home and the Library carousel now share a native cover shelf,
 with selection and game actions in place. Store search suppresses repeated spelling prompts
 and preserves the current results during connection recovery. Branding uses the same artwork in the standard
@@ -8,6 +9,52 @@ APK and native shell. The preceding passes improve page navigation, Home,
 Downloads and Quick Access with consistent spacing and reachable large-text actions. Steam remains
 the main experience; optional storefronts remain in Settings → More stores. Gameplay reports and
 account qualification remain separately recorded in [QUALIFICATION.md](QUALIFICATION.md).
+
+## Install-then-play pass — 23 October 2026
+
+The product brief is a SteamOS-like session without the tinkering, so this pass removed
+the tinkering from the normal path rather than restyling it.
+
+**Hidden, not deleted.** `SettingsNavItem`'s ADVANCED section (Containers, Presets,
+Components, Drivers, Retro, Debug) is filtered out unless a footer switch in the sidebar
+enables it. The switch is persisted in its own preferences file, and the section is shown
+automatically when something navigates into one of its screens, so a restored selection
+never renders an empty sidebar. The game page's Settings tile and the per-game settings
+long-press (grid, list and carousel) are gated by the same flag. The Manage menu stays: it
+carries uninstall and verify-files, which are lifecycle actions rather than tinkering.
+
+One correctness detail: `LibraryGameLaunchScreen` requested focus on the Settings tile when
+Play was unavailable. With the tile hidden that would have thrown
+`FocusRequester is not initialized`, so the Cloud Saves tile carries a fallback requester.
+
+**Artwork-derived colour.** `rememberAmbientTint` samples the focused game's cover through
+Palette and returns a colour the screen washes itself with, animated between games (the
+previous colour is held while the next is sampled). Palette's vibrant swatches are used
+rather than a pixel mean, because covers are mostly dark and an average turns to grey.
+Near-black results lift and near-white results darken so the wash reads on a dark screen.
+The shelf and the library grid both use it, the grid at lower alpha because it has far more
+artwork on screen.
+
+Before this, the shelf drew its blurred hero at 0.5 alpha and then covered it with a
+gradient to *solid* background, so only a faint smear survived.
+
+**Focus and legend.** The selected shelf cover scales to 1.05 while the rest drop to 0.80
+scale and 0.58 alpha, giving the strip one clear hero. A single bottom-centre controller
+legend in the shell follows the active tab (open/back/navigate, the downloads secondary
+action, and Settings' shoulder-button section switching); Settings carries its own copy
+because it is not a tab. Only hints read out of the dispatch code are shown - several
+actions are item-dependent, so they are labelled by what the button does.
+
+**Portrait defect fixed.** At the landscape card cap the shelf stopped about two thirds of
+the way down a portrait screen, leaving roughly 30% of the display empty below the legend.
+Card height now takes 0.58 of the height when the screen is taller than it is wide, with a
+245–460 dp ceiling.
+
+**Verification.** JVM tests cover the tint maths (synthetic bitmaps, including the
+lift/darken clamps) and the community-prior ordering. The image-loading path is *not*
+unit-tested: `imageLoader.execute()` deadlocks under Robolectric, so the rendered result is
+reviewed through the Robolectric gallery (which takes an `ambientOverride` preview hook) and
+the README screenshots are regenerated from the emulator with real Steam artwork.
 
 ## Modern visual refresh — 22 October 2026
 

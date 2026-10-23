@@ -43,11 +43,11 @@
     "finished_local": "2026-10-22T00:33:58+01:00",
     "duration": "6m 20s",
     "result": "BUILD SUCCESSFUL (110 actionable tasks: 47 executed, 63 up-to-date)",
-    "log": "/Users/cheng/apk-repro-mitigation/logs/buildA.log",
+    "log": "<workspace>/apk-repro-mitigation/logs/buildA.log",
     "log_sha256": "5de3c7325facec2ba335cd3c28bdb27bd3cdb3b24b4962d8414e0786515fd54b",
     "log_bytes": 89722,
     "apk_copy": "/tmp/repro-mitigation/buildA.apk",
-    "apk_copy_sha256_in_scratch": "/Users/cheng/apk-repro-mitigation/out/buildA.apk",
+    "apk_copy_sha256_in_scratch": "<workspace>/apk-repro-mitigation/out/buildA.apk",
     "apk_sha256": "f8cc0b2fd2bcf144d647e7d9e5695dec88b0822a1c23496af854bda77e3d7807",
     "apk_bytes": 676228770
   },
@@ -61,11 +61,11 @@
     "finished_local": "2026-10-22T00:43:16+01:00",
     "duration": "9m 02s",
     "result": "BUILD SUCCESSFUL (110 actionable tasks: 47 executed, 63 up-to-date)",
-    "log": "/Users/cheng/apk-repro-mitigation/logs/buildB.log",
+    "log": "<workspace>/apk-repro-mitigation/logs/buildB.log",
     "log_sha256": "cd771e268b63c665fdb5a226e6c3b4b7b54da0ac8656549f7f0bb4322e380f90",
     "log_bytes": 89751,
     "apk_copy": "/tmp/repro-mitigation/buildB.apk",
-    "apk_copy_sha256_in_scratch": "/Users/cheng/apk-repro-mitigation/out/buildB.apk",
+    "apk_copy_sha256_in_scratch": "<workspace>/apk-repro-mitigation/out/buildB.apk",
     "apk_sha256": "f8cc0b2fd2bcf144d647e7d9e5695dec88b0822a1c23496af854bda77e3d7807",
     "apk_bytes": 676228770
   },
@@ -103,11 +103,11 @@
     },
     "comparison_tool": {
       "tool": "tools/tests/apk-repro-diff.py (sha256 e649d6af2893a101b14b319c72f271c22da6b2492b6b27df16f792bd02630119, now committed in the repo via the Lead's .gitignore negation)",
-      "command": "python3 tools/tests/apk-repro-diff.py --source /tmp/repro-mitigation/buildA.apk --rebuild /tmp/repro-mitigation/buildB.apk --workdir /Users/cheng/apk-repro-mitigation --json-out /Users/cheng/apk-repro-mitigation/diff.json --llvm-bin /Users/cheng/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin --dexdump /Users/cheng/Library/Android/sdk/build-tools/36.0.0/dexdump",
+      "command": "python3 tools/tests/apk-repro-diff.py --source /tmp/repro-mitigation/buildA.apk --rebuild /tmp/repro-mitigation/buildB.apk --workdir <workspace>/apk-repro-mitigation --json-out <workspace>/apk-repro-mitigation/diff.json --llvm-bin <workspace>/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/bin --dexdump <workspace>/Library/Android/sdk/build-tools/36.0.0/dexdump",
       "result": "size delta 0 bytes; 1638/1638 entries; no entry with a differing CRC32; local entry order identical; inter-entry padding 0/0; no differing native library or dex",
-      "report": "/Users/cheng/apk-repro-mitigation/diff.json",
+      "report": "<workspace>/apk-repro-mitigation/diff.json",
       "report_sha256": "18b558994124e30fd1a38893c22de4c60aeea5756e618416ac67b75219661d61",
-      "log": "/Users/cheng/apk-repro-mitigation/logs/diff.log",
+      "log": "<workspace>/apk-repro-mitigation/logs/diff.log",
       "log_sha256": "825948ba83dc4f85a8e9ce0ec055092658591de24cbb887ff85970230b9256ac"
     },
     "apk_verification": {
@@ -217,16 +217,16 @@
     "No per-factor control builds (e.g. epoch-only or BUILD_ID-only) were run; the decomposition into three independent factors is inherited from the root-cause receipt and confirmed collectively by this experiment."
   ],
   "raw_artifacts": {
-    "scratch_directory": "/Users/cheng/apk-repro-mitigation",
+    "scratch_directory": "<workspace>/apk-repro-mitigation",
     "files": [
       "/tmp/repro-mitigation/buildA.apk (sha256 f8cc0b2f..., 676,228,770 bytes; also copied to scratch/out/buildA.apk)",
       "/tmp/repro-mitigation/buildB.apk (sha256 f8cc0b2f..., 676,228,770 bytes; also copied to scratch/out/buildB.apk)",
-      "/Users/cheng/apk-repro-mitigation/logs/buildA.log (89,722 bytes, sha256 5de3c732...)",
-      "/Users/cheng/apk-repro-mitigation/logs/buildB.log (89,751 bytes, sha256 cd771e26...)",
-      "/Users/cheng/apk-repro-mitigation/logs/diff.log (sha256 825948ba...)",
-      "/Users/cheng/apk-repro-mitigation/diff.json (byte-identical report, sha256 18b55899...)",
-      "/Users/cheng/apk-repro-mitigation/artifacts/buildinf.A.h and buildinf.B.h (identical, sha256 c7efb209...)",
-      "/Users/cheng/apk-repro-mitigation/artifacts/libcrypto.A.so / libcrypto.B.so / libcrypto.A.buildtree.so / libcrypto.B.buildtree.so (identical per pair, build-tree sha256 c63f0446...)"
+      "<workspace>/apk-repro-mitigation/logs/buildA.log (89,722 bytes, sha256 5de3c732...)",
+      "<workspace>/apk-repro-mitigation/logs/buildB.log (89,751 bytes, sha256 cd771e26...)",
+      "<workspace>/apk-repro-mitigation/logs/diff.log (sha256 825948ba...)",
+      "<workspace>/apk-repro-mitigation/diff.json (byte-identical report, sha256 18b55899...)",
+      "<workspace>/apk-repro-mitigation/artifacts/buildinf.A.h and buildinf.B.h (identical, sha256 c7efb209...)",
+      "<workspace>/apk-repro-mitigation/artifacts/libcrypto.A.so / libcrypto.B.so / libcrypto.A.buildtree.so / libcrypto.B.buildtree.so (identical per pair, build-tree sha256 c63f0446...)"
     ],
     "repo_files": {
       "added_by_this_task": [

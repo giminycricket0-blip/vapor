@@ -9,9 +9,9 @@
     "name": "bionic-vulkan-wrapper teardown + host-CPU decode mapping",
     "source_repository": "https://github.com/leegao/bionic-vulkan-wrapper",
     "source_commit": "3abf48704a4d9303967a0811c0dc8ff8567d613b",
-    "pinned_source_readonly": "/Users/cheng/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
+    "pinned_source_readonly": "<workspace>/Documents/Codex/2026-10-13/82379689/work/turnip-refactor-qualification/wrapper-build/source/src/vulkan/wrapper",
     "supporting_finding": "docs/evidence/2026-10-22-vulkan-wrapper-validation.json section below_wrapper_use_vvl (D1 VUID-vkDestroyDevice-device-05137: 14 leaked objects every teardown; D2 VUID-vkMapMemory-memory-00678: HostSideDecompression leaves the source buffer host-mapped)",
-    "scratch_root": "/Users/cheng/staging-teardown"
+    "scratch_root": "<workspace>/staging-teardown"
   },
   "patches": {
     "device_teardown": {
@@ -82,19 +82,19 @@
     "pristine_3abf4870": "both patches apply with patch -p1 --fuzz=0 forward, apply, and reverse dry-run (re-verified after the host-decode-map review fixes)",
     "repo_stack_order": "srgb-storage.patch -> odd-extent.patch -> device-teardown.patch -> host-decode-map.patch applies cleanly with --fuzz=0 (verified, log below); reverse order (D2, D1) also verified",
     "alternate_order": "srgb-storage.patch -> odd-extent.patch -> host-decode-map.patch -> device-teardown.patch also applies cleanly with --fuzz=0 (the two D patches touch disjoint wrapper_device.c regions)",
-    "log": "/Users/cheng/staging-teardown/logs/apply-stack-final2.log sha256 18ce5924fd396be0245ceaf7b6d6968cffa88feff3dd171dab23da5f156a4c52"
+    "log": "<workspace>/staging-teardown/logs/apply-stack-final2.log sha256 18ce5924fd396be0245ceaf7b6d6968cffa88feff3dd171dab23da5f156a4c52"
   },
   "build_and_elf": {
-    "source": "/Users/cheng/staging-teardown/source = pinned candidate source (3abf4870 + image-create + trace-gate) + srgb-storage + odd-extent + device-teardown + host-decode-map",
+    "source": "<workspace>/staging-teardown/source = pinned candidate source (3abf4870 + image-create + trace-gate) + srgb-storage + odd-extent + device-teardown + host-decode-map",
     "recipe": "recorded Meson 1.9.1 cross build (NDK r27.3.13750724 clang 18.0.4, aarch64-linux-android34, 16 KB max-page-size link flags), ninja -C build -j4 src/vulkan/wrapper/libvulkan_wrapper.so",
     "result": "SUCCESS 471/471, no errors, no new warnings in the touched files (rebuilt with the host-decode-map review fixes)",
     "lib_unstripped": {
-      "path": "/Users/cheng/staging-teardown/build/src/vulkan/wrapper/libvulkan_wrapper.so",
+      "path": "<workspace>/staging-teardown/build/src/vulkan/wrapper/libvulkan_wrapper.so",
       "bytes": 131388048,
       "sha256": "32d20ac3e6bc245c2aec88ba0265d1fbeedaa70f9c48d25606222fb5db37a7ed"
     },
     "stripped_candidate": {
-      "path": "/Users/cheng/staging-teardown/wrapper-build-patched/candidate-stripped.so",
+      "path": "<workspace>/staging-teardown/wrapper-build-patched/candidate-stripped.so",
       "bytes": 10706096,
       "sha256": "5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d"
     },
@@ -105,14 +105,14 @@
       "load_alignments": "4 x 0x4000",
       "export_count": 4073,
       "export_sets_identical_to_pinned_candidate": true,
-      "log": "/Users/cheng/staging-teardown/logs/elf-final2.log sha256 d6fdd61cb5aae78ad375c5b067be2b125776183e8c6ffd8beda54001e374056a"
+      "log": "<workspace>/staging-teardown/logs/elf-final2.log sha256 d6fdd61cb5aae78ad375c5b067be2b125776183e8c6ffd8beda54001e374056a"
     }
   },
   "staged_build_for_validation_rerun": {
-    "path": "/Users/cheng/staging-teardown/wrapper-build-patched",
+    "path": "<workspace>/staging-teardown/wrapper-build-patched",
     "layout": "wrapper-build-style: candidate-stripped.so + candidate.so (full stack, sha256 5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d), baseline-stripped.so (pinned unpatched baseline, sha256 2494cda20dbe85e5732e3a0b9f872e9d8bce307e9fee6d3384d987011d7a0f8c), native-probe/ with the 16 pinned auxiliary libraries, STAGED.json identity (patches + file hashes)",
     "staged_identity": {
-      "path": "/Users/cheng/staging-teardown/wrapper-build-patched/STAGED.json",
+      "path": "<workspace>/staging-teardown/wrapper-build-patched/STAGED.json",
       "sha256": "7d1fb8a32b1dc60c4381114d2d3c832d55eb347cf1d914f16f8b278aed409d2c"
     },
     "note": "RESTAGED after the host-decode-map review fixes and D1 variant investigation. staging-review can run tools/tests/vulkan-wrapper-validation.py with --wrapper-build this directory and the below-wrapper USE_VVL route; expect D2's VUID to be gone and D1 reduced from 14 leaked objects to 2 leaked VkDeviceMemory (see patches.device_teardown.known_limitation)."
@@ -237,7 +237,7 @@
       "fixture_binary_sha256": "6c82cd988c5713dd91788fa1f7d1fa0fbc6ab37ca2dd11f0ff847f227d456c05",
       "note": "used read-only; recorded hash is the concurrent teammate version in the repo at run time"
     },
-    "command": "python3 tools/tests/vulkan-wrapper-reference.py --wrapper-build /Users/cheng/staging-teardown/wrapper-build-patched --scratch /Users/cheng/staging-teardown/raw/final2-regression --out /Users/cheng/staging-teardown/raw/final2-regression.json --serial emulator-5558 --emulator-port 5558 --cases all --extended-cases odd-extents --configs compute,compute-view,host-cpu --targets system,baseline,candidate --label teardown-map-final2-4k",
+    "command": "python3 tools/tests/vulkan-wrapper-reference.py --wrapper-build <workspace>/staging-teardown/wrapper-build-patched --scratch <workspace>/staging-teardown/raw/final2-regression --out <workspace>/staging-teardown/raw/final2-regression.json --serial emulator-5558 --emulator-port 5558 --cases all --extended-cases odd-extents --configs compute,compute-view,host-cpu --targets system,baseline,candidate --label teardown-map-final2-4k",
     "result": "75 probe runs total: 43/43 default-matrix runs pass, 32/32 odd-extent runs recorded (by design), 0 crashes, no unexpected failures.",
     "default_matrix_headline": [
       "candidate/compute/bc1 copy: 4096/4096 pixels exactly match the independent reference decoder (0 LSB delta)",
@@ -497,32 +497,32 @@
       "tools/vulkan-wrapper/host-decode-map.patch",
       "docs/evidence/2026-10-22-vulkan-wrapper-teardown-map.json"
     ],
-    "scratch_root": "/Users/cheng/staging-teardown",
-    "staged_build": "/Users/cheng/staging-teardown/wrapper-build-patched (see staged_build_for_validation_rerun)",
+    "scratch_root": "<workspace>/staging-teardown",
+    "staged_build": "<workspace>/staging-teardown/wrapper-build-patched (see staged_build_for_validation_rerun)",
     "final_regression_json": {
-      "path": "/Users/cheng/staging-teardown/raw/final2-regression.json",
+      "path": "<workspace>/staging-teardown/raw/final2-regression.json",
       "sha256": "4b42eeb40f99c0e2aab9ae434c910311cd89668f8edc9dceda4a98cfc2875cd4",
       "bytes": 1202832
     },
     "final_regression_stdout": {
-      "path": "/Users/cheng/staging-teardown/logs/final2-regression.stdout",
+      "path": "<workspace>/staging-teardown/logs/final2-regression.stdout",
       "sha256": "6bc42e2a6645d25688746ec836dd08dc64c831d2319b813f4af70485e1cb2efc"
     },
     "apply_stack_log": {
-      "path": "/Users/cheng/staging-teardown/logs/apply-stack-final2.log",
+      "path": "<workspace>/staging-teardown/logs/apply-stack-final2.log",
       "sha256": "18ce5924fd396be0245ceaf7b6d6968cffa88feff3dd171dab23da5f156a4c52"
     },
     "elf_log": {
-      "path": "/Users/cheng/staging-teardown/logs/elf-final2.log",
+      "path": "<workspace>/staging-teardown/logs/elf-final2.log",
       "sha256": "d6fdd61cb5aae78ad375c5b067be2b125776183e8c6ffd8beda54001e374056a"
     },
     "build_log": {
-      "path": "/Users/cheng/staging-teardown/logs/build-final2.log",
+      "path": "<workspace>/staging-teardown/logs/build-final2.log",
       "sha256": "7a73339925fa8430d8a23fd0afbf6b8071f004f09ea6d6b9514a3cf94b1fb75a"
     },
     "crash_evidence": {
       "note": "Default-size 64x64 bc1 copy harness logs for full-D1 and variants (d1a-d1d) are in /tmp/l4-*; the crashing binaries are /tmp/cand-full.so, /tmp/cand-d1a..d1d.so. Variant sources are /tmp/d1{a,c}-wrapper_device.c and the full-D1 source /tmp/full-wrapper_device.c. The safe staged candidate is the deliverable."
     },
-    "restaged_build": "/Users/cheng/staging-teardown/wrapper-build-patched (candidate sha256 5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d, STAGED.json sha256 7d1fb8a32b1dc60c4381114d2d3c832d55eb347cf1d914f16f8b278aed409d2c)"
+    "restaged_build": "<workspace>/staging-teardown/wrapper-build-patched (candidate sha256 5047e7ca6fa0713cb5004377c120311e5544450f8f76b62eafd9ef56cea0635d, STAGED.json sha256 7d1fb8a32b1dc60c4381114d2d3c832d55eb347cf1d914f16f8b278aed409d2c)"
   }
 }
