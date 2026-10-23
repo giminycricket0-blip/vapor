@@ -53,6 +53,9 @@ internal object DeviceGraphics {
     fun family(context: Context): GpuFamily =
         runCatching { GpuFamily.of(GPUInformation.getRenderer(null, context)) }.getOrDefault(GpuFamily.UNKNOWN)
 
+    /** The driver stack that would serve this device; UnsupportedBackend when none is shipped. */
+    fun backend(context: Context): GraphicsBackend = GraphicsBackends.forFamily(family(context))
+
     fun renderer(context: Context): String =
         runCatching { GPUInformation.getRenderer(null, context) }.getOrNull().orEmpty()
 

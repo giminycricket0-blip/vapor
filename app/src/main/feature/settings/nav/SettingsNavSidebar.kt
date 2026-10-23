@@ -3,6 +3,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.selection.selectable
 import android.content.Context
+import com.winlator.cmod.BuildConfig
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -128,6 +129,20 @@ internal object SettingsVisibility {
     fun setAdvancedVisible(context: Context, visible: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_ADVANCED, visible).apply()
     }
+
+    private const val KEY_UNLOCKED = "advanced_unlocked"
+
+    /**
+     * Whether the unlock gesture has been performed. The rule is that a normal user never sees
+     * the graphics layer, so the switch is not normal UI; it is revealed deliberately (seven
+     * taps on the version in About) for the rare game that needs it.
+     */
+    fun isAdvancedUnlocked(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_UNLOCKED, false)
+
+    fun unlockAdvanced(context: Context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_UNLOCKED, true).apply()
+    }
 }
 
 enum class NavSection(val titleRes: Int) {
@@ -188,6 +203,9 @@ fun SettingsNavSidebar(
             SettingsVisibility.isAdvancedVisible(context) || selectedItem.section == NavSection.ADVANCED,
         )
     }
+    // The product rule is that a user never sees the layer. The switch therefore only appears
+    // in debug builds or after the deliberate unlock gesture, never as normal UI.
+    val advancedDiscoverable = SettingsVisibility.isAdvancedUnlocked(context) || BuildConfig.DEBUG
     // Hidden entirely unless asked for: a normal session never needs these.
     val visibleSections = remember(showAdvanced) {
         NavSection.entries.filter { it != NavSection.ADVANCED || showAdvanced }
@@ -279,7 +297,7 @@ fun SettingsNavSidebar(
                     }
                 }
                 // The way back in to the hidden screens, phrased as what it is.
-                item(key = "advanced_toggle", contentType = "advancedToggle") {
+                if (advancedDiscoverable) item(key = "advanced_toggle", contentType = "advancedToggle") {
                     Row(
                         modifier =
                             Modifier

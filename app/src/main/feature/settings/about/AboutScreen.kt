@@ -4,6 +4,11 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import com.winlator.cmod.feature.settings.SettingsVisibility
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -251,8 +256,26 @@ fun AboutScreen(bridge: SettingsNavBridge? = null) {
                 topPadding = 4,
             )
 
+            // Seven taps on the version reveals the Advanced settings switch. This is the only
+            // way in: the product rule is that a normal user never sees the graphics layer.
+            val context = LocalContext.current
+            var versionTaps by remember { mutableIntStateOf(0) }
             buildInfoLines().forEach { (labelRes, value) ->
-                InfoRow(labelRes = labelRes, value = value)
+                if (labelRes == R.string.about_version) {
+                    Box(
+                        Modifier.clickable {
+                            versionTaps++
+                            if (versionTaps >= 7) {
+                                versionTaps = 0
+                                SettingsVisibility.unlockAdvanced(context)
+                            }
+                        },
+                    ) {
+                        InfoRow(labelRes = labelRes, value = value)
+                    }
+                } else {
+                    InfoRow(labelRes = labelRes, value = value)
+                }
             }
 
             if (isBrandedBuild()) {
