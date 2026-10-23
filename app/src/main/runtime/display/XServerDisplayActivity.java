@@ -3907,6 +3907,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
                 box64Active,
                 fexActive);
 
+        com.winlator.cmod.runtime.system.SessionFailureLog.INSTANCE.begin();
         Callback<String> sink = new Callback<String>() {
             private long cachedSecond = -1;
             private String cachedPrefix = "";
@@ -3920,6 +3921,9 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
                 }
                 observeAutomaticGraphicsFailure(line);
                 String stamped = cachedPrefix + line.replace("\n", "");
+                // Always-on, bounded: no file I/O unless the session fails. Verbose logs stay
+                // opt-in, but a failure must leave something behind to send.
+                com.winlator.cmod.runtime.system.SessionFailureLog.INSTANCE.record(stamped);
                 XServerDrawerStateHolder holder = drawerStateHolder;
                 if (holder != null) holder.appendLogLine(stamped);
                 com.winlator.cmod.runtime.system.SessionLogWriter writer = sessionLogWriter;
@@ -3946,6 +3950,16 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity
     private void observeAutomaticGraphicsFailure(String line) {
         com.winlator.cmod.runtime.system.AutomaticGraphics.Session attempt = automaticGraphics;
         if (attempt == null || exitRequested.get() || !attempt.observe(line)) return;
+        // Write the buffered lines now, while the route that failed is known.
+        java.util.List<kotlin.Pair<String, String>> details = new java.util.ArrayList<>();
+        details.add(new kotlin.Pair<>("game", String.valueOf(getExecutable())));
+        details.add(new kotlin.Pair<>("attempt", String.valueOf(attempt.getAttempt())));
+        details.add(new kotlin.Pair<>("route", attempt.getRoute().getDescription()));
+        details.add(new kotlin.Pair<>("wrapper", attempt.getRoute().getWrapper().getId()));
+        details.add(new kotlin.Pair<>("driver", String.valueOf(graphicsDriver)));
+        details.add(new kotlin.Pair<>("classifier", "graphics startup failure"));
+        com.winlator.cmod.runtime.system.SessionFailureLog.INSTANCE.writeOnce(
+                this, "recognised graphics startup failure", details);
         runOnUiThread(() -> {
             if (exitRequested.get() || isDestroyed() || isFinishing()) return;
             Log.w(TAG, "Recognized graphics startup failure in automatic attempt " + attempt.getAttempt());
