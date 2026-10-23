@@ -35,7 +35,12 @@ public class Container {
     public static final String DEFAULT_GRAPHICSDRIVERCONFIG =
             "vulkanVersion=1.4" + ";version=" + ";blacklistedExtensions=" + ";maxDeviceMemory=0" + ";presentMode=mailbox" + ";syncFrame=0" + ";disablePresentWait=0" + ";resourceType=auto" + ";bcnEmulation=auto" + ";bcnEmulationType=compute" + ";bcnEmulationCache=0" + ";gpuName=Device" + ";transcoder=cpu" + ";astcTranscoding=off";
     public static final String DEFAULT_DDRAWRAPPER = "none";
-    public static final String DEFAULT_WINCOMPONENTS = "direct3d=1,directsound=0,directmusic=0,directshow=0,directplay=0,xaudio=0,dinput8=1,vcrun2010=1";
+    // Every component defaults to Wine's own implementation. The native Microsoft
+    // archives that used to be installed for direct3d/dinput8/vcrun2010 were removed from
+    // the APK (see docs/PROVENANCE.md): Wine ships real implementations of these modules,
+    // and only d3dcsx_42/d3dcsx_43/d3dx10 have no Wine equivalent. directshow, directmusic,
+    // directplay, directsound and wmdecoder are gone entirely and no longer have toggles.
+    public static final String DEFAULT_WINCOMPONENTS = "direct3d=0,directsound=0,directmusic=0,directshow=0,directplay=0,xaudio=0,dinput8=0,vcrun2010=0";
     public static final String FALLBACK_WINCOMPONENTS = "direct3d=1,directsound=1,directmusic=1,directshow=1,directplay=1,xaudio=1,dinput8=1,vcrun2010=1";
     public static final String DEFAULT_DRIVES = "D:" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "F:" + Environment.getExternalStorageDirectory().getAbsolutePath();
     public static final byte STARTUP_SELECTION_NORMAL = 0;

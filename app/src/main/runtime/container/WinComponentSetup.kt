@@ -103,7 +103,9 @@ object WinComponentSetup {
         wincomponentsJson: JSONObject,
         identifier: String,
     ): List<String> {
-        val dlnames = wincomponentsJson.getJSONArray(identifier)
+        // A component may no longer ship its native archive; treat a missing entry as
+        // "nothing to restore" instead of aborting the whole apply pass.
+        val dlnames = wincomponentsJson.optJSONArray(identifier) ?: return emptyList()
         val dlls = ArrayList<String>(dlnames.length())
         for (i in 0 until dlnames.length()) {
             val dlname = dlnames.getString(i)
