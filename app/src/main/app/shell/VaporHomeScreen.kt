@@ -40,6 +40,9 @@ import coil.compose.AsyncImage
 import com.winlator.cmod.R
 import com.winlator.cmod.feature.stores.steam.data.SteamApp
 import com.winlator.cmod.shared.ui.focus.controllerFocusGlow
+import com.winlator.cmod.shared.ui.rememberAmbientTint
+import com.winlator.cmod.shared.ui.BrowseHints
+import com.winlator.cmod.shared.ui.ControllerHintLegend
 
 /** Home and the Library carousel share one cover shelf. Game actions stay with the Library. */
 @Composable
@@ -52,6 +55,9 @@ internal fun VaporGameShelf(
     onSelect: (Int) -> Unit,
     onOpenGame: (SteamApp) -> Unit,
     onSettings: (() -> Unit)?,
+    controllerConnected: Boolean = false,
+    /** Design-review hook: shows a known tint instead of sampling artwork. Not used in the app. */
+    ambientOverride: Color? = null,
     card: @Composable (SteamApp, Int, Boolean, Modifier, () -> Unit) -> Unit,
 ) {
     if (games.isEmpty()) return
@@ -68,10 +74,25 @@ internal fun VaporGameShelf(
         val peek = with(density) { (maxWidth * 0.1f).coerceAtMost(cardWidth).roundToPx() }
         LaunchedEffect(selected, peek) { listState.animateScrollToItem(selected, -peek) }
 
+        // The screen takes its colour from the focused game: a wash sampled from the artwork
+        // over a blurred copy of it for texture, under a scrim that keeps labels readable.
+        val sampledAmbient = rememberAmbientTint(heroArtwork)
+        val ambient = ambientOverride ?: sampledAmbient
+        Box(Modifier.matchParentSize().background(BgDark))
         AsyncImage(heroArtwork, contentDescription = null, contentScale = ContentScale.Crop,
-            modifier = Modifier.matchParentSize().blur(24.dp, BlurredEdgeTreatment.Unbounded)
-                .graphicsLayer { alpha = 0.5f })
-        Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(BgDark.copy(alpha = 0.15f), BgDark))))
+            modifier = Modifier.matchParentSize().blur(40.dp, BlurredEdgeTreatment.Unbounded)
+                .graphicsLayer { alpha = 0.42f })
+        if (ambient != Color.Unspecified) {
+            Box(Modifier.matchParentSize().background(Brush.verticalGradient(
+                0.00f to ambient.copy(alpha = 0.50f),
+                0.45f to ambient.copy(alpha = 0.17f),
+                0.75f to Color.Transparent,
+                1.00f to Color.Transparent)))
+        }
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(
+            0.00f to Color.Transparent,
+            0.55f to BgDark.copy(alpha = 0.30f),
+            1.00f to BgDark.copy(alpha = 0.94f))))
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 16.dp)) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -85,13 +106,18 @@ internal fun VaporGameShelf(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 itemsIndexed(games, key = { _, game -> game.id }) { index, game ->
                     val focused = index == selected
-                    val emphasis by animateFloatAsState(if (focused) 1f else 0.84f,
-                        tween(160), label = "shelfCardEmphasis")
+                    // The selected cover is the hero: it grows past its slot and the rest step
+                    // back in both size and opacity, so the shelf has one clear focus point
+                    // instead of reading as an even strip.
+                    val emphasis by animateFloatAsState(if (focused) 1.05f else 0.80f,
+                        tween(180), label = "shelfCardEmphasis")
+                    val presence by animateFloatAsState(if (focused) 1f else 0.58f,
+                        tween(180), label = "shelfCardPresence")
                     card(game, index, focused, Modifier.width(cardWidth).height(cardHeight)
                         .graphicsLayer {
                             scaleX = emphasis; scaleY = emphasis
-                            alpha = if (focused) 1f else 0.78f
-                            transformOrigin = TransformOrigin(0.5f, 0f)
+                            alpha = presence
+                            transformOrigin = TransformOrigin(0.5f, 0.5f)
                         }
                         .testTag("vapor_shelf_game_${game.id}").semantics { this.selected = focused }
                         .onFocusChanged { if (it.hasFocus) onSelect(index) }) {
@@ -143,6 +169,12 @@ internal fun VaporGameShelf(
                     horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                     title(Modifier.weight(1f))
                     open(Modifier)
+                }
+            }
+            // Only meaningful with a controller in hand: these describe physical buttons.
+            if (controllerConnected) {
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    ControllerHintLegend(BrowseHints)
                 }
             }
         }

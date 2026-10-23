@@ -13,6 +13,7 @@ activity = "1.10.1"
 navigationCompose = "2.8.9"
 lifecycleCompose = "2.10.0"
 coilCompose = "2.7.0"
+paletteKtx = "1.0.0"
 composeIcons = "1.1.1"
 documentfile = "1.1.0"
 coroutinesAndroid = "1.10.1"
@@ -58,6 +59,7 @@ navigationCompose = { module = "androidx.navigation:navigation-compose", version
 lifecycleViewmodelCompose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleCompose" }
 composeUiTextGoogleFonts = { module = "androidx.compose.ui:ui-text-google-fonts" }
 coilCompose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+paletteKtx = { module = "androidx.palette:palette-ktx", version.ref = "paletteKtx" }
 coilGif = { module = "io.coil-kt:coil-gif", version.ref = "coilCompose" }
 composeFoundation = { module = "androidx.compose.foundation:foundation" }
 lifecycleRuntimeCompose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleCompose" }

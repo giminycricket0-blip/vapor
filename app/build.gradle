@@ -400,6 +400,7 @@ dependencies {
     implementation libs.lifecycleViewmodelCompose
     implementation libs.composeUiTextGoogleFonts
     implementation libs.coilCompose
+    implementation libs.paletteKtx
 
     implementation libs.coroutinesAndroid
     implementation libs.timber

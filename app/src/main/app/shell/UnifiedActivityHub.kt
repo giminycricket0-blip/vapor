@@ -2445,6 +2445,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                 installed = focusedApp.id in visibleInstalledIds,
                 onSelect = { libraryFocusIndex.value = it }, onOpenGame = openGame,
                 onSettings = if (focusedApp.id in visibleInstalledIds) ({ openSettingsForApp(focusIndex, focusedApp) }) else null,
+                controllerConnected = isControllerConnected,
             ) { app, index, focused, cardModifier, activate ->
                 GameCapsule(app = app,
                     useLibraryCapsule = true, showCaption = false,
