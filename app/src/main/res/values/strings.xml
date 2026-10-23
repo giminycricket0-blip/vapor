@@ -3109,6 +3109,7 @@ Installed path:
     <string name="vapor_clear_download_history">Clear history</string>
     <string name="vapor_download_history_hint">Clear history removes completed, cancelled and failed entries from this list.</string>
     <string name="vapor_settings_everyday">Everyday</string>
+    <string name="vapor_device_unsupported_short">Not supported on this device</string>
     <string name="vapor_settings_show_advanced">Advanced settings</string>
     <string name="vapor_settings_show_advanced_hint">Drivers and containers are automatic. Only needed if a game will not start.</string>
     <string name="vapor_settings_advanced">Advanced</string>

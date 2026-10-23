@@ -2668,6 +2668,10 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                 // Tinkering stays hidden unless Advanced is on.
                                 settingsVisible = com.winlator.cmod.feature.settings.SettingsVisibility
                                     .isAdvancedVisible(context),
+                                // Run it or say plainly that this device cannot; never let the
+                                // failure surface later as a graphics error.
+                                unsupportedReason = com.winlator.cmod.runtime.system.DeviceGraphics
+                                    .unsupportedReason(context),
                                 onSettings = {
                                     val shortcut = resolveOrCreateShortcut()
                                     if (shortcut != null) {

@@ -154,6 +154,8 @@ internal fun LibraryGameLaunchScreen(
     showWorkshop: Boolean = true,
     playEnabled: Boolean = true,
     playDisabledLabel: String? = null,
+    /** Set when this device has no shipped graphics stack; Play is disabled and this is shown. */
+    unsupportedReason: String? = null,
     uninstallEnabled: Boolean = true,
     /**
      * An alternative engine this particular game can be played with, offered
@@ -477,6 +479,14 @@ internal fun LibraryGameLaunchScreen(
                                 )
                             }
 
+                            if (unsupportedReason != null) {
+                                Text(
+                                    unsupportedReason,
+                                    color = LaunchTextSecondary,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
                             BoxWithConstraints(Modifier.fillMaxWidth()) {
                                 val stacked = maxWidth < 280.dp * LocalDensity.current.fontScale
                                 FlowRow(
@@ -487,8 +497,10 @@ internal fun LibraryGameLaunchScreen(
                                 ) {
                                     LaunchPlayButton(
                                         height = playHeight,
-                                        enabled = playEnabled,
-                                        disabledLabel = playDisabledLabel,
+                                        enabled = playEnabled && unsupportedReason == null,
+                                        disabledLabel = unsupportedReason?.let {
+                                            stringResource(R.string.vapor_device_unsupported_short)
+                                        } ?: playDisabledLabel,
                                         onClick = onPlay,
                                         modifier = Modifier.weight(1f).focusRequester(playFocus),
                                     )
