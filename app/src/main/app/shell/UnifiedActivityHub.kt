@@ -108,6 +108,7 @@ import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
+import com.winlator.cmod.shared.ui.rememberAmbientTint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
@@ -2463,7 +2464,26 @@ internal fun UnifiedActivity.LibraryCarousel(
                     onLongClick = if (settingsTinkeringVisible) ({ openSettingsForApp(index, app) }) else null,
                     modifier = cardModifier)
             }
-        } else Column(Modifier.fillMaxSize()) {
+        } else Box(Modifier.fillMaxSize()) {
+            // The grid gets the same game-driven wash as the shelf: without it, the two library
+            // layouts feel like different apps.
+            val focusedForTint = displayedApps.getOrNull(focusIndex)
+            val gridAmbient = rememberAmbientTint(
+                focusedForTint?.let { app ->
+                    visibleCustomHeroPathByAppId[app.id]?.let { java.io.File(it) }
+                        ?: StoreArtworkCache.imageModel(
+                            context,
+                            StoreArtworkCache.heroRef(app, gameGogById[app.id], gameEpicById[app.id]),
+                        )
+                },
+            )
+            if (gridAmbient != Color.Unspecified) {
+                Box(Modifier.matchParentSize().background(Brush.verticalGradient(
+                    0.00f to gridAmbient.copy(alpha = 0.30f),
+                    0.40f to gridAmbient.copy(alpha = 0.11f),
+                    0.70f to Color.Transparent)))
+            }
+            Column(Modifier.fillMaxSize()) {
                 Text(stringResource(R.string.vapor_catalog_count, displayedApps.size), color = TextSecondary,
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
@@ -2567,6 +2587,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                             )
                         }
                 }
+            }
         }
     }
 
