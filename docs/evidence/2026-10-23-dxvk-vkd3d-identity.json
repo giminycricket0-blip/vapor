@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-23",
+  "scope": "Roadmap item 3, identification half: what the packaged ARM64EC DXVK/VKD3D actually are, and what they require.",
+  "method": "Downloaded the exact three components Prepare Vapor installs (VaporPreparation.kt URLs), extracted, and read PE version resources, embedded version strings, git revisions and Vulkan symbol strings from the shipped DLLs.",
+  "packages": {
+    "DXVK-1.10.3-arm64ec-async.wcp": {
+      "bytes": 13911832,
+      "profile": "Dxvk 1.10.3-arm64ec-async",
+      "embedded_version": "DXVK v1.10.3-arm64ec-async",
+      "embedded_git_revision": "c7580027772e4d06dc0fbab9ef422b6c3cd250d3",
+      "revision_resolves": false,
+      "revision_note": "not found in upstream doitsujin/dxvk; the gplasync fork is not reachable. The build is from an ARM64EC port whose source is not publicly locatable.",
+      "license": "zlib/libpng (its own version resource says so; text bundled as licenses/dxvk-zlib-libpng-LICENSE.txt)",
+      "dlls": {
+        "d3d11.dll": 41607168,
+        "d3d9.dll": 37068800,
+        "dxgi.dll": 25821184,
+        "d3d10.dll": 3174400,
+        "d3d10_1.dll": 3174400,
+        "d3d10core.dll": 561152
+      },
+      "build_state": "UNSTRIPPED - about 10x the size of the 2.7.1 build (d3d11.dll 41.6 MB vs 4.0 MB)",
+      "vulkan_mentions": [
+        "Vulkan 1.0",
+        "Vulkan 1.1"
+      ],
+      "vulkan_symbols": 1932,
+      "vulkan_extension_names": [
+        "VK_EXT_4444_",
+        "VK_EXT_BARRIER_CONTROL",
+        "VK_EXT_DEPTH_BOUNDS",
+        "VK_EXT_MULTI_DRAW_INDIRECT",
+        "VK_EXT_MULTI_DRAW_INDIRECT_COUNT"
+      ]
+    },
+    "DXVK-2.7.1-arm64ec-gplasync.wcp": {
+      "bytes": 3556764,
+      "profile": "2.7.1-1-gplasync-arm64ec",
+      "embedded_version": "DXVK v2.7.1-gplasync-arm64ec",
+      "embedded_git_revision": null,
+      "revision_note": "stripped; no revision embedded",
+      "license": "zlib/libpng (same project, same licence text)",
+      "dlls": {
+        "d3d11.dll": 4038656,
+        "d3d9.dll": 3686400,
+        "dxgi.dll": 2560000,
+        "d3d8.dll": 1265664,
+        "d3d10core.dll": 286720
+      },
+      "build_state": "stripped",
+      "vulkan_symbols": 294,
+      "note": "contains vkd3d-proton and D3D11On12CreateDevice strings, so it is built from a Proton-family tree"
+    },
+    "VKD3D-3.0.1-arm64ec.wcp": {
+      "bytes": 2804432,
+      "profile": "Vk3dk 3.0.1 arm64ec proton release",
+      "identity": "vkd3d-proton (not vanilla vkd3d)",
+      "identity_evidence": "d3d12.dll contains the message \"vkd3d-proton d3d12core interfaces\"; both DLLs carry VKD3D_CONFIG/VKD3D_DEBUG env names",
+      "dlls": {
+        "d3d12.dll": 139264,
+        "d3d12core.dll": 4993024
+      },
+      "layout": "d3d12.dll is a small loader that delegates to d3d12core.dll",
+      "embedded_version": null,
+      "embedded_git_revision": null,
+      "version_resource": "none",
+      "license": "LGPL-2.1-or-later (COPYING text bundled as licenses/vkd3d-proton-LGPL-COPYING.txt)",
+      "vulkan_symbols": 32
+    }
+  },
+  "findings": [
+    "Both DXVK builds deliberately spoof their Windows version resources (10.0.17763.1 WinBuild.160101.0800), so PE version resources cannot identify them. The embedded \"DXVK vX.Y.Z\" string is the real marker.",
+    "Both are unofficial async builds (arm64ec-async and gplasync), not stock DXVK releases.",
+    "DXVK 1.10.3 is unstripped - its d3d11.dll is 41.6 MB against 2.7.1s 4.0 MB. That is 10x the disk and a larger mapping cost at load, for no functional gain.",
+    "Only DXVK 1.10.3 embeds a source revision, and it does not resolve in the public dxvk repositories.",
+    "vkd3d-proton 3.0.1 carries no version resource and no revision at all."
+  ],
+  "open": [
+    "map the 2.7.1-gplasync and vkd3d-proton 3.0.1 builds to source (no revision is embedded)",
+    "the measurement half of roadmap item 3 (submission cost, shader stalls, waits, memory, cold/warm) needs a GPU and remains physical-hardware work"
+  ]
+}

@@ -511,6 +511,21 @@
         "covers": [
           "imagefs.tzst libsamplerate"
         ]
+      },
+      "dxvk-zlib-libpng-LICENSE.txt": {
+        "license": "zlib/libpng (DXVK)",
+        "sha256_prefix": "a5cb1a6ded7d",
+        "covers": [
+          "DXVK-1.10.3-arm64ec-async",
+          "DXVK-2.7.1-arm64ec-gplasync"
+        ]
+      },
+      "vkd3d-proton-LGPL-COPYING.txt": {
+        "license": "LGPL-2.1-or-later (vkd3d-proton)",
+        "sha256_prefix": "f51ad4bf5a3b",
+        "covers": [
+          "VKD3D-3.0.1-arm64ec (vkd3d-proton)"
+        ]
       }
     },
     "verified": "each text fetched from the project upstream and checked before bundling",
@@ -521,6 +536,6 @@
       "pcre2, libjpeg-turbo, lzo, tiff, zimg already carry their licence inside imagefs.tzst itself",
       "the Microsoft, Valve, GSE, Steamless and 3dfx payloads have no redistributable licence text to bundle"
     ],
-    "coverage_summary": "16 licence files covering the LGPL/MIT/BSD components of the runtime; the remaining gaps are 3 rootfs packages whose upstream licence files were not retrievable, plus the proprietary payloads that have no redistributable text"
+    "coverage_summary": "17 licence files covering the LGPL/MIT/BSD/zlib components of the runtime; remaining gaps are 3 rootfs packages whose upstream licence files were not retrievable, plus the proprietary payloads that have no redistributable text"
   }
 }

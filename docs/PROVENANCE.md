@@ -729,6 +729,33 @@ in [the provenance receipt](evidence/2026-10-22-wincomponents-provenance.json).
 What remains is bundling the licence texts and the per-component keep/replace/
 drop decision.
 
+### Packaged DXVK / VKD3D builds — 23 October 2026
+
+The three graphics components Prepare Vapor installs are identified from the shipped
+DLLs:
+
+| Component | Identity | Source revision | Licence |
+| --- | --- | --- | --- |
+| `DXVK-1.10.3-arm64ec-async` | `DXVK v1.10.3-arm64ec-async` (an unofficial async build) | `c7580027772e4d06dc0fbab9ef422b6c3cd250d3` — **does not resolve** in upstream `doitsujin/dxvk` or the public gplasync fork | zlib/libpng |
+| `DXVK-2.7.1-arm64ec-gplasync` | `DXVK v2.7.1-gplasync-arm64ec` (unofficial async build) | **none embedded** (stripped) | zlib/libpng |
+| `VKD3D-3.0.1-arm64ec` | **vkd3d-proton** — `d3d12.dll` says *"vkd3d-proton d3d12core interfaces"*; it is a 139 KB loader for the 5 MB `d3d12core.dll` | **none embedded**, no version resource | LGPL-2.1-or-later |
+
+Three things worth knowing:
+
+1. **Both DXVK builds spoof their Windows version resources** (`10.0.17763.1
+   WinBuild.160101.0800`), so a PE version resource cannot identify them. The embedded
+   `DXVK vX.Y.Z` string is the only reliable marker.
+2. **DXVK 1.10.3 is unstripped.** Its `d3d11.dll` is 41,607,168 bytes against
+   2.7.1's 4,038,656 — ten times the disk, and a larger mapping cost at load time, for
+   no functional gain. The package is 13.9 MB against 3.5 MB.
+3. **Neither DXVK 2.7.1 nor vkd3d-proton 3.0.1 carries any source revision**, so they
+   cannot be mapped to source from the bytes alone. Only the 1.10.3 build is
+   traceable, and its revision points at a tree that is not publicly reachable.
+
+The measurement half of the DXVK/VKD3D review — submission cost, shader stalls, waits,
+memory, cold/warm behaviour — needs a GPU and stays on the physical-hardware list.
+[Receipt](evidence/2026-10-23-dxvk-vkd3d-identity.json).
+
 ### The `licenses/` bundle — what each text covers
 
 `app/src/main/assets/licenses/` now carries seven files, each verified against its
