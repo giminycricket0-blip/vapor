@@ -41,6 +41,31 @@ internal val BrowseHints =
         ControllerHint("\u271B", "Navigate"),
     )
 
+/** Downloads list: A starts/pauses the focused item rather than opening anything. */
+internal val DownloadsHints =
+    listOf(
+        ControllerHint("A", "Select"),
+        ControllerHint("Y", "More"),
+        ControllerHint("B", "Back"),
+        ControllerHint("\u271B", "Navigate"),
+    )
+
+/** Settings adds shoulder-button section switching to the shared set. */
+internal val SettingsHints =
+    listOf(
+        ControllerHint("A", "Select"),
+        ControllerHint("L1/R1", "Section"),
+        ControllerHint("B", "Back"),
+    )
+
+/** The hints for a top-level tab key, or null when a legend would only repeat the obvious. */
+internal fun controllerHintsFor(tabKey: String): List<ControllerHint>? = when (tabKey) {
+    "home", "library" -> BrowseHints
+    "steam" -> BrowseHints
+    "downloads" -> DownloadsHints
+    else -> null
+}
+
 @Composable
 internal fun ControllerHintLegend(
     hints: List<ControllerHint>,

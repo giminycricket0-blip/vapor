@@ -41,8 +41,6 @@ import com.winlator.cmod.R
 import com.winlator.cmod.feature.stores.steam.data.SteamApp
 import com.winlator.cmod.shared.ui.focus.controllerFocusGlow
 import com.winlator.cmod.shared.ui.rememberAmbientTint
-import com.winlator.cmod.shared.ui.BrowseHints
-import com.winlator.cmod.shared.ui.ControllerHintLegend
 
 /** Home and the Library carousel share one cover shelf. Game actions stay with the Library. */
 @Composable
@@ -55,7 +53,6 @@ internal fun VaporGameShelf(
     onSelect: (Int) -> Unit,
     onOpenGame: (SteamApp) -> Unit,
     onSettings: (() -> Unit)?,
-    controllerConnected: Boolean = false,
     /** Design-review hook: shows a known tint instead of sampling artwork. Not used in the app. */
     ambientOverride: Color? = null,
     card: @Composable (SteamApp, Int, Boolean, Modifier, () -> Unit) -> Unit,
@@ -174,12 +171,6 @@ internal fun VaporGameShelf(
                     horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                     title(Modifier.weight(1f))
                     open(Modifier)
-                }
-            }
-            // Only meaningful with a controller in hand: these describe physical buttons.
-            if (controllerConnected) {
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    ControllerHintLegend(BrowseHints)
                 }
             }
         }

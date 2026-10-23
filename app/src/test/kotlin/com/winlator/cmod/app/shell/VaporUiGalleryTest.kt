@@ -114,7 +114,7 @@ class VaporUiGalleryTest {
     @Composable private fun Shelf(hero: Any? = null, ambient: Color? = null) {
         var selected by remember { mutableIntStateOf(0) }
         VaporGameShelf(games, true, selected, hero, true, { selected = it }, {}, onSettings = {},
-            controllerConnected = true, ambientOverride = ambient) {
+            ambientOverride = ambient) {
                 game, _, focused, modifier, activate ->
             GameCapsule(game, useLibraryCapsule = true, showCaption = false, isFocusedOverride = focused,
                 isControllerActive = true, onClick = activate, modifier = modifier)

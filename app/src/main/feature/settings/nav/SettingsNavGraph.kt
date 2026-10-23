@@ -5,6 +5,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -154,6 +156,14 @@ fun SettingsHost(
                 .fillMaxSize()
                 .background(SettingsBg),
     ) {
+        // Settings is not a tab, so the shell legend does not cover it: say what the pad does
+        // here, including the shoulder buttons that switch sections.
+        if (com.winlator.cmod.runtime.input.ControllerHelper.isControllerConnected()) {
+            com.winlator.cmod.shared.ui.ControllerHintLegend(
+                com.winlator.cmod.shared.ui.SettingsHints,
+                Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp),
+            )
+        }
         Row(
             modifier =
                 Modifier

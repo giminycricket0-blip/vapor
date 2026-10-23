@@ -1069,6 +1069,16 @@ internal fun UnifiedActivity.UnifiedHub() {
                         ).fillMaxSize()
                         .background(innerBoxBg),
                 ) {
+                    // One legend for the whole shell: the hints follow the active tab, so every
+                    // top-level screen explains the pad instead of only Home and Library.
+                    if (isControllerConnected) {
+                        com.winlator.cmod.shared.ui.controllerHintsFor(key)?.let { hints ->
+                            com.winlator.cmod.shared.ui.ControllerHintLegend(
+                                hints,
+                                Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp),
+                            )
+                        }
+                    }
 
                     LaunchedEffect(key) { libraryTabActive.value = key in setOf("home", "library") }
 
@@ -2450,7 +2460,6 @@ internal fun UnifiedActivity.LibraryCarousel(
                 installed = focusedApp.id in visibleInstalledIds,
                 onSelect = { libraryFocusIndex.value = it }, onOpenGame = openGame,
                 onSettings = if (focusedApp.id in visibleInstalledIds) ({ openSettingsForApp(focusIndex, focusedApp) }) else null,
-                controllerConnected = isControllerConnected,
             ) { app, index, focused, cardModifier, activate ->
                 GameCapsule(app = app,
                     useLibraryCapsule = true, showCaption = false,
