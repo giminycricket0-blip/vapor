@@ -28,13 +28,18 @@ class SupportLicencesTest {
 
     // Deliberately a fixed list: adding a licence text is a decision, so the bundled
     // set is asserted exactly rather than only "non-empty".
+    // Deliberately a fixed list: adding a licence text is a decision, so the bundled
+    // set is asserted exactly rather than only "non-empty".
     private val expected = listOf(
         "7zip-19.00-LICENSE.txt", "OpenSSL-1.1.1q.txt", "cnc-ddraw-6.6.0.0-MIT.txt",
         "curl-7.85.0.txt", "dxvk-zlib-libpng-LICENSE.txt",
         "ffmpeg-COPYING.LGPLv2.1.txt", "flac-COPYING.Xiph.txt", "lame-LICENSE.txt",
-        "libogg-COPYING.txt", "libsamplerate-COPYING.txt", "libtheora-COPYING.txt",
-        "libvorbis-COPYING.txt", "mangohud-MIT.txt", "vkd3d-proton-LGPL-COPYING.txt",
-        "wine-COPYING.LIB-LGPL-2.1.txt", "wine-LICENSE.txt", "xorgproto-COPYING.txt",
+        "libogg-COPYING.txt", "libsamplerate-COPYING.txt", "libsoxr-LICENCE-LGPL-2.1.txt",
+        "libtheora-COPYING.txt", "libunistring-COPYING-GPL-3.0.txt",
+        "libunistring-COPYING.LIB-LGPL-3.0.txt", "libvorbis-COPYING.txt",
+        "mangohud-MIT.txt", "readline-COPYING-GPL-3.0.txt",
+        "vkd3d-proton-LGPL-COPYING.txt", "wine-COPYING.LIB-LGPL-2.1.txt",
+        "wine-LICENSE.txt", "xorgproto-COPYING.txt",
     )
 
     @Test fun everyBundledLicenceIsListedWithItsSize() {

@@ -779,11 +779,13 @@ protocol each covers. `cnc-ddraw` 7.1.0.0 in `ddrawrapper/` is the same MIT proj
 at a later build, covered by the same text. `pcre2`, `libjpeg-turbo`, `lzo`, `tiff`
 and `zimg` already carry their own licence inside `imagefs.tzst`.
 
-Still not bundled: `readline` (GPL-3.0), `libunistring` (LGPL-3.0/GPL-3.0) and
-`libsoxr` (LGPL-2.1) in `imagefs.tzst` — their upstream licence files were not
-retrievable at the paths tried, so they are recorded as outstanding rather than
-guessed. And the Microsoft, Valve, GSE, Steamless and 3dfx payloads have **no**
-redistributable licence text to bundle; that is the point of those findings.
+`readline-COPYING-GPL-3.0.txt`, `libunistring-COPYING.LIB-LGPL-3.0.txt`,
+`libunistring-COPYING-GPL-3.0.txt` and `libsoxr-LICENCE-LGPL-2.1.txt` close the
+remaining rootfs gaps — retrieved from the GNU savannah cgit mirrors and the
+SoX resampler project's own LICENCE file. The rootfs is now fully covered: all
+21 bundled licence texts are in `assets/licenses/`. And the proprietary payloads have **no** redistributable licence text to bundle. (As of
+23 October the Goldberg `steampipe/` payloads and the Steamless DRM stripper have been
+removed from the APK entirely; the Microsoft and Valve payloads and the 3dfx files remain.)
 
 The texts are also readable in the app: **Settings → Support → Third-party
 licences** lists every bundled file and opens its verbatim text. Shipping licence
