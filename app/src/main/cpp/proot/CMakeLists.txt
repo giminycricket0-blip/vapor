@@ -20,8 +20,14 @@ add_executable(libproot-loader.so
 target_include_directories(libproot-loader.so PRIVATE src)
 target_compile_definitions(libproot-loader.so PRIVATE ${PROOT_DEFINES})
 target_compile_options(libproot-loader.so PRIVATE ${PROOT_CFLAGS} -fPIC -ffreestanding -fno-stack-protector)
+# -Wl,--undefined=pokedata_workaround keeps that marker symbol alive: it is a bare
+# assembly label that nothing references, and the optimized link drops it
+# (--gc-sections, added by the NDK toolchain for release builds), which made
+# loader-info.cmake fail with "pokedata_workaround or _start missing" and broke
+# every release build. tracee/mem.c needs its offset from _start.
 target_link_options(libproot-loader.so PRIVATE -static -nostdlib -no-pie
-                    -Wl,--build-id=none,-Ttext=0x2000000000,--rosegment,-z,noexecstack)
+                    -Wl,--build-id=none,-Ttext=0x2000000000,--rosegment,-z,noexecstack
+                    -Wl,--undefined=pokedata_workaround)
 
 # tracee/mem.c finds the loader's pokedata_workaround stub by its offset from _start.
 set(LOADER_INFO ${CMAKE_CURRENT_BINARY_DIR}/loader-info.c)

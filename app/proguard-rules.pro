@@ -63,6 +63,11 @@
 -keep class com.github.luben.zstd.** { *; }
 -keepclassmembers class com.github.luben.zstd.** { *; }
 -dontwarn com.github.luben.zstd.**
+# SnakeYAML's introspector reaches for java.beans, which Android does not ship. The
+# affected code paths (BeanAccess) are not used here; R8 only needs to stop failing on
+# the reference.
+-dontwarn java.beans.**
+-dontwarn org.yaml.snakeyaml.introspector.**
 
 # Conscrypt / OkHttp use reflection to discover security providers; keep
 # the Provider names they look up by string.

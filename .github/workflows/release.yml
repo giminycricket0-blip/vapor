@@ -1,0 +1,81 @@
+name: Release build
+
+# Builds and signs a release APK. It deliberately does NOT publish it: APK
+# publication stays gated on the redistribution review in docs/PROVENANCE.md.
+# The signed artifact is uploaded to the run so a maintainer can publish it by
+# hand once that review clears.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          lfs: true
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Require signing secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64" || { echo "::error::KEYSTORE_BASE64 secret is not set"; exit 1; }
+          test -n "$KEYSTORE_PASSWORD" || { echo "::error::KEYSTORE_PASSWORD secret is not set"; exit 1; }
+          test -n "$KEY_ALIAS" || { echo "::error::KEY_ALIAS secret is not set"; exit 1; }
+          test -n "$KEY_PASSWORD" || { echo "::error::KEY_PASSWORD secret is not set"; exit 1; }
+      - name: Install native toolchains
+        run: |
+          set -euo pipefail
+          vapor_sdkmanager="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' -print -quit)"
+          test -x "$vapor_sdkmanager"
+          # One long attempt: apt/sdkmanager restart a download from zero, so several
+          # short attempts cannot complete one long one (docs: pr-ci.yml).
+          vapor_try() { for a in 1 2; do echo "fetch attempt $a: $*"; if timeout 2700 "$@"; then return 0; fi; sleep 10; done; return 1; }
+          vapor_try "$vapor_sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
+          rustup show
+          vapor_try sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=120 -o Acquire::http::Pipeline-Depth=0 update
+          vapor_try sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=120 -o Acquire::http::Pipeline-Depth=0 install -y make perl g++-mingw-w64-x86-64-posix g++-mingw-w64-i686-posix
+      - name: Materialise the signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/signing"
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/signing/release.jks"
+          echo "KEYSTORE_FILE=$RUNNER_TEMP/signing/release.jks" >> "$GITHUB_ENV"
+          echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> "$GITHUB_ENV"
+          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> "$GITHUB_ENV"
+          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> "$GITHUB_ENV"
+      - name: Build signed release APK
+        run: ./gradlew :app:assembleStandardRelease --console=plain
+      - name: Verify the signature
+        run: |
+          apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner -print -quit)"
+          "$apksigner" verify --print-certs app/build/outputs/apk/standard/release/app-standard-release.apk
+      - name: Remove the signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/signing/release.jks"
+      - name: Upload the signed APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: vapor-release-signed
+          path: app/build/outputs/apk/standard/release/app-standard-release.apk
+          retention-days: 14
