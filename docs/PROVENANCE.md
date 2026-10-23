@@ -812,6 +812,29 @@ Microsoft packages that still ship as opt-in components, and the original 3dfx
 splash DLLs. The Goldberg Steam emulator and the Steamless DRM stripper have
 been removed entirely, and the rootfs licences are fully bundled.
 
+### Valve payload: cannot be sourced from the device (23 October 2026)
+
+The open question on blocker 1 was whether the bundled Steam binaries could come
+from the user's own Steam install instead of shipping in the APK. They cannot,
+and the split is worth recording:
+
+- **Built from Vapor's own source** (not Valve's): `wnsteam/bionic/steam.exe`,
+  `steam32.exe`, `wn-iface-probe.exe`, `wn-iface-probe32.exe` and
+  `wn-steam-helper.exe` — produced by `tools`/`app/src/main/cpp/wn-steam-launcher/build.sh`.
+- **Genuinely Valve's** and bundled: `wnsteam/bionic/steamservice.dll` and
+  `.exe`, `valve-steam-x86_64.tzst` (16 MB), `steam-androidarm64.tzst` (12.8 MB),
+  `lsteamclient-arm64ec.tzst` and `lsteamclient-x86_64.tzst` (10 MB), and
+  `wnsteam/steampipe/` (Valve's real `steam_api`/`steam_api64`, 13.7 MB — the
+  restore copies, distinct from the Goldberg set now deleted).
+
+`WnSteamAssetsInstaller` installs these from the bundled assets. There is no
+code path that reads them from an installed Steam app, and there cannot easily
+be one: an Android app cannot read another app's private files, and the Android
+Steam client does not contain the Linux or Windows Steam client that the
+container needs. So the choice for blocker 1 is between shipping them (with
+permission) and not shipping them at all — substituting them from the device is
+not available.
+
 ## Public distribution blockers
 
 1. **Valve client binaries:** `app/src/main/assets/wnsteam/bionic/valve-steam-x86_64.tzst` and other genuine Steam assets are inherited. Their presence in a public upstream is not redistribution permission. Establish a supported acquisition route and applicable terms before publishing an APK containing them.
