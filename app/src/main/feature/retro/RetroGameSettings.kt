@@ -2211,7 +2211,7 @@ private fun RetroPs2OnlineSection(state: RetroSettingsState) {
             ) { putStr("wn.ps2.net.dnsmode", dnsModeKeys[it]) }
             RetroSettingTextField(stringResource(R.string.retro_gs_primary_dns), prefs.getString("wn.ps2.net.dns1", PS2_DEFAULT_DNS).orEmpty(), PS2_DEFAULT_DNS) { putStr("wn.ps2.net.dns1", it) }
             RetroSettingTextField(stringResource(R.string.retro_gs_secondary_dns), prefs.getString("wn.ps2.net.dns2", "").orEmpty(), stringResource(R.string.retro_gs_dns_optional)) { putStr("wn.ps2.net.dns2", it) }
-            RetroSettingSwitch(stringResource(R.string.retro_gs_dnas_bypass), prefs.getBoolean(Ps2DnasBypass.PREF, true), subtitle = stringResource(R.string.retro_gs_dnas_bypass_subtitle)) { putBool(Ps2DnasBypass.PREF, it) }
+            RetroSettingSwitch(stringResource(R.string.retro_gs_dnas_bypass), prefs.getBoolean(Ps2DnasBypass.PREF, false), subtitle = stringResource(R.string.retro_gs_dnas_bypass_subtitle)) { putBool(Ps2DnasBypass.PREF, it) }
             RetroSettingSwitch(stringResource(R.string.retro_gs_auto_ip_dhcp), prefs.getBoolean("wn.ps2.net.dhcp", true)) { putBool("wn.ps2.net.dhcp", it) }
         }
     }
@@ -2243,7 +2243,7 @@ private fun RetroPs2CheatsSection(state: RetroSettingsState) {
     var repoCheatNames by remember { mutableStateOf<Set<String>>(emptySet()) }
     var repoPatchNames by remember { mutableStateOf<Set<String>>(emptySet()) }
     var dnasEntries by remember { mutableStateOf<List<Ps2DnasBypass.BypassEntry>>(emptyList()) }
-    var dnasGlobalOn by remember { mutableStateOf(true) }
+    var dnasGlobalOn by remember { mutableStateOf(false) }
     var dnasDisabled by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     LaunchedEffect(serial, state.cheatsRefresh) {
@@ -2254,7 +2254,7 @@ private fun RetroPs2CheatsSection(state: RetroSettingsState) {
         selCheats = stagedC.map { it.name }.toSet()
         selPatches = stagedP.map { it.name }.toSet()
         dnasEntries = Ps2DnasBypass.bypassEntries(context, serial).filter { it.auto }
-        dnasGlobalOn = context.getSharedPreferences("ARMSX2", android.content.Context.MODE_PRIVATE).getBoolean(Ps2DnasBypass.PREF, true)
+        dnasGlobalOn = context.getSharedPreferences("ARMSX2", android.content.Context.MODE_PRIVATE).getBoolean(Ps2DnasBypass.PREF, false)
         dnasDisabled = Ps2DnasBypass.ensureSingleDnasEnabled(context, serial, dnasEntries.map { it.name }.toSet())
         loading = false
         val repo = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {

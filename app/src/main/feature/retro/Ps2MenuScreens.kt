@@ -106,7 +106,7 @@ fun Ps2CheatsScreen(
     var repoCheatNames by remember { mutableStateOf<Set<String>>(emptySet()) }
     var repoPatchNames by remember { mutableStateOf<Set<String>>(emptySet()) }
     var dnasEntries by remember { mutableStateOf<List<Ps2DnasBypass.BypassEntry>>(emptyList()) }
-    var dnasGlobalOn by remember { mutableStateOf(true) }
+    var dnasGlobalOn by remember { mutableStateOf(false) }
     var dnasDisabled by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     androidx.compose.runtime.LaunchedEffect(Unit) {
@@ -127,7 +127,7 @@ fun Ps2CheatsScreen(
                 val stagedC = Ps2CheatStaging.read(context, s, false)
                 val stagedP = Ps2CheatStaging.read(context, s, true)
                 val dnas = Ps2DnasBypass.bypassEntries(context, s).filter { it.auto }
-                val globalOn = context.getSharedPreferences("ARMSX2", Context.MODE_PRIVATE).getBoolean(Ps2DnasBypass.PREF, true)
+                val globalOn = context.getSharedPreferences("ARMSX2", Context.MODE_PRIVATE).getBoolean(Ps2DnasBypass.PREF, false)
                 val disabled = Ps2DnasBypass.ensureSingleDnasEnabled(context, s, dnas.map { it.name }.toSet())
                 LocalCheats(s, c, stagedC, stagedP, dnas, globalOn, disabled)
             }

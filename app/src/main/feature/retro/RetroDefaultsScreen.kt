@@ -767,7 +767,7 @@ fun RetroDefaultsScreen(bridge: SettingsNavBridge? = null) {
                         )
                         RetroSettingTextField(stringResource(R.string.retro_scr_primary_dns), ps2Prefs.getString("wn.ps2.net.dns1", PS2_DEFAULT_DNS).orEmpty(), PS2_DEFAULT_DNS) { ps2Prefs.edit().putString("wn.ps2.net.dns1", it).apply(); refresh++ }
                         RetroSettingTextField(stringResource(R.string.retro_scr_secondary_dns), ps2Prefs.getString("wn.ps2.net.dns2", "").orEmpty(), stringResource(R.string.retro_scr_optional)) { ps2Prefs.edit().putString("wn.ps2.net.dns2", it).apply(); refresh++ }
-                        RetroSettingSwitch(stringResource(R.string.retro_gs_dnas_bypass), ps2Prefs.getBoolean(com.winlator.cmod.feature.retro.Ps2DnasBypass.PREF, true), subtitle = stringResource(R.string.retro_gs_dnas_bypass_subtitle)) { ps2Prefs.edit().putBoolean(com.winlator.cmod.feature.retro.Ps2DnasBypass.PREF, it).apply(); refresh++ }
+                        RetroSettingSwitch(stringResource(R.string.retro_gs_dnas_bypass), ps2Prefs.getBoolean(com.winlator.cmod.feature.retro.Ps2DnasBypass.PREF, false), subtitle = stringResource(R.string.retro_gs_dnas_bypass_subtitle)) { ps2Prefs.edit().putBoolean(com.winlator.cmod.feature.retro.Ps2DnasBypass.PREF, it).apply(); refresh++ }
                         RetroSettingSwitch(stringResource(R.string.retro_scr_auto_ip_dhcp), ps2Prefs.getBoolean("wn.ps2.net.dhcp", true)) { ps2Prefs.edit().putBoolean("wn.ps2.net.dhcp", it).apply(); refresh++ }
                     }
                 }

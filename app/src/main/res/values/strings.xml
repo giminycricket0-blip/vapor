@@ -2515,8 +2515,8 @@ Installed path:
     <string name="retro_gs_secondary_dns">Secondary DNS</string>
     <string name="retro_gs_dns_optional">optional</string>
     <string name="retro_gs_auto_ip_dhcp">Auto IP (DHCP)</string>
-    <string name="retro_gs_dnas_bypass">DNAS Auth Bypass</string>
-    <string name="retro_gs_dnas_bypass_subtitle">Auto-skip Sony\'s dead DNAS login for supported online games (SOCOM, Syphon Filter, etc.)</string>
+    <string name="retro_gs_dnas_bypass">DNAS authentication bypass</string>
+    <string name="retro_gs_dnas_bypass_subtitle">Off by default. Bypasses Sony\'s DNAS login for supported PS2 titles whose servers are gone (SOCOM, Syphon Filter, etc.) and that otherwise refuse to start. Enable it only for a game you own that hits its login check.</string>
     <string name="retro_gs_group_input">INPUT</string>
     <string name="retro_engine_save">Save</string>
     <string name="retro_engine_saved">Game saved</string>

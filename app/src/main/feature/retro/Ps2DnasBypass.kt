@@ -53,8 +53,10 @@ object Ps2DnasBypass {
     fun hasBypass(ctx: Context, serial: String?): Boolean =
         serial != null && loadDb(ctx).containsKey(serial.trim().uppercase())
 
+    // Off by default: this is an authentication bypass. It exists for PS2 titles whose
+    // DNAS servers are gone and which otherwise refuse to start, so it stays opt-in.
     fun isEnabled(ctx: Context): Boolean =
-        ctx.getSharedPreferences("ARMSX2", Context.MODE_PRIVATE).getBoolean(PREF, true)
+        ctx.getSharedPreferences("ARMSX2", Context.MODE_PRIVATE).getBoolean(PREF, false)
 
     fun setEnabled(ctx: Context, on: Boolean) {
         ctx.getSharedPreferences("ARMSX2", Context.MODE_PRIVATE).edit().putBoolean(PREF, on).apply()
