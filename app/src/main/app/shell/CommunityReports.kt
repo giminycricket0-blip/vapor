@@ -25,6 +25,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.winlator.cmod.R
 import com.winlator.cmod.feature.library.EmuReady
 import com.winlator.cmod.feature.library.EmuReadyConfigHint
+import com.winlator.cmod.runtime.system.CommunityPrior
 import com.winlator.cmod.shared.ui.focus.controllerFocusGlow
 import com.winlator.cmod.shared.ui.nav.DialogPaneNav
 import com.winlator.cmod.shared.ui.nav.LocalPaneNav
@@ -87,7 +88,7 @@ internal fun CommunityReportsButton(
                 val nav = remember { PaneNavRegistry() }
                 CompositionLocalProvider(LocalPaneNav provides nav) {
                     DialogPaneNav(nav, onDismiss = { open = false })
-                    CommunityReportsContent(gameTitle, page, loading, failed, unexpected,
+                    CommunityReportsContent(gameTitle, page, loading, failed, appId = appId, unexpected = unexpected,
                         onClose = { open = false }, onRetry = { request++ },
                         // Prefer the matched EmuReady entry when it differs from the Steam title.
                         onBrowse = { source(EmuReady.browseUrl(page?.game?.title?.takeIf { it.isNotBlank() } ?: gameTitle)) },
@@ -105,6 +106,7 @@ internal fun CommunityReportsContent(
     onClose: () -> Unit, onRetry: () -> Unit, onBrowse: () -> Unit,
     onSource: (String) -> Unit,
     loadSettings: suspend (EmuReady.Report) -> List<EmuReady.Setting>,
+    appId: Int = 0,
 ) {
     Surface(modifier = Modifier.padding(16.dp).widthIn(max = 760.dp).fillMaxWidth().fillMaxHeight(0.92f),
         color = BgDark, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, CardBorder)) {
@@ -153,7 +155,7 @@ internal fun CommunityReportsContent(
                         }), color = TextSecondary)
                     }
                     items(page.reports, key = { it.id }) { report ->
-                        CommunityReportCard(report, onSource, loadSettings)
+                        CommunityReportCard(report, appId, onSource, loadSettings)
                     }
                     if (page.hasMore) item {
                         Text(stringResource(R.string.vapor_community_more), color = TextSecondary, style = MaterialTheme.typography.bodySmall)
@@ -170,7 +172,9 @@ internal fun CommunityReportsContent(
 
 @Composable
 private fun CommunityReportCard(
-    report: EmuReady.Report, onSource: (String) -> Unit,
+    report: EmuReady.Report,
+    appId: Int,
+    onSource: (String) -> Unit,
     loadSettings: suspend (EmuReady.Report) -> List<EmuReady.Setting>,
 ) {
     var requested by remember(report) { mutableStateOf(false) }
@@ -215,9 +219,17 @@ private fun CommunityReportCard(
                 if (settings!!.isEmpty()) Text(stringResource(R.string.vapor_community_no_settings), color = TextSecondary)
                 // A condensed read of the fields that matter here, so the configuration that
                 // evidently worked can be compared against Vapor's own choice at a glance.
-                EmuReadyConfigHint.from(settings!!)?.summary()?.let { summary ->
-                    Text(stringResource(R.string.vapor_community_reported_config, summary),
-                        color = Accent, style = MaterialTheme.typography.bodyMedium)
+                EmuReadyConfigHint.from(settings!!)?.let { hint ->
+                    hint.summary()?.let { summary ->
+                        Text(stringResource(R.string.vapor_community_reported_config, summary),
+                            color = Accent, style = MaterialTheme.typography.bodyMedium)
+                    }
+                    // Remembered only as a prior for the launch-time route order; it cannot
+                    // select a combination this device has not been found eligible for.
+                    val priorContext = androidx.compose.ui.platform.LocalContext.current
+                    LaunchedEffect(report.id, hint.dxvkGeneration) {
+                        CommunityPrior.record(priorContext, appId, hint.dxvkGeneration)
+                    }
                 }
                 settings!!.forEach { setting ->
                     Column(Modifier.fillMaxWidth()) {

@@ -1,6 +1,7 @@
 package com.winlator.cmod.runtime.system
 
 import android.content.Context
+import android.util.Log
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -25,6 +26,7 @@ import java.util.Locale
 object AutomaticGraphics {
     const val EXTRA_ATTEMPT = "vapor.graphics_attempt"
     private const val CHOICE = "vapor_graphics_choice"
+    private const val TAG = "AutomaticGraphics"
     private val wineErrorPrefix = Regex("^[0-9a-f]+:err:")
     const val MAX_ATTEMPTS = 4
 
@@ -250,7 +252,18 @@ object AutomaticGraphics {
             }
         }
         inputs += context.assets.open("graphics_driver/wrapper.tzst").use(::streamDigest)
-        return start(routes, digest(inputs), d3d12, continuation, shortcut.getExtra(CHOICE))
+        // A community report for this game only *reorders* the eligible combinations: it can
+        // make the reported DXVK generation be tried first, never add one this device cannot run.
+        val appId = shortcut.getExtra("app_id").toIntOrNull() ?: 0
+        val prior = CommunityPrior.prefersLegacy(context, appId)
+        val ordered =
+            CommunityPrior.orderByPrior(routes, prior) { route ->
+                route.dxvk.startsWith("1.")
+            }
+        if (prior != null && ordered.size > 1 && ordered.first().id != routes.first().id) {
+            Log.i(TAG, "Community prior: trying ${ordered.first().description} first for app $appId")
+        }
+        return start(ordered, digest(inputs), d3d12, continuation, shortcut.getExtra(CHOICE))
     }
 
     private fun fileDigest(file: File): String {
