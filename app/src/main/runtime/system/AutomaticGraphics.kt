@@ -57,7 +57,7 @@ object AutomaticGraphics {
         }
     }
 
-    internal enum class Failure { VULKAN_STARTUP, DIRECT3D12_STARTUP }
+    internal enum class Failure { VULKAN_STARTUP, DIRECT3D12_STARTUP, DIRECT3D11_DEVICE }
 
     // Exact translator diagnostics only. A timeout, missing VC runtime, generic crash,
     // Steam/Cloud failure, or a video/loading stall is not a graphics diagnosis.
@@ -70,6 +70,13 @@ object AutomaticGraphics {
         return when {
             "vkd3d_create_vk_instance" in text && "failed to create vulkan instance" in text -> Failure.DIRECT3D12_STARTUP
             "vkd3d_create_vk_device" in text && "failed to create vulkan device" in text -> Failure.DIRECT3D12_STARTUP
+            // D3D11 device creation refused the requested feature level. Only the DXVK generation
+            // can change this, so the retry tries a different one. The strings are the ones the
+            // two bundled builds actually emit.
+            "requested feature level not supported" in text ||
+                "minimum required feature level not supported" in text ||
+                "failed to create d3d11 device" in text ||
+                "failed to create a dxgi factory" in text -> Failure.DIRECT3D11_DEVICE
             "failed to create vulkan device" in text ||
                 "dxvkinstance::createinstance: failed to create vulkan instance" in text ||
                 "dxvkinstance: failed to create instance" in text ||
