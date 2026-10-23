@@ -27,7 +27,13 @@ internal object EmuReady {
     class UnexpectedResponseException(message: String, cause: Throwable? = null) : IOException(message, cause)
 
     data class Game(val id: String, val title: String, val appIdMatch: Boolean)
-    data class Setting(val label: String, val value: String)
+    /**
+     * One custom field from a report.
+     *
+     * [name] is the stable key EmuReady defines (for example `dx_wrapper`), which is what any
+     * mapping must key on: [label] is display text and can be reworded.
+     */
+    data class Setting(val label: String, val value: String, val name: String = "")
     data class Report(
         val id: String, val gameId: String, val device: String, val soc: String,
         val emulator: String, val performance: String, val notes: String,
@@ -99,7 +105,8 @@ internal object EmuReady {
                 is JsonArray -> raw.take(20).mapNotNull { (it as? JsonPrimitive)?.takeUnless { v -> v is JsonNull }?.content }.joinToString(", ")
                 else -> ""
             }.trim().take(500)
-            if (label.isBlank() || value.isBlank()) null else Setting(label, value)
+            val name = definition.text("name").take(60)
+            if (label.isBlank() || value.isBlank()) null else Setting(label, value, name)
         }.take(60)
     }
 

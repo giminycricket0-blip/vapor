@@ -3282,6 +3282,7 @@ In your hands.</string>
     <string name="vapor_community_not_specified">not specified</string>
     <string name="vapor_community_reported">Reported %1$s · %2$s</string>
     <string name="vapor_community_votes">%1$d positive · %2$d negative votes</string>
+    <string name="vapor_community_reported_config">Reported configuration: %1$s</string>
     <string name="vapor_community_view_settings">View reported settings</string>
     <string name="vapor_community_no_settings">No settings recorded in this report.</string>
     <string name="vapor_community_settings_error">Could not load this report’s settings. Your settings are unchanged.</string>

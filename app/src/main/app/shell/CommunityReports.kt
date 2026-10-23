@@ -24,6 +24,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.winlator.cmod.R
 import com.winlator.cmod.feature.library.EmuReady
+import com.winlator.cmod.feature.library.EmuReadyConfigHint
 import com.winlator.cmod.shared.ui.focus.controllerFocusGlow
 import com.winlator.cmod.shared.ui.nav.DialogPaneNav
 import com.winlator.cmod.shared.ui.nav.LocalPaneNav
@@ -212,6 +213,12 @@ private fun CommunityReportCard(
                 Text(stringResource(R.string.vapor_community_loading), color = TextSecondary)
             } else {
                 if (settings!!.isEmpty()) Text(stringResource(R.string.vapor_community_no_settings), color = TextSecondary)
+                // A condensed read of the fields that matter here, so the configuration that
+                // evidently worked can be compared against Vapor's own choice at a glance.
+                EmuReadyConfigHint.from(settings!!)?.summary()?.let { summary ->
+                    Text(stringResource(R.string.vapor_community_reported_config, summary),
+                        color = Accent, style = MaterialTheme.typography.bodyMedium)
+                }
                 settings!!.forEach { setting ->
                     Column(Modifier.fillMaxWidth()) {
                         Text(setting.label, color = TextSecondary, style = MaterialTheme.typography.labelMedium)
