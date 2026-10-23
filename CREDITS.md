@@ -48,13 +48,30 @@ corresponding source for every copyleft component is available from the projects
   [GameNative](https://github.com/utkarshdalal/GameNative) community
 - **Mesa/Turnip** contributions by the [Mesa3D](https://www.mesa3d.org/) team
 - **Goldberg Steam Emulator** by [Mr. Goldberg](https://gitlab.com/Mr_Goldberg/goldberg_emulator),
-  maintained by [Detanup01](https://github.com/Detanup01/gbe_fork)
+  maintained by [Detanup01](https://github.com/Detanup01/gbe_fork) — **no longer bundled or
+  invoked.** The `steampipe/` payload and the code that copied it next to a game executable
+  were removed on 23 October 2026; the entry is kept for the record. A save-directory path
+  for games that used it during migration is still recognised.
 - **Wayland display server** — the embedded Wayland compositor (`app/src/main/cpp/waylandcomp`),
   its Wayland runtime design, clipboard and IME bridges, and the winewayland launch path by
   **Banner ([The412Banner](https://github.com/The412Banner))** from
   [Bannerlator](https://github.com/The412Banner/Bannerlator), ported to WinNative; ships the
   vendored `libwayland-server` 1.26 and `libffi` from the same project. See
   [docs/WAYLAND-DISPLAY.md](docs/WAYLAND-DISPLAY.md).
+
+## Community compatibility reports
+
+- **EmuReady** ([emuready.com](https://www.emuready.com/)) — the community compatibility
+  "cheat sheet" behind the **Community reports** action on a Steam game page, and behind the
+  configuration line described in the README.
+
+  The app reads EmuReady's public mobile API at runtime; **no EmuReady data is bundled,
+  scraped into, or redistributed with Vapor**. Each report links back to its own listing on
+  the service. Reports are other people's results on other hardware and other emulators, so
+  they are shown as attribution and used only as a *prior*: they can reorder launch
+  combinations Vapor has already judged eligible for the current device, never select one,
+  and never override an explicit setting. Vapor is not affiliated with EmuReady and does not
+  treat a report as a compatibility verdict.
 
 ## Retro console emulation
 

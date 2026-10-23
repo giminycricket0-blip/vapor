@@ -1,8 +1,8 @@
 <div align="center">
   <img src="docs/images/vapor-icon.svg" alt="Vapor mechanical V logo" width="104" height="104">
   <h1>Vapor</h1>
-  <p><strong>Your PC games. In your hands.</strong></p>
-  <p>A native Android launcher for downloading and running compatible PC games locally.</p>
+  <p><strong>SteamOS, without the OS.</strong></p>
+  <p>A console-style session for PC games on Android. Sign in, install, Play.</p>
   <p>
     <a href="LICENSE"><img alt="Application source: GPL-3.0" src="https://img.shields.io/badge/source-GPL--3.0-66c0f4?style=flat-square&amp;labelColor=1b2838"></a>
     <img alt="Android ARM64" src="https://img.shields.io/badge/Android-ARM64-66c0f4?style=flat-square&amp;labelColor=1b2838">
@@ -21,7 +21,16 @@
 
 <p align="center"><sub>Native Android interface · Home with public Steam artwork and sample installs, no account connected</sub></p>
 
-Connect Steam, choose a game, and play what your device can handle. Vapor pairs a Steam / Big Picture-inspired interface with local Windows-game execution through Wine/Proton, FEX or Box64 CPU translation, and your choice of Vulkan drivers: system, bundled wrappers or custom Turnip. Graphics selection can be automatic. Snapdragon devices are the first qualification target.
+Vapor gives an Android handheld or phone the shape of a console session: a native Steam
+Home, Library, Store and Downloads, a game page whose main action is Play, and Windows games
+running locally through Wine/Proton with FEX or Box64 translation. Your graphics driver,
+runtime and components are chosen for you from what the device can actually run. The
+machinery is still there, behind one **Advanced settings** switch, for the games that need it.
+
+**What to expect.** The target is single-player Windows games that already run under
+Wine/Proton. Titles that depend on kernel-level anti-cheat - Valorant, Apex Legends,
+Fortnite, PUBG and similar - do **not** run, and no setting changes that. Snapdragon is the
+first qualification target.
 
 > **In active development.** Local phone gameplay is demonstrated; compatibility and Steam feature qualification continue. No public alpha or official release APK is designated yet. See [current evidence](docs/QUALIFICATION.md) before treating a game or device as supported.
 
@@ -34,7 +43,7 @@ Connect Steam, choose a game, and play what your device can handle. Vapor pairs 
 - **Graphics that pick themselves.** Guided Steam launches probe your real Vulkan driver and choose an eligible driver/translator combination. They retry a few known start-up errors (visibly, at most four times) and remember what worked for each game. When a community report for that game names a DXVK generation, the matching eligible combination is tried first - it can only reorder candidates this device was already found able to run. Your explicit per-game settings always win. [How it works](#drivers-runtimes-and-automatic-graphics).
 - **Install, then play.** Drivers, containers, components and presets are automatic, and those screens are hidden behind a single **Advanced settings** switch that only needs opening when a game will not start. Per-game settings are reachable the same way, so the normal path is sign in, install, Play.
 - **The pad explains itself.** When a controller is connected, a small legend names the buttons that do something on the current screen - opened, back and navigate everywhere, plus section switching in Settings and the secondary action in Downloads.
-- **Your drivers, your runtime.** Use system Vulkan, one of three bundled Vulkan wrappers (plus an opt-in experimental build with Vapor's own fixes), or custom Turnip drivers (downloaded in **Settings → Drivers** or imported, then validated before launch). The runtime is the bundled Proton ARM64EC with FEX or Box64, plus DXVK, VKD3D-Proton or WineD3D. A Linux runtime can add official GE-Proton and Proton-CachyOS ARM64 builds.
+- **Your drivers, when you want them.** Under the hood Vapor ships system Vulkan, three bundled Vulkan wrappers (plus an opt-in experimental build with Vapor's own fixes) and custom Turnip (imported or downloaded, then validated before launch), with the bundled Proton ARM64EC running FEX or Box64 and DXVK, VKD3D-Proton or WineD3D - and a Linux runtime can add official GE-Proton and Proton-CachyOS ARM64 builds. None of that needs touching to play. It is exposed in **Settings → Advanced settings → Drivers** for the games that do.
 - **Your controls.** Touch gamepad, RTS and FPS layouts, keyboard/mouse bindings, and an in-game Vapor menu. New supported-store shortcuts start with a **60 FPS limit**; existing choices are preserved.
 - **Official Steam pages when needed.** Checkout, Wishlist, Community, guides, and Workshop browsing open in a dedicated modal web panel. Web install links return to the native game page. Shared web sign-in is implemented; live authentication and payment flows still need qualification.
 
@@ -340,10 +349,12 @@ speed lead.
 | [DroidDeck](https://github.com/Droid-Deck/DroidDeck) | Valve's actual Steam Big Picture client in a Linux environment. | ARM64 Proton; documented for supported Adreno hardware. | Per-game compatibility settings through the Steam client. |
 
 Native launching and automatic configuration are shared ideas, not Vapor
-exclusives. Vapor's emphasis is the combination: Steam / Big Picture-style
-navigation, the open inherited Steam host, driver checks before launch, bounded
-graphics retries, and published evidence for each change, including this week's
-wrapper and reproducibility test benches. Upstream fixes are credited and
+exclusives. Vapor's emphasis is the combination, and the intent behind it: get a
+session close to SteamOS without running SteamOS, then keep the configuration out
+of the way. Concretely that is Steam / Big Picture-style navigation, the open
+inherited Steam host, driver checks before launch, bounded graphics retries,
+explicit per-game settings only when asked for, and published evidence for each
+change. Upstream fixes are credited and
 experimental builds stay separate. **There is no measured
 Vapor-versus-competitor FPS, RAM or compatibility ranking yet.**
 [Detailed comparison](docs/COMPETITOR-COMPARISON.md).
