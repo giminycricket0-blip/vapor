@@ -53,6 +53,21 @@ class AutomaticGraphicsClassifyTest {
     }
 
     @Test
+    fun aWrapperRejectingACommandIsRetriable() {
+        // The wrapper renders "%s.%s not supported" as extension.command.
+        assertEquals(
+            AutomaticGraphics.Failure.WRAPPER_CAPABILITY,
+            AutomaticGraphics.classify("err:  VK_EXT_depth_bias2.vkCmdSetDepthBias2EXT not supported"),
+        )
+    }
+
+    @Test
+    fun aPlainNotSupportedMessageIsNotAGraphicsDiagnosis() {
+        // Too generic on its own: only the rendered command form is matched.
+        org.junit.Assert.assertNull(AutomaticGraphics.classify("err:  audio device not supported"))
+    }
+
+    @Test
     fun unrelatedErrorsAreNotGraphicsDiagnoses() {
         assertNull(AutomaticGraphics.classify("err:  some unrelated failure"))
         assertNull(AutomaticGraphics.classify("info: D3D11CoreCreateDevice: Requested feature level not supported"))

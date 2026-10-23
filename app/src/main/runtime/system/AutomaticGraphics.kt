@@ -57,7 +57,7 @@ object AutomaticGraphics {
         }
     }
 
-    internal enum class Failure { VULKAN_STARTUP, DIRECT3D12_STARTUP, DIRECT3D11_DEVICE }
+    internal enum class Failure { VULKAN_STARTUP, DIRECT3D12_STARTUP, DIRECT3D11_DEVICE, WRAPPER_CAPABILITY }
 
     // Exact translator diagnostics only. A timeout, missing VC runtime, generic crash,
     // Steam/Cloud failure, or a video/loading stall is not a graphics diagnosis.
@@ -73,6 +73,12 @@ object AutomaticGraphics {
             // D3D11 device creation refused the requested feature level. Only the DXVK generation
             // can change this, so the retry tries a different one. The strings are the ones the
             // two bundled builds actually emit.
+            // The Vulkan wrapper rejecting a command or extension it does not expose on this
+            // GPU: "%s.%s not supported" renders as "<extension>.<vkCmd...> not supported".
+            // Reported from a phone as vkd3d 3.0.1 failing on an Adreno 840 with the stock
+            // wrapper. Matched narrowly on the rendered command form to avoid catching
+            // unrelated "not supported" messages.
+            "not supported" in text && ("vkcmd" in text || "vkcreate" in text) -> Failure.WRAPPER_CAPABILITY
             "requested feature level not supported" in text ||
                 "minimum required feature level not supported" in text ||
                 "failed to create d3d11 device" in text ||
